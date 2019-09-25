@@ -1,25 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { createBrowserHistory } from 'history';
+import React from "react";
+import { Route, Router } from "react-router-dom";
+import { About } from './routes/main/About';
+import { Home } from './routes/main/Home';
+import { Topics } from './routes/main/Topics';
+import Header from './routes/shared/Header';
 
-const App: React.FC = () => {
+const history = createBrowserHistory();
+
+function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router history={history}>
+      <Header />
+      <Route exact path="/" component={Home} />
+      <Route path="/about" component={About} />
+      <Route path="/topics" component={Topics} />
+    </Router>
   );
 }
 
