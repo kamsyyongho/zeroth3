@@ -32,7 +32,7 @@ export const useKeycloak = () => {
     });
   };
 
-  const initKeycloak = () => {
+  const initKeycloak = async () => {
     const startInit = async () => {
       const keycloakResponse = await init().catch(error => {
         console.log("Keycloak init error:", error)

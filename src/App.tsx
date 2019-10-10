@@ -2,8 +2,9 @@ import { createBrowserHistory } from 'history';
 import React, { useEffect } from "react";
 import { Route, Router } from "react-router-dom";
 import SyncLoader from 'react-spinners/SyncLoader';
-import { KeycloakContext } from './hooks/keycloak/KeycloakContext';
+import { useApi } from './hooks/api/useApi';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
+import RootProvider from './hooks/Rootprovider';
 import { IAM } from './routes/IAM/IAM';
 import { About } from './routes/main/About';
 import MiniDrawer from './routes/main/ExampleDrawer';
@@ -18,9 +19,19 @@ const history = createBrowserHistory();
 
 function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
-  useEffect(initKeycloak, []);
+  const { api, apiInitialized, initApi } = useApi();
 
-  if (!keycloakInitialized) {
+  useEffect(() => {
+    initKeycloak();
+  }, []);
+
+  useEffect(() => {
+    if (keycloakInitialized) {
+      initApi(keycloak.keycloak)
+    }
+  }, [keycloakInitialized]);
+
+  if (!keycloakInitialized || !apiInitialized) {
     return (
       <SyncLoader
         sizeUnit={"px"}
@@ -32,7 +43,7 @@ function App() {
   }
 
   return (
-    <KeycloakContext.Provider value={keycloak}>
+    <RootProvider keycloak={keycloak} api={api}>
       <Router history={history}>
         <Header />
         <Route exact path="/" component={Home} />
@@ -44,7 +55,7 @@ function App() {
         <Route path="/list" component={IAM} />
         <Route path="/table" component={ExampleTable} />
       </Router>
-    </KeycloakContext.Provider>
+    </RootProvider>
   );
 }
 
