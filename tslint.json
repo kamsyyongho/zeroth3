@@ -1,0 +1,16 @@
+{
+  "extends": "tslint-config-prettier",
+  "rules": {
+    "quotemark": [true, "double", "jsx-double", "avoid-escape"],
+    "semicolon": [true, "always"],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "always",
+        "singleline": "never",
+        "esSpecCompliant": true
+      }
+    ],
+    "space-before-function-paren": [true, "never"]
+  }
+}
