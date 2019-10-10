@@ -1,10 +1,4 @@
-// tell typescript that there will be a the `node.js` process global variable used
-// this is used for the inline environment variables
-declare const process: any;
-
-export const KEYCLOAK_URL: string | undefined =
-  process.env.REACT_APP_KEYCLOAK_URL;
-export const KEYCLOAK_REALM: string | undefined =
-  process.env.REACT_APP_KEYCLOAK_REALM;
-export const KEYCLOAK_CLIENT_ID: string | undefined =
-  process.env.REACT_APP_KEYCLOAK_CLIENT_ID;
+export const KEYCLOAK_URL = process.env.REACT_APP_KEYCLOAK_URL;
+export const KEYCLOAK_REALM = process.env.REACT_APP_KEYCLOAK_REALM;
+export const KEYCLOAK_CLIENT_ID = process.env.REACT_APP_KEYCLOAK_CLIENT_ID;
+export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

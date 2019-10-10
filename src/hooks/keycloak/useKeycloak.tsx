@@ -1,5 +1,6 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
+import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
 
 interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
@@ -9,16 +10,7 @@ interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
   tokenParsed?: CustomKeycloakTokenParsed
 }
-
 export const useKeycloak = () => {
-  const keycloakConfig = {
-    url: "http://localhost:8080/auth",
-    realm: "zeroth",
-    clientId: "zeroth-web",
-    // Access Token Lifespan (in seconds)
-    // tokenRefreshInterval: 60 - 5 // 1 min
-    tokenRefreshInterval: 43200 - 5 // 12 hours
-  }
 
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
@@ -36,18 +28,17 @@ export const useKeycloak = () => {
           setKeycloak(keycloak)
           resolve(authenticated)
         })
-        .error(() => reject({ message: "Failed to initialize keycloak" }));
+        .error((error) => reject(error));
     });
-  };
-
-  const runInit = async () => {
-    const keycloakResponse = await init()
-    setkeycloakInitialized(keycloakResponse);
   };
 
   const initKeycloak = () => {
     const startInit = async () => {
-      await runInit()
+      const keycloakResponse = await init().catch(error => {
+        console.log("Keycloak init error:", error)
+        return false
+      })
+      setkeycloakInitialized(keycloakResponse);
     };
     startInit();
   }
@@ -62,7 +53,7 @@ export const useKeycloak = () => {
       organizationId = keycloak.tokenParsed.organization_id
     }
   } catch (error) {
-    // do nothing
+    console.log("Keycloak parse error:", error)
   }
 
   const parsedKeycloak: ParsedKeycloak = { keycloak, roles, organizationId }
