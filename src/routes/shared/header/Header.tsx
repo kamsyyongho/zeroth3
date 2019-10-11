@@ -2,9 +2,9 @@ import { Button, Toolbar } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useLocation } from "react-router-dom";
-import { ApiContext } from '../../hooks/api/ApiContext';
+import MenuPopup from './components/MenuPopup';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -61,7 +61,6 @@ const PATHS: { [x: string]: Path } = {
 const Header: React.FunctionComponent<{}> = (props) => {
   const classes = useStyles()
   const location = useLocation()
-  const api = useContext(ApiContext)
 
   const pathButtons: JSX.Element[] = Object.keys(PATHS).map((key, index) => {
     const path = PATHS[key]
@@ -79,7 +78,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
           Zeroth EE
         </Typography>
         {pathButtons}
-        <Button onClick={api.logout} color={"secondary"}>{"LOGOUT"}</Button>
+        <MenuPopup />
       </Toolbar>
     </AppBar>
   );
