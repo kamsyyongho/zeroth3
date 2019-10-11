@@ -1,7 +1,11 @@
-import i18n from 'i18next';
+import { ResourceLanguage } from 'i18next';
 
-export const ko: i18n.ResourceLanguage = {
+export const ko: ResourceLanguage = {
   translation: {
-    test: '안녕'
+    menu: {
+      login: '로그인',
+      logout: '로그아웃',
+      changeLanguage: '언어 바꾸기'
+    }
   }
 };

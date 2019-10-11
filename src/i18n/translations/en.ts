@@ -1,7 +1,11 @@
-import i18n from 'i18next';
+import { ResourceLanguage } from 'i18next';
 
-export const en: i18n.ResourceLanguage = {
+export const en: ResourceLanguage = {
   translation: {
-    test: 'hi'
+    menu: {
+      login: 'Login',
+      logout: 'Logout',
+      changeLanguage: 'Change language'
+    }
   }
 };

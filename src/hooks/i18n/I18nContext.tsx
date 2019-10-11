@@ -6,11 +6,13 @@ export interface ParsedI18n {
    * the raw i18next object
    */
   i18n: i18n,
-  translate: (key: string, options?: TOptions) => string | null
+  translate: (key: string, options?: TOptions | string) => string | null,
+  toggleLanguage: () => void
 }
 const defaultContext: ParsedI18n = {
   i18n: {} as i18n,
-  translate: () => null
+  translate: () => null,
+  toggleLanguage: () => {}
 }
 
 export const I18nContext = createContext(defaultContext)

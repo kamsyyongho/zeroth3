@@ -15,7 +15,7 @@ import SimpleSelect from './routes/main/ExampleSimpleSelect';
 import { ExampleTable } from './routes/main/ExampleTable';
 import { Home } from './routes/main/Home';
 import { Topics } from './routes/main/Topics';
-import Header from './routes/shared/Header';
+import Header from './routes/shared/header/Header';
 import { useI18n } from './hooks/i18n/useI18n';
 
 const history = createBrowserHistory();
