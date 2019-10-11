@@ -27,7 +27,21 @@ function App() {
 
   useEffect(() => {
     if (keycloakInitialized) {
-      initApi(keycloak.keycloak)
+      initApi(keycloak.keycloak, keycloak.logout)
+
+      //////////////////////////////////////////
+      // TEST CODE - DELETE BEFORE PRODUCTION //
+      //////////////////////////////////////////
+      //!
+      //TODO
+      //* TO DEAL WITH A RACE CONDITION WITH ACCOUNT CREATION AND ORGANIZATION ID CREATION
+      //!
+      if (keycloak.organizationId === undefined) keycloak.logout()
+      //!
+      //////////////////////////////////////////
+      // TEST CODE - DELETE BEFORE PRODUCTION //
+      //////////////////////////////////////////
+
     }
   }, [keycloakInitialized]);
 

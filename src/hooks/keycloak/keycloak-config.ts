@@ -1,5 +1,10 @@
 import ENV from '../../services/env/index';
 
+/**
+ * - just under 12 hours in minutes
+ */
+export const DEFAULT_KEYCLOAK_TOKEN_REFRESH_INTERVAL = 43200 - 5;
+
 export const keycloakConfig = {
   url: ENV.KEYCLOAK_URL || 'http://localhost:8080/auth',
   realm: ENV.KEYCLOAK_REALM || 'zeroth',
@@ -8,5 +13,5 @@ export const keycloakConfig = {
    * Access Token Lifespan (in seconds)
    * - 12 hours
    */
-  tokenRefreshInterval: 43200 - 5
+  tokenRefreshInterval: DEFAULT_KEYCLOAK_TOKEN_REFRESH_INTERVAL
 };

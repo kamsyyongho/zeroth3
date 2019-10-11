@@ -23,6 +23,12 @@ export class Api {
   keycloak: KeycloakInstance | undefined;
 
   /**
+   * The logout method from `keycloakContext`.
+   * - redirects to the login page
+   */
+  logout: () => void = () => {};
+
+  /**
    * Subclass that manages IAM requests.
    */
   IAM: IAM | undefined;
@@ -44,15 +50,16 @@ export class Api {
    *
    * Be as quick as possible in here.
    */
-  setup(keycloak: KeycloakInstance): boolean {
+  setup(keycloak: KeycloakInstance, logout: () => void): boolean {
     this.keycloak = keycloak;
+    this.logout = logout;
     // construct the apisauce instance
     this.apisauce = create({
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
       headers: this.generateHeader()
     });
-    this.IAM = new IAM(this.apisauce);
+    this.IAM = new IAM(this.apisauce, this.logout);
     return true;
   }
 
