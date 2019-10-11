@@ -12,7 +12,6 @@ interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
   tokenParsed?: CustomKeycloakTokenParsed
 }
 export const useKeycloak = () => {
-
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
