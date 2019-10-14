@@ -1,5 +1,7 @@
-import { ApisauceInstance, create, HEADERS } from 'apisauce';
+import { ApiResponse, ApisauceInstance, create, HEADERS } from 'apisauce';
 import { KeycloakInstance } from 'keycloak-js';
+import ENV from '../env/index';
+import log from '../log/logger';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './paths/iam';
 
@@ -59,8 +61,24 @@ export class Api {
       timeout: this.config.timeout,
       headers: this.generateHeader()
     });
+    // log all responses
+    if (!ENV.isProduction) {
+      this.apisauce.addMonitor(this.responseMonitor);
+    }
     this.IAM = new IAM(this.apisauce, this.logout);
     return true;
+  }
+
+  /**
+   * Logs apisauce responses
+   * @param response from `apisauce`
+   */
+  private responseMonitor(response: ApiResponse<unknown, unknown>): void {
+    log({
+      file: 'api.ts',
+      caller: 'API - responseMonitor',
+      value: response
+    });
   }
 
   /**
@@ -102,6 +120,12 @@ export class Api {
         this.apisauce.setHeader('Authorization', `Bearer ${token}`);
       } catch (error) {
         console.log('Error updating auth token:', error);
+        log({
+          file: `api.ts`,
+          caller: `updateAuthToken - Error updating auth token`,
+          value: error,
+          error: true
+        });
         reset = true;
       }
     } else if (reset) {
