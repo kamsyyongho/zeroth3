@@ -1,7 +1,7 @@
 import { ApiResponse, ApisauceInstance, create, HEADERS } from 'apisauce';
 import { KeycloakInstance } from 'keycloak-js';
-import ENV from '../env/index';
 import log from '../../util/log/logger';
+import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './paths/iam';
 
