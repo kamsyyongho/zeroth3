@@ -4,6 +4,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import { Link, useLocation } from "react-router-dom";
+import MenuPopup from './components/MenuPopup';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -77,6 +78,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
           Zeroth EE
         </Typography>
         {pathButtons}
+        <MenuPopup />
       </Toolbar>
     </AppBar>
   );

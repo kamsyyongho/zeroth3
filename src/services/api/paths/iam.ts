@@ -12,12 +12,19 @@ export class IAM {
   apisauce: ApisauceInstance;
 
   /**
+   * The logout method from `keycloakContext`.
+   * - redirects to the login page
+   */
+  logout: () => void = () => {};
+
+  /**
    * Creates the api from the already initiated parent.
    *
    * @param apisauce The apisauce instance.
    */
-  constructor(apisauce: ApisauceInstance) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     this.apisauce = apisauce;
+    this.logout = logout;
   }
 
   /**
@@ -32,6 +39,9 @@ export class IAM {
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
       if (problem) {
+        if(problem.kind === ProblemKind['unauthorized']){
+          this.logout();
+        }
         return problem;
       }
     }

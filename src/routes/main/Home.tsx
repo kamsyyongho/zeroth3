@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 export function Home() {
   const [counter, setCounter] = useState(0)
-
   return (
     <div>
       <div>{counter}</div>

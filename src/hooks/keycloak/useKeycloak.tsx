@@ -1,5 +1,7 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
+import ENV from '../../services/env';
+import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
 
@@ -11,7 +13,6 @@ interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
   tokenParsed?: CustomKeycloakTokenParsed
 }
 export const useKeycloak = () => {
-
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
@@ -35,12 +36,28 @@ export const useKeycloak = () => {
   const initKeycloak = async () => {
     const startInit = async () => {
       const keycloakResponse = await init().catch(error => {
-        console.log("Keycloak init error:", error)
+        log({
+          file: `useKeycloak.tsx`,
+          caller: `initKeycloak - init error`,
+          value: error,
+          error: true,
+        })
         return false
       })
       setkeycloakInitialized(keycloakResponse);
     };
     startInit();
+  }
+
+  /**
+   * Logs out of keycloak and redirects to the login page.
+   * - redirects to the homepage after re-login
+   * - this function gets passed to, and stored in the api
+   */
+  const logout = () => {
+    const logoutOptions = { redirectUri: ENV.HOME_URL };
+    setkeycloakInitialized(false);
+    keycloak.logout(logoutOptions);
   }
 
   let roles: string[] = []
@@ -53,10 +70,15 @@ export const useKeycloak = () => {
       organizationId = keycloak.tokenParsed.organization_id
     }
   } catch (error) {
-    console.log("Keycloak parse error:", error)
+    log({
+      file: `useKeycloak.tsx`,
+      caller: `initKeycloak - parse error`,
+      value: error,
+      error: true,
+    })
   }
 
-  const parsedKeycloak: ParsedKeycloak = { keycloak, roles, organizationId }
+  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, organizationId }
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak }
 }

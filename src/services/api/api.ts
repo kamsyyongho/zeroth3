@@ -1,5 +1,7 @@
-import { ApisauceInstance, create, HEADERS } from 'apisauce';
+import { ApiResponse, ApisauceInstance, create, HEADERS } from 'apisauce';
 import { KeycloakInstance } from 'keycloak-js';
+import log from '../../util/log/logger';
+import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './paths/iam';
 
@@ -23,6 +25,12 @@ export class Api {
   keycloak: KeycloakInstance | undefined;
 
   /**
+   * The logout method from `keycloakContext`.
+   * - redirects to the login page
+   */
+  logout: () => void = () => {};
+
+  /**
    * Subclass that manages IAM requests.
    */
   IAM: IAM | undefined;
@@ -44,16 +52,33 @@ export class Api {
    *
    * Be as quick as possible in here.
    */
-  setup(keycloak: KeycloakInstance): boolean {
+  setup(keycloak: KeycloakInstance, logout: () => void): boolean {
     this.keycloak = keycloak;
+    this.logout = logout;
     // construct the apisauce instance
     this.apisauce = create({
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
       headers: this.generateHeader()
     });
-    this.IAM = new IAM(this.apisauce);
+    // log all responses
+    if (!ENV.isProduction) {
+      this.apisauce.addMonitor(this.responseMonitor);
+    }
+    this.IAM = new IAM(this.apisauce, this.logout);
     return true;
+  }
+
+  /**
+   * Logs apisauce responses
+   * @param response from `apisauce`
+   */
+  private responseMonitor(response: ApiResponse<unknown, unknown>): void {
+    log({
+      file: 'api.ts',
+      caller: 'API - responseMonitor',
+      value: response
+    });
   }
 
   /**
@@ -68,8 +93,21 @@ export class Api {
       try {
         const { token } = this.keycloak;
         header.Authorization = `Bearer ${token}`;
+        if (!token) {
+          log({
+            file: `api.ts`,
+            caller: `generateHeader`,
+            value: 'TOKEN IS UNDEFINED',
+            important: true
+          });
+        }
       } catch (error) {
-        console.log('Error updating setting token:', error);
+        log({
+          file: `api.ts`,
+          caller: `generateHeader- error setting token`,
+          value: error,
+          error: true
+        });
       }
     }
     return header;
@@ -94,7 +132,12 @@ export class Api {
         const { token } = this.keycloak;
         this.apisauce.setHeader('Authorization', `Bearer ${token}`);
       } catch (error) {
-        console.log('Error updating auth token:', error);
+        log({
+          file: `api.ts`,
+          caller: `updateAuthToken- error updating token`,
+          value: error,
+          error: true
+        });
         reset = true;
       }
     } else if (reset) {
