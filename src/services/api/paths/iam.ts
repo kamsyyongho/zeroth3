@@ -1,10 +1,11 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { User } from '../../../types';
+import { Role, User } from '../../../types';
 import { getGeneralApiProblem, ProblemKind } from '../api-problem';
 import {
   assignRolesResult,
   deleteRoleResult,
   deleteUserResult,
+  getRolesResult,
   getUserResult,
   inviteUserResult
 } from '../types';
@@ -54,6 +55,31 @@ export class IAM {
     try {
       const users = response.data as User[];
       return { kind: 'ok', users };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Gets a list of associated organization roles
+   */
+  async getRoles(): Promise<getRolesResult> {
+    // make the api call
+    const response: ApiResponse<Role[]> = await this.apisauce.get(`/iam/roles`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const roles = response.data as Role[];
+      return { kind: 'ok', roles };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
