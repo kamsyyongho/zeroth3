@@ -30,6 +30,7 @@ function MenuPopup() {
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         keepMounted
         open={Boolean(anchorEl)}
         onClose={handleClose}
