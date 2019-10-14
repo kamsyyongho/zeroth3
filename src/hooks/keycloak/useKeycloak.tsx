@@ -1,6 +1,7 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
 import ENV from '../../services/env';
+import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
 
@@ -11,6 +12,7 @@ interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
   tokenParsed?: CustomKeycloakTokenParsed
 }
+
 export const useKeycloak = () => {
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
@@ -35,7 +37,12 @@ export const useKeycloak = () => {
   const initKeycloak = async () => {
     const startInit = async () => {
       const keycloakResponse = await init().catch(error => {
-        console.log("Keycloak init error:", error)
+        log({
+          file: `useKeycloak.tsx`,
+          caller: `initKeycloak - init error`,
+          value: error,
+          error: true,
+        })
         return false
       })
       setkeycloakInitialized(keycloakResponse);
@@ -64,7 +71,12 @@ export const useKeycloak = () => {
       organizationId = keycloak.tokenParsed.organization_id
     }
   } catch (error) {
-    console.log("Keycloak parse error:", error)
+    log({
+      file: `useKeycloak.tsx`,
+      caller: `initKeycloak - parse error`,
+      value: error,
+      error: true,
+    })
   }
 
   const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, organizationId }

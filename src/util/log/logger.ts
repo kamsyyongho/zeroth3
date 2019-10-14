@@ -1,4 +1,4 @@
-import ENV from '../env';
+import ENV from '../../services/env';
 
 interface Log {
   file: string;
@@ -13,6 +13,7 @@ interface Log {
 /**
  * Custom logging function with custom styling and tracing
  * @param logOptions `file`, `caller`, and `value` are required
+ * - Does nothing when in production
  * - options:
  * ```ts
   file: string;

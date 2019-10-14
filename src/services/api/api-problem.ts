@@ -1,4 +1,5 @@
 import { ApiResponse } from 'apisauce';
+import log from '../../util/log/logger';
 
 export type GeneralApiProblem =
   /**
@@ -90,6 +91,12 @@ export enum ProblemKind {
 export function getGeneralApiProblem(
   response: ApiResponse<unknown>
 ): GeneralApiProblem | null {
+  log({
+    file: `api-problem.ts`,
+    caller: `getGeneralApiProblem`,
+    value: 'API PROBLEM',
+    important: true
+  });
   switch (response.problem) {
     case 'CONNECTION_ERROR':
       return { kind: 'cannot-connect', temporary: true };
