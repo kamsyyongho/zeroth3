@@ -23,5 +23,5 @@ export const useI18n = (): ParsedI18n => {
     i18n.changeLanguage(i18n.language === "en" ? "ko" : "en")
   }
 
-  return { translate, i18n, toggleLanguage }
+  return { translate, i18n, toggleLanguage, language: i18n.language }
 }
