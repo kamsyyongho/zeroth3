@@ -8662,10 +8662,10 @@ react-spinners@^0.6.1:
   dependencies:
     "@emotion/core" "^10.0.15"
 
-react-table@^7.0.0-beta.9:
-  version "7.0.0-beta.10"
-  resolved "https://registry.yarnpkg.com/react-table/-/react-table-7.0.0-beta.10.tgz#c19efa4a4cb31fb6d9dc53d9b0c7f8b2855dd1a0"
-  integrity sha512-SAMpjvQjqdsH1oZS5ClXKpVCPYNGUF2l2sCogAVeCxOAo+LJjBI+pSE7Z6uMZku6lWFXvlAg666tNqJ+Bjz0DA==
+react-table@^7.0.0-beta.12:
+  version "7.0.0-beta.12"
+  resolved "https://registry.yarnpkg.com/react-table/-/react-table-7.0.0-beta.12.tgz#ae54b398fbdb527b9fad82e52c4d829c00fdd5dc"
+  integrity sha512-h1c0KNTBRPAMgZumaNixr3X0w7kFTuqk6pHwia12LsMgnTHNEEeqp7+tQ5fTPwwMArp1/OHXeOdSKEes1C83iw==
 
 react-transition-group@^4.3.0:
   version "4.3.0"
