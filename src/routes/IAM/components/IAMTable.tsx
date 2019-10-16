@@ -9,6 +9,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext'
 import { Role, User } from "../../../types"
 import { IAMCellCheckbox } from './IAMCellCheckbox'
 import { IAMCellMultiSelect } from './IAMCellMultiSelect'
+import { IAMCellSubmitButton } from './IAMCellSubmitButton'
 import { IAMHeaderCheckbox } from './IAMHeaderCheckbox'
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
@@ -17,12 +18,16 @@ export interface IAMTableProps {
   roles: Role[]
 }
 
-export interface CheckedEmails {
+export interface CheckedEmailsByIndex {
   [index: number]: boolean
 }
 
 export interface ParsedRolesById {
-  [index: number]: Role
+  [id: number]: Role
+}
+
+export interface SelectedRoleIdsByIndex {
+  [index: number]: number[]
 }
 
 export function IAMTable(props: IAMTableProps) {
@@ -32,42 +37,45 @@ export function IAMTable(props: IAMTableProps) {
   const parsedRolesById: ParsedRolesById = {}
   roles.forEach(role => parsedRolesById[role.id] = role)
 
-  // const users = [
-  //   { id: 5, email: "asdasd", roles: [{ id: 1, name: "root" }] },
-  //   { id: 5, email: "asdasd", roles: [{ id: 1, name: "root" }] },
-  //   { id: 5, email: "asdasd", roles: [{ id: 1, name: "root" }] },
-  // ]
-
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false)
-  const [checkedEmails, setCheckedEmails] = React.useState<CheckedEmails>({});
+  const [checkedEmails, setCheckedEmails] = React.useState<CheckedEmailsByIndex>({});
+  const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
 
-  const handleEmailCheck = (emailIndex: number, value: boolean): void => {
+  const handleEmailCheck = (userIndex: number, value: boolean): void => {
     setCheckedEmails((prevCheckedEmails) => {
-      return { [emailIndex]: value, ...prevCheckedEmails }
+      return { ...prevCheckedEmails, [userIndex]: value }
     })
   }
 
+  const handleRoleCheck = (userIndex: number, value: number[]): void => {
+    setSelectedRoles((prevSelectedRoles) => {
+      return { ...prevSelectedRoles, [userIndex]: value }
+    })
+  }
+
+  // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [
       {
         Header: <IAMHeaderCheckbox onCheck={setAllChecked} />,
         accessor: 'email',
-        Cell: (data: CellProps<User>) => IAMCellCheckbox(data, handleEmailCheck),
+        Cell: (data: CellProps<User>) => IAMCellCheckbox({ cellData: data, onEmailCheck: handleEmailCheck, allChecked }),
       },
       {
         Header: `${translate("IAM.roles")}`,
-        accessor: "roles",
-        Cell: (data: CellProps<User>) => IAMCellMultiSelect(data, roles, parsedRolesById),
+        accessor: 'roles',
+        Cell: (data: CellProps<User>) => IAMCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
       },
       {
-        Header: 'Last activity',
-        accessor: 'lastActivity',
+        Header: ' ',
+        accessor: (row: User) => row,
+        Cell: (data: CellProps<User>) => IAMCellSubmitButton({ cellData: data, selectedRoles }),
       },
     ],
-    [users, roles, language]
-
+    [users, roles, language, allChecked, selectedRoles]
   )
+
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,

@@ -10,7 +10,7 @@ import React from 'react';
 import { CellProps } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Role, User } from '../../../types';
-import { ParsedRolesById } from './IAMTable';
+import { ParsedRolesById, SelectedRoleIdsByIndex } from './IAMTable';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,19 +48,22 @@ const MenuProps = {
 };
 
 
-function getStyles(name: string, selectedRoles: string[], theme: Theme) {
-  return {
-    fontWeight:
-      selectedRoles.indexOf(name) === -1
-        ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium,
-  };
+// eslint-disable-next-line @typescript-eslint/interface-name-prefix
+interface IAMCellMultiSelectProps {
+  cellData: CellProps<User>
+  availableRoles: Role[]
+  parsedRolesById: ParsedRolesById
+  selectedRoles: SelectedRoleIdsByIndex
+  onRoleCheck: (userIndex: number, value: number[]) => void
 }
 
-
-export function IAMCellMultiSelect(cellData: CellProps<User>, availableRoles: Role[], parsedRolesById: ParsedRolesById) {
+export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
+  const { cellData, availableRoles, selectedRoles, parsedRolesById, onRoleCheck } = props
   const { translate } = React.useContext(I18nContext);
+  
   const userRoles: User["roles"] = cellData.cell.value;
+  const index = cellData.cell.row.index;
+  const key = `${index}-roles`;
 
   const initialSelectedRoleIds: number[] = React.useMemo(
     () => {
@@ -68,11 +71,16 @@ export function IAMCellMultiSelect(cellData: CellProps<User>, availableRoles: Ro
         return []
       }
       return userRoles.map(role => role.id);
-    }, [userRoles])
+    }, []);
+
+  let defaultState: number[] | undefined;
+  if (selectedRoles[index] && selectedRoles[index] instanceof Array) {
+    defaultState = selectedRoles[index];
+  }
 
   const classes = useStyles();
   const theme = useTheme();
-  const [selectedRoles, setSelectedRoles] = React.useState<number[]>(initialSelectedRoleIds);
+  const [userselectedRoles, setUserSelectedRoles] = React.useState<number[]>(defaultState || initialSelectedRoleIds);
 
   const joinSelectedText = (selected: number[]) => {
     const selectedRoleNames: string[] = (selected).map(selectedId => (parsedRolesById[selectedId] && parsedRolesById[selectedId].name) || "")
@@ -80,29 +88,39 @@ export function IAMCellMultiSelect(cellData: CellProps<User>, availableRoles: Ro
   }
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSelectedRoles(event.target.value as number[]);
+    const value = event.target.value as number[]
+    setUserSelectedRoles(value);
   };
 
+  const handleClose = (event: React.ChangeEvent<{}>) => {
+    onRoleCheck(index, userselectedRoles);
+  };
+
+  const renderMenuItems = () => {
+    return availableRoles.map(role => {
+      const { id, name } = role;
+      return (
+        <MenuItem key={id} value={id}>
+          <Checkbox checked={userselectedRoles.includes(id)} />
+          <ListItemText primary={name} />
+        </MenuItem>
+      )
+    })
+  }
+
   return (
-    <FormControl className={classes.formControl}>
+    <FormControl className={classes.formControl} key={key} >
       <InputLabel htmlFor="select-multiple-checkbox">{translate("IAM.roles")}</InputLabel>
       <Select
         multiple
-        value={selectedRoles}
+        value={userselectedRoles}
         onChange={handleChange}
+        onClose={handleClose}
         input={<Input id="select-multiple-checkbox" />}
         renderValue={(selected) => joinSelectedText(selected as number[])}
         MenuProps={MenuProps}
       >
-        {availableRoles.map(role => {
-          const { id, name } = role;
-          return (
-            <MenuItem key={id} value={id}>
-              <Checkbox checked={selectedRoles.includes(id)} />
-              <ListItemText primary={name} />
-            </MenuItem>
-          )
-        })}
+        {renderMenuItems()}
       </Select>
     </FormControl>
   );

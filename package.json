@@ -32,6 +32,7 @@
     "i18next-browser-languagedetector": "^4.0.0",
     "keycloak-js": "6.0.1",
     "react": "^16.9.0",
+    "react-content-loader": "^4.3.2",
     "react-dom": "^16.9.0",
     "react-i18next": "^10.13.1",
     "react-icons": "^3.7.0",

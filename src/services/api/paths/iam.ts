@@ -145,7 +145,7 @@ export class IAM {
   }
 
   /**
-   * Deletes a role from a user
+   * Deletes a single role from a user
    * @param userId
    * @param roleId
    */

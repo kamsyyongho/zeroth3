@@ -2,9 +2,13 @@ import { ResourceLanguage } from 'i18next';
 
 export const en: ResourceLanguage = {
   translation: {
+    common: {
+      delete: 'Delete',
+      submit: 'Submit'
+    },
     path: {
-      home: "Home",
-      IAM: "IAM",
+      home: 'Home',
+      IAM: 'IAM'
     },
     menu: {
       login: 'Login',
@@ -12,8 +16,10 @@ export const en: ResourceLanguage = {
       changeLanguage: 'Change language'
     },
     IAM: {
-      user: "User",
-      roles: "Roles"
+      user: 'User',
+      roles: 'Roles',
+      invite: 'Invite',
+      header: 'Identity and Access Management'
     }
   }
 };
