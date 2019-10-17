@@ -4,7 +4,11 @@ export const en: ResourceLanguage = {
   translation: {
     common: {
       delete: 'Delete',
-      submit: 'Submit'
+      submit: 'Submit',
+      cancel: 'Cancel',
+      error: 'Error',
+      success: 'Success',
+      failure: 'Failure'
     },
     path: {
       home: 'Home',
@@ -15,11 +19,19 @@ export const en: ResourceLanguage = {
       logout: 'Logout',
       changeLanguage: 'Change language'
     },
+    forms: {
+      validation: {
+        required: 'Required',
+        email: 'Email is not valid'
+      },
+      email: 'Email'
+    },
     IAM: {
       user: 'User',
       roles: 'Roles',
       invite: 'Invite',
-      header: 'Identity and Access Management'
+      header: 'Identity and Access Management',
+      inviteUser: 'Invite user'
     }
   }
 };

@@ -13,6 +13,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { Role, User } from '../../types';
 import log from '../../util/log/logger';
 import { IAMTable } from './components/IAMTable';
+import { InviteFormDialog } from './components/InviteFormDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,6 +33,15 @@ export function IAM() {
   const [roles, setRoles] = React.useState<Role[]>([])
   const [usersLoading, setUsersLoading] = React.useState(true)
   const [rolesLoading, setRolesLoading] = React.useState(true)
+  const [inviteOpen, setInviteOpen] = React.useState(false);
+
+  const handleInviteOpen = () => {
+    setInviteOpen(true);
+  };
+  const handleInviteClose = () => {
+    setInviteOpen(false);
+  };
+
 
   React.useEffect(() => {
     const getUsers = async () => {
@@ -86,6 +96,7 @@ export function IAM() {
               <Button
                 variant="contained"
                 color="primary"
+                onClick={handleInviteOpen}
                 startIcon={<SendIcon />}
               >{translate("IAM.invite")}</Button>
             </>
@@ -95,6 +106,7 @@ export function IAM() {
         <CardContent className={classes.cardContent} >
           {usersLoading || rolesLoading ? <BulletList /> : <IAMTable users={users} roles={roles} />}
         </CardContent>
+        <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
       </Card>
     </Container >
   );
