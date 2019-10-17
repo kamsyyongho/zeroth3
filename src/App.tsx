@@ -1,22 +1,17 @@
 
-import "./i18n" // to immediately initialize i18n
 import { createBrowserHistory } from 'history';
 import React, { useEffect } from "react";
 import { Route, Router } from "react-router-dom";
 import SyncLoader from 'react-spinners/SyncLoader';
 import { useApi } from './hooks/api/useApi';
+import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import RootProvider from './hooks/Rootprovider';
+import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
-import { About } from './routes/main/About';
-import MiniDrawer from './routes/main/ExampleDrawer';
-import MultipleSelect from './routes/main/ExampleMultiSelect';
-import SimpleSelect from './routes/main/ExampleSimpleSelect';
-import { ExampleTable } from './routes/main/ExampleTable';
 import { Home } from './routes/main/Home';
-import { Topics } from './routes/main/Topics';
 import Header from './routes/shared/header/Header';
-import { useI18n } from './hooks/i18n/useI18n';
+import { PATHS } from './types';
 
 const history = createBrowserHistory();
 
@@ -64,14 +59,8 @@ function App() {
     <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
       <Router history={history}>
         <Header />
-        <Route exact path="/" component={Home} />
-        <Route path="/about" component={About} />
-        <Route path="/topics" component={Topics} />
-        <Route path="/drawer" component={MiniDrawer} />
-        <Route path="/simple" component={SimpleSelect} />
-        <Route path="/multi" component={MultipleSelect} />
-        <Route path="/list" component={IAM} />
-        <Route path="/table" component={ExampleTable} />
+        <Route exact path={PATHS.home.to} component={Home} />
+        <Route path={PATHS.IAM.to} component={IAM} />
       </Router>
     </RootProvider>
   );

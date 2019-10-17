@@ -95,7 +95,7 @@ export function getGeneralApiProblem(
     file: `api-problem.ts`,
     caller: `getGeneralApiProblem`,
     value: 'API PROBLEM',
-    important: true
+    error: true
   });
   switch (response.problem) {
     case 'CONNECTION_ERROR':
