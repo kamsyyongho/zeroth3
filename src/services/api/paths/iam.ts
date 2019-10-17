@@ -89,7 +89,7 @@ export class IAM {
    * Deletes a user from an organization
    * @param userId
    */
-  async deleteUsers(userId: number): Promise<deleteUserResult> {
+  async deleteUser(userId: number): Promise<deleteUserResult> {
     // make the api call
     const response: ApiResponse<undefined> = await this.apisauce.delete(
       `/iam/users/${userId}`

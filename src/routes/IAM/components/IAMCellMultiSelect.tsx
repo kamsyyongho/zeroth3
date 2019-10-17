@@ -60,7 +60,7 @@ interface IAMCellMultiSelectProps {
 export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
   const { cellData, availableRoles, selectedRoles, parsedRolesById, onRoleCheck } = props
   const { translate } = React.useContext(I18nContext);
-  
+
   const userRoles: User["roles"] = cellData.cell.value;
   const index = cellData.cell.row.index;
   const key = `${index}-roles`;

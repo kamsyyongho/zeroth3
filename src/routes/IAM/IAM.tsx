@@ -8,12 +8,19 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import SendIcon from '@material-ui/icons/Send';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
+import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { deleteUserResult } from '../../services/api/types/iam.types';
 import { Role, User } from '../../types';
 import log from '../../util/log/logger';
 import { IAMTable } from './components/IAMTable';
 import { InviteFormDialog } from './components/InviteFormDialog';
+
+
+export interface CheckedUsersByUserId {
+  [index: number]: boolean
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,7 +40,9 @@ export function IAM() {
   const [roles, setRoles] = React.useState<Role[]>([])
   const [usersLoading, setUsersLoading] = React.useState(true)
   const [rolesLoading, setRolesLoading] = React.useState(true)
+  const [deleteLoading, setDeleteLoading] = React.useState(false)
   const [inviteOpen, setInviteOpen] = React.useState(false);
+  const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
 
   const handleInviteOpen = () => {
     setInviteOpen(true);
@@ -80,6 +89,49 @@ export function IAM() {
     getRoles();
   }, []);
 
+  const handleUserDelete = async () => {
+    //TODO
+    //!
+    //* DISPLAY A CONFIRMATION DIALOG FIRST
+    const usersToDelete: number[] = [];
+    Object.keys(checkedUsers).forEach(userId => {
+      const checked = checkedUsers[Number(userId)]
+      if (checked) {
+        usersToDelete.push(Number(userId));
+      }
+    })
+    setDeleteLoading(true);
+    const deleteUserPromises: Promise<deleteUserResult>[] = [];
+    usersToDelete.forEach(userId => {
+      if (api && api.IAM) {
+        deleteUserPromises.push(api.IAM.deleteUser(userId))
+      } else {
+        return;
+      }
+    })
+    const responseArray = await Promise.all(deleteUserPromises);
+    responseArray.forEach(response => {
+      if (response.kind !== "ok") {
+        //!
+        //TODO
+        //* DISPLAY SOMETHING HERE
+        // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
+        // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
+        log({
+          file: `IAM.tsx`,
+          caller: `handleUserDelete`,
+          value: response,
+          error: true,
+        })
+      } else {
+        //!
+        //TODO
+        //? UPDATE THE USER?
+      }
+    })
+    setDeleteLoading(false);
+  }
+
   const classes = useStyles();
 
   return (
@@ -91,7 +143,13 @@ export function IAM() {
               <Button
                 variant="contained"
                 color="secondary"
-                startIcon={<DeleteIcon />}
+                onClick={handleUserDelete}
+                startIcon={deleteLoading ? <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={"#ffff"}
+                  loading={true}
+                /> : <DeleteIcon />}
               >{translate("common.delete")}</Button>
               <Button
                 variant="contained"
@@ -104,7 +162,7 @@ export function IAM() {
           title={translate("IAM.header")}
         />
         <CardContent className={classes.cardContent} >
-          {usersLoading || rolesLoading ? <BulletList /> : <IAMTable users={users} roles={roles} />}
+          {usersLoading || rolesLoading ? <BulletList /> : <IAMTable users={users} roles={roles} setCheckedUsers={setCheckedUsers} />}
         </CardContent>
         <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
       </Card>

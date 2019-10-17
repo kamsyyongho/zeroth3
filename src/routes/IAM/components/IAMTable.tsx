@@ -7,6 +7,7 @@ import React from 'react'
 import { CellProps, useTable } from 'react-table'
 import { I18nContext } from '../../../hooks/i18n/I18nContext'
 import { Role, User } from "../../../types"
+import { CheckedUsersByUserId } from '../IAM'
 import { IAMCellCheckbox } from './IAMCellCheckbox'
 import { IAMCellMultiSelect } from './IAMCellMultiSelect'
 import { IAMCellSubmitButton } from './IAMCellSubmitButton'
@@ -16,10 +17,7 @@ import { IAMHeaderCheckbox } from './IAMHeaderCheckbox'
 export interface IAMTableProps {
   users: User[]
   roles: Role[]
-}
-
-export interface CheckedEmailsByIndex {
-  [index: number]: boolean
+  setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>
 }
 
 export interface ParsedRolesById {
@@ -30,8 +28,9 @@ export interface SelectedRoleIdsByIndex {
   [index: number]: number[]
 }
 
+
 export function IAMTable(props: IAMTableProps) {
-  const { users, roles } = props;
+  const { users, roles, setCheckedUsers } = props;
 
   // used in the multi-select to quicly access the role by id 
   const parsedRolesById: ParsedRolesById = {}
@@ -39,12 +38,11 @@ export function IAMTable(props: IAMTableProps) {
 
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false)
-  const [checkedEmails, setCheckedEmails] = React.useState<CheckedEmailsByIndex>({});
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
 
-  const handleEmailCheck = (userIndex: number, value: boolean): void => {
-    setCheckedEmails((prevCheckedEmails) => {
-      return { ...prevCheckedEmails, [userIndex]: value }
+  const handleUserCheck = (userId: number, value: boolean): void => {
+    setCheckedUsers((prevCheckedUsers) => {
+      return { ...prevCheckedUsers, [userId]: value }
     })
   }
 
@@ -60,7 +58,7 @@ export function IAMTable(props: IAMTableProps) {
       {
         Header: <IAMHeaderCheckbox onCheck={setAllChecked} />,
         accessor: 'email',
-        Cell: (data: CellProps<User>) => IAMCellCheckbox({ cellData: data, onEmailCheck: handleEmailCheck, allChecked }),
+        Cell: (data: CellProps<User>) => IAMCellCheckbox({ cellData: data, onUserCheck: handleUserCheck, allChecked }),
       },
       {
         Header: `${translate("IAM.roles")}`,

@@ -69,9 +69,9 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
 
   const addRoles = async (rolesToAdd: number[]) => {
     if (api && api.IAM) {
-    setIsAddLoading(true);
+      setIsAddLoading(true);
       const response = await api.IAM.assignRoles(user.id, rolesToAdd);
-      if(response.kind !== "ok"){
+      if (response.kind !== "ok") {
         //!
         //TODO
         //* DISPLAY SOMETHING HERE
@@ -80,7 +80,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
           caller: `addRoles`,
           value: response,
           error: true,
-          })
+        })
       } else {
         //!
         //TODO
@@ -91,45 +91,45 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
   }
 
   const deleteRoles = async (rolesToAdd: number[]) => {
-      setIsDeleteLoading(true);
-      const deleteRolePromises: Promise<deleteRoleResult>[] = [] ;
-      rolesToAdd.forEach(roleId => {
-        if (api && api.IAM){
-          deleteRolePromises.push(api.IAM.deleteRole(user.id, roleId))
-        } else {
-          return;
-        }
-      })
-      const responseArray = await Promise.all(deleteRolePromises);
-      responseArray.forEach(response => {
-        if(response.kind !== "ok"){
-          //!
-          //TODO
-          //* DISPLAY SOMETHING HERE
-          // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
-          // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
-          log({
-            file: `IAMCellSubmitButton.tsx`,
-            caller: `deleteRoles`,
-            value: response,
-            error: true,
-            })
-        } else {
-          //!
-          //TODO
-          //? UPDATE THE USER?
-        }
-      })
-      setIsDeleteLoading(false);
+    setIsDeleteLoading(true);
+    const deleteRolePromises: Promise<deleteRoleResult>[] = [];
+    rolesToAdd.forEach(roleId => {
+      if (api && api.IAM) {
+        deleteRolePromises.push(api.IAM.deleteRole(user.id, roleId))
+      } else {
+        return;
+      }
+    })
+    const responseArray = await Promise.all(deleteRolePromises);
+    responseArray.forEach(response => {
+      if (response.kind !== "ok") {
+        //!
+        //TODO
+        //* DISPLAY SOMETHING HERE
+        // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
+        // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
+        log({
+          file: `IAMCellSubmitButton.tsx`,
+          caller: `deleteRoles`,
+          value: response,
+          error: true,
+        })
+      } else {
+        //!
+        //TODO
+        //? UPDATE THE USER?
+      }
+    })
+    setIsDeleteLoading(false);
   }
 
   const submitRolesChange = async () => {
-    if(!currentSelectedRoleIds) return
-    const {extra, missing} = differencesBetweenSets(initialSet, currentSet);
+    if (!currentSelectedRoleIds) return
+    const { extra, missing } = differencesBetweenSets(initialSet, currentSet);
     const rolesToAdd = Array.from(missing);
     const rolesToDelete = Array.from(extra);
-    if(rolesToAdd.length) addRoles(rolesToAdd);
-    if(rolesToDelete.length) deleteRoles(rolesToDelete);
+    if (rolesToAdd.length) addRoles(rolesToAdd);
+    if (rolesToDelete.length) deleteRoles(rolesToDelete);
   }
 
   return (
@@ -139,7 +139,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
       key={key}
       variant="contained"
       color="primary"
-      startIcon={(isAddLoading || isDeleteLoading) ? 
+      startIcon={(isAddLoading || isDeleteLoading) ?
         <MoonLoader
           sizeUnit={"px"}
           size={15}

@@ -7,26 +7,26 @@ import { User } from '../../../types';
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IAMCellCheckboxProps {
   cellData: CellProps<User>
-  onEmailCheck: (index: number, value: boolean) => void
+  onUserCheck: (index: number, value: boolean) => void
   allChecked: boolean
 }
 
 export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
-  const { cellData, onEmailCheck, allChecked } = props;
+  const { cellData, onUserCheck, allChecked } = props;
   const [isChecked, setIsChecked] = React.useState(false);
 
-  const handleCheck = (index: number, value: boolean) => {
-    onEmailCheck(index, value);
+  const handleCheck = (userId: number, value: boolean) => {
+    onUserCheck(userId, value);
     setIsChecked(value);
   }
+  
   const email: User["email"] = cellData.cell.value;
+  const user: User = cellData.cell.row.original;
   const index = cellData.cell.row.index;
   const key = `${index}-email:${email}`;
 
   React.useEffect(() => {
-    if (allChecked) {
-      handleCheck(index, true)
-    }
+    handleCheck(user.id, allChecked)
   }, [allChecked])
 
   return <FormControlLabel
@@ -36,7 +36,7 @@ export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
         checked={isChecked}
         value="checkedB"
         color="primary"
-        onChange={(event) => handleCheck(index, event.target.checked)}
+        onChange={(event) => handleCheck(user.id, event.target.checked)}
       />
     }
     label={email}
