@@ -1,4 +1,4 @@
-import { Container } from '@material-ui/core';
+import { Container, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -92,7 +92,7 @@ export function IAM() {
     getUsers();
     getRoles();
   }, []);
-  
+
   const usersToDelete: number[] = [];
   Object.keys(checkedUsers).forEach(userId => {
     const checked = checkedUsers[Number(userId)]
@@ -100,7 +100,7 @@ export function IAM() {
       usersToDelete.push(Number(userId));
     }
   })
-  
+
   const handleUserDelete = async () => {
     //TODO
     //!
@@ -139,32 +139,37 @@ export function IAM() {
 
   const classes = useStyles();
 
+  const renderCardHeaderAction = () => (<Grid container spacing={1} >
+    <Grid item >
+      <Button
+        disabled={!usersToDelete.length}
+        variant="contained"
+        color="secondary"
+        onClick={handleUserDelete}
+        startIcon={deleteLoading ? <MoonLoader
+          sizeUnit={"px"}
+          size={15}
+          color={"#ffff"}
+          loading={true}
+        /> : <DeleteIcon />}
+      >{translate("common.delete")}</Button>
+    </Grid>
+    <Grid item >
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleInviteOpen}
+        startIcon={<SendIcon />}
+      >{translate("IAM.invite")}
+      </Button>
+    </Grid>
+  </Grid>)
+
   return (
     <Container maxWidth={false} className={classes.container} >
       <Card >
         <CardHeader
-          action={!(usersLoading || rolesLoading) &&
-            <>
-              <Button
-                disabled={!usersToDelete.length}
-                variant="contained"
-                color="secondary"
-                onClick={handleUserDelete}
-                startIcon={deleteLoading ? <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={"#ffff"}
-                  loading={true}
-                /> : <DeleteIcon />}
-              >{translate("common.delete")}</Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleInviteOpen}
-                startIcon={<SendIcon />}
-              >{translate("IAM.invite")}</Button>
-            </>
-          }
+          action={!(usersLoading || rolesLoading) && renderCardHeaderAction()}
           title={translate("IAM.header")}
         />
         <CardContent className={classes.cardContent} >

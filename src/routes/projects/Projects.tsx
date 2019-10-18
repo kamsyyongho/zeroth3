@@ -1,8 +1,14 @@
-import { Container } from '@material-ui/core';
+import { Container, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 import React from 'react';
+import { BulletList } from 'react-content-loader';
+import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { Project } from '../../types';
@@ -90,17 +96,47 @@ export function Projects() {
 
   const classes = useStyles();
 
-  return (
-    <Container maxWidth={false} className={classes.container} >
-      <ProjectGridList projects={projects} />
+  const renderCardHeaderAction = () => (<Grid container spacing={1} >
+    <Grid item >
+      <Button
+        disabled={false}
+        variant="contained"
+        color="secondary"
+        onClick={() => { }}
+        startIcon={projects.length ? <MoonLoader
+          sizeUnit={"px"}
+          size={15}
+          color={"#ffff"}
+          loading={true}
+        /> : <DeleteIcon />}
+      >
+        {translate("common.delete")}
+      </Button>
+    </Grid>
+    <Grid item >
       <Button
         variant="contained"
         color="primary"
         onClick={handleCreateOpen}
         startIcon={<AddIcon />}
-      >{translate("projects.createProject")}
+      >
+        {translate("projects.createProject")}
       </Button>
-      <CreateProjectDialog open={createOpen} onClose={handleCreateClose} />
+    </Grid>
+  </Grid>)
+
+  return (
+    <Container maxWidth={false} className={classes.container} >
+      <Card>
+        <CardHeader
+          action={!projectsLoading && renderCardHeaderAction()}
+          title={translate("IAM.header")}
+        />
+        <CardContent className={classes.cardContent} >
+          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} />}
+        </CardContent>
+        <CreateProjectDialog open={createOpen} onClose={handleCreateClose} />
+      </Card>
     </Container >
   );
 }
