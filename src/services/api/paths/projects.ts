@@ -10,30 +10,19 @@ import {
   ServerError,
   updateProjectResult
 } from '../types';
+import { ParentApi } from './parent-api';
 
 /**
  * Manages all project requests to the API.
  */
-export class Projects {
-  /**
-   * The underlying apisauce instance which performs the requests.
-   */
-  apisauce: ApisauceInstance;
-
-  /**
-   * The logout method from `keycloakContext`.
-   * - redirects to the login page
-   */
-  logout: () => void = () => {};
-
+export class Projects extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
-   *
    * @param apisauce The apisauce instance.
+   * @param logout The logout method from `keycloakContext`.
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
-    this.apisauce = apisauce;
-    this.logout = logout;
+    super(apisauce, logout);
   }
 
   /**
