@@ -1,10 +1,10 @@
-import { Project } from '../../../types';
-import { GeneralApiProblem } from '../api-problem';
+import { Project, Threshold } from '../../../types';
+import { GeneralApiProblem } from './api-problem.types';
 
 export interface ProjectRequest {
   name: string;
-  thresholdHc: number;
-  thresholdLc: number;
+  thresholdHc: Threshold;
+  thresholdLc: Threshold;
 }
 
 /////////////

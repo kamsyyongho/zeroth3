@@ -1,6 +1,5 @@
 import { Role, User } from '../../../types';
-import { GeneralApiProblem } from '../api-problem';
-
+import { GeneralApiProblem } from './api-problem.types';
 /////////////
 // RESULTS //
 /////////////

@@ -1,13 +1,15 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Role, User } from '../../../types';
-import { getGeneralApiProblem, ProblemKind } from '../api-problem';
+import { getGeneralApiProblem } from '../api-problem';
 import {
   assignRolesResult,
   deleteRoleResult,
   deleteUserResult,
   getRolesResult,
   getUserResult,
-  inviteUserResult
+  inviteUserResult,
+  ProblemKind,
+  ServerError
 } from '../types';
 
 /**
@@ -40,7 +42,9 @@ export class IAM {
    */
   async getUsers(): Promise<getUserResult> {
     // make the api call
-    const response: ApiResponse<User[]> = await this.apisauce.get(`/iam/users`);
+    const response: ApiResponse<User[], ServerError> = await this.apisauce.get(
+      `/iam/users`
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -65,7 +69,9 @@ export class IAM {
    */
   async getRoles(): Promise<getRolesResult> {
     // make the api call
-    const response: ApiResponse<Role[]> = await this.apisauce.get(`/iam/roles`);
+    const response: ApiResponse<Role[], ServerError> = await this.apisauce.get(
+      `/iam/roles`
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -91,9 +97,10 @@ export class IAM {
    */
   async deleteUser(userId: number): Promise<deleteUserResult> {
     // make the api call
-    const response: ApiResponse<undefined> = await this.apisauce.delete(
-      `/iam/users/${userId}`
-    );
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/iam/users/${userId}`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -121,7 +128,7 @@ export class IAM {
       items: roleIds
     };
     // make the api call
-    const response: ApiResponse<User[]> = await this.apisauce.post(
+    const response: ApiResponse<User[], ServerError> = await this.apisauce.post(
       `/iam/users/${userId}/roles`,
       request
     );
@@ -151,9 +158,10 @@ export class IAM {
    */
   async deleteRole(userId: number, roleId: number): Promise<deleteRoleResult> {
     // make the api call
-    const response: ApiResponse<undefined> = await this.apisauce.delete(
-      `/iam/users/${userId}/roles/${roleId}`
-    );
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/iam/users/${userId}/roles/${roleId}`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -177,10 +185,10 @@ export class IAM {
       email
     };
     // make the api call
-    const response: ApiResponse<undefined> = await this.apisauce.post(
-      `/iam/users/invite`,
-      request
-    );
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.post(`/iam/users/invite`, request);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
