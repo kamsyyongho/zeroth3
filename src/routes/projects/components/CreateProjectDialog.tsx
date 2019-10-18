@@ -46,8 +46,8 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
 
   const formSchema = yup.object({
     name: yup.string().min(3).max(50).required(`${translate("forms.validation.required")}`).trim(),
-    thresholdLc: yup.number().min(1).max(100).required(`${translate("forms.validation.required")}`),
-    thresholdHc: yup.number().min(1).max(100).required(`${translate("forms.validation.required")}`),
+    thresholdLc: yup.number().min(1).max(100).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lcLessHc')}`).required(`${translate("forms.validation.required")}`),
+    thresholdHc: yup.number().min(1).max(100).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.hcGreaterLc')}`).required(`${translate("forms.validation.required")}`),
   })
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {

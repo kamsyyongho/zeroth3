@@ -23,7 +23,11 @@ export const en: ResourceLanguage = {
     forms: {
       validation: {
         required: 'Required',
-        email: 'Email is not valid'
+        email: 'Email is not valid',
+        hcGreaterLc:
+          'High confidence threshold must be GREATER than Low confidence threshold',
+        lcLessHc:
+          'Low confidence threshold must be LESS than High confidence threshold'
       },
       email: 'Email',
       name: 'Name',
