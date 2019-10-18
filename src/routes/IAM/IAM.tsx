@@ -92,18 +92,19 @@ export function IAM() {
     getUsers();
     getRoles();
   }, []);
-
+  
+  const usersToDelete: number[] = [];
+  Object.keys(checkedUsers).forEach(userId => {
+    const checked = checkedUsers[Number(userId)]
+    if (checked) {
+      usersToDelete.push(Number(userId));
+    }
+  })
+  
   const handleUserDelete = async () => {
     //TODO
     //!
     //* DISPLAY A CONFIRMATION DIALOG FIRST
-    const usersToDelete: number[] = [];
-    Object.keys(checkedUsers).forEach(userId => {
-      const checked = checkedUsers[Number(userId)]
-      if (checked) {
-        usersToDelete.push(Number(userId));
-      }
-    })
     setDeleteLoading(true);
     const deleteUserPromises: Promise<deleteUserResult>[] = [];
     usersToDelete.forEach(userId => {
@@ -145,6 +146,7 @@ export function IAM() {
           action={!(usersLoading || rolesLoading) &&
             <>
               <Button
+                disabled={!usersToDelete.length}
                 variant="contained"
                 color="secondary"
                 onClick={handleUserDelete}
