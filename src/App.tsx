@@ -7,9 +7,12 @@ import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import RootProvider from './hooks/Rootprovider';
+import { useSnackbar } from './hooks/snackbar/useSnackbar';
 import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
+import { Projects } from './routes/projects/Projects';
+import { AppSnackbar } from './routes/shared/AppSnackbar';
 import Header from './routes/shared/header/Header';
 import { PATHS } from './types';
 
@@ -19,6 +22,7 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
+  const snackbar = useSnackbar();
 
   useEffect(() => {
     initKeycloak();
@@ -56,11 +60,13 @@ function App() {
   }
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n} snackbar={snackbar} >
       <Router history={history}>
         <Header />
+        <AppSnackbar />
         <Route exact path={PATHS.home.to} component={Home} />
         <Route path={PATHS.IAM.to} component={IAM} />
+        <Route path={PATHS.projects.to} component={Projects} />
       </Router>
     </RootProvider>
   );

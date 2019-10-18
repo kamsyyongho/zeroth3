@@ -3,12 +3,14 @@ import { Api } from '../services/api/api';
 import { ApiContext } from './api/ApiContext';
 import { I18nContext, ParsedI18n } from './i18n/I18nContext';
 import { KeycloakContext, ParsedKeycloak } from "./keycloak/KeycloakContext";
+import { ParsedSnackbarContext, SnackbarContext } from './snackbar/SnackbarContext';
 
 interface RootProviderProps {
   children: React.ReactNode
+  api: Api
   i18n: ParsedI18n
   keycloak: ParsedKeycloak
-  api: Api
+  snackbar: ParsedSnackbarContext
 }
 
 /**
@@ -20,7 +22,9 @@ export default function RootProvider(props: RootProviderProps) {
     <I18nContext.Provider value={props.i18n}>
       <KeycloakContext.Provider value={props.keycloak}>
         <ApiContext.Provider value={props.api}>
-          {props.children}
+          <SnackbarContext.Provider value={props.snackbar}>
+            {props.children}
+          </SnackbarContext.Provider>
         </ApiContext.Provider>
       </KeycloakContext.Provider>
     </I18nContext.Provider>
