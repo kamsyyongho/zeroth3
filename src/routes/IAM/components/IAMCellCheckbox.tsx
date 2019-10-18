@@ -19,7 +19,7 @@ export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
     onUserCheck(userId, value);
     setIsChecked(value);
   }
-  
+
   const email: User["email"] = cellData.cell.value;
   const user: User = cellData.cell.row.original;
   const index = cellData.cell.row.index;
@@ -35,7 +35,7 @@ export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
       <Checkbox
         checked={isChecked}
         value="checkedB"
-        color="primary"
+        color="secondary"
         onChange={(event) => handleCheck(user.id, event.target.checked)}
       />
     }

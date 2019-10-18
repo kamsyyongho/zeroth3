@@ -1,11 +1,13 @@
-import { Grid } from '@material-ui/core';
+import { CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
+import Checkbox from '@material-ui/core/Checkbox';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import { Project } from '../../../types';
+import log from '../../../util/log/logger';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -50,11 +52,24 @@ export function ProjectGridList(props: ProjectGridListProps) {
       {projects.map(project => (
         <Grid item md={3} key={project.id}>
           <Card className={classes.card}>
+            <CardHeader
+              title={project.name}
+              action={
+                <Checkbox
+                  checked={true}
+                  value="checkedB"
+                  color="secondary"
+                  onChange={(event) => {
+                    log({
+                      file: `ProjectGridList.tsx`,
+                      caller: `Checkbox onChange`,
+                      value: event,
+                    })
+                  }}
+                />}
+            />
             <CardActionArea>
               <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  {project.name}
-                </Typography>
                 <Typography gutterBottom color="textPrimary">
                   {project.apiKey}
                 </Typography>
