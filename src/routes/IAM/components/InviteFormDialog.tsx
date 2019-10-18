@@ -18,6 +18,8 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
+import { SnackbarContext } from '../../../hooks/snackbar/SnackbarContext';
+import { SnackbarError } from '../../../hooks/snackbar/useSnackbar';
 
 interface InviteFormDialogProps {
   open: boolean
@@ -41,10 +43,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export function InviteFormDialog(props: InviteFormDialogProps) {
   const { open, onClose } = props;
+  const { openSnackbar } = React.useContext(SnackbarContext);
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false)
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
 
   const classes = useStyles();
@@ -54,20 +56,19 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
 
 
   const formSchema = yup.object({
-    email: yup.string().email(`${translate("forms.validation.email")}`).required(`${translate("forms.validation.required")}`)
+    email: yup.string().email(`${translate("forms.validation.email")}`).required(`${translate("forms.validation.required")}`).trim()
   })
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     email: "",
   };
 
-  const handleOpenSnackbar = () => setSnackbarOpen(true);
-  const handleCloseSnackbar = () => setSnackbarOpen(false);
-
   const handleSubmit = async (values: FormValues) => {
     if (api && api.IAM) {
       setLoading(true);
-      const response = await api.IAM.inviteUser(values.email);
+      setIsError(false);
+      const response = await api.IAM.inviteUser(values.email.trim());
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         //!
         //TODO
@@ -77,7 +78,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           caller: `handleSubmit - SUCCESS`,
           value: response,
         })
-        setIsError(false);
+        snackbarError = undefined;
         onClose();
       } else {
         log({
@@ -86,15 +87,19 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           value: response,
           important: true,
         })
+        snackbarError.isError = true;
         setIsError(true);
+        const {serverError} = response;
+        if (serverError){
+          snackbarError.errorText = serverError.message || "";
+        }
       }
-      handleOpenSnackbar();
+      openSnackbar(snackbarError);
       setLoading(false);
     }
   }
 
   return (
-    <>
       <Dialog
         fullScreen={fullScreen}
         open={open}
@@ -114,7 +119,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
                 <Button onClick={onClose} color="primary">
                   {translate("common.cancel")}
                 </Button>
-                <Button onClick={formikProps.submitForm} color="primary"
+                <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
                   startIcon={loading ?
                     <MoonLoader
                       sizeUnit={"px"}
@@ -130,23 +135,5 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           )}
         </Formik>
       </Dialog>
-      <Snackbar
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        open={snackbarOpen}
-        onClose={handleCloseSnackbar}
-        autoHideDuration={2500}
-        aria-describedby="client-snackbar"
-        message={
-          <span id="client-snackbar" className={classes.message}>
-            {isError ? <ErrorIcon className={clsx(classes.icon, classes.iconVariant)} /> :
-              <CheckCircleIcon className={clsx(classes.icon, classes.iconVariant)} />}
-            {translate(isError ? 'common.error' : 'common.success')}
-          </span>
-        }
-      />
-    </>
   );
 }

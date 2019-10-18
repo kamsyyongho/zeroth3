@@ -44,6 +44,10 @@ export function IAM() {
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
 
+  //!
+  //TODO
+  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
+
   const handleInviteOpen = () => {
     setInviteOpen(true);
   };

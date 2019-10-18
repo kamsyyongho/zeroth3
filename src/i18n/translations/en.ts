@@ -12,7 +12,8 @@ export const en: ResourceLanguage = {
     },
     path: {
       home: 'Home',
-      IAM: 'IAM'
+      IAM: 'IAM',
+      projects: 'projects'
     },
     menu: {
       login: 'Login',
@@ -24,7 +25,10 @@ export const en: ResourceLanguage = {
         required: 'Required',
         email: 'Email is not valid'
       },
-      email: 'Email'
+      email: 'Email',
+      name: 'Name',
+      thresholdHc: 'High confidence threshold',
+      thresholdLc: 'Low confidence threshold'
     },
     IAM: {
       user: 'User',
@@ -32,6 +36,10 @@ export const en: ResourceLanguage = {
       invite: 'Invite',
       header: 'Identity and Access Management',
       inviteUser: 'Invite user'
+    },
+    projects: {
+      createProject: 'Create project',
+      create: 'Create'
     }
   }
 };
