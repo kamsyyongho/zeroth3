@@ -84,7 +84,8 @@ export class Api {
     log({
       file: 'api.ts',
       caller: 'API - responseMonitor',
-      value: response
+      value: response,
+      api: true
     });
   }
 
