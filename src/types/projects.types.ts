@@ -3,7 +3,14 @@ export interface Project {
   apiSecret: string;
   id: number;
   name: string;
-  thresholdHc: number;
-  thresholdLc: number;
+  thresholdHc: Threshold;
+  thresholdLc: Threshold;
   validFrom: Date;
 }
+
+/**
+ * The confidence threshold values
+ * - `1 >=` threshold `<= 100`
+ * - `thresholdHc` `>` `thresholdLc`
+ */
+export type Threshold = number;

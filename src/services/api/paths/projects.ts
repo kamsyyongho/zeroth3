@@ -1,11 +1,13 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Project } from '../../../types';
-import { getGeneralApiProblem, ProblemKind } from '../api-problem';
+import { getGeneralApiProblem } from '../api-problem';
 import {
   deleteProjectResult,
   getProjectResult,
   postProjectResult,
+  ProblemKind,
   ProjectRequest,
+  ServerError,
   updateProjectResult
 } from '../types';
 
@@ -39,9 +41,10 @@ export class Projects {
    */
   async getProjects(): Promise<getProjectResult> {
     // make the api call
-    const response: ApiResponse<Project[]> = await this.apisauce.get<Project[]>(
-      `/projects`
-    );
+    const response: ApiResponse<
+      Project[],
+      ServerError
+    > = await this.apisauce.get(`/projects`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -67,9 +70,10 @@ export class Projects {
    */
   async deleteProject(projectId: number): Promise<deleteProjectResult> {
     // make the api call
-    const response: ApiResponse<undefined> = await this.apisauce.delete(
-      `/projects/${projectId}`
-    );
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/projects/${projectId}`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -101,10 +105,10 @@ export class Projects {
       thresholdLc
     };
     // make the api call
-    const response: ApiResponse<Project> = await this.apisauce.post(
-      `/projects`,
-      request
-    );
+    const response: ApiResponse<
+      Project,
+      ServerError
+    > = await this.apisauce.post(`/projects`, request);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -144,7 +148,7 @@ export class Projects {
       thresholdLc
     };
     // make the api call
-    const response: ApiResponse<Project> = await this.apisauce.put(
+    const response: ApiResponse<Project, ServerError> = await this.apisauce.put(
       `/projects/${projectId}`,
       request
     );
@@ -173,9 +177,10 @@ export class Projects {
    */
   async updateSecret(projectId: number): Promise<postProjectResult> {
     // make the api call
-    const response: ApiResponse<Project> = await this.apisauce.post(
-      `/projects/${projectId}/secret`
-    );
+    const response: ApiResponse<
+      Project,
+      ServerError
+    > = await this.apisauce.post(`/projects/${projectId}/secret`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
