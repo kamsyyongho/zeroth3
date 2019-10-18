@@ -1,4 +1,3 @@
-import { Snackbar } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -6,22 +5,20 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import SendIcon from '@material-ui/icons/Send';
-import clsx from 'clsx';
+import AddIcon from '@material-ui/icons/Add';
 import { Field, Form, Formik } from 'formik';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import log from '../../../util/log/logger';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
 import { SnackbarContext } from '../../../hooks/snackbar/SnackbarContext';
 import { SnackbarError } from '../../../hooks/snackbar/useSnackbar';
+import log from '../../../util/log/logger';
+import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
+import { TextFormField } from '../../shared/form-fields/TextFormField';
 
-interface InviteFormDialogProps {
+interface CreateProjectDialogProps {
   open: boolean
   onClose: () => void
 }
@@ -41,10 +38,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 
-export function InviteFormDialog(props: InviteFormDialogProps) {
+export function CreateProjectDialog(props: CreateProjectDialogProps) {
   const { open, onClose } = props;
-  const { openSnackbar } = React.useContext(SnackbarContext);
   const { translate } = React.useContext(I18nContext);
+  const { openSnackbar } = React.useContext(SnackbarContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
@@ -54,27 +51,40 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
+  
+  const formSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = [];
+  for(let i=1; i<=100; i++){
+    tempFormSelectOptions.push({ label: `${i}`, value: i });
+  }
+  return tempFormSelectOptions
+  }, [])
 
   const formSchema = yup.object({
-    email: yup.string().email(`${translate("forms.validation.email")}`).required(`${translate("forms.validation.required")}`).trim()
+    name: yup.string().min(3).max(50).required(`${translate("forms.validation.required")}`).trim(),
+    thresholdLc: yup.number().min(1).max(100).required(`${translate("forms.validation.required")}`),
+    thresholdHc: yup.number().min(1).max(100).required(`${translate("forms.validation.required")}`),
   })
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
-    email: "",
+    name: "",
+    thresholdLc: 1,
+    thresholdHc: 100,
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.IAM) {
+    if (api && api.projects) {
       setLoading(true);
       setIsError(false);
-      const response = await api.IAM.inviteUser(values.email.trim());
+      const { name, thresholdHc, thresholdLc } = values;
+      const response = await api.projects.postProject(name, thresholdHc, thresholdLc);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         //!
         //TODO
         // show completed message
         log({
-          file: `InviteFormDialog.tsx`,
+          file: `CreateProjectDialog.tsx`,
           caller: `handleSubmit - SUCCESS`,
           value: response,
         })
@@ -82,8 +92,8 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
         onClose();
       } else {
         log({
-          file: `InviteFormDialog.tsx`,
-          caller: `handleSubmit - failed send invite`,
+          file: `CreateProjectDialog.tsx`,
+          caller: `handleSubmit - failed create project`,
           value: response,
           important: true,
         })
@@ -106,13 +116,17 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
         onClose={onClose}
         aria-labelledby="responsive-dialog-title"
       >
-        <DialogTitle id="responsive-dialog-title">{translate("IAM.inviteUser")}</DialogTitle>
+        <DialogTitle id="responsive-dialog-title">{translate("projects.createProject")}</DialogTitle>
         <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
           {(formikProps) => (
             <>
               <DialogContent>
                 <Form>
-                  <Field name='email' component={TextFormField} label={translate("forms.email")} errorOverride={isError} />
+                  <Field name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
+                  <Field name='thresholdLc' component={SelectFormField} 
+                  options={formSelectOptions} label={translate("forms.thresholdLc")} errorOverride={isError} />
+                  <Field name='thresholdHc' component={SelectFormField} 
+                  options={formSelectOptions} label={translate("forms.thresholdHc")} errorOverride={isError} />
                 </Form>
               </DialogContent>
               <DialogActions>
@@ -126,9 +140,9 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
                       size={15}
                       color={theme.palette.primary.main}
                       loading={true}
-                    /> : <SendIcon />}
+                    /> : <AddIcon />}
                 >
-                  {translate("IAM.invite")}
+                  {translate("projects.create")}
                 </Button>
               </DialogActions>
             </>

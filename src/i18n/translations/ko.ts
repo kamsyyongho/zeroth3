@@ -12,7 +12,8 @@ export const ko: ResourceLanguage = {
     },
     path: {
       home: '홈',
-      IAM: 'IAM'
+      IAM: 'IAM',
+      projects: 'projects'
     },
     menu: {
       login: '로그인',
@@ -24,7 +25,10 @@ export const ko: ResourceLanguage = {
         required: 'Required',
         email: 'Email is not valid'
       },
-      email: '이메일'
+      email: '이메일',
+      name: '이름',
+      thresholdHc: 'High confidence threshold',
+      thresholdLc: 'Low confidence threshold'
     },
     IAM: {
       user: '사용자',
@@ -32,6 +36,10 @@ export const ko: ResourceLanguage = {
       invite: '초대',
       header: 'Identity and Access Management',
       inviteUser: 'Invite user'
+    },
+    projects: {
+      createProject: 'Create project',
+      create: 'Create'
     }
   }
 };

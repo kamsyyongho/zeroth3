@@ -4,6 +4,7 @@ import log from '../../util/log/logger';
 import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './paths/iam';
+import { Projects } from './paths/projects';
 
 /**
  * Main class that manages all requests to the API.
@@ -36,6 +37,11 @@ export class Api {
   IAM: IAM | undefined;
 
   /**
+   * Subclass that manages project requests.
+   */
+  projects: Projects | undefined;
+
+  /**
    * Creates the api.
    *
    * - Be as quick as possible in here.
@@ -66,6 +72,7 @@ export class Api {
       this.apisauce.addMonitor(this.responseMonitor);
     }
     this.IAM = new IAM(this.apisauce, this.logout);
+    this.projects = new Projects(this.apisauce, this.logout);
     return true;
   }
 
