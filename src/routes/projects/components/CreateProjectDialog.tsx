@@ -3,7 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import { Field, Form, Formik } from 'formik';
@@ -23,21 +23,6 @@ interface CreateProjectDialogProps {
   onClose: () => void
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
-  icon: {
-    fontSize: 20,
-  },
-  iconVariant: {
-    opacity: 0.9,
-    marginRight: theme.spacing(1),
-  },
-  message: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-}));
-
-
 export function CreateProjectDialog(props: CreateProjectDialogProps) {
   const { open, onClose } = props;
   const { translate } = React.useContext(I18nContext);
@@ -46,18 +31,17 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
 
-  const classes = useStyles();
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  
+
   const formSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = [];
-  for(let i=1; i<=100; i++){
-    tempFormSelectOptions.push({ label: `${i}`, value: i });
-  }
-  return tempFormSelectOptions
+    for (let i = 1; i <= 100; i++) {
+      tempFormSelectOptions.push({ label: `${i}`, value: i });
+    }
+    return tempFormSelectOptions
   }, [])
 
   const formSchema = yup.object({
@@ -99,8 +83,8 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
         })
         snackbarError.isError = true;
         setIsError(true);
-        const {serverError} = response;
-        if (serverError){
+        const { serverError } = response;
+        if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
       }
@@ -110,44 +94,44 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
   }
 
   return (
-      <Dialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={onClose}
-        aria-labelledby="responsive-dialog-title"
-      >
-        <DialogTitle id="responsive-dialog-title">{translate("projects.createProject")}</DialogTitle>
-        <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
-          {(formikProps) => (
-            <>
-              <DialogContent>
-                <Form>
-                  <Field name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                  <Field name='thresholdLc' component={SelectFormField} 
+    <Dialog
+      fullScreen={fullScreen}
+      open={open}
+      onClose={onClose}
+      aria-labelledby="responsive-dialog-title"
+    >
+      <DialogTitle id="responsive-dialog-title">{translate("projects.createProject")}</DialogTitle>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
+        {(formikProps) => (
+          <>
+            <DialogContent>
+              <Form>
+                <Field name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
+                <Field name='thresholdLc' component={SelectFormField}
                   options={formSelectOptions} label={translate("forms.thresholdLc")} errorOverride={isError} />
-                  <Field name='thresholdHc' component={SelectFormField} 
+                <Field name='thresholdHc' component={SelectFormField}
                   options={formSelectOptions} label={translate("forms.thresholdHc")} errorOverride={isError} />
-                </Form>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={onClose} color="primary">
-                  {translate("common.cancel")}
-                </Button>
-                <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
-                  startIcon={loading ?
-                    <MoonLoader
-                      sizeUnit={"px"}
-                      size={15}
-                      color={theme.palette.primary.main}
-                      loading={true}
-                    /> : <AddIcon />}
-                >
-                  {translate("projects.create")}
-                </Button>
-              </DialogActions>
-            </>
-          )}
-        </Formik>
-      </Dialog>
+              </Form>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onClose} color="primary">
+                {translate("common.cancel")}
+              </Button>
+              <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
+                startIcon={loading ?
+                  <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                  /> : <AddIcon />}
+              >
+                {translate("projects.create")}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Formik>
+    </Dialog>
   );
 }
