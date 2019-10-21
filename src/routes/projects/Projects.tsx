@@ -6,14 +6,17 @@ import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { ServerError } from '../../services/api/types';
 import { deleteProjectResult } from '../../services/api/types/projects.types';
 import { Project } from '../../types';
 import log from '../../util/log/logger';
+import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { CreateProjectDialog } from './components/CreateProjectDialog';
 import { ProjectGridList } from './components/ProjectGridList';
 
@@ -35,10 +38,12 @@ const useStyles = makeStyles((theme: Theme) =>
 export function Projects() {
   const api = React.useContext(ApiContext)
   const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
 
   const handleCreateOpen = () => {
@@ -82,11 +87,40 @@ export function Projects() {
     }
   })
 
+  const confirmDelete = () => setConfirmationOpen(true);
+  const closeConfirmation = () => setConfirmationOpen(false);
+
+  /**
+   * remove the deleted projects from all lists
+   */
+  const handleDeleteSuccess = () => {
+    const projectsCopy = projects.slice();
+    for (let i = 0; i < projectsCopy.length; i++) {
+      console.log("i", i);
+      console.log("project", projectsCopy);
+      console.log("projectsCopy", projectsCopy);
+      const project = projects[i];
+      if (projectsToDelete.includes(project.id)) {
+        projectsCopy.splice(i, 1);
+      }
+    }
+    projectsToDelete.forEach(projectId => {
+      delete checkedProjects[projectId];
+    });
+    console.log("projectsToDelete", projectsCopy);
+    setProjects(projectsCopy);
+  }
+
+  const updateProjectListAfterCreate = (project: Project) => {
+    setProjects(prevProjects => {
+      prevProjects.push(project);
+      return prevProjects
+    })
+  }
+
   const handleProjectDelete = async () => {
-    //TODO
-    //!
-    //* DISPLAY A CONFIRMATION DIALOG FIRST
     setDeleteLoading(true);
+    closeConfirmation();
     const deleteProjectPromises: Promise<deleteProjectResult>[] = [];
     projectsToDelete.forEach(projectId => {
       if (api && api.projects) {
@@ -95,26 +129,30 @@ export function Projects() {
         return;
       }
     })
+    let serverError: ServerError | undefined;
     const responseArray = await Promise.all(deleteProjectPromises);
     responseArray.forEach(response => {
       if (response.kind !== "ok") {
-        //!
-        //TODO
-        //* DISPLAY SOMETHING HERE
-        // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
-        // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
         log({
-          file: `IAM.tsx`,
-          caller: `handleUserDelete`,
+          file: `Projects.tsx`,
+          caller: `handleProjectDelete - Error:`,
           value: response,
           error: true,
         })
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error')
+        if (serverError && serverError.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: 'error' });
       } else {
-        //!
-        //TODO
-        //? UPDATE THE USER?
+        enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });
       }
     })
+    // update the project list
+    if (!serverError) {
+      handleDeleteSuccess();
+    }
     setDeleteLoading(false);
   }
 
@@ -127,7 +165,7 @@ export function Projects() {
         disabled={!projectsToDelete.length}
         variant="contained"
         color="secondary"
-        onClick={handleProjectDelete}
+        onClick={confirmDelete}
         startIcon={deleteLoading ? <MoonLoader
           sizeUnit={"px"}
           size={15}
@@ -135,7 +173,7 @@ export function Projects() {
           loading={true}
         /> : <DeleteIcon />}
       >
-        {translate("common.delete")}
+        {translate('common.delete')}
       </Button>
     </Grid>
     <Grid item >
@@ -155,12 +193,20 @@ export function Projects() {
       <Card>
         <CardHeader
           action={!projectsLoading && renderCardHeaderAction()}
-          title={translate("IAM.header")}
+          title={translate("projects.header")}
         />
         <CardContent className={classes.cardContent} >
           {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} checkedProjects={checkedProjects} setCheckedProjects={setCheckedProjects} />}
         </CardContent>
-        <CreateProjectDialog open={createOpen} onClose={handleCreateClose} />
+        <CreateProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={updateProjectListAfterCreate} />
+        <ConfirmationDialog
+          destructive
+          titleText={`${translate('projects.deleteProject', { count: projectsToDelete.length })}?`}
+          submitText={translate('common.delete')}
+          open={confirmationOpen}
+          onSubmit={handleProjectDelete}
+          onCancel={closeConfirmation}
+        />
       </Card>
     </Container >
   );

@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const ko: ResourceLanguage = {
   translation: {
     common: {
+      okay: 'Okay',
       delete: '삭제',
       submit: '제출',
       cancel: '취소',
@@ -43,10 +44,14 @@ export const ko: ResourceLanguage = {
       roles: '역할',
       invite: '초대',
       header: 'Identity and Access Management',
-      inviteUser: 'Invite user'
+      inviteUser: 'Invite user',
+      deleteUser: 'Delete user',
+      deleteUser_plural: 'Delete {{count}} users',
     },
     projects: {
       createProject: 'Create project',
+      deleteProject: 'Delete project',
+      deleteProject_plural: 'Delete {{count}} projects',
       create: 'Create',
       header: 'Project Management'
     }

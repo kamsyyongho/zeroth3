@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const en: ResourceLanguage = {
   translation: {
     common: {
+      okay: 'Okay',
       delete: 'Delete',
       submit: 'Submit',
       cancel: 'Cancel',
@@ -43,10 +44,14 @@ export const en: ResourceLanguage = {
       roles: 'Roles',
       invite: 'Invite',
       header: 'Identity and Access Management',
-      inviteUser: 'Invite user'
+      inviteUser: 'Invite user',
+      deleteUser: 'Delete user',
+      deleteUser_plural: 'Delete {{count}} users',
     },
     projects: {
       createProject: 'Create project',
+      deleteProject: 'Delete project',
+      deleteProject_plural: 'Delete {{count}} projects',
       create: 'Create',
       header: 'Project Management'
     }

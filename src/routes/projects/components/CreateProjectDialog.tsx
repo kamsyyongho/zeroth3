@@ -73,14 +73,6 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
       const response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
-        //!
-        //TODO
-        // show completed message
-        log({
-          file: `CreateProjectDialog.tsx`,
-          caller: `handleSubmit - SUCCESS`,
-          value: response,
-        })
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.project)

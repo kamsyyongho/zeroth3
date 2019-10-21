@@ -51,16 +51,8 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
       const response = await api.IAM.inviteUser(values.email.trim());
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
-        //!
-        //TODO
-        // show completed message
-        log({
-          file: `InviteFormDialog.tsx`,
-          caller: `handleSubmit - SUCCESS`,
-          value: response,
-        })
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), {variant: 'success'} );
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onClose();
       } else {
         log({
@@ -76,7 +68,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, {variant: 'error'} );
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   }

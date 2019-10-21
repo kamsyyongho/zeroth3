@@ -6,14 +6,17 @@ import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SendIcon from '@material-ui/icons/Send';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { ServerError } from '../../services/api/types';
 import { deleteUserResult } from '../../services/api/types/iam.types';
 import { Role, User } from '../../types';
 import log from '../../util/log/logger';
+import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { IAMTable } from './components/IAMTable';
 import { InviteFormDialog } from './components/InviteFormDialog';
 
@@ -36,11 +39,13 @@ const useStyles = makeStyles((theme: Theme) =>
 export function IAM() {
   const api = React.useContext(ApiContext)
   const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = React.useState<User[]>([])
   const [roles, setRoles] = React.useState<Role[]>([])
   const [usersLoading, setUsersLoading] = React.useState(true)
   const [rolesLoading, setRolesLoading] = React.useState(true)
   const [deleteLoading, setDeleteLoading] = React.useState(false)
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
 
@@ -101,11 +106,29 @@ export function IAM() {
     }
   })
 
+  const confirmDelete = () => setConfirmationOpen(true);
+  const closeConfirmation = () => setConfirmationOpen(false);
+
+  /**
+   * remove the deleted users from all lists
+   */
+  const handleDeleteSuccess = () => {
+    const usersCopy = users.slice();
+    for (let i = 0; i < usersCopy.length; i++) {
+      const user = users[i];
+      if (usersToDelete.includes(user.id)) {
+        usersCopy.splice(i, 1);
+      }
+    }
+    usersToDelete.forEach(userId => {
+      delete checkedUsers[userId];
+    });
+    setUsers(usersCopy);
+  }
+
   const handleUserDelete = async () => {
-    //TODO
-    //!
-    //* DISPLAY A CONFIRMATION DIALOG FIRST
     setDeleteLoading(true);
+    closeConfirmation();
     const deleteUserPromises: Promise<deleteUserResult>[] = [];
     usersToDelete.forEach(userId => {
       if (api && api.IAM) {
@@ -114,6 +137,7 @@ export function IAM() {
         return;
       }
     })
+    let serverError: ServerError | undefined;
     const responseArray = await Promise.all(deleteUserPromises);
     responseArray.forEach(response => {
       if (response.kind !== "ok") {
@@ -124,16 +148,24 @@ export function IAM() {
         // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
         log({
           file: `IAM.tsx`,
-          caller: `handleUserDelete`,
+          caller: `handleUserDelete - Error:`,
           value: response,
           error: true,
         })
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error')
+        if (serverError && serverError.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: 'error' });
       } else {
-        //!
-        //TODO
-        //? UPDATE THE USER?
+        enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });
       }
     })
+    // update the user list
+    if (!serverError) {
+      handleDeleteSuccess();
+    }
     setDeleteLoading(false);
   }
 
@@ -145,14 +177,16 @@ export function IAM() {
         disabled={!usersToDelete.length}
         variant="contained"
         color="secondary"
-        onClick={handleUserDelete}
+        onClick={confirmDelete}
         startIcon={deleteLoading ? <MoonLoader
           sizeUnit={"px"}
           size={15}
           color={"#ffff"}
           loading={true}
         /> : <DeleteIcon />}
-      >{translate("common.delete")}</Button>
+      >
+        {translate('common.delete')}
+      </Button>
     </Grid>
     <Grid item >
       <Button
@@ -176,6 +210,14 @@ export function IAM() {
           {usersLoading || rolesLoading ? <BulletList /> : <IAMTable users={users} roles={roles} setCheckedUsers={setCheckedUsers} />}
         </CardContent>
         <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
+        <ConfirmationDialog
+          destructive
+          titleText={`${translate('IAM.deleteUser', { count: usersToDelete.length })}?`}
+          submitText={translate('common.delete')}
+          open={confirmationOpen}
+          onSubmit={handleUserDelete}
+          onCancel={closeConfirmation}
+        />
       </Card>
     </Container >
   );
