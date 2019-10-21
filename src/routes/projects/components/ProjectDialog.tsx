@@ -14,6 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { postProjectResult, updateProjectResult } from '../../../services/api/types';
 import { Project, SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
@@ -21,14 +22,16 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 
 
-interface CreateProjectDialogProps {
+interface ProjectDialogProps {
   open: boolean
   onClose: () => void
-  onSuccess: (newProject: Project) => void
+  onSuccess: (project: Project, isEdit?: boolean) => void
+  projectToEdit?: Project
 }
 
-export function CreateProjectDialog(props: CreateProjectDialogProps) {
-  const { open, onClose, onSuccess } = props;
+export function ProjectDialog(props: ProjectDialogProps) {
+  const { open, onClose, onSuccess, projectToEdit } = props;
+  const isEdit = !!projectToEdit;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
@@ -59,27 +62,35 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
     thresholdHc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).required(requiredTranslationText),
   })
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     thresholdLc: VALIDATION.PROJECT.threshold.min,
     thresholdHc: VALIDATION.PROJECT.threshold.max,
   };
+  if (projectToEdit) {
+    initialValues = { ...initialValues, name: projectToEdit.name, thresholdLc: projectToEdit.thresholdLc, thresholdHc: projectToEdit.thresholdHc };
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.projects) {
       setLoading(true);
       setIsError(false);
       const { name, thresholdHc, thresholdLc } = values;
-      const response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
+      let response: updateProjectResult | postProjectResult;
+      if (isEdit && projectToEdit) {
+        response = await api.projects.updateProject(name.trim(), thresholdHc, thresholdLc, projectToEdit.id);
+      } else {
+        response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
+      }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.project)
+        onSuccess(response.project, isEdit)
         onClose();
       } else {
         log({
-          file: `CreateProjectDialog.tsx`,
+          file: `ProjectDialog.tsx`,
           caller: `handleSubmit - failed create project`,
           value: response,
           important: true,
@@ -103,7 +114,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate("projects.createProject")}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate(isEdit ? "projects.editProject" : "projects.createProject")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
@@ -129,7 +140,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
                     loading={true}
                   /> : <AddIcon />}
               >
-                {translate("projects.create")}
+                {translate(isEdit ? "common.edit" : "common.create")}
               </Button>
             </DialogActions>
           </>

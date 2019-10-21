@@ -17,8 +17,9 @@ import { deleteProjectResult } from '../../services/api/types/projects.types';
 import { Project } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
-import { CreateProjectDialog } from './components/CreateProjectDialog';
+import { ProjectDialog } from './components/ProjectDialog';
 import { ProjectGridList } from './components/ProjectGridList';
+
 
 export interface CheckedProjectsById {
   [index: number]: boolean
@@ -46,12 +47,8 @@ export function Projects() {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
 
-  const handleCreateOpen = () => {
-    setCreateOpen(true);
-  };
-  const handleCreateClose = () => {
-    setCreateOpen(false);
-  };
+  const handleCreateOpen = () => setCreateOpen(true);
+  const handleCreateClose = () => setCreateOpen(false);
 
   //!
   //TODO
@@ -107,11 +104,23 @@ export function Projects() {
     setProjects(projectsCopy);
   }
 
-  const updateProjectListAfterCreate = (project: Project) => {
-    setProjects(prevProjects => {
-      prevProjects.push(project);
-      return prevProjects
-    })
+  const handleProjectListUpdate = (project: Project, isEdit = false) => {
+    if (isEdit) {
+      setProjects(prevProjects => {
+        const idToUpdate = project.id;
+        for (let i = 0; i < prevProjects.length; i++) {
+          if (prevProjects[i].id === idToUpdate) {
+            prevProjects[i] = project;
+          }
+        }
+        return prevProjects
+      })
+    } else {
+      setProjects(prevProjects => {
+        prevProjects.push(project);
+        return prevProjects
+      })
+    }
   }
 
   const handleProjectDelete = async () => {
@@ -192,9 +201,9 @@ export function Projects() {
           title={translate("projects.header")}
         />
         <CardContent className={classes.cardContent} >
-          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} checkedProjects={checkedProjects} setCheckedProjects={setCheckedProjects} />}
+          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} checkedProjects={checkedProjects} setCheckedProjects={setCheckedProjects} onUpdate={handleProjectListUpdate} />}
         </CardContent>
-        <CreateProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={updateProjectListAfterCreate} />
+        <ProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleProjectListUpdate} />
         <ConfirmationDialog
           destructive
           titleText={`${translate('projects.deleteProject', { count: projectsToDelete.length })}?`}

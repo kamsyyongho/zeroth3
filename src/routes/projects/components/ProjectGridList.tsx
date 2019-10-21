@@ -3,11 +3,14 @@ import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
+import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import SettingsIcon from '@material-ui/icons/Settings';
 import React from 'react';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../Projects';
+import { ProjectDialog } from './ProjectDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -43,12 +46,22 @@ interface ProjectGridListProps {
   projects: Project[]
   checkedProjects: CheckedProjectsById
   setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>
+  onUpdate: (project: Project, isEdit?: boolean) => void
+
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
-  const { projects, checkedProjects, setCheckedProjects } = props;
+  const { projects, checkedProjects, setCheckedProjects, onUpdate } = props;
+  const [editOpen, setEditOpen] = React.useState(false);
   const classes = useStyles();
 
+  const handleEditOpen = () => setEditOpen(true);
+  const handleEditClose = () => setEditOpen(false);
+
+  const handleEditSuccess = (updatedProject: Project, isEdit?: boolean) => {
+    onUpdate(updatedProject, isEdit);
+    handleEditClose();
+  }
 
   const handleProjectCheck = (projectId: number, value: boolean): void => {
     setCheckedProjects((prevCheckedProjects) => {
@@ -62,16 +75,23 @@ export function ProjectGridList(props: ProjectGridListProps) {
       isChecked = checkedProjects[project.id];
     }
     return (<Grid item md={3} key={project.id}>
+      <ProjectDialog open={editOpen} onClose={handleEditClose} onSuccess={handleEditSuccess} projectToEdit={project} />
       <Card className={classes.card}>
         <CardHeader
           title={project.name}
           action={
-            <Checkbox
-              checked={isChecked}
-              value="checkedB"
-              color="secondary"
-              onChange={(event) => handleProjectCheck(project.id, event.target.checked)}
-            />}
+            <>
+              <Checkbox
+                checked={isChecked}
+                value="checkedB"
+                color="secondary"
+                onChange={(event) => handleProjectCheck(project.id, event.target.checked)}
+              />
+              <IconButton aria-label="edit" onClick={handleEditOpen} >
+                <SettingsIcon />
+              </IconButton>
+            </>
+          }
         />
         <CardActionArea>
           <CardContent>

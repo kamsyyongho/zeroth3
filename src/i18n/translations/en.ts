@@ -8,6 +8,8 @@ export const en: ResourceLanguage = {
       delete: 'Delete',
       submit: 'Submit',
       cancel: 'Cancel',
+      create: 'Create',
+      edit: 'Edit',
       error: 'Error',
       success: 'Success',
       failure: 'Failure'
@@ -46,13 +48,13 @@ export const en: ResourceLanguage = {
       header: 'Identity and Access Management',
       inviteUser: 'Invite user',
       deleteUser: 'Delete user',
-      deleteUser_plural: 'Delete {{count}} users',
+      deleteUser_plural: 'Delete {{count}} users'
     },
     projects: {
       createProject: 'Create project',
+      editProject: 'Edit project',
       deleteProject: 'Delete project',
       deleteProject_plural: 'Delete {{count}} projects',
-      create: 'Create',
       header: 'Project Management'
     }
   }
