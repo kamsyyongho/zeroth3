@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { ResourceLanguage } from 'i18next';
 
 export const en: ResourceLanguage = {
@@ -24,10 +25,13 @@ export const en: ResourceLanguage = {
       validation: {
         required: 'Required',
         email: 'Email is not valid',
-        hcGreaterLc:
-          'High confidence threshold must be GREATER than Low confidence threshold',
-        lcLessHc:
-          'Low confidence threshold must be LESS than High confidence threshold'
+        greaterThan: '{{target}} must be GREATER than {{value}}',
+        lessThan: '{{target}} must be LESS than {{value}}',
+        greaterEqualTo: '{{target}} must be or equal to {{value}}',
+        lessEqualTo: '{{target}} must be less or equal to {{value}}',
+        between: '{{target}} must between {{first}} and {{second}}',
+        between_characters:
+          '{{target}} must between {{first}} and {{second}} characters long'
       },
       email: 'Email',
       name: 'Name',

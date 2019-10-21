@@ -10,6 +10,7 @@ import { Field, Form, Formik } from 'formik';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
+import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { SnackbarContext } from '../../../hooks/snackbar/SnackbarContext';
@@ -17,6 +18,8 @@ import { SnackbarError } from '../../../hooks/snackbar/useSnackbar';
 import log from '../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
+
+
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -35,7 +38,6 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-
   const formSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = [];
     for (let i = 1; i <= 100; i++) {
@@ -44,16 +46,22 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
     return tempFormSelectOptions
   }, [])
 
+  // validation translated text
+  const thresholdLcText = translate("forms.thresholdLc") as string;
+  const thresholdHcText = translate("forms.thresholdHc") as string;
+  const nameText = translate("forms.validation.between", {target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters'}) as string;
+  const requiredTranslationText = translate("forms.validation.required") as string;
+
   const formSchema = yup.object({
-    name: yup.string().min(3).max(50).required(`${translate("forms.validation.required")}`).trim(),
-    thresholdLc: yup.number().min(1).max(100).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lcLessHc')}`).required(`${translate("forms.validation.required")}`),
-    thresholdHc: yup.number().min(1).max(100).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.hcGreaterLc')}`).required(`${translate("forms.validation.required")}`),
+    name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
+    thresholdLc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', {target: thresholdLcText, value: thresholdHcText})}`).required(requiredTranslationText),
+    thresholdHc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', {target: thresholdHcText, value: thresholdLcText})}`).required(requiredTranslationText),
   })
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     name: "",
-    thresholdLc: 1,
-    thresholdHc: 100,
+    thresholdLc: VALIDATION.PROJECT.threshold.min,
+    thresholdHc: VALIDATION.PROJECT.threshold.max,
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -61,7 +69,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
       setLoading(true);
       setIsError(false);
       const { name, thresholdHc, thresholdLc } = values;
-      const response = await api.projects.postProject(name, thresholdHc, thresholdLc);
+      const response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         //!
@@ -108,9 +116,9 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
               <Form>
                 <Field name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                 <Field name='thresholdLc' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.thresholdLc")} errorOverride={isError} />
+                  options={formSelectOptions} label={thresholdLcText} errorOverride={isError} />
                 <Field name='thresholdHc' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.thresholdHc")} errorOverride={isError} />
+                  options={formSelectOptions} label={thresholdHcText} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
