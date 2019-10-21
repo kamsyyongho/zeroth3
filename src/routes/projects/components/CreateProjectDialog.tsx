@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { SnackbarError } from '../../../types';
+import { Project, SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
@@ -24,10 +24,11 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 interface CreateProjectDialogProps {
   open: boolean
   onClose: () => void
+  onSuccess: (newProject: Project) => void
 }
 
 export function CreateProjectDialog(props: CreateProjectDialogProps) {
-  const { open, onClose } = props;
+  const { open, onClose, onSuccess } = props;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
@@ -49,13 +50,13 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
   // validation translated text
   const thresholdLcText = translate("forms.thresholdLc") as string;
   const thresholdHcText = translate("forms.thresholdHc") as string;
-  const nameText = translate("forms.validation.between", {target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters'}) as string;
+  const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters' }) as string;
   const requiredTranslationText = translate("forms.validation.required") as string;
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
-    thresholdLc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', {target: thresholdLcText, value: thresholdHcText})}`).required(requiredTranslationText),
-    thresholdHc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', {target: thresholdHcText, value: thresholdLcText})}`).required(requiredTranslationText),
+    thresholdLc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).required(requiredTranslationText),
+    thresholdHc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).required(requiredTranslationText),
   })
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -81,7 +82,8 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
           value: response,
         })
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), {variant: 'success'} );
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        onSuccess(response.project)
         onClose();
       } else {
         log({
@@ -97,7 +99,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, {variant: 'error'} );
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   }
@@ -115,7 +117,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
+                <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                 <Field name='thresholdLc' component={SelectFormField}
                   options={formSelectOptions} label={thresholdLcText} errorOverride={isError} />
                 <Field name='thresholdHc' component={SelectFormField}

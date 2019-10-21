@@ -94,7 +94,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field name='email' component={TextFormField} label={translate("forms.email")} errorOverride={isError} />
+                <Field autoFocus name='email' component={TextFormField} label={translate("forms.email")} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
