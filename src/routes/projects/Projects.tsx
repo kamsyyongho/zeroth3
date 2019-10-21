@@ -79,7 +79,7 @@ export function Projects() {
   }, []);
 
 
-  const projectsToDelete: number[] = [];
+  let projectsToDelete: number[] = [];
   Object.keys(checkedProjects).forEach(projectId => {
     const checked = checkedProjects[Number(projectId)]
     if (checked) {
@@ -95,19 +95,15 @@ export function Projects() {
    */
   const handleDeleteSuccess = () => {
     const projectsCopy = projects.slice();
-    for (let i = 0; i < projectsCopy.length; i++) {
-      console.log("i", i);
-      console.log("project", projectsCopy);
-      console.log("projectsCopy", projectsCopy);
+    // count down to account for removing indexes
+    for (let i = projects.length - 1; i >= 0; i--) {
       const project = projects[i];
       if (projectsToDelete.includes(project.id)) {
         projectsCopy.splice(i, 1);
       }
     }
-    projectsToDelete.forEach(projectId => {
-      delete checkedProjects[projectId];
-    });
-    console.log("projectsToDelete", projectsCopy);
+    projectsToDelete = [];
+    setCheckedProjects({});
     setProjects(projectsCopy);
   }
 

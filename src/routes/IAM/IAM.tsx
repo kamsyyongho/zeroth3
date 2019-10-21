@@ -98,7 +98,7 @@ export function IAM() {
     getRoles();
   }, []);
 
-  const usersToDelete: number[] = [];
+  let usersToDelete: number[] = [];
   Object.keys(checkedUsers).forEach(userId => {
     const checked = checkedUsers[Number(userId)]
     if (checked) {
@@ -114,15 +114,15 @@ export function IAM() {
    */
   const handleDeleteSuccess = () => {
     const usersCopy = users.slice();
-    for (let i = 0; i < usersCopy.length; i++) {
+    // count down to account for removing indexes
+    for (let i = users.length - 1; i >= 0; i--) {
       const user = users[i];
       if (usersToDelete.includes(user.id)) {
         usersCopy.splice(i, 1);
       }
     }
-    usersToDelete.forEach(userId => {
-      delete checkedUsers[userId];
-    });
+    usersToDelete = [];
+    setCheckedUsers({});
     setUsers(usersCopy);
   }
 
