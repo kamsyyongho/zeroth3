@@ -7,14 +7,14 @@ import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import { Field, Form, Formik } from 'formik';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
 import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { SnackbarContext } from '../../../hooks/snackbar/SnackbarContext';
-import { SnackbarError } from '../../../hooks/snackbar/useSnackbar';
+import { SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
@@ -29,7 +29,7 @@ interface CreateProjectDialogProps {
 export function CreateProjectDialog(props: CreateProjectDialogProps) {
   const { open, onClose } = props;
   const { translate } = React.useContext(I18nContext);
-  const { openSnackbar } = React.useContext(SnackbarContext);
+  const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
@@ -81,6 +81,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
           value: response,
         })
         snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), {variant: 'success'} );
         onClose();
       } else {
         log({
@@ -96,7 +97,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      openSnackbar(snackbarError);
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, {variant: 'error'} );
       setLoading(false);
     }
   }

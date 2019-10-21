@@ -11,11 +11,15 @@ import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { deleteProjectResult } from '../../services/api/types/projects.types';
 import { Project } from '../../types';
 import log from '../../util/log/logger';
 import { CreateProjectDialog } from './components/CreateProjectDialog';
 import { ProjectGridList } from './components/ProjectGridList';
 
+export interface CheckedProjectsById {
+  [index: number]: boolean
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -31,10 +35,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export function Projects() {
   const api = React.useContext(ApiContext)
   const { translate } = React.useContext(I18nContext);
-  const [projects, setProjects] = React.useState<Project[]>([])
-  const [projectsLoading, setProjectsLoading] = React.useState(true)
-  const [createLoading, setCreateLoading] = React.useState(false)
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
 
   const handleCreateOpen = () => {
     setCreateOpen(true);
@@ -68,29 +73,49 @@ export function Projects() {
     getProjects();
   }, []);
 
-  const createProject = async () => {
-    if (api && api.projects) {
-      setCreateLoading(true);
-      //!
-      //!
-      //* DUMMY DATA
-      const response = await api.projects.postProject('test', 100, 1);
-      //!
-      //!
-      if (response.kind === "ok") {
+
+  const projectsToDelete: number[] = [];
+  Object.keys(checkedProjects).forEach(projectId => {
+    const checked = checkedProjects[Number(projectId)]
+    if (checked) {
+      projectsToDelete.push(Number(projectId));
+    }
+  })
+
+  const handleProjectDelete = async () => {
+    //TODO
+    //!
+    //* DISPLAY A CONFIRMATION DIALOG FIRST
+    setDeleteLoading(true);
+    const deleteProjectPromises: Promise<deleteProjectResult>[] = [];
+    projectsToDelete.forEach(projectId => {
+      if (api && api.projects) {
+        deleteProjectPromises.push(api.projects.deleteProject(projectId))
+      } else {
+        return;
+      }
+    })
+    const responseArray = await Promise.all(deleteProjectPromises);
+    responseArray.forEach(response => {
+      if (response.kind !== "ok") {
         //!
         //TODO
-        //* UPDATE THE PROJECT LIST
-      } else {
+        //* DISPLAY SOMETHING HERE
+        // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
+        // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
         log({
-          file: `Projects.tsx`,
-          caller: `createProject - failed to post project`,
+          file: `IAM.tsx`,
+          caller: `handleUserDelete`,
           value: response,
-          important: true,
+          error: true,
         })
+      } else {
+        //!
+        //TODO
+        //? UPDATE THE USER?
       }
-      setCreateLoading(false);
-    }
+    })
+    setDeleteLoading(false);
   }
 
 
@@ -99,11 +124,11 @@ export function Projects() {
   const renderCardHeaderAction = () => (<Grid container spacing={1} >
     <Grid item >
       <Button
-        disabled={false}
+        disabled={!projectsToDelete.length}
         variant="contained"
         color="secondary"
-        onClick={() => { }}
-        startIcon={projects.length ? <MoonLoader
+        onClick={handleProjectDelete}
+        startIcon={deleteLoading ? <MoonLoader
           sizeUnit={"px"}
           size={15}
           color={"#ffff"}
@@ -133,7 +158,7 @@ export function Projects() {
           title={translate("IAM.header")}
         />
         <CardContent className={classes.cardContent} >
-          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} />}
+          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} checkedProjects={checkedProjects} setCheckedProjects={setCheckedProjects} />}
         </CardContent>
         <CreateProjectDialog open={createOpen} onClose={handleCreateClose} />
       </Card>

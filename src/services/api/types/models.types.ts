@@ -1,9 +1,9 @@
-import { AcousticModel } from '../../../types';
 import {
+  AcousticModel,
   BaseModel,
   LanguageModel,
   Subgraph
-} from '../../../types/models.types';
+} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////

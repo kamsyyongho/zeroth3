@@ -7,7 +7,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import { Project } from '../../../types';
-import log from '../../../util/log/logger';
+import { CheckedProjectsById } from '../Projects';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -41,54 +41,65 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ProjectGridListProps {
   projects: Project[]
+  checkedProjects: CheckedProjectsById
+  setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
-  const { projects } = props;
+  const { projects, checkedProjects, setCheckedProjects } = props;
   const classes = useStyles();
+
+
+  const handleProjectCheck = (projectId: number, value: boolean): void => {
+    setCheckedProjects((prevCheckedProjects) => {
+      return { ...prevCheckedProjects, [projectId]: value }
+    })
+  }
+
+  const renderProject = (project: Project) => {
+    let isChecked = false;
+    if (checkedProjects && typeof checkedProjects[project.id] === 'boolean') {
+      isChecked = checkedProjects[project.id];
+    }
+    return (<Grid item md={3} key={project.id}>
+      <Card className={classes.card}>
+        <CardHeader
+          title={project.name}
+          action={
+            <Checkbox
+              checked={isChecked}
+              value="checkedB"
+              color="secondary"
+              onChange={(event) => handleProjectCheck(project.id, event.target.checked)}
+            />}
+        />
+        <CardActionArea>
+          <CardContent>
+            <Typography gutterBottom color="textPrimary">
+              {project.apiKey}
+            </Typography>
+            <Typography gutterBottom color="textSecondary">
+              {project.apiSecret}
+            </Typography>
+            <Typography variant="body1" component="p">
+              {project.thresholdHc}
+            </Typography>
+            <Typography variant="body1" component="p">
+              {project.thresholdLc}
+            </Typography>
+            <Typography variant="body2" gutterBottom component="p">
+              {new Date(project.validFrom).toDateString()}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Grid>)
+  }
 
   return (
     <Grid container spacing={2} >
       {projects.map(project => (
-        <Grid item md={3} key={project.id}>
-          <Card className={classes.card}>
-            <CardHeader
-              title={project.name}
-              action={
-                <Checkbox
-                  checked={true}
-                  value="checkedB"
-                  color="secondary"
-                  onChange={(event) => {
-                    log({
-                      file: `ProjectGridList.tsx`,
-                      caller: `Checkbox onChange`,
-                      value: event,
-                    })
-                  }}
-                />}
-            />
-            <CardActionArea>
-              <CardContent>
-                <Typography gutterBottom color="textPrimary">
-                  {project.apiKey}
-                </Typography>
-                <Typography gutterBottom color="textSecondary">
-                  {project.apiSecret}
-                </Typography>
-                <Typography variant="body1" component="p">
-                  {project.thresholdHc}
-                </Typography>
-                <Typography variant="body1" component="p">
-                  {project.thresholdLc}
-                </Typography>
-                <Typography variant="body2" gutterBottom component="p">
-                  {new Date(project.validFrom).toDateString()}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
+        renderProject(project)
       ))}
     </Grid>
   )

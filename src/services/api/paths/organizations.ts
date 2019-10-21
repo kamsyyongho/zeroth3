@@ -1,7 +1,11 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { getGeneralApiProblem } from '../api-problem';
-import { ProblemKind, renameOrganizationResult, ServerError } from '../types';
-import { RenameOrganizationRequest } from '../types/organizations.types';
+import {
+  ProblemKind,
+  RenameOrganizationRequest,
+  renameOrganizationResult,
+  ServerError
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**

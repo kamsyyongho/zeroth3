@@ -7,13 +7,13 @@ import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SendIcon from '@material-ui/icons/Send';
 import { Field, Form, Formik } from 'formik';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { SnackbarContext } from '../../../hooks/snackbar/SnackbarContext';
-import { SnackbarError } from '../../../hooks/snackbar/useSnackbar';
+import { SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
@@ -25,7 +25,7 @@ interface InviteFormDialogProps {
 
 export function InviteFormDialog(props: InviteFormDialogProps) {
   const { open, onClose } = props;
-  const { openSnackbar } = React.useContext(SnackbarContext);
+  const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false)
@@ -60,6 +60,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           value: response,
         })
         snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), {variant: 'success'} );
         onClose();
       } else {
         log({
@@ -75,7 +76,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      openSnackbar(snackbarError);
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, {variant: 'error'} );
       setLoading(false);
     }
   }

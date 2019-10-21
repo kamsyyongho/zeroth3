@@ -1,27 +1,25 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { AcousticModel } from '../../../types';
 import {
+  AcousticModel,
   BaseModel,
   LanguageModel,
   Subgraph
-} from '../../../types/models.types';
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getAcousticModelsResult,
-  PostAcousticModelRequest,
-  postAcousticModelResult,
-  ProblemKind,
-  ServerError
-} from '../types';
-import {
   getBaseModelsResult,
   getLanguageModelsResult,
   getSubgraphsResult,
+  PostAcousticModelRequest,
+  postAcousticModelResult,
   PostLanguageModelRequest,
   postLanguageModelResult,
   PostSubgraphRequest,
-  postSubgraphResult
-} from '../types/models.types';
+  postSubgraphResult,
+  ProblemKind,
+  ServerError
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**

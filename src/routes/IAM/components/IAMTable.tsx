@@ -85,37 +85,40 @@ export function IAMTable(props: IAMTableProps) {
     data: users,
   })
 
-
   // Render the UI for your table
+  const renderHeader = () => headerGroups.map((headerGroup, index) => (
+    <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
+      {headerGroup.headers.map((column, idx) => (
+        <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+          {column.render('Header')}
+        </TableCell>
+      ))}
+    </TableRow>
+  ))
+
+  const renderRows = () => rows.map(
+    (row, rowIndex) => {
+      prepareRow(row);
+      return (
+        <TableRow key={`row-${rowIndex}`} {...row.getRowProps()}>
+          {row.cells.map((cell, cellIndex) => {
+            return (
+              <TableCell key={`cell-${cellIndex}`} {...cell.getCellProps()}>
+                {cell.render('Cell')}
+              </TableCell>
+            )
+          })}
+        </TableRow>
+      )
+    })
+
   return (
     <Table stickyHeader {...getTableProps()}>
       <TableHead>
-        {headerGroups.map((headerGroup, index) => (
-          <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map((column, idx) => (
-              <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-                {column.render('Header')}
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
+        {renderHeader()}
       </TableHead>
       <TableBody>
-        {rows.map(
-          (row, rowIndex) => {
-            prepareRow(row);
-            return (
-              <TableRow key={`row-${rowIndex}`} {...row.getRowProps()}>
-                {row.cells.map((cell, cellIndex) => {
-                  return (
-                    <TableCell key={`cell-${cellIndex}`} {...cell.getCellProps()}>
-                      {cell.render('Cell')}
-                    </TableCell>
-                  )
-                })}
-              </TableRow>
-            )
-          })}
+        {renderRows()}
       </TableBody>
     </Table>
   )

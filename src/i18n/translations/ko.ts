@@ -47,7 +47,8 @@ export const ko: ResourceLanguage = {
     },
     projects: {
       createProject: 'Create project',
-      create: 'Create'
+      create: 'Create',
+      header: 'Project Management'
     }
   }
 };
