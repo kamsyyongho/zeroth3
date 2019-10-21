@@ -11,30 +11,19 @@ import {
   ProblemKind,
   ServerError
 } from '../types';
+import { ParentApi } from './parent-api';
 
 /**
  * Manages all IAM requests to the API.
  */
-export class IAM {
-  /**
-   * The underlying apisauce instance which performs the requests.
-   */
-  apisauce: ApisauceInstance;
-
-  /**
-   * The logout method from `keycloakContext`.
-   * - redirects to the login page
-   */
-  logout: () => void = () => {};
-
+export class IAM extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
-   *
    * @param apisauce The apisauce instance.
+   * @param logout The logout method from `keycloakContext`.
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
-    this.apisauce = apisauce;
-    this.logout = logout;
+    super(apisauce, logout);
   }
 
   /**

@@ -8,6 +8,7 @@ interface Log {
   trace?: boolean;
   warn?: boolean;
   error?: boolean;
+  api?: boolean;
 }
 
 /**
@@ -34,7 +35,8 @@ export default function log(logOptions: Log): void {
     important = false,
     trace = false,
     warn = false,
-    error = false
+    error = false,
+    api = false
   } = logOptions;
 
   const info = `${file} - ${caller}:`;
@@ -50,6 +52,12 @@ export default function log(logOptions: Log): void {
     console.log(
       `%c${info}`, // everything after the %c is styled
       `color: red; font-weight: bold;`,
+      value
+    );
+  } else if (api) {
+    console.log(
+      `%c${info}`, // everything after the %c is styled
+      `color: teal; font-weight: bold;`,
       value
     );
   } else {

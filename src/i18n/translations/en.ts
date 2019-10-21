@@ -1,11 +1,15 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { ResourceLanguage } from 'i18next';
 
 export const en: ResourceLanguage = {
   translation: {
     common: {
+      okay: 'Okay',
       delete: 'Delete',
       submit: 'Submit',
       cancel: 'Cancel',
+      create: 'Create',
+      edit: 'Edit',
       error: 'Error',
       success: 'Success',
       failure: 'Failure'
@@ -23,7 +27,14 @@ export const en: ResourceLanguage = {
     forms: {
       validation: {
         required: 'Required',
-        email: 'Email is not valid'
+        email: 'Email is not valid',
+        greaterThan: '{{target}} must be GREATER than {{value}}',
+        lessThan: '{{target}} must be LESS than {{value}}',
+        greaterEqualTo: '{{target}} must be or equal to {{value}}',
+        lessEqualTo: '{{target}} must be less or equal to {{value}}',
+        between: '{{target}} must between {{first}} and {{second}}',
+        between_characters:
+          '{{target}} must between {{first}} and {{second}} characters long'
       },
       email: 'Email',
       name: 'Name',
@@ -35,11 +46,16 @@ export const en: ResourceLanguage = {
       roles: 'Roles',
       invite: 'Invite',
       header: 'Identity and Access Management',
-      inviteUser: 'Invite user'
+      inviteUser: 'Invite user',
+      deleteUser: 'Delete user',
+      deleteUser_plural: 'Delete {{count}} users'
     },
     projects: {
       createProject: 'Create project',
-      create: 'Create'
+      editProject: 'Edit project',
+      deleteProject: 'Delete project',
+      deleteProject_plural: 'Delete {{count}} projects',
+      header: 'Project Management'
     }
   }
 };

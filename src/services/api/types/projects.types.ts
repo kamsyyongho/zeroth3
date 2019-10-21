@@ -1,6 +1,10 @@
 import { Project, Threshold } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
+//////////////
+// REQUESTS //
+//////////////
+
 export interface ProjectRequest {
   name: string;
   thresholdHc: Threshold;

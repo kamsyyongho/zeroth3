@@ -16,7 +16,7 @@ export function IAMHeaderCheckbox(props: IAMHeaderCheckboxProps) {
       <Checkbox
         checked={isChecked}
         value="checkedB"
-        color="primary"
+        color="secondary"
         onChange={(event) => {
           onCheck(event.target.checked);
           setIsChecked(event.target.checked);
