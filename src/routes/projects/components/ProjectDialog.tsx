@@ -31,15 +31,6 @@ interface ProjectDialogProps {
 
 export function ProjectDialog(props: ProjectDialogProps) {
   const { open, onClose, onSuccess, projectToEdit } = props;
-  log({
-    file: `ProjectDialog.tsx`,
-    caller: `projectToEdit`,
-    value: projectToEdit,
-    important: true,
-    trace: false,
-    error: false,
-    warn: false,
-  })
   const isEdit = !!projectToEdit;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
