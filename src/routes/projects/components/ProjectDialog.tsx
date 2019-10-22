@@ -5,7 +5,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -24,13 +24,22 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 interface ProjectDialogProps {
   open: boolean
-  onClose: () => void
+  onClose: (projectId?: number) => void
   onSuccess: (project: Project, isEdit?: boolean) => void
   projectToEdit?: Project
 }
 
 export function ProjectDialog(props: ProjectDialogProps) {
   const { open, onClose, onSuccess, projectToEdit } = props;
+  log({
+    file: `ProjectDialog.tsx`,
+    caller: `projectToEdit`,
+    value: projectToEdit,
+    important: true,
+    trace: false,
+    error: false,
+    warn: false,
+  })
   const isEdit = !!projectToEdit;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -71,6 +80,8 @@ export function ProjectDialog(props: ProjectDialogProps) {
     initialValues = { ...initialValues, name: projectToEdit.name, thresholdLc: projectToEdit.thresholdLc, thresholdHc: projectToEdit.thresholdHc };
   }
 
+  const handleClose = () => onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
+
   const handleSubmit = async (values: FormValues) => {
     if (api && api.projects) {
       setLoading(true);
@@ -84,10 +95,11 @@ export function ProjectDialog(props: ProjectDialogProps) {
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
+        const { project } = response;
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.project, isEdit)
-        onClose();
+        onSuccess(project, isEdit)
+        handleClose();
       } else {
         log({
           file: `ProjectDialog.tsx`,
@@ -111,7 +123,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
     <Dialog
       fullScreen={fullScreen}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
     >
       <DialogTitle id="responsive-dialog-title">{translate(isEdit ? "projects.editProject" : "projects.createProject")}</DialogTitle>
@@ -128,7 +140,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
@@ -138,7 +150,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : <AddIcon />}
+                  /> : <EditIcon />}
               >
                 {translate(isEdit ? "common.edit" : "common.create")}
               </Button>

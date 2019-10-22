@@ -47,20 +47,27 @@ interface ProjectGridListProps {
   checkedProjects: CheckedProjectsById
   setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>
   onUpdate: (project: Project, isEdit?: boolean) => void
+}
 
+interface EditOpenByProjectId {
+  [x: number]: boolean
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
   const { projects, checkedProjects, setCheckedProjects, onUpdate } = props;
-  const [editOpen, setEditOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
   const classes = useStyles();
 
-  const handleEditOpen = () => setEditOpen(true);
-  const handleEditClose = () => setEditOpen(false);
+  const handleEditOpen = (projectId: number) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [projectId]: true }
+  });
+  const handleEditClose = (projectId: number) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [projectId]: false }
+  });
 
   const handleEditSuccess = (updatedProject: Project, isEdit?: boolean) => {
     onUpdate(updatedProject, isEdit);
-    handleEditClose();
+    handleEditClose(updatedProject.id);
   }
 
   const handleProjectCheck = (projectId: number, value: boolean): void => {
@@ -70,12 +77,13 @@ export function ProjectGridList(props: ProjectGridListProps) {
   }
 
   const renderProject = (project: Project) => {
+    const isOpen = !!editOpen[project.id];
     let isChecked = false;
     if (checkedProjects && typeof checkedProjects[project.id] === 'boolean') {
       isChecked = checkedProjects[project.id];
     }
     return (<Grid item md={3} key={project.id}>
-      <ProjectDialog open={editOpen} onClose={handleEditClose} onSuccess={handleEditSuccess} projectToEdit={project} />
+      <ProjectDialog open={isOpen} onClose={() => handleEditClose(project.id)} onSuccess={handleEditSuccess} projectToEdit={project} />
       <Card className={classes.card}>
         <CardHeader
           title={project.name}
@@ -87,7 +95,7 @@ export function ProjectGridList(props: ProjectGridListProps) {
                 color="secondary"
                 onChange={(event) => handleProjectCheck(project.id, event.target.checked)}
               />
-              <IconButton aria-label="edit" onClick={handleEditOpen} >
+              <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)} >
                 <SettingsIcon />
               </IconButton>
             </>
