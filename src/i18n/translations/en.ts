@@ -29,10 +29,12 @@ export const en: ResourceLanguage = {
       validation: {
         required: 'Required',
         email: 'Email is not valid',
-        greaterThan: '{{target}} must be GREATER than {{value}}',
-        lessThan: '{{target}} must be LESS than {{value}}',
-        greaterEqualTo: '{{target}} must be or equal to {{value}}',
-        lessEqualTo: '{{target}} must be less or equal to {{value}}',
+        number: 'Must be a number',
+        integer: 'Must be an integer',
+        greaterThan: '{{target}} must be greater than {{value}}',
+        lessThan: '{{target}} must be less than {{value}}',
+        greaterEqualTo: '{{target}} must be greater than or equal to {{value}}',
+        lessEqualTo: '{{target}} must be less than or equal to {{value}}',
         between: '{{target}} must between {{first}} and {{second}}',
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',

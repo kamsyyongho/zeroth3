@@ -19,6 +19,9 @@ export const VALIDATION = {
         min: 8,
         max: 64,
       },
+      description: {
+        max: 250,
+      },
     },
   },
 };
