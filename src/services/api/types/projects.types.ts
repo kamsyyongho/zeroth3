@@ -11,6 +11,13 @@ export interface ProjectRequest {
   thresholdLc: Threshold;
 }
 
+export interface PostModelConfigRequest {
+  acousticModelId: number;
+  languageModelId: number;
+  name: string;
+  description: string;
+}
+
 /////////////
 // RESULTS //
 /////////////

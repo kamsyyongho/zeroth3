@@ -10,7 +10,7 @@ export interface Model extends BaseModel {
 
 export interface AcousticModel extends Model {
   sampleRate: number;
-  location?: string;
+  location: string;
 }
 
 export interface LanguageModel extends Model {
@@ -20,3 +20,10 @@ export interface LanguageModel extends Model {
 }
 
 export type Subgraph = BaseModel;
+
+export interface ModelConfig {
+  acousticModel: AcousticModel;
+  description: string;
+  id: number;
+  languageModel: LanguageModel;
+}

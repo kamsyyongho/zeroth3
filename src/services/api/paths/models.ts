@@ -3,7 +3,7 @@ import {
   AcousticModel,
   BaseModel,
   LanguageModel,
-  Subgraph
+  Subgraph,
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
@@ -18,7 +18,7 @@ import {
   PostSubgraphRequest,
   postSubgraphResult,
   ProblemKind,
-  ServerError
+  ServerError,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -66,22 +66,22 @@ export class Models extends ParentApi {
   /**
    * Create a new acoustic model
    * @param name
-   * @param description
    * @param sampleRate
    * @param location
+   * @param description
    */
   async postAcousticModel(
     name: string,
-    description: string,
     sampleRate: number,
-    location?: string
+    location: string,
+    description = ''
   ): Promise<postAcousticModelResult> {
     // compile data
     const request: PostAcousticModelRequest = {
       name,
-      description,
       sampleRate,
-      location
+      location,
+      description,
     };
     // make the api call
     const response: ApiResponse<
@@ -181,7 +181,7 @@ export class Models extends ParentApi {
       name,
       description,
       baseModelId,
-      subGraphIds
+      subGraphIds,
     };
     // make the api call
     const response: ApiResponse<
@@ -238,19 +238,19 @@ export class Models extends ParentApi {
   /**
    * Create a new subgraph
    * @param name
-   * @param publicBoolean
+   * @param isPublic
    * @param text
    */
   async postSubgraph(
     name: string,
-    publicBoolean: boolean,
+    isPublic: boolean,
     text: string
   ): Promise<postSubgraphResult> {
     // compile data
     const request: PostSubgraphRequest = {
       name,
-      public: publicBoolean,
-      text
+      public: isPublic,
+      text,
     };
     // make the api call
     const response: ApiResponse<
@@ -278,16 +278,22 @@ export class Models extends ParentApi {
 
   /**
    * Upload a subgraph file
+   * @param name - the subgraph name
    * @param file - multipart file to upload
    */
-  async uploadSubgraphFile(file: any): Promise<postSubgraphResult> {
+  async uploadSubgraphFile(
+    name: string,
+    file: any
+  ): Promise<postSubgraphResult> {
     // compile data
+    // needs name
     const request = new FormData();
+    request.append('name', name);
     request.append('file', file);
     const config = {
       headers: {
-        'content-type': 'multipart/form-data'
-      }
+        'content-type': 'multipart/form-data',
+      },
     };
     // make the api call
     const response: ApiResponse<
