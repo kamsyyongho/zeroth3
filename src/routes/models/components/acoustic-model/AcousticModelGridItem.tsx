@@ -12,6 +12,9 @@ const useStyles = makeStyles((theme: Theme) =>
     card: {
       minWidth: 275,
     },
+    text: {
+      overflowWrap: 'break-word'
+    }
   }),
 );
 
@@ -22,19 +25,19 @@ interface AcousticModelGridItemProps {
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
   const { model } = props;
   const classes = useStyles();
-  return (<Grid item md={3} key={model.id}>
+  return (<Grid item xs key={model.id}>
     <Card className={classes.card}>
-      <CardHeader title={model.name} />
+      <CardHeader title={model.name} className={classes.text} />
       <CardActionArea>
         <CardContent>
-          <Typography gutterBottom color="textPrimary">
-            {model.description}
-          </Typography>
-          <Typography gutterBottom color="textSecondary">
+          <Typography gutterBottom color="textSecondary" className={classes.text}>
             {model.version}
           </Typography>
-          <Typography variant="body1" component="p">
+          <Typography component="p">
             {model.sampleRate}{' kHz'}
+          </Typography>
+          <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
+            {model.description}
           </Typography>
         </CardContent>
       </CardActionArea>

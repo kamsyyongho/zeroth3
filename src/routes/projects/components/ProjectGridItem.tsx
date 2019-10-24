@@ -18,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) =>
     card: {
       minWidth: 275,
     },
+    text: {
+      overflowWrap: 'break-word'
+    }
   }),
 );
 
@@ -40,7 +43,7 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
   if (checkedProjects && typeof checkedProjects[project.id] === 'boolean') {
     isChecked = checkedProjects[project.id];
   }
-  return (<Grid item md={3} key={project.id}>
+  return (<Grid item xs key={project.id}>
     <ProjectDialog open={isOpen} onClose={() => handleEditClose(project.id)} onSuccess={handleEditSuccess} projectToEdit={project} />
     <Card className={classes.card}>
       <CardHeader title={project.name} action={<>
@@ -51,19 +54,19 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
       </>} />
       <CardActionArea>
         <CardContent>
-          <Typography gutterBottom color="textPrimary">
+          <Typography gutterBottom color="textPrimary" className={classes.text}>
             {project.apiKey}
           </Typography>
-          <Typography gutterBottom color="textSecondary">
+          <Typography gutterBottom color="textSecondary" className={classes.text}>
             {project.apiSecret}
           </Typography>
-          <Typography variant="body1" component="p">
+          <Typography variant="body1" component="p" className={classes.text}>
             {project.thresholdHc}
           </Typography>
-          <Typography variant="body1" component="p">
+          <Typography variant="body1" component="p" className={classes.text}>
             {project.thresholdLc}
           </Typography>
-          <Typography variant="body2" gutterBottom component="p">
+          <Typography variant="body2" gutterBottom component="p" className={classes.text}>
             {new Date(project.validFrom).toDateString()}
           </Typography>
         </CardContent>
