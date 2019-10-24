@@ -34,7 +34,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
             {model.version}
           </Typography>
           <Typography variant="body1" component="p">
-            {model.sampleRate}
+            {model.sampleRate}{' kHz'}
           </Typography>
         </CardContent>
       </CardActionArea>
