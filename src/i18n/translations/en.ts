@@ -12,17 +12,18 @@ export const en: ResourceLanguage = {
       edit: 'Edit',
       error: 'Error',
       success: 'Success',
-      failure: 'Failure'
+      failure: 'Failure',
     },
     path: {
       home: 'Home',
       IAM: 'IAM',
-      projects: 'projects'
+      projects: 'Projects',
+      models: 'Models',
     },
     menu: {
       login: 'Login',
       logout: 'Logout',
-      changeLanguage: 'Change language'
+      changeLanguage: 'Change language',
     },
     forms: {
       validation: {
@@ -34,12 +35,15 @@ export const en: ResourceLanguage = {
         lessEqualTo: '{{target}} must be less or equal to {{value}}',
         between: '{{target}} must between {{first}} and {{second}}',
         between_characters:
-          '{{target}} must between {{first}} and {{second}} characters long'
+          '{{target}} must between {{first}} and {{second}} characters long',
       },
       email: 'Email',
       name: 'Name',
       thresholdHc: 'High confidence threshold',
-      thresholdLc: 'Low confidence threshold'
+      thresholdLc: 'Low confidence threshold',
+      description: 'Description',
+      location: 'Location',
+      sampleRate: 'Sample rate (kHz)',
     },
     IAM: {
       user: 'User',
@@ -48,14 +52,28 @@ export const en: ResourceLanguage = {
       header: 'Identity and Access Management',
       inviteUser: 'Invite user',
       deleteUser: 'Delete user',
-      deleteUser_plural: 'Delete {{count}} users'
+      deleteUser_plural: 'Delete {{count}} users',
     },
     projects: {
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',
       deleteProject_plural: 'Delete {{count}} projects',
-      header: 'Project Management'
-    }
-  }
+      header: 'Project Management',
+    },
+    models: {
+      header: 'Model Management',
+      tabs: {
+        acousticModel: {
+          header: 'Acoustic Model',
+          create: 'Create acoustic model',
+        },
+        languageModel: {
+          header: 'Language Model',
+          create: 'Create language model',
+        },
+      },
+      createModel: 'Create model',
+    },
+  },
 };
