@@ -115,7 +115,7 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/base-models`);
+    > = await this.apisauce.get(`/models/topgraphs`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -167,20 +167,20 @@ export class Models extends ParentApi {
    * Create a new language model
    * @param name
    * @param description
-   * @param baseModelId
+   * @param topGraphId
    * @param subGraphIds
    */
   async postLanguageModel(
     name: string,
     description: string,
-    baseModelId: number,
+    topGraphId: number,
     subGraphIds: number[]
   ): Promise<postLanguageModelResult> {
     // compile data
     const request: PostLanguageModelRequest = {
       name,
       description,
-      baseModelId,
+      topGraphId,
       subGraphIds,
     };
     // make the api call

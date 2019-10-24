@@ -1,8 +1,8 @@
 import {
   AcousticModel,
-  TopGraph,
   LanguageModel,
-  Subgraph
+  Subgraph,
+  TopGraph,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -15,7 +15,7 @@ export type PostAcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
 export interface PostLanguageModelRequest {
   name: string;
   description: string;
-  baseModelId: number;
+  topGraphId: number;
   subGraphIds: number[];
 }
 
