@@ -1,6 +1,6 @@
 import {
   AcousticModel,
-  BaseModel,
+  TopGraph,
   LanguageModel,
   Subgraph
 } from '../../../types';
@@ -37,8 +37,8 @@ export type postAcousticModelResult =
   | { kind: 'ok'; acousticModel: AcousticModel }
   | GeneralApiProblem;
 
-export type getBaseModelsResult =
-  | { kind: 'ok'; baseModels: BaseModel[] }
+export type getTopGraphsResult =
+  | { kind: 'ok'; topGraphs: TopGraph[] }
   | GeneralApiProblem;
 
 export type getLanguageModelsResult =

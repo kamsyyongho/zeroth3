@@ -1,16 +1,16 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import {
   AcousticModel,
-  BaseModel,
   LanguageModel,
   Subgraph,
+  TopGraph,
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getAcousticModelsResult,
-  getBaseModelsResult,
   getLanguageModelsResult,
   getSubgraphsResult,
+  getTopGraphsResult,
   PostAcousticModelRequest,
   postAcousticModelResult,
   PostLanguageModelRequest,
@@ -108,12 +108,12 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Gets a list of base models
+   * Gets a list of top graphs
    */
-  async getBaseModels(): Promise<getBaseModelsResult> {
+  async getTopGraphs(): Promise<getTopGraphsResult> {
     // make the api call
     const response: ApiResponse<
-      BaseModel[],
+      TopGraph[],
       ServerError
     > = await this.apisauce.get(`/models/base-models`);
     // the typical ways to die when calling an api
@@ -128,8 +128,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const baseModels = response.data as BaseModel[];
-      return { kind: 'ok', baseModels };
+      const topGraphs = response.data as TopGraph[];
+      return { kind: 'ok', topGraphs };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
