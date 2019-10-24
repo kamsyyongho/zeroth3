@@ -45,7 +45,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
 
   const formSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = [];
-    for (let i = 1; i <= 100; i++) {
+    for (let i = VALIDATION.PROJECT.threshold.min; i <= VALIDATION.PROJECT.threshold.max; i++) {
       tempFormSelectOptions.push({ label: `${i}`, value: i });
     }
     return tempFormSelectOptions
@@ -54,13 +54,15 @@ export function ProjectDialog(props: ProjectDialogProps) {
   // validation translated text
   const thresholdLcText = translate("forms.thresholdLc") as string;
   const thresholdHcText = translate("forms.thresholdHc") as string;
+  const integerText = translate("forms.validation.integer") as string;
+  const numberText = translate("forms.validation.number") as string;
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters' }) as string;
   const requiredTranslationText = translate("forms.validation.required") as string;
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
-    thresholdLc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).required(requiredTranslationText),
-    thresholdHc: yup.number().min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).required(requiredTranslationText),
+    thresholdLc: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).required(requiredTranslationText),
+    thresholdHc: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).required(requiredTranslationText),
   })
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
