@@ -1,46 +1,8 @@
-import { CardHeader, Grid } from '@material-ui/core';
-import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardContent from '@material-ui/core/CardContent';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import SettingsIcon from '@material-ui/icons/Settings';
+import { Grid } from '@material-ui/core';
 import React from 'react';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../Projects';
-import { ProjectDialog } from './ProjectDialog';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'space-around',
-      overflow: 'hidden',
-      backgroundColor: theme.palette.background.paper,
-    },
-    gridList: {
-      width: 500,
-      height: 450,
-    },
-    icon: {
-      color: 'rgba(255, 255, 255, 0.54)',
-    },
-    card: {
-      minWidth: 275,
-    },
-    bullet: {
-      display: 'inline-block',
-      margin: '0 2px',
-      transform: 'scale(0.8)',
-    },
-    pos: {
-      marginBottom: 12,
-    },
-  }),
-);
+import { ProjectGridItem } from './ProjectGridItem';
 
 interface ProjectGridListProps {
   projects: Project[]
@@ -49,14 +11,13 @@ interface ProjectGridListProps {
   onUpdate: (project: Project, isEdit?: boolean) => void
 }
 
-interface EditOpenByProjectId {
+export interface EditOpenByProjectId {
   [x: number]: boolean
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
   const { projects, checkedProjects, setCheckedProjects, onUpdate } = props;
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
-  const classes = useStyles();
 
   const handleEditOpen = (projectId: number) => setEditOpen(prevOpen => {
     return { ...prevOpen, [projectId]: true }
@@ -76,59 +37,22 @@ export function ProjectGridList(props: ProjectGridListProps) {
     })
   }
 
-  const renderProject = (project: Project) => {
-    const isOpen = !!editOpen[project.id];
-    let isChecked = false;
-    if (checkedProjects && typeof checkedProjects[project.id] === 'boolean') {
-      isChecked = checkedProjects[project.id];
-    }
-    return (<Grid item md={3} key={project.id}>
-      <ProjectDialog open={isOpen} onClose={() => handleEditClose(project.id)} onSuccess={handleEditSuccess} projectToEdit={project} />
-      <Card className={classes.card}>
-        <CardHeader
-          title={project.name}
-          action={
-            <>
-              <Checkbox
-                checked={isChecked}
-                value="checkedB"
-                color="secondary"
-                onChange={(event) => handleProjectCheck(project.id, event.target.checked)}
-              />
-              <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)} >
-                <SettingsIcon />
-              </IconButton>
-            </>
-          }
-        />
-        <CardActionArea>
-          <CardContent>
-            <Typography gutterBottom color="textPrimary">
-              {project.apiKey}
-            </Typography>
-            <Typography gutterBottom color="textSecondary">
-              {project.apiSecret}
-            </Typography>
-            <Typography variant="body1" component="p">
-              {project.thresholdHc}
-            </Typography>
-            <Typography variant="body1" component="p">
-              {project.thresholdLc}
-            </Typography>
-            <Typography variant="body2" gutterBottom component="p">
-              {new Date(project.validFrom).toDateString()}
-            </Typography>
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    </Grid>)
-  }
+  const renderProjects = () => projects.map((project, index) => (
+    <ProjectGridItem
+      key={index}
+      project={project}
+      handleEditClose={handleEditClose}
+      handleEditOpen={handleEditOpen}
+      editOpen={editOpen}
+      checkedProjects={checkedProjects}
+      handleEditSuccess={handleEditSuccess}
+      handleProjectCheck={handleProjectCheck}
+    />
+  ))
 
   return (
     <Grid container spacing={2} >
-      {projects.map(project => (
-        renderProject(project)
-      ))}
+      {renderProjects()}
     </Grid>
   )
 }

@@ -5,6 +5,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
@@ -141,7 +142,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : <EditIcon />}
+                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
                 {translate(isEdit ? "common.edit" : "common.create")}
               </Button>
