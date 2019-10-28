@@ -5,7 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import React from 'react';
-import { AcousticModel } from '../../../../types/models.types';
+import { AcousticModel } from '../../../../types';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

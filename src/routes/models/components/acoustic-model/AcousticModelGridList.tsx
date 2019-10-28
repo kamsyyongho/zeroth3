@@ -29,7 +29,7 @@ export function AcousticModelGridList() {
         } else {
           log({
             file: `AcousticModelGridList.tsx`,
-            caller: `getModels - failed to get acousticModels`,
+            caller: `getModels - failed to get acoustic models`,
             value: response,
             important: true,
           })
