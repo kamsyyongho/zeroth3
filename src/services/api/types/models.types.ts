@@ -54,5 +54,5 @@ export type getSubGraphsResult =
   | GeneralApiProblem;
 
 export type postSubGraphResult =
-  | { kind: 'ok'; subgraph: SubGraph }
+  | { kind: 'ok'; subGraph: SubGraph }
   | GeneralApiProblem;

@@ -269,8 +269,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const subgraph = response.data as SubGraph;
-      return { kind: 'ok', subgraph };
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -293,7 +293,7 @@ export class Models extends ParentApi {
     request.append('name', name);
     request.append('file', file);
     if (typeof isPublic === 'boolean') {
-      request.append('public', isPublic ? 'true' : 'false');
+      request.append('public', JSON.stringify(isPublic));
     }
     const config = {
       headers: {
@@ -317,8 +317,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const subgraph = response.data as SubGraph;
-      return { kind: 'ok', subgraph };
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
