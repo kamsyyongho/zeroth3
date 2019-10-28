@@ -2,7 +2,12 @@ import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from "@mate
 import { FieldProps, getIn } from "formik";
 import React from "react";
 
-export type SelectFormFieldOptions = Array<{ label: string; value: string | number }>
+export interface SelectFormFieldOption {
+  label: string
+  value: string | number
+}
+
+export type SelectFormFieldOptions = Array<SelectFormFieldOption>
 
 interface SelectFormFieldProps extends FieldProps {
   errorOverride?: boolean
@@ -19,7 +24,7 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, fu
     <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
       {label && <InputLabel>{label}</InputLabel>}
       <Select fullWidth={fullWidth} {...field} {...props}>
-        {options.map(op => (
+        {options.map((op: SelectFormFieldOption) => (
           <MenuItem key={op.value} value={op.value}>
             {op.label}
           </MenuItem>
