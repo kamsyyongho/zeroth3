@@ -1,7 +1,7 @@
 import {
   AcousticModel,
   LanguageModel,
-  Subgraph,
+  SubGraph,
   TopGraph,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
@@ -19,10 +19,10 @@ export interface PostLanguageModelRequest {
   subGraphIds: number[];
 }
 
-export interface PostSubgraphRequest {
+export interface PostSubGraphRequest {
   name: string;
-  public: boolean;
   text: string;
+  public?: boolean;
 }
 
 /////////////
@@ -49,10 +49,10 @@ export type postLanguageModelResult =
   | { kind: 'ok'; languageModel: LanguageModel }
   | GeneralApiProblem;
 
-export type getSubgraphsResult =
-  | { kind: 'ok'; subgraphs: Subgraph[] }
+export type getSubGraphsResult =
+  | { kind: 'ok'; subGraphs: SubGraph[] }
   | GeneralApiProblem;
 
-export type postSubgraphResult =
-  | { kind: 'ok'; subgraph: Subgraph }
+export type postSubGraphResult =
+  | { kind: 'ok'; subgraph: SubGraph }
   | GeneralApiProblem;

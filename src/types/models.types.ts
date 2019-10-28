@@ -19,7 +19,7 @@ export interface LanguageModel extends Model {
   subGraphs: TopGraph[];
 }
 
-export type Subgraph = TopGraph;
+export type SubGraph = TopGraph;
 
 export interface ModelConfig {
   acousticModel: AcousticModel;
