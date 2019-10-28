@@ -137,7 +137,11 @@ export function ProjectDialog(props: ProjectDialogProps) {
               <Button onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
-              <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
+              <Button
+                disabled={!formikProps.isValid}
+                onClick={formikProps.submitForm}
+                color="primary"
+                variant="outlined"
                 startIcon={loading ?
                   <MoonLoader
                     sizeUnit={"px"}

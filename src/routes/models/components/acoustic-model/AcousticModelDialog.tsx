@@ -14,8 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { SnackbarError } from '../../../../types';
-import { AcousticModel } from '../../../../types/models.types';
+import { AcousticModel, SnackbarError } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
@@ -86,7 +85,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       } else {
         log({
           file: `AcousticModelDialog.tsx`,
-          caller: `handleSubmit - failed create acoustic model`,
+          caller: `handleSubmit - failed to create acoustic model`,
           value: response,
           important: true,
         })
@@ -126,7 +125,11 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
               <Button onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
-              <Button onClick={formikProps.submitForm} color="primary" variant="outlined"
+              <Button
+                disabled={!formikProps.isValid}
+                onClick={formikProps.submitForm}
+                color="primary"
+                variant="outlined"
                 startIcon={loading ?
                   <MoonLoader
                     sizeUnit={"px"}
