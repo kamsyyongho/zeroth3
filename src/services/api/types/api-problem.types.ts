@@ -18,6 +18,9 @@ export interface MultipleServerError {
   arguments?: readonly [MultipleServerError, number];
 }
 
+/**
+ * The types of problems that the api can receive
+ */
 export enum ProblemKind {
   /**
    * Times up.
