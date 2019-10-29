@@ -14,8 +14,7 @@ export interface AcousticModel extends Model {
 }
 
 export interface LanguageModel extends Model {
-  sampleRate: number;
-  baseModel: TopGraph;
+  topGraph: TopGraph;
   subGraphs: TopGraph[];
 }
 
