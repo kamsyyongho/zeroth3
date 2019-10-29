@@ -9,6 +9,7 @@ import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
+import { Models } from './routes/models/Models';
 import { Projects } from './routes/projects/Projects';
 import Header from './routes/shared/header/Header';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
@@ -56,6 +57,7 @@ function App() {
         <Route exact path={PATHS.home.to} component={Home} />
         <Route path={PATHS.IAM.to} component={IAM} />
         <Route path={PATHS.projects.to} component={Projects} />
+        <Route path={PATHS.models.to} component={Models} />
       </Router>
     </RootProvider>
   );

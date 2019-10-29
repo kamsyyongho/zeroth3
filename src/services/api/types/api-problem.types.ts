@@ -1,9 +1,21 @@
 export interface ServerError {
   error?: string;
+  errors?: MultipleServerError[];
   message?: string;
   path?: string;
   status?: number;
   timestamp?: Date;
+}
+
+export interface MultipleServerError {
+  code?: string;
+  codes?: string[];
+  defaultMessage?: string;
+  field?: string;
+  objectName?: string;
+  rejectedValue?: unknown;
+  bindingFailure?: boolean;
+  arguments?: readonly [MultipleServerError, number];
 }
 
 export enum ProblemKind {
@@ -42,7 +54,7 @@ export enum ProblemKind {
   /**
    * The data we received is not in the expected format.
    */
-  'bad-data' = 'bad-data'
+  'bad-data' = 'bad-data',
 }
 
 export interface GeneralApiProblem {

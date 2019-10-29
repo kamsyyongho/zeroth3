@@ -10,14 +10,18 @@ export interface Path {
 export const PATHS: { [x: string]: Path } = {
   home: {
     to: '/',
-    title: 'home'
+    title: 'home',
   },
   IAM: {
     to: '/iam',
-    title: 'IAM'
+    title: 'IAM',
   },
   projects: {
     to: '/projects',
-    title: 'projects'
-  }
+    title: 'projects',
+  },
+  models: {
+    to: '/models',
+    title: 'models',
+  },
 };

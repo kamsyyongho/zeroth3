@@ -5,6 +5,7 @@ import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './paths/iam';
 import { Projects } from './paths/projects';
+import { Models } from './paths/models';
 
 /**
  * Main class that manages all requests to the API.
@@ -42,6 +43,11 @@ export class Api {
   projects: Projects | undefined;
 
   /**
+   * Subclass that manages model requests.
+   */
+  models: Models | undefined;
+
+  /**
    * Creates the api.
    *
    * - Be as quick as possible in here.
@@ -73,6 +79,7 @@ export class Api {
     }
     this.IAM = new IAM(this.apisauce, this.logout);
     this.projects = new Projects(this.apisauce, this.logout);
+    this.models = new Models(this.apisauce, this.logout);
     return true;
   }
 

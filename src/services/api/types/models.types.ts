@@ -1,8 +1,8 @@
 import {
   AcousticModel,
-  BaseModel,
   LanguageModel,
-  Subgraph
+  SubGraph,
+  TopGraph,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -15,14 +15,14 @@ export type PostAcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
 export interface PostLanguageModelRequest {
   name: string;
   description: string;
-  baseModelId: number;
+  topGraphId: number;
   subGraphIds: number[];
 }
 
-export interface PostSubgraphRequest {
+export interface PostSubGraphRequest {
   name: string;
-  public: boolean;
   text: string;
+  public?: boolean;
 }
 
 /////////////
@@ -37,8 +37,8 @@ export type postAcousticModelResult =
   | { kind: 'ok'; acousticModel: AcousticModel }
   | GeneralApiProblem;
 
-export type getBaseModelsResult =
-  | { kind: 'ok'; baseModels: BaseModel[] }
+export type getTopGraphsResult =
+  | { kind: 'ok'; topGraphs: TopGraph[] }
   | GeneralApiProblem;
 
 export type getLanguageModelsResult =
@@ -49,10 +49,10 @@ export type postLanguageModelResult =
   | { kind: 'ok'; languageModel: LanguageModel }
   | GeneralApiProblem;
 
-export type getSubgraphsResult =
-  | { kind: 'ok'; subgraphs: Subgraph[] }
+export type getSubGraphsResult =
+  | { kind: 'ok'; subGraphs: SubGraph[] }
   | GeneralApiProblem;
 
-export type postSubgraphResult =
-  | { kind: 'ok'; subgraph: Subgraph }
+export type postSubGraphResult =
+  | { kind: 'ok'; subGraph: SubGraph }
   | GeneralApiProblem;

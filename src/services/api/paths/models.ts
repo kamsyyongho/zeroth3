@@ -1,24 +1,24 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import {
   AcousticModel,
-  BaseModel,
   LanguageModel,
-  Subgraph
+  SubGraph,
+  TopGraph,
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getAcousticModelsResult,
-  getBaseModelsResult,
   getLanguageModelsResult,
-  getSubgraphsResult,
+  getSubGraphsResult,
+  getTopGraphsResult,
   PostAcousticModelRequest,
   postAcousticModelResult,
   PostLanguageModelRequest,
   postLanguageModelResult,
-  PostSubgraphRequest,
-  postSubgraphResult,
+  PostSubGraphRequest,
+  postSubGraphResult,
   ProblemKind,
-  ServerError
+  ServerError,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -66,22 +66,22 @@ export class Models extends ParentApi {
   /**
    * Create a new acoustic model
    * @param name
-   * @param description
    * @param sampleRate
    * @param location
+   * @param description
    */
   async postAcousticModel(
     name: string,
-    description: string,
     sampleRate: number,
-    location?: string
+    location: string,
+    description = ''
   ): Promise<postAcousticModelResult> {
     // compile data
     const request: PostAcousticModelRequest = {
       name,
-      description,
       sampleRate,
-      location
+      location,
+      description,
     };
     // make the api call
     const response: ApiResponse<
@@ -108,14 +108,14 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Gets a list of base models
+   * Gets a list of top graphs
    */
-  async getBaseModels(): Promise<getBaseModelsResult> {
+  async getTopGraphs(): Promise<getTopGraphsResult> {
     // make the api call
     const response: ApiResponse<
-      BaseModel[],
+      TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/base-models`);
+    > = await this.apisauce.get(`/models/topgraphs`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -128,8 +128,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const baseModels = response.data as BaseModel[];
-      return { kind: 'ok', baseModels };
+      const topGraphs = response.data as TopGraph[];
+      return { kind: 'ok', topGraphs };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -166,22 +166,22 @@ export class Models extends ParentApi {
   /**
    * Create a new language model
    * @param name
-   * @param description
-   * @param baseModelId
+   * @param topGraphId
    * @param subGraphIds
+   * @param description
    */
   async postLanguageModel(
     name: string,
-    description: string,
-    baseModelId: number,
-    subGraphIds: number[]
+    topGraphId: number,
+    subGraphIds: number[],
+    description = ''
   ): Promise<postLanguageModelResult> {
     // compile data
     const request: PostLanguageModelRequest = {
       name,
+      topGraphId,
+      subGraphIds,
       description,
-      baseModelId,
-      subGraphIds
     };
     // make the api call
     const response: ApiResponse<
@@ -208,12 +208,12 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Gets a list of subgraphs
+   * Gets a list of sub graphs
    */
-  async getSubgraphs(): Promise<getSubgraphsResult> {
+  async getSubGraphs(): Promise<getSubGraphsResult> {
     // make the api call
     const response: ApiResponse<
-      Subgraph[],
+      SubGraph[],
       ServerError
     > = await this.apisauce.get(`/models/subgraphs`);
     // the typical ways to die when calling an api
@@ -228,8 +228,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const subgraphs = response.data as Subgraph[];
-      return { kind: 'ok', subgraphs };
+      const subGraphs = response.data as SubGraph[];
+      return { kind: 'ok', subGraphs };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -238,23 +238,23 @@ export class Models extends ParentApi {
   /**
    * Create a new subgraph
    * @param name
-   * @param publicBoolean
    * @param text
+   * @param isPublic
    */
-  async postSubgraph(
+  async postSubGraph(
     name: string,
-    publicBoolean: boolean,
-    text: string
-  ): Promise<postSubgraphResult> {
+    text: string,
+    isPublic?: boolean
+  ): Promise<postSubGraphResult> {
     // compile data
-    const request: PostSubgraphRequest = {
+    const request: PostSubGraphRequest = {
       name,
-      public: publicBoolean,
-      text
+      text,
+      public: isPublic,
     };
     // make the api call
     const response: ApiResponse<
-      Subgraph,
+      SubGraph,
       ServerError
     > = await this.apisauce.post(`/models/subgraphs`, request);
     // the typical ways to die when calling an api
@@ -269,8 +269,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const subgraph = response.data as Subgraph;
-      return { kind: 'ok', subgraph };
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -278,20 +278,31 @@ export class Models extends ParentApi {
 
   /**
    * Upload a subgraph file
+   * @param name - the subgraph name
    * @param file - multipart file to upload
+   * @param isPublic
    */
-  async uploadSubgraphFile(file: any): Promise<postSubgraphResult> {
+  async uploadSubGraphFile(
+    name: string,
+    file: File,
+    isPublic?: boolean
+  ): Promise<postSubGraphResult> {
     // compile data
+    // needs name
     const request = new FormData();
+    request.append('name', name);
     request.append('file', file);
+    if (typeof isPublic === 'boolean') {
+      request.append('public', JSON.stringify(isPublic));
+    }
     const config = {
       headers: {
-        'content-type': 'multipart/form-data'
-      }
+        'content-type': 'multipart/form-data',
+      },
     };
     // make the api call
     const response: ApiResponse<
-      Subgraph,
+      SubGraph,
       ServerError
     > = await this.apisauce.post(`/models/subgraphs/file`, request, config);
     // the typical ways to die when calling an api
@@ -306,8 +317,8 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const subgraph = response.data as Subgraph;
-      return { kind: 'ok', subgraph };
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

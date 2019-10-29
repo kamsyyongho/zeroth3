@@ -201,7 +201,14 @@ export function Projects() {
           title={translate("projects.header")}
         />
         <CardContent className={classes.cardContent} >
-          {projectsLoading ? <BulletList /> : <ProjectGridList projects={projects} checkedProjects={checkedProjects} setCheckedProjects={setCheckedProjects} onUpdate={handleProjectListUpdate} />}
+          {projectsLoading ? <BulletList /> :
+            <ProjectGridList
+              projects={projects}
+              checkedProjects={checkedProjects}
+              setCheckedProjects={setCheckedProjects}
+              onUpdate={handleProjectListUpdate}
+            />
+          }
         </CardContent>
         <ProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleProjectListUpdate} />
         <ConfirmationDialog
