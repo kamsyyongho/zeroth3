@@ -9,6 +9,7 @@ import log from '../../../util/log/logger';
 import { TabPanel } from '../../shared/TabPanel';
 import { AcousticModelGridList } from './acoustic-model/AcousticModelGridList';
 import { LanguageModelGridList } from './language-model/LanguageModelGridList';
+import { SubGraphList } from './subgraph/SubGraphList';
 
 const STARTING_TAB_INDEX = 1;
 
@@ -86,6 +87,10 @@ export function ModelTabs() {
       <TabPanel value={activeTab} index={1}>
         <LanguageModelGridList
           topGraphs={topGraphs}
+          subGraphs={subGraphs}
+          handleSubGraphCreate={handleSubGraphCreate}
+        />
+        <SubGraphList
           subGraphs={subGraphs}
           handleSubGraphCreate={handleSubGraphCreate}
         />
