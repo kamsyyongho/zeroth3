@@ -23,6 +23,9 @@ export interface PostModelConfigRequest {
 /////////////
 
 export type getProjectResult =
+  | { kind: 'ok'; project: Project }
+  | GeneralApiProblem;
+export type getProjectsResult =
   | { kind: 'ok'; projects: Project[] }
   | GeneralApiProblem;
 export type postProjectResult =

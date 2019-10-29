@@ -4,7 +4,7 @@
  */
 export interface Path {
   to: string;
-  title: string;
+  title?: string;
 }
 
 export const PATHS: { [x: string]: Path } = {
@@ -23,5 +23,8 @@ export const PATHS: { [x: string]: Path } = {
   models: {
     to: '/models',
     title: 'models',
+  },
+  project: {
+    to: '/projects/:projectId',
   },
 };

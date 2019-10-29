@@ -25,11 +25,14 @@ const Header: React.FunctionComponent<{}> = (props) => {
   const location = useLocation()
   const { translate } = useContext(I18nContext);
 
-  const pathButtons: JSX.Element[] = Object.keys(PATHS).map((key, index) => {
+  const pathButtons: JSX.Element[] = [];
+  Object.keys(PATHS).forEach((key, index) => {
     const path = PATHS[key]
     const { to, title } = path
-    const isCurrentPath = location.pathname === to
-    return (<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>)
+    if (title) {
+      const isCurrentPath = location.pathname === to
+      pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>)
+    }
   })
 
   return (
