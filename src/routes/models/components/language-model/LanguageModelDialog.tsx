@@ -42,7 +42,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [testOpen, setTestOpen] = React.useState(false)
+  const [subOpen, setSubOpen] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
   const isEdit = !!modelToEdit;
@@ -167,10 +167,10 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                 <Button
                   fullWidth
                   color="primary"
-                  onClick={() => setTestOpen(true)}
+                  onClick={() => setSubOpen(true)}
                   startIcon={<AddIcon />}
                 >
-                  {translate('models.tabs.languageModel.createSubGraph')}
+                  {translate('models.createSubGraph')}
                 </Button>
                 <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
               </Form>
@@ -199,9 +199,9 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         )}
       </Formik>
       <SubgraphFormDialog
-        open={testOpen}
-        onClose={() => setTestOpen(false)}
-        handleSubGraphCreate={handleSubGraphCreate}
+        open={subOpen}
+        onClose={() => setSubOpen(false)}
+        onSuccess={handleSubGraphCreate}
       />
     </Dialog>
   );

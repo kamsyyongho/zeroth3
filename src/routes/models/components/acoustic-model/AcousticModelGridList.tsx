@@ -1,4 +1,5 @@
-import { Button, Grid } from '@material-ui/core';
+import { Button, Card, Grid, CardContent } from '@material-ui/core';
+import CardActions from '@material-ui/core/CardActions';
 import AddIcon from '@material-ui/icons/Add';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
@@ -56,33 +57,29 @@ export function AcousticModelGridList() {
     />
   ))
 
-  const renderCreateButton = () => <Button
-    variant="contained"
-    color="primary"
-    onClick={handleCreateOpen}
-    startIcon={<AddIcon />}
-  >
-    {translate('models.tabs.acousticModel.create')}
-  </Button>
-
   if (modelsLoading) {
     return <BulletList />
   }
-  if (!models.length) {
-    return (
-      <>
-        {renderCreateButton()}
-        <AcousticModelDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleModelListUpdate} />
-      </>
-    )
-  }
+
   return (
-    <Grid container spacing={2} >
-      {renderModels()}
-      <Grid item md={3}>
-        {renderCreateButton()}
-      </Grid>
+    <Card>
       <AcousticModelDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleModelListUpdate} />
-    </Grid>
+      {!!models.length &&
+        (<CardContent>
+          <Grid container spacing={2} >
+            {renderModels()}
+          </Grid>
+        </CardContent>)}
+      <CardActions>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleCreateOpen}
+          startIcon={<AddIcon />}
+        >
+          {translate('models.tabs.acousticModel.create')}
+        </Button>
+      </CardActions>
+    </Card>
   )
 }

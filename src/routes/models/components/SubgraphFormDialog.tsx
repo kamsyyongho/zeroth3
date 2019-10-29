@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -24,17 +25,19 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 interface SubgraphFormDialogProps {
   open: boolean
   onClose: () => void
-  handleSubGraphCreate: (subGraph: SubGraph) => void
+  onSuccess: (subGraph: SubGraph) => void
+  subGraphToEdit?: SubGraph
 }
 
 
 export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
-  const { open, onClose, handleSubGraphCreate } = props;
+  const { open, onClose, onSuccess, subGraphToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
+  const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
@@ -62,13 +65,19 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     }),
   })
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     text: "",
     isPublic: true,
     shouldUploadFile: false,
     files: [],
   };
+  if (subGraphToEdit) {
+    initialValues = {
+      ...initialValues,
+      name: subGraphToEdit.name,
+    };
+  }
 
   const handleSubmit = async (values: FormValues) => {
     const { shouldUploadFile, files } = values;
@@ -80,16 +89,28 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       setIsError(false);
       const { name, text, isPublic } = values;
       let response: postSubGraphResult;
-      if (shouldUploadFile) {
-        response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
+      if (isEdit && subGraphToEdit) {
+        //!
+        //!
+        //!
+        //TODO
+        //* HANDLE THE EDIT LOGIC HERE
+        //!
+        //!
+        //!
+        return
       } else {
-        response = await api.models.postSubGraph(name.trim(), text.trim(), isPublic);
+        if (shouldUploadFile) {
+          response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
+        } else {
+          response = await api.models.postSubGraph(name.trim(), text.trim(), isPublic);
+        }
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        handleSubGraphCreate(response.subGraph);
+        onSuccess(response.subGraph);
         onClose();
       } else {
         log({
@@ -117,7 +138,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate("models.tabs.languageModel.createSubGraph")}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate("models.createSubGraph")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
@@ -145,9 +166,9 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : <AddIcon />}
+                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
-                {translate("common.submit")}
+                {translate(isEdit ? "common.edit" : "common.submit")}
               </Button>
             </DialogActions>
           </>

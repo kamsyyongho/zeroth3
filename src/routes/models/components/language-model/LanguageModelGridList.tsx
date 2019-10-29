@@ -1,4 +1,4 @@
-import { Button, Grid } from '@material-ui/core';
+import { Button, Card, CardActions, CardContent, Grid } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
@@ -82,11 +82,6 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     handleEditClose(updatedModel.id);
   }
 
-  // HANDLE EDIT
-
-  // CHANGE EDIT ICON AND TEXT
-
-
   const renderModels = () => models.map((model, index) => (
     <LanguageModelGridItem
       key={index}
@@ -101,39 +96,12 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     />
   ))
 
-  const renderCreateButton = () => <Button
-    variant="contained"
-    color="primary"
-    onClick={handleCreateOpen}
-    startIcon={<AddIcon />}
-  >
-    {translate('models.tabs.languageModel.create')}
-  </Button>
-
   if (modelsLoading) {
     return <BulletList />
   }
-  if (!models.length) {
-    return (
-      <>
-        {renderCreateButton()}
-        <LanguageModelDialog
-          open={createOpen}
-          onClose={handleCreateClose}
-          onSuccess={handleModelListUpdate}
-          topGraphs={topGraphs}
-          subGraphs={subGraphs}
-          handleSubGraphCreate={handleSubGraphCreate}
-        />
-      </>
-    )
-  }
+
   return (
-    <Grid container spacing={2} >
-      {renderModels()}
-      <Grid item md={12}>
-        {renderCreateButton()}
-      </Grid>
+    <Card>
       <LanguageModelDialog
         open={createOpen}
         onClose={handleCreateClose}
@@ -142,6 +110,22 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         subGraphs={subGraphs}
         handleSubGraphCreate={handleSubGraphCreate}
       />
-    </Grid>
+      {!!models.length &&
+        (<CardContent>
+          <Grid container spacing={2} >
+            {renderModels()}
+          </Grid>
+        </CardContent>)}
+      <CardActions>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleCreateOpen}
+          startIcon={<AddIcon />}
+        >
+          {translate('models.tabs.languageModel.create')}
+        </Button>
+      </CardActions>
+    </Card>
   )
 }
