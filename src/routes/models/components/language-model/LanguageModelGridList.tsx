@@ -15,6 +15,10 @@ interface LanguageModelGridListProps {
   handleSubGraphCreate: (subGraph: SubGraph) => void
 }
 
+export interface EditOpenByModelId {
+  [x: number]: boolean
+}
+
 export function LanguageModelGridList(props: LanguageModelGridListProps) {
   const { topGraphs, subGraphs, handleSubGraphCreate } = props;
   const api = React.useContext(ApiContext)
@@ -22,10 +26,17 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   const [models, setModels] = React.useState<LanguageModel[]>([]);
   const [modelsLoading, setModelsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState<EditOpenByModelId>({});
+
+  const handleEditOpen = (modelId: number) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [modelId]: true }
+  });
+  const handleEditClose = (modelId: number) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [modelId]: false }
+  });
 
   const handleCreateOpen = () => setCreateOpen(true);
   const handleCreateClose = () => setCreateOpen(false);
-
 
   React.useEffect(() => {
     const getModels = async () => {
@@ -47,17 +58,46 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     getModels();
   }, []);
 
-  const handleModelListUpdate = (model: LanguageModel) => {
-    setModels(prevModels => {
-      prevModels.push(model);
-      return prevModels
-    })
+  const handleModelListUpdate = (model: LanguageModel, isEdit?: boolean) => {
+    if (isEdit) {
+      setModels(prevModels => {
+        const idToUpdate = model.id;
+        for (let i = 0; i < prevModels.length; i++) {
+          if (prevModels[i].id === idToUpdate) {
+            prevModels[i] = model;
+          }
+        }
+        return prevModels
+      })
+    } else {
+      setModels(prevModels => {
+        prevModels.push(model);
+        return prevModels
+      })
+    }
   }
+
+  const handleEditSuccess = (updatedModel: LanguageModel, isEdit?: boolean) => {
+    handleModelListUpdate(updatedModel, isEdit);
+    handleEditClose(updatedModel.id);
+  }
+
+  // HANDLE EDIT
+
+  // CHANGE EDIT ICON AND TEXT
+
 
   const renderModels = () => models.map((model, index) => (
     <LanguageModelGridItem
       key={index}
       model={model}
+      editOpen={editOpen}
+      topGraphs={topGraphs}
+      subGraphs={subGraphs}
+      handleEditClose={handleEditClose}
+      handleEditOpen={handleEditOpen}
+      handleSubGraphCreate={handleSubGraphCreate}
+      handleEditSuccess={handleEditSuccess}
     />
   ))
 
@@ -91,7 +131,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   return (
     <Grid container spacing={2} >
       {renderModels()}
-      <Grid item md={3}>
+      <Grid item md={12}>
         {renderCreateButton()}
       </Grid>
       <LanguageModelDialog

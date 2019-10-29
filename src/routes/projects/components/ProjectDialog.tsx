@@ -71,7 +71,12 @@ export function ProjectDialog(props: ProjectDialogProps) {
     thresholdHc: VALIDATION.PROJECT.threshold.max,
   };
   if (projectToEdit) {
-    initialValues = { ...initialValues, name: projectToEdit.name, thresholdLc: projectToEdit.thresholdLc, thresholdHc: projectToEdit.thresholdHc };
+    initialValues = {
+      ...initialValues,
+      name: projectToEdit.name,
+      thresholdLc: projectToEdit.thresholdLc,
+      thresholdHc: projectToEdit.thresholdHc,
+    };
   }
 
   const handleClose = () => onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);

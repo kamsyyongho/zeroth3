@@ -66,7 +66,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     name: "",
     text: "",
     isPublic: true,
-    shouldUploadFile: true,
+    shouldUploadFile: false,
     files: [],
   };
 

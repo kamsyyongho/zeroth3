@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -14,6 +15,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { postLanguageModelResult } from '../../../../services/api/types/models.types';
 import { LanguageModel, SnackbarError, SubGraph, TopGraph } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormField';
@@ -23,8 +25,9 @@ import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
 interface LanguageModelDialogProps {
   open: boolean
-  onClose: () => void
-  onSuccess: (model: LanguageModel) => void
+  modelToEdit?: LanguageModel
+  onClose: (modelId?: number) => void
+  onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void
   topGraphs: TopGraph[]
   subGraphs: SubGraph[]
   handleSubGraphCreate: (subGraph: SubGraph) => void
@@ -35,13 +38,14 @@ interface SubGraphsById {
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
-  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphCreate } = props;
+  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphCreate, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [testOpen, setTestOpen] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [isError, setIsError] = React.useState(false)
+  const isEdit = !!modelToEdit;
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
@@ -73,25 +77,49 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   })
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     selectedTopGraphId: topGraphs[0] && topGraphs[0].id || 0,
     selectedSubGraphIds: [],
     description: "",
   };
+  if (modelToEdit) {
+    initialValues = {
+      ...initialValues,
+      name: modelToEdit.name,
+      description: modelToEdit.description,
+      selectedTopGraphId: modelToEdit.topGraph.id,
+      selectedSubGraphIds: modelToEdit.subGraphs.map(subGraph => subGraph.id),
+    };
+  }
+
+  const handleClose = () => onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {
       setLoading(true);
       setIsError(false);
-      const { name, description, selectedTopGraphId } = values;
-      const response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, [0], description.trim());
+      const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
+      let response: postLanguageModelResult
+      if (isEdit && modelToEdit) {
+        //!
+        //!
+        //!
+        //TODO
+        //* HANDLE THE EDIT LOGIC HERE
+        //!
+        //!
+        //!
+        return
+      } else {
+        response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
+      }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.languageModel);
-        onClose();
+        handleClose();
       } else {
         log({
           file: `LanguageModelDialog.tsx`,
@@ -115,10 +143,10 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     <Dialog
       fullScreen={fullScreen}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate('models.tabs.languageModel.create')}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
@@ -148,7 +176,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
@@ -162,9 +190,9 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : <AddIcon />}
+                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
-                {translate('models.createModel')}
+                {translate(isEdit ? "models.editModel" : "models.createModel")}
               </Button>
             </DialogActions>
           </>

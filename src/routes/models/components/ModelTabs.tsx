@@ -58,7 +58,6 @@ export function ModelTabs() {
   }, []);
 
   const handleSubGraphCreate = (newSubGraph: SubGraph) => {
-    console.log('newSubGraph', newSubGraph);
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
       return prevSubGraphs

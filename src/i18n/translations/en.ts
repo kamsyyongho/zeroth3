@@ -82,10 +82,12 @@ export const en: ResourceLanguage = {
         languageModel: {
           header: 'Language Model',
           create: 'Create language model',
+          edit: 'Edit language model',
           createSubGraph: 'Create new sub graph',
         },
       },
       createModel: 'Create model',
+      editModel: 'Edit model',
     },
   },
 };

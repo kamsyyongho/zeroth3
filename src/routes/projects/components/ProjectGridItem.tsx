@@ -44,7 +44,12 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
     isChecked = checkedProjects[project.id];
   }
   return (<Grid item xs key={project.id}>
-    <ProjectDialog open={isOpen} onClose={() => handleEditClose(project.id)} onSuccess={handleEditSuccess} projectToEdit={project} />
+    <ProjectDialog
+      open={isOpen}
+      onClose={() => handleEditClose(project.id)}
+      onSuccess={handleEditSuccess}
+      projectToEdit={project}
+    />
     <Card className={classes.card}>
       <CardHeader title={project.name} action={<>
         <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleProjectCheck(project.id, event.target.checked)} />
