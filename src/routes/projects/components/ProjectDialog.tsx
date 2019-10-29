@@ -93,7 +93,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
         response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         const { project } = response;
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });

@@ -42,7 +42,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     const getModels = async () => {
       if (api && api.models) {
         const response = await api.models.getLanguageModels();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setModels(response.languageModels)
         } else {
           log({

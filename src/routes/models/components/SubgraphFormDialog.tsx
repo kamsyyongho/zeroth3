@@ -107,7 +107,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
         }
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.subGraph);
@@ -166,7 +166,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
                 {translate(isEdit ? "common.edit" : "common.submit")}
               </Button>

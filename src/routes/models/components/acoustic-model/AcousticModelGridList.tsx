@@ -1,4 +1,4 @@
-import { Button, Card, Grid, CardContent } from '@material-ui/core';
+import { Button, Card, CardContent, Grid } from '@material-ui/core';
 import CardActions from '@material-ui/core/CardActions';
 import AddIcon from '@material-ui/icons/Add';
 import React from 'react';
@@ -25,7 +25,7 @@ export function AcousticModelGridList() {
     const getModels = async () => {
       if (api && api.models) {
         const response = await api.models.getAcousticModels();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setModels(response.acousticModels)
         } else {
           log({

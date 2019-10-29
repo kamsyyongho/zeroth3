@@ -65,7 +65,7 @@ export function IAM() {
     const getUsers = async () => {
       if (api && api.IAM) {
         const response = await api.IAM.getUsers();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setUsers(response.users)
         } else {
           log({
@@ -81,7 +81,7 @@ export function IAM() {
     const getRoles = async () => {
       if (api && api.IAM) {
         const response = await api.IAM.getRoles();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setRoles(response.roles)
         } else {
           log({

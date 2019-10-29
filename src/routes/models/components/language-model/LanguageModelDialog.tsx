@@ -115,7 +115,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.languageModel);

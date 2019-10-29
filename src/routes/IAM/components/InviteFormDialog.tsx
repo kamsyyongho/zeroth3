@@ -50,7 +50,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
       setIsError(false);
       const response = await api.IAM.inviteUser(values.email.trim());
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onClose();

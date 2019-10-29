@@ -77,7 +77,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       const { name, description, location, sampleRate } = values;
       const response = await api.models.postAcousticModel(name.trim(), sampleRate, location.trim(), description.trim());
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.acousticModel);
