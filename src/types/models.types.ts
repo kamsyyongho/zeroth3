@@ -22,6 +22,7 @@ export type SubGraph = TopGraph;
 
 export interface ModelConfig {
   acousticModel: AcousticModel;
+  name: string;
   description: string;
   id: number;
   languageModel: LanguageModel;
