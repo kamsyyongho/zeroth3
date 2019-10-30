@@ -8,7 +8,8 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import React from 'react';
-import { Project } from '../../../types';
+import { Link } from 'react-router-dom';
+import { PATHS, Project } from '../../../types';
 import { CheckedProjectsById } from '../Projects';
 import { ProjectDialog } from './ProjectDialog';
 import { EditOpenByProjectId } from './ProjectGridList';
@@ -57,7 +58,7 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
           <MoreVertIcon />
         </IconButton>
       </>} />
-      <CardActionArea>
+      <CardActionArea component={Link} to={`${PATHS.projects.to}/${project.id}`} >
         <CardContent>
           <Typography gutterBottom color="textPrimary" className={classes.text}>
             {project.apiKey}
