@@ -9,8 +9,9 @@ import { RouteComponentProps } from "react-router";
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../services/api/types';
-import { Project } from '../../types';
+import { PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
+import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 
 interface ProjectDetailsProps {
   projectId: string
@@ -88,10 +89,16 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     if (!project) {
       return <Typography>{'PROJECT NOT FOUND'}</Typography>
     }
+    const breadcrumbs: Breadcrumb[] = [
+      PATHS.projects,
+      {
+        rawTitle: project.name,
+      }
+    ]
     return (<Card>
       <CardHeader
         action={() => { }}
-        title={project.name}
+        title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
       />
       <CardContent className={classes.cardContent} >
         {projectLoading ? <BulletList /> :
