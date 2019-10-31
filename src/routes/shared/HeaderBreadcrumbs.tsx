@@ -38,7 +38,7 @@ export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
     const { to, title, rawTitle } = breadcrumb;
     const text = rawTitle || translate(`path.${title}`);
     if (!to) {
-      return <Typography color="textPrimary" variant='h6' >{text}</Typography>
+      return <Typography key={index} color="textPrimary" variant='h6' >{text}</Typography>
     }
     return (
       <Button
