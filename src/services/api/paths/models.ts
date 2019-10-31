@@ -7,18 +7,24 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  AcousticModelRequest,
+  deleteAcousticModelResult,
+  deleteLanguageModelResult,
+  deleteSubGraphResult,
   getAcousticModelsResult,
   getLanguageModelsResult,
   getSubGraphsResult,
   getTopGraphsResult,
-  PostAcousticModelRequest,
+  LanguageModelRequest,
   postAcousticModelResult,
-  PostLanguageModelRequest,
   postLanguageModelResult,
-  PostSubGraphRequest,
   postSubGraphResult,
   ProblemKind,
   ServerError,
+  SubGraphRequest,
+  updateAcousticModelResult,
+  updateLanguageModelResult,
+  updateSubGraphResult,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -77,7 +83,7 @@ export class Models extends ParentApi {
     description = ''
   ): Promise<postAcousticModelResult> {
     // compile data
-    const request: PostAcousticModelRequest = {
+    const request: AcousticModelRequest = {
       name,
       sampleRate,
       location,
@@ -105,6 +111,78 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Update an existing acoustic model
+   * @param modelId
+   * @param name
+   * @param sampleRate
+   * @param location
+   * @param description
+   */
+  async updateAcousticModel(
+    modelId: number,
+    name: string,
+    sampleRate: number,
+    location: string,
+    description = ''
+  ): Promise<updateAcousticModelResult> {
+    // compile data
+    const request: AcousticModelRequest = {
+      name,
+      sampleRate,
+      location,
+      description,
+    };
+    // make the api call
+    const response: ApiResponse<
+      AcousticModel,
+      ServerError
+    > = await this.apisauce.put(`/models/acoustic/${modelId}`, request);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const acousticModel = response.data as AcousticModel;
+      return { kind: 'ok', acousticModel };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Delete an existing acoustic model
+   * @param modelId
+   * @returns a `conflict` kind if the model cannot be deleted
+   */
+  async deleteAcousticModel(
+    modelId: number
+  ): Promise<deleteAcousticModelResult> {
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/models/acoustic/${modelId}`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 
   /**
@@ -177,7 +255,7 @@ export class Models extends ParentApi {
     description = ''
   ): Promise<postLanguageModelResult> {
     // compile data
-    const request: PostLanguageModelRequest = {
+    const request: LanguageModelRequest = {
       name,
       topGraphId,
       subGraphIds,
@@ -205,6 +283,78 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Update an existing language model
+   * @param modelId
+   * @param name
+   * @param topGraphId
+   * @param subGraphIds
+   * @param description
+   */
+  async updateLanguageModel(
+    modelId: number,
+    name: string,
+    topGraphId: number,
+    subGraphIds: number[],
+    description = ''
+  ): Promise<updateLanguageModelResult> {
+    // compile data
+    const request: LanguageModelRequest = {
+      name,
+      topGraphId,
+      subGraphIds,
+      description,
+    };
+    // make the api call
+    const response: ApiResponse<
+      LanguageModel,
+      ServerError
+    > = await this.apisauce.put(`/models/language-models/${modelId}`, request);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const languageModel = response.data as LanguageModel;
+      return { kind: 'ok', languageModel };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Delete an existing language model
+   * @param modelId
+   * @returns a `conflict` kind if the model cannot be deleted
+   */
+  async deleteLanguageModel(
+    modelId: number
+  ): Promise<deleteLanguageModelResult> {
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/models/language-models/${modelId}`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 
   /**
@@ -247,7 +397,7 @@ export class Models extends ParentApi {
     isPublic?: boolean
   ): Promise<postSubGraphResult> {
     // compile data
-    const request: PostSubGraphRequest = {
+    const request: SubGraphRequest = {
       name,
       text,
       public: isPublic,
@@ -274,6 +424,73 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Update an existing subgraph
+   * @param subGraphId
+   * @param name
+   * @param text
+   * @param isPublic
+   */
+  async updateSubGraph(
+    subGraphId: number,
+    name: string,
+    text: string,
+    isPublic?: boolean
+  ): Promise<updateSubGraphResult> {
+    // compile data
+    const request: SubGraphRequest = {
+      name,
+      text,
+      public: isPublic,
+    };
+    // make the api call
+    const response: ApiResponse<
+      SubGraph,
+      ServerError
+    > = await this.apisauce.put(`/models/subgraphs/${subGraphId}`, request);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Delete an existing subgraph
+   * @param subGraphId
+   * @returns a `conflict` kind if the subgraph cannot be deleted
+   */
+  async deleteSubGraph(subGraphId: number): Promise<deleteSubGraphResult> {
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.delete(`/models/subgraphs/${subGraphId}`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 
   /**
