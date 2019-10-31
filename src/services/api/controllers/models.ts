@@ -46,10 +46,9 @@ export class Models extends ParentApi {
    */
   async getAcousticModels(): Promise<getAcousticModelsResult> {
     // make the api call
-    const response: ApiResponse<
-      AcousticModel[],
-      ServerError
-    > = await this.apisauce.get(`/models/acoustic`);
+    const response = await this.apisauce.get<AcousticModel[], ServerError>(
+      `/models/acoustic`
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

@@ -3,9 +3,9 @@ import { KeycloakInstance } from 'keycloak-js';
 import log from '../../util/log/logger';
 import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
-import { IAM } from './paths/iam';
-import { Projects } from './paths/projects';
-import { Models } from './paths/models';
+import { IAM } from './controllers/iam';
+import { Projects } from './controllers/projects';
+import { Models } from './controllers/models';
 
 /**
  * Main class that manages all requests to the API.
