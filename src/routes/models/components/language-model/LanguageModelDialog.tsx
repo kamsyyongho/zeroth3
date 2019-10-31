@@ -142,6 +142,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
@@ -176,7 +178,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button

@@ -121,6 +121,8 @@ export function ProjectDialog(props: ProjectDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
@@ -139,7 +141,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button

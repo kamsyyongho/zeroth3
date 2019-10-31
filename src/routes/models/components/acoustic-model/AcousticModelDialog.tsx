@@ -104,6 +104,8 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
@@ -122,7 +124,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button

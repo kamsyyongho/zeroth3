@@ -134,6 +134,8 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
@@ -152,7 +154,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
