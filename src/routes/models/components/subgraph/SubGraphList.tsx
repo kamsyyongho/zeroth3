@@ -9,10 +9,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
+import { BulletList } from 'react-content-loader';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { SubGraph } from '../../../../types/models.types';
+import { SubGraph } from '../../../../types';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -36,13 +37,14 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface SubGraphListProps {
+  subGraphsLoading: boolean
   subGraphs: SubGraph[]
   handleSubGraphCreate: (subGraph: SubGraph) => void
 }
 
 
 export function SubGraphList(props: SubGraphListProps) {
-  const { subGraphs, handleSubGraphCreate } = props;
+  const { subGraphsLoading, subGraphs, handleSubGraphCreate } = props;
   const { translate } = React.useContext(I18nContext);
   const [subOpen, setSubOpen] = React.useState(false)
   const [subGraphToEdit, setSubGraphToEdit] = React.useState<SubGraph | undefined>(undefined)
@@ -66,7 +68,7 @@ export function SubGraphList(props: SubGraphListProps) {
       <Card className={classes.card}>
         <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={
           <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
-            <MoreVertIcon />
+            <EditIcon />
           </IconButton>} />
       </Card>
     </ListItem>
@@ -84,21 +86,24 @@ export function SubGraphList(props: SubGraphListProps) {
         <CardHeader
           title={translate("models.header")}
         />
-        <CardContent className={classes.cardContent} >
-          <List >
-            {renderListItems()}
-          </List>
-        </CardContent>
-        <CardActions>
-          <Button
-            color="primary"
-            variant='contained'
-            onClick={openCreateDialog}
-            startIcon={<AddIcon />}
-          >
-            {translate('models.createSubGraph')}
-          </Button>
-        </CardActions>
+        {subGraphsLoading ? <BulletList /> : (
+          <>
+            <CardContent className={classes.cardContent} >
+              <List >
+                {renderListItems()}
+              </List>
+            </CardContent>
+            <CardActions>
+              <Button
+                color="primary"
+                variant='contained'
+                onClick={openCreateDialog}
+                startIcon={<AddIcon />}
+              >
+                {translate('models.createSubGraph')}
+              </Button>
+            </CardActions>
+          </>)}
       </Card>
     </Container>
   );

@@ -1,14 +1,19 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { Project } from '../../../types';
+import { ModelConfig, Project } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  deleteModelConfigResult,
   deleteProjectResult,
+  getModelConfigsResult,
   getProjectResult,
+  getProjectsResult,
+  PostModelConfigRequest,
+  postModelConfigResult,
   postProjectResult,
   ProblemKind,
   ProjectRequest,
   ServerError,
-  updateProjectResult
+  updateProjectResult,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -26,9 +31,37 @@ export class Projects extends ParentApi {
   }
 
   /**
+   * Gets a single project project id
+   * @param projectId
+   */
+  async getProject(projectId: number): Promise<getProjectResult> {
+    // make the api call
+    const response: ApiResponse<Project, ServerError> = await this.apisauce.get(
+      `/projects/${projectId}`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const project = response.data as Project;
+      return { kind: 'ok', project };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
    * Gets a list of associated projects
    */
-  async getProjects(): Promise<getProjectResult> {
+  async getProjects(): Promise<getProjectsResult> {
     // make the api call
     const response: ApiResponse<
       Project[],
@@ -48,6 +81,47 @@ export class Projects extends ParentApi {
     try {
       const projects = response.data as Project[];
       return { kind: 'ok', projects };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Create a new project
+   * @param name
+   * @param thresholdHc
+   * @param thresholdLc
+   */
+  async postProject(
+    name: string,
+    thresholdHc: number,
+    thresholdLc: number
+  ): Promise<postProjectResult> {
+    // compile data
+    const request: ProjectRequest = {
+      name,
+      thresholdHc,
+      thresholdLc,
+    };
+    // make the api call
+    const response: ApiResponse<
+      Project,
+      ServerError
+    > = await this.apisauce.post(`/projects`, request);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const project = response.data as Project;
+      return { kind: 'ok', project };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -77,47 +151,6 @@ export class Projects extends ParentApi {
   }
 
   /**
-   * Create a new project
-   * @param name
-   * @param thresholdHc
-   * @param thresholdLc
-   */
-  async postProject(
-    name: string,
-    thresholdHc: number,
-    thresholdLc: number
-  ): Promise<postProjectResult> {
-    // compile data
-    const request: ProjectRequest = {
-      name,
-      thresholdHc,
-      thresholdLc
-    };
-    // make the api call
-    const response: ApiResponse<
-      Project,
-      ServerError
-    > = await this.apisauce.post(`/projects`, request);
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response);
-      if (problem) {
-        if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
-        }
-        return problem;
-      }
-    }
-    // transform the data into the format we are expecting
-    try {
-      const project = response.data as Project;
-      return { kind: 'ok', project };
-    } catch {
-      return { kind: ProblemKind['bad-data'] };
-    }
-  }
-
-  /**
    * Update an existing project
    * @param name
    * @param thresholdHc
@@ -134,7 +167,7 @@ export class Projects extends ParentApi {
     const request: ProjectRequest = {
       name,
       thresholdHc,
-      thresholdLc
+      thresholdLc,
     };
     // make the api call
     const response: ApiResponse<Project, ServerError> = await this.apisauce.put(

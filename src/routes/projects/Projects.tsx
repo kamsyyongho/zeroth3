@@ -59,7 +59,7 @@ export function Projects() {
     const getProjects = async () => {
       if (api && api.projects) {
         const response = await api.projects.getProjects();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setProjects(response.projects)
         } else {
           log({

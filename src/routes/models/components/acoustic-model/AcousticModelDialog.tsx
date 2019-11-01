@@ -77,7 +77,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       const { name, description, location, sampleRate } = values;
       const response = await api.models.postAcousticModel(name.trim(), sampleRate, location.trim(), description.trim());
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.acousticModel);
@@ -104,6 +104,8 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
@@ -122,7 +124,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button

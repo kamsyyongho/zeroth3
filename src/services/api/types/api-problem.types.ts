@@ -18,6 +18,9 @@ export interface MultipleServerError {
   arguments?: readonly [MultipleServerError, number];
 }
 
+/**
+ * The types of problems that the api can receive
+ */
 export enum ProblemKind {
   /**
    * Times up.
@@ -55,6 +58,10 @@ export enum ProblemKind {
    * The data we received is not in the expected format.
    */
   'bad-data' = 'bad-data',
+  /**
+   * There is a conflict preventing the requested action.
+   */
+  'conflict' = 'conflict',
 }
 
 export interface GeneralApiProblem {

@@ -3,9 +3,10 @@ import { KeycloakInstance } from 'keycloak-js';
 import log from '../../util/log/logger';
 import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
-import { IAM } from './paths/iam';
-import { Projects } from './paths/projects';
-import { Models } from './paths/models';
+import { IAM } from './controllers/iam';
+import { ModelConfig } from './controllers/model-config';
+import { Models } from './controllers/models';
+import { Projects } from './controllers/projects';
 
 /**
  * Main class that manages all requests to the API.
@@ -48,6 +49,11 @@ export class Api {
   models: Models | undefined;
 
   /**
+   * Subclass that manages model config requests.
+   */
+  modelConfig: ModelConfig | undefined;
+
+  /**
    * Creates the api.
    *
    * - Be as quick as possible in here.
@@ -71,7 +77,7 @@ export class Api {
     this.apisauce = create({
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
-      headers: this.generateHeader()
+      headers: this.generateHeader(),
     });
     // log all responses
     if (!ENV.isProduction) {
@@ -80,6 +86,7 @@ export class Api {
     this.IAM = new IAM(this.apisauce, this.logout);
     this.projects = new Projects(this.apisauce, this.logout);
     this.models = new Models(this.apisauce, this.logout);
+    this.modelConfig = new ModelConfig(this.apisauce, this.logout);
     return true;
   }
 
@@ -92,7 +99,7 @@ export class Api {
       file: 'api.ts',
       caller: 'API - responseMonitor',
       value: response,
-      api: true
+      api: true,
     });
   }
 
@@ -102,7 +109,7 @@ export class Api {
    */
   private generateHeader(): HEADERS {
     const header: HEADERS = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
     if (this.keycloak) {
       try {
@@ -113,7 +120,7 @@ export class Api {
             file: `api.ts`,
             caller: `generateHeader`,
             value: 'TOKEN IS UNDEFINED',
-            important: true
+            important: true,
           });
         }
       } catch (error) {
@@ -121,7 +128,7 @@ export class Api {
           file: `api.ts`,
           caller: `generateHeader- error setting token`,
           value: error,
-          error: true
+          error: true,
         });
       }
     }
@@ -151,7 +158,7 @@ export class Api {
           file: `api.ts`,
           caller: `updateAuthToken- error updating token`,
           value: error,
-          error: true
+          error: true,
         });
         reset = true;
       }

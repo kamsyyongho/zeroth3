@@ -5,7 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
 import { LanguageModel, SubGraph, TopGraph } from '../../../../types';
 import { ChipList } from '../../../shared/ChipList';
@@ -52,7 +52,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
     <Card className={classes.card}>
       <CardHeader title={model.name} className={classes.text} action={
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
-          <MoreVertIcon />
+          <EditIcon />
         </IconButton>} />
       <CardActionArea>
         <CardContent>

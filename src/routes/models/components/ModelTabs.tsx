@@ -17,6 +17,8 @@ export function ModelTabs() {
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([] as TopGraph[]);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([] as SubGraph[]);
+  const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
+  const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
 
@@ -24,7 +26,7 @@ export function ModelTabs() {
     const getTopGraphs = async () => {
       if (api && api.models) {
         const response = await api.models.getTopGraphs();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setTopGraphs(response.topGraphs)
         } else {
           log({
@@ -34,6 +36,7 @@ export function ModelTabs() {
             important: true,
           })
         }
+        setTopGraphsLoading(false);
       }
     }
     getTopGraphs();
@@ -43,7 +46,7 @@ export function ModelTabs() {
     const getSubGraphs = async () => {
       if (api && api.models) {
         const response = await api.models.getSubGraphs();
-        if (response.kind === "ok") {
+        if (response.kind === 'ok') {
           setSubGraphs(response.subGraphs)
         } else {
           log({
@@ -53,6 +56,7 @@ export function ModelTabs() {
             important: true,
           })
         }
+        setSubGraphsLoading(false)
       }
     }
     getSubGraphs();
@@ -91,6 +95,7 @@ export function ModelTabs() {
           handleSubGraphCreate={handleSubGraphCreate}
         />
         <SubGraphList
+          subGraphsLoading={subGraphsLoading}
           subGraphs={subGraphs}
           handleSubGraphCreate={handleSubGraphCreate}
         />

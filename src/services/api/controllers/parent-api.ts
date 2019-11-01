@@ -17,8 +17,8 @@ export class ParentApi {
 
   /**
    * Creates the api from the already initiated parent.
-   *
    * @param apisauce The apisauce instance.
+   * @param logout from `keycloakContext`
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     this.apisauce = apisauce;

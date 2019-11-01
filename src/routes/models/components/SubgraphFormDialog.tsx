@@ -107,7 +107,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
         }
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === "ok") {
+      if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.subGraph);
@@ -134,6 +134,8 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   return (
     <Dialog
       fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       open={open}
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
@@ -152,7 +154,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
@@ -166,7 +168,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
                 {translate(isEdit ? "common.edit" : "common.submit")}
               </Button>

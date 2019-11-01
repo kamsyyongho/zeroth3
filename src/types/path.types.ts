@@ -3,8 +3,8 @@
  * - `title` - used as a key to get translations
  */
 export interface Path {
-  to: string;
-  title: string;
+  to?: string;
+  title?: string;
 }
 
 export const PATHS: { [x: string]: Path } = {
@@ -19,6 +19,9 @@ export const PATHS: { [x: string]: Path } = {
   projects: {
     to: '/projects',
     title: 'projects',
+  },
+  project: {
+    to: '/projects/:projectId',
   },
   models: {
     to: '/models',

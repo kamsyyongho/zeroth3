@@ -14,13 +14,13 @@ export function getGeneralApiProblem(
     case 'CONNECTION_ERROR':
       generalApiProblem = {
         kind: ProblemKind['cannot-connect'],
-        temporary: true
+        temporary: true,
       };
       break;
     case 'NETWORK_ERROR':
       generalApiProblem = {
         kind: ProblemKind['cannot-connect'],
-        temporary: true
+        temporary: true,
       };
       break;
     case 'TIMEOUT_ERROR':
@@ -42,6 +42,9 @@ export function getGeneralApiProblem(
           break;
         case 404:
           generalApiProblem = { kind: ProblemKind['not-found'] };
+          break;
+        case 409:
+          generalApiProblem = { kind: ProblemKind['conflict'] };
           break;
         default:
           generalApiProblem = { kind: ProblemKind['rejected'] };

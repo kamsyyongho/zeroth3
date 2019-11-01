@@ -1,3 +1,4 @@
+import { Organization } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -12,4 +13,7 @@ export interface RenameOrganizationRequest {
 // RESULTS //
 /////////////
 
+export type getOrganizationResult =
+  | { kind: 'ok'; organization: Organization }
+  | GeneralApiProblem;
 export type renameOrganizationResult = { kind: 'ok' } | GeneralApiProblem;

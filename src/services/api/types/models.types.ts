@@ -10,16 +10,16 @@ import { GeneralApiProblem } from './api-problem.types';
 // REQUESTS //
 //////////////
 
-export type PostAcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
+export type AcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
 
-export interface PostLanguageModelRequest {
+export interface LanguageModelRequest {
   name: string;
   description: string;
   topGraphId: number;
   subGraphIds: number[];
 }
 
-export interface PostSubGraphRequest {
+export interface SubGraphRequest {
   name: string;
   text: string;
   public?: boolean;
@@ -37,6 +37,12 @@ export type postAcousticModelResult =
   | { kind: 'ok'; acousticModel: AcousticModel }
   | GeneralApiProblem;
 
+export type updateAcousticModelResult =
+  | { kind: 'ok'; acousticModel: AcousticModel }
+  | GeneralApiProblem;
+
+export type deleteAcousticModelResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type getTopGraphsResult =
   | { kind: 'ok'; topGraphs: TopGraph[] }
   | GeneralApiProblem;
@@ -49,6 +55,12 @@ export type postLanguageModelResult =
   | { kind: 'ok'; languageModel: LanguageModel }
   | GeneralApiProblem;
 
+export type updateLanguageModelResult =
+  | { kind: 'ok'; languageModel: LanguageModel }
+  | GeneralApiProblem;
+
+export type deleteLanguageModelResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type getSubGraphsResult =
   | { kind: 'ok'; subGraphs: SubGraph[] }
   | GeneralApiProblem;
@@ -56,3 +68,9 @@ export type getSubGraphsResult =
 export type postSubGraphResult =
   | { kind: 'ok'; subGraph: SubGraph }
   | GeneralApiProblem;
+
+export type updateSubGraphResult =
+  | { kind: 'ok'; subGraph: SubGraph }
+  | GeneralApiProblem;
+
+export type deleteSubGraphResult = { kind: 'ok' } | GeneralApiProblem;

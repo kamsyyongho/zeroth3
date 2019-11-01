@@ -55,6 +55,8 @@ export const ko: ResourceLanguage = {
       source: 'Source',
       private: 'Private',
       public: 'Public',
+      languageModel: 'Language Model',
+      acousticModel: 'Acoustic Model',
     },
     IAM: {
       user: '사용자',
@@ -71,6 +73,15 @@ export const ko: ResourceLanguage = {
       deleteProject: 'Delete project',
       deleteProject_plural: 'Delete {{count}} projects',
       header: 'Project Management',
+      apiKey: 'API Key',
+      apiSecret: 'API Secret',
+      thresholdHc: 'High confidence threshold',
+      thresholdLc: 'Low confidence threshold',
+    },
+    modelConfig: {
+      header: 'Model configuration',
+      create: 'Create configuration',
+      edit: 'Edit configuration',
     },
     models: {
       header: 'Model Management',
@@ -85,7 +96,7 @@ export const ko: ResourceLanguage = {
           edit: 'Edit language model',
         },
       },
-      createSubGraph: 'Create new sub graph',
+      createSubGraph: 'Create sub graph',
       editSubGraph: 'Edit sub graph',
       createModel: 'Create model',
       editModel: 'Edit model',
