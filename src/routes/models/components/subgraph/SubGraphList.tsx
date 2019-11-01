@@ -9,11 +9,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { SubGraph } from '../../../../types/models.types';
+import { SubGraph } from '../../../../types';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -68,7 +68,7 @@ export function SubGraphList(props: SubGraphListProps) {
       <Card className={classes.card}>
         <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={
           <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
-            <MoreVertIcon />
+            <EditIcon />
           </IconButton>} />
       </Card>
     </ListItem>

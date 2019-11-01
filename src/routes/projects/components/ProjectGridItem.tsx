@@ -6,7 +6,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS, Project } from '../../../types';
@@ -55,7 +55,7 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
       <CardHeader title={project.name} action={<>
         <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleProjectCheck(project.id, event.target.checked)} />
         <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
-          <MoreVertIcon />
+          <EditIcon />
         </IconButton>
       </>} />
       <CardActionArea component={Link} to={`${PATHS.projects.to}/${project.id}`} >
