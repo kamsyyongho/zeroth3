@@ -14,6 +14,12 @@ export const ko: ResourceLanguage = {
       success: 'Success',
       failure: 'Failure',
     },
+    table: {
+      page: 'Page',
+      pageOf: 'Page {{current}} of {{total}}',
+      labelDisplayedRows: '{{from}}-{{to}} of {{count}}',
+      labelRowsPerPage: 'Rows per page',
+    },
     path: {
       home: '홈',
       IAM: 'IAM',
@@ -77,6 +83,7 @@ export const ko: ResourceLanguage = {
       apiSecret: 'API Secret',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+      TDP: 'TDP',
     },
     modelConfig: {
       header: 'Model configuration',

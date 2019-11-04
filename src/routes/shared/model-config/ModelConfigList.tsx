@@ -146,7 +146,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     <Container maxWidth={false} className={classes.container} >
       <Card>
         <CardHeader
-          title={translate("models.header")}
+          title={translate("modelConfig.header", { count: modelConfigs.length })}
         />
         {modelConfigsLoading ? <BulletList /> : (
           <>
