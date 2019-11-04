@@ -80,6 +80,7 @@ export const ko: ResourceLanguage = {
     },
     modelConfig: {
       header: 'Model configuration',
+      header_plural: 'Model configuration',
       create: 'Create configuration',
       edit: 'Edit configuration',
     },

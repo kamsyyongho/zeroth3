@@ -80,6 +80,7 @@ export const en: ResourceLanguage = {
     },
     modelConfig: {
       header: 'Model configuration',
+      header_plural: 'Model configurations',
       create: 'Create configuration',
       edit: 'Edit configuration',
     },
