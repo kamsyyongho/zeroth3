@@ -4,6 +4,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
+import { Link } from 'react-router-dom';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../services/api/types';
@@ -14,7 +15,7 @@ import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigList } from '../shared/model-config/ModelConfigList';
 
 interface ProjectDetailsProps {
-  projectId: string
+  projectId: string;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,6 +39,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [isValidId, setIsValidId] = React.useState(true);
+  const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
@@ -55,27 +57,27 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const handleModelConfigCreate = (newModelConfig: ModelConfig) => {
     setModelConfigs((prevModelConfigs) => {
       prevModelConfigs.push(newModelConfig);
-      return prevModelConfigs
-    })
-  }
+      return prevModelConfigs;
+    });
+  };
   const handleSubGraphCreate = (newSubGraph: SubGraph) => {
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
-      return prevSubGraphs
-    })
-  }
+      return prevSubGraphs;
+    });
+  };
   const handleAcousticModelCreate = (newAcousticModel: AcousticModel) => {
     setAcousticModels((prevAcousticModels) => {
       prevAcousticModels.push(newAcousticModel);
-      return prevAcousticModels
-    })
-  }
+      return prevAcousticModels;
+    });
+  };
   const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
     setLanguageModels((prevLanguageModels) => {
       prevLanguageModels.push(newLanguageModel);
-      return prevLanguageModels
-    })
-  }
+      return prevLanguageModels;
+    });
+  };
 
 
   //!
@@ -89,105 +91,106 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       if (api && api.projects) {
         const response = await api.projects.getProject(projectIdNumber);
         if (response.kind === 'ok') {
-          setProject(response.project)
+          setProject(response.project);
         } else if (response.kind === ProblemKind["not-found"]) {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getProject - project does not exist`,
             value: response,
             important: true,
-          })
+          });
+          setIsValidProject(false);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getProject - failed to get project`,
             value: response,
             important: true,
-          })
+          });
         }
         setProjectLoading(false);
       }
-    }
+    };
     const getModelConfigs = async () => {
       if (api && api.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectIdNumber);
         if (response.kind === 'ok') {
-          setModelConfigs(response.modelConfigs)
+          setModelConfigs(response.modelConfigs);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getModelConfigs - failed to get model configs`,
             value: response,
             important: true,
-          })
+          });
         }
         setModelConfigsLoading(false);
       }
-    }
+    };
     const getTopGraphs = async () => {
       if (api && api.models) {
         const response = await api.models.getTopGraphs();
         if (response.kind === 'ok') {
-          setTopGraphs(response.topGraphs)
+          setTopGraphs(response.topGraphs);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getTopGraphs - failed to get topgraphs`,
             value: response,
             important: true,
-          })
+          });
         }
         setTopGraphsLoading(false);
       }
-    }
+    };
     const getSubGraphs = async () => {
       if (api && api.models) {
         const response = await api.models.getSubGraphs();
         if (response.kind === 'ok') {
-          setSubGraphs(response.subGraphs)
+          setSubGraphs(response.subGraphs);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getSubGraphs - failed to get subgraphs`,
             value: response,
             important: true,
-          })
+          });
         }
         setSubGraphsLoading(false);
       }
-    }
+    };
     const getLanguageModels = async () => {
       if (api && api.models) {
         const response = await api.models.getLanguageModels();
         if (response.kind === 'ok') {
-          setLanguageModels(response.languageModels)
+          setLanguageModels(response.languageModels);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getLanguageModels - failed to get language models`,
             value: response,
             important: true,
-          })
+          });
         }
         setLanguageModelsLoading(false);
       }
-    }
+    };
     const getAcousticModels = async () => {
       if (api && api.models) {
         const response = await api.models.getAcousticModels();
         if (response.kind === 'ok') {
-          setAcousticModels(response.acousticModels)
+          setAcousticModels(response.acousticModels);
         } else {
           log({
             file: `ProjectDetails.tsx`,
             caller: `getAcousticModels - failed to get acoustic models`,
             value: response,
             important: true,
-          })
+          });
         }
         setAcousticModelsLoading(false);
       }
-    }
+    };
     if (isNaN(projectIdNumber)) {
       setIsValidId(true);
       setProjectLoading(false);
@@ -196,7 +199,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         caller: `project id not valid`,
         value: projectId,
         important: true,
-      })
+      });
     } else {
       getProject();
       getModelConfigs();
@@ -205,28 +208,29 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getLanguageModels();
       getAcousticModels();
     }
-  }, [api, projectId]);
+  }, [api, projectId, projectIdNumber]);
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{'INVALID PROJECT ID'}</Typography>
+      return <Typography>{'INVALID PROJECT ID'}</Typography>;
     }
-    if (!project) {
-      return <Typography>{'PROJECT NOT FOUND'}</Typography>
+    if (!project || !isValidProject) {
+      return <Typography>{'PROJECT NOT FOUND'}</Typography>;
     }
     const breadcrumbs: Breadcrumb[] = [
       PATHS.projects,
       {
         rawTitle: project.name,
       }
-    ]
+    ];
     return (<Card>
       <CardHeader
         action={<Button
+          component={Link}
+          to={`${PATHS.TDP.function && PATHS.TDP.function(project.id)}`}
           variant="contained"
-          color="primary"
-          onClick={() => { }}>
-          {'TEST BUTTON'}
+          color="primary">
+          {'TEST TDP BUTTON'}
         </Button>}
         title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
       />
@@ -258,15 +262,15 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           </>
         }
       </CardContent>
-    </Card>)
-  }
+    </Card>);
+  };
 
   return (
     <Container maxWidth={false} className={classes.container} >
       {projectLoading ? <BulletList /> :
         renderContent()
       }
-      <ModelConfigList
+      {isValidProject && <ModelConfigList
         projectId={projectIdNumber}
         modelConfigs={modelConfigs}
         modelConfigsLoading={modelConfigsLoading}
@@ -278,7 +282,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         handleSubGraphCreate={handleSubGraphCreate}
         handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
-      />
+      />}
     </Container >
   );
 }

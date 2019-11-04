@@ -22,11 +22,15 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface Breadcrumb extends Path {
-  rawTitle?: string
+  /**
+   * text to use as-is
+   * - will not be translated
+   */
+  rawTitle?: string;
 }
 
 interface HeaderBreadcrumbsProps {
-  breadcrumbs: Breadcrumb[]
+  breadcrumbs: Breadcrumb[];
 }
 
 export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
@@ -38,7 +42,7 @@ export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
     const { to, title, rawTitle } = breadcrumb;
     const text = rawTitle || translate(`path.${title}`);
     if (!to) {
-      return <Typography key={index} color="textPrimary" variant='h6' >{text}</Typography>
+      return <Typography key={index} color="textPrimary" variant='h6' >{text}</Typography>;
     }
     return (
       <Button
@@ -50,8 +54,8 @@ export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
       >
         {text}
       </Button>
-    )
-  })
+    );
+  });
 
   return (
     <Paper elevation={0} className={classes.paper}>
@@ -60,4 +64,4 @@ export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
       </Breadcrumbs>
     </Paper>
   );
-}
+};

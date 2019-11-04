@@ -26,13 +26,13 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface ProjectGridItemProps {
-  project: Project
-  checkedProjects: CheckedProjectsById
-  editOpen: EditOpenByProjectId
-  handleEditOpen: (projectId: number) => void
-  handleEditClose: (projectId: number) => void
-  handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void
-  handleProjectCheck: (projectId: number, value: boolean) => void
+  project: Project;
+  checkedProjects: CheckedProjectsById;
+  editOpen: EditOpenByProjectId;
+  handleEditOpen: (projectId: number) => void;
+  handleEditClose: (projectId: number) => void;
+  handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void;
+  handleProjectCheck: (projectId: number, value: boolean) => void;
 }
 
 
@@ -58,7 +58,7 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
           <EditIcon />
         </IconButton>
       </>} />
-      <CardActionArea component={Link} to={`${PATHS.projects.to}/${project.id}`} >
+      <CardActionArea component={Link} to={`${PATHS.project.function && PATHS.project.function(project.id)}`} >
         <CardContent>
           <Typography gutterBottom color="textPrimary" className={classes.text}>
             {project.apiKey}

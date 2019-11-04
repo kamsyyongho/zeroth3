@@ -7,6 +7,7 @@ import { IAM } from './controllers/iam';
 import { ModelConfig } from './controllers/model-config';
 import { Models } from './controllers/models';
 import { Projects } from './controllers/projects';
+import { VoiceData } from './controllers/voice-data';
 
 /**
  * Main class that manages all requests to the API.
@@ -54,6 +55,11 @@ export class Api {
   modelConfig: ModelConfig | undefined;
 
   /**
+   * Subclass that manages voice data requests.
+   */
+  voiceData: VoiceData | undefined;
+
+  /**
    * Creates the api.
    *
    * - Be as quick as possible in here.
@@ -87,6 +93,7 @@ export class Api {
     this.projects = new Projects(this.apisauce, this.logout);
     this.models = new Models(this.apisauce, this.logout);
     this.modelConfig = new ModelConfig(this.apisauce, this.logout);
+    this.voiceData = new VoiceData(this.apisauce, this.logout);
     return true;
   }
 
