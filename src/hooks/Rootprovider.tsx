@@ -1,4 +1,7 @@
+import DateFnsUtils from '@date-io/date-fns';
 import { CssBaseline } from '@material-ui/core';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import { ThemeProvider } from '@material-ui/styles';
 import { SnackbarProvider } from 'notistack';
 import React from 'react';
 import { SNACKBAR } from '../constants';
@@ -21,14 +24,18 @@ interface RootProviderProps {
 export default function RootProvider(props: RootProviderProps) {
   return (
     <I18nContext.Provider value={props.i18n}>
-      <CssBaseline />
-      <KeycloakContext.Provider value={props.keycloak}>
-        <ApiContext.Provider value={props.api}>
-          <SnackbarProvider maxSnack={3} anchorOrigin={SNACKBAR.anchorOrigin} autoHideDuration={SNACKBAR.autoHideDuration} >
-            {props.children}
-          </SnackbarProvider>
-        </ApiContext.Provider>
-      </KeycloakContext.Provider>
+      <MuiPickersUtilsProvider utils={DateFnsUtils} locale={props.i18n.pickerLocale}>
+        <ThemeProvider theme={undefined} >
+          <CssBaseline />
+          <KeycloakContext.Provider value={props.keycloak}>
+            <ApiContext.Provider value={props.api}>
+              <SnackbarProvider maxSnack={3} anchorOrigin={SNACKBAR.anchorOrigin} autoHideDuration={SNACKBAR.autoHideDuration} >
+                {props.children}
+              </SnackbarProvider>
+            </ApiContext.Provider>
+          </KeycloakContext.Provider>
+        </ThemeProvider>
+      </MuiPickersUtilsProvider>
     </I18nContext.Provider>
   );
 }
