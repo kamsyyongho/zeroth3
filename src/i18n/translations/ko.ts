@@ -13,6 +13,7 @@ export const ko: ResourceLanguage = {
       error: '오류',
       success: 'Success',
       failure: 'Failure',
+      clear: 'Clear',
     },
     table: {
       page: 'Page',
@@ -63,6 +64,9 @@ export const ko: ResourceLanguage = {
       public: 'Public',
       languageModel: 'Language Model',
       acousticModel: 'Acoustic Model',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      today: '오늘',
     },
     IAM: {
       user: '사용자',

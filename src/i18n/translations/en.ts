@@ -13,6 +13,7 @@ export const en: ResourceLanguage = {
       error: 'Error',
       success: 'Success',
       failure: 'Failure',
+      clear: 'Clear',
     },
     table: {
       page: 'Page',
@@ -63,6 +64,9 @@ export const en: ResourceLanguage = {
       public: 'Public',
       languageModel: 'Language Model',
       acousticModel: 'Acoustic Model',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      today: 'Today',
     },
     IAM: {
       user: 'User',
