@@ -7,17 +7,12 @@ interface DateTimePickerProps extends MuiDateTimePickerProps {
 }
 
 export default function DateTimePicker(props: DateTimePickerProps) {
-  const { fullWidth = true, ampm = true, onChange, ...restProps } = props;
+  const { fullWidth, ampm = true, ...restProps } = props;
   const { dateTimeFormat } = React.useContext(I18nContext);
-
-  const handleDateChange = (date: Date | null) => {
-    onChange(date);
-  };
 
   return (
     <MuiDateTimePicker
       format={dateTimeFormat}
-      onChange={handleDateChange}
       ampm={ampm}
       fullWidth={fullWidth}
       {...restProps}
