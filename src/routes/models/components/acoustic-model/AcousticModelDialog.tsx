@@ -20,9 +20,9 @@ import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fi
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
 interface AcousticModelDialogProps {
-  open: boolean
-  onClose: () => void
-  onSuccess: (model: AcousticModel) => void
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (model: AcousticModel) => void;
 }
 
 
@@ -31,8 +31,8 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [loading, setLoading] = React.useState(false)
-  const [isError, setIsError] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
@@ -43,25 +43,25 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
     for (let i = VALIDATION.MODELS.ACOUSTIC.sampleRate.min; i <= VALIDATION.MODELS.ACOUSTIC.sampleRate.max; i++) {
       tempFormSelectOptions.push({ label: `${i} kHz`, value: i });
     }
-    return tempFormSelectOptions
-  }, [])
+    return tempFormSelectOptions;
+  }, []);
 
 
   // validation translated text
-  const requiredTranslationText = translate("forms.validation.required") as string;
-  const numberText = translate("forms.validation.number") as string;
-  const integerText = translate("forms.validation.integer") as string;
-  const descriptionText = translate("forms.description") as string;
-  const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max }) as string;
-  const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' }) as string;
-  const sampleRateText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.sampleRate.min, second: VALIDATION.MODELS.ACOUSTIC.sampleRate.max }) as string;
+  const requiredTranslationText = translate("forms.validation.required");
+  const numberText = translate("forms.validation.number");
+  const integerText = translate("forms.validation.integer");
+  const descriptionText = translate("forms.description");
+  const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
+  const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
+  const sampleRateText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.sampleRate.min, second: VALIDATION.MODELS.ACOUSTIC.sampleRate.max });
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     location: yup.string().required(requiredTranslationText).trim(),
     sampleRate: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.MODELS.ACOUSTIC.sampleRate.min, sampleRateText).max(VALIDATION.MODELS.ACOUSTIC.sampleRate.max, sampleRateText).required(requiredTranslationText),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-  })
+  });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     name: "",
@@ -88,7 +88,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
           caller: `handleSubmit - failed to create acoustic model`,
           value: response,
           important: true,
-        })
+        });
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -99,7 +99,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog

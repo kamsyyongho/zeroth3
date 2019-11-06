@@ -12,6 +12,7 @@ import { Home } from './routes/main/Home';
 import { Models } from './routes/models/Models';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Projects } from './routes/projects/Projects';
+import { TDP } from './routes/projects/TDP';
 import Header from './routes/shared/header/Header';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { PATHS } from './types';
@@ -25,11 +26,12 @@ function App() {
 
   useEffect(() => {
     initKeycloak();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (keycloakInitialized) {
-      initApi(keycloak.keycloak, keycloak.logout)
+      initApi(keycloak.keycloak, keycloak.logout);
 
       //////////////////////////////////////////
       // TEST CODE - DELETE BEFORE PRODUCTION //
@@ -38,17 +40,17 @@ function App() {
       //TODO
       //* TO DEAL WITH A RACE CONDITION WITH ACCOUNT CREATION AND ORGANIZATION ID CREATION
       //!
-      if (keycloak.organizationId === undefined) keycloak.logout()
+      if (keycloak.organizationId === undefined) keycloak.logout();
       //!
       //////////////////////////////////////////
       // TEST CODE - DELETE BEFORE PRODUCTION //
       //////////////////////////////////////////
 
     }
-  }, [keycloakInitialized]);
+  }, [initApi, keycloak, keycloakInitialized]);
 
   if (!keycloakInitialized || !apiInitialized) {
-    return (<SiteLoadingIndicator />)
+    return (<SiteLoadingIndicator />);
   }
 
   return (
@@ -58,7 +60,8 @@ function App() {
         <Route exact path={PATHS.home.to} component={Home} />
         <Route path={PATHS.IAM.to} component={IAM} />
         <Route exact path={PATHS.projects.to} component={Projects} />
-        <Route path={PATHS.project.to} component={ProjectDetails} />
+        <Route exact path={PATHS.project.to} component={ProjectDetails} />
+        <Route exact path={PATHS.TDP.to} component={TDP} />
         <Route path={PATHS.models.to} component={Models} />
       </Router>
     </RootProvider>

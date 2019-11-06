@@ -3,17 +3,17 @@ import { FieldProps, getIn } from "formik";
 import React from "react";
 
 export interface SelectFormFieldOption {
-  label: string
-  value: string | number
+  label: string;
+  value: string | number;
 }
 
-export type SelectFormFieldOptions = Array<SelectFormFieldOption>
+export type SelectFormFieldOptions = Array<SelectFormFieldOption>;
 
 interface SelectFormFieldProps extends FieldProps {
-  errorOverride?: boolean
-  fullWidth?: boolean
-  label?: string
-  options: SelectFormFieldOptions
+  errorOverride?: boolean;
+  fullWidth?: boolean;
+  label?: string;
+  options: SelectFormFieldOptions;
 }
 
 export const SelectFormField = ({ field, form, label, options, errorOverride, fullWidth, ...props }: SelectFormFieldProps) => {
@@ -24,11 +24,17 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, fu
     <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
       {label && <InputLabel>{label}</InputLabel>}
       <Select fullWidth={fullWidth} {...field} {...props}>
-        {options.map((op: SelectFormFieldOption) => (
-          <MenuItem key={op.value} value={op.value}>
+        {options.map((op: SelectFormFieldOption) => {
+          // account for blank options
+          if (op.value === '') {
+            return (<MenuItem key={'empty'} value={op.value}>
+              <em>{op.label}</em>
+            </MenuItem>);
+          }
+          return (<MenuItem key={op.value} value={op.value}>
             {op.label}
-          </MenuItem>
-        ))}
+          </MenuItem>);
+        })}
       </Select>
       <FormHelperText>{errorText}</FormHelperText>
     </FormControl>

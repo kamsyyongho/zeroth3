@@ -8,14 +8,17 @@ import React from 'react';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 interface ConfirmationDialogProps {
-  open: boolean
-  onSubmit: () => void
-  onCancel: () => void
-  destructive?: boolean
-  submitText?: string | null
-  cancelText?: string | null
-  titleText?: string | null
-  contentText?: string | null
+  open: boolean;
+  onSubmit: () => void;
+  onCancel: () => void;
+  /**
+   * determines the button's confirmation color
+   */
+  destructive?: boolean;
+  submitText?: string | null;
+  cancelText?: string | null;
+  titleText?: string | null;
+  contentText?: string | null;
 }
 
 export function ConfirmationDialog(props: ConfirmationDialogProps) {
