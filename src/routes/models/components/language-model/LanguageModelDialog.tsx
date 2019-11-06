@@ -24,17 +24,17 @@ import { TextFormField } from '../../../shared/form-fields/TextFormField';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
 interface LanguageModelDialogProps {
-  open: boolean
-  modelToEdit?: LanguageModel
-  onClose: (modelId?: number) => void
-  onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void
-  topGraphs: TopGraph[]
-  subGraphs: SubGraph[]
-  handleSubGraphCreate: (subGraph: SubGraph) => void
+  open: boolean;
+  modelToEdit?: LanguageModel;
+  onClose: (modelId?: number) => void;
+  onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
+  topGraphs: TopGraph[];
+  subGraphs: SubGraph[];
+  handleSubGraphCreate: (subGraph: SubGraph) => void;
 }
 
 interface SubGraphsById {
-  [x: number]: string
+  [x: number]: string;
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
@@ -42,9 +42,9 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [subOpen, setSubOpen] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
-  const [isError, setIsError] = React.useState(false)
+  const [subOpen, setSubOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
   const isEdit = !!modelToEdit;
 
   const theme = useTheme();
@@ -53,8 +53,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
 
   const topGraphFormSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = topGraphs.map((topGraph) => ({ label: topGraph.name, value: topGraph.id }));
-    return tempFormSelectOptions
-  }, [topGraphs])
+    return tempFormSelectOptions;
+  }, [topGraphs]);
 
   // to handle the chip multi-select input values
   const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => ({ label: subGraph.name, value: subGraph.id }));
@@ -67,15 +67,15 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
   const descriptionText = translate("forms.description");
-  const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max }) as string;
-  const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' }) as string;
+  const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
+  const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedTopGraphId: yup.number().integer(integerText).typeError(numberText).required(requiredTranslationText),
     selectedSubGraphIds: yup.array().of(yup.number().integer(integerText).typeError(numberText)),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-  })
+  });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
@@ -100,7 +100,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       setLoading(true);
       setIsError(false);
       const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
-      let response: postLanguageModelResult
+      let response: postLanguageModelResult;
       if (isEdit && modelToEdit) {
         //!
         //!
@@ -110,7 +110,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         //!
         //!
         //!
-        return
+        return;
       } else {
         response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       }
@@ -126,7 +126,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
           caller: `handleSubmit - failed to create language model`,
           value: response,
           important: true,
-        })
+        });
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -137,7 +137,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog
