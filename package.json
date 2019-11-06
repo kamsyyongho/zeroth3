@@ -46,7 +46,7 @@
     "react-scripts": "3.1.2",
     "react-spinners": "^0.6.1",
     "react-table": "^7.0.0-beta.12",
-    "typescript": "^3.7.0-beta",
+    "typescript": "^3.7.0",
     "yup": "^0.27.0"
   },
   "devDependencies": {

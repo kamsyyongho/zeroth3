@@ -246,7 +246,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
               InputProps={{
                 readOnly: true,
               }}
-              variant="outlined"
+              variant="filled"
             />
             <TextField
               id="api-secret"
@@ -257,7 +257,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
               InputProps={{
                 readOnly: true,
               }}
-              variant="outlined"
+              variant="filled"
             />
           </>
         }
