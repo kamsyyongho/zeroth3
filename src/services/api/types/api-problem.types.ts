@@ -23,6 +23,10 @@ export interface MultipleServerError {
  */
 export enum ProblemKind {
   /**
+   * The request was canceled.
+   */
+  'canceled' = 'canceled',
+  /**
    * Times up.
    */
   'timeout' = 'timeout',

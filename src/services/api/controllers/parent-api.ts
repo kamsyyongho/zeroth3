@@ -1,4 +1,5 @@
 import { ApisauceInstance } from 'apisauce';
+import { GeneralApiProblem } from '../types';
 
 /**
  * Manages all of the parent api instances and methods.
@@ -10,18 +11,29 @@ export class ParentApi {
   apisauce: ApisauceInstance;
 
   /**
-   * The logout method from `keycloakContext`.
-   * - redirects to the login page
+   * Refreshes the keycloak auth token
+   * - logs out if it fails to refresh
+   * @param callback - the callback to retry after refresh
+   * @param responseProblem - the original server response
    */
-  logout: () => void = () => {};
+  attemptToRefreshToken: <T>(
+    callback: () => T,
+    responseProblem: GeneralApiProblem
+  ) => Promise<GeneralApiProblem | T>;
 
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param logout from `keycloakContext`
+   * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
+  constructor(
+    apisauce: ApisauceInstance,
+    attemptToRefreshToken: <T>(
+      callback: () => T,
+      responseProblem: GeneralApiProblem
+    ) => Promise<GeneralApiProblem | T>
+  ) {
     this.apisauce = apisauce;
-    this.logout = logout;
+    this.attemptToRefreshToken = attemptToRefreshToken;
   }
 }

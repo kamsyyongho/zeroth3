@@ -3,6 +3,7 @@ import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   deleteModelConfigResult,
+  GeneralApiProblem,
   getModelConfigsResult,
   PostModelConfigRequest,
   postModelConfigResult,
@@ -18,10 +19,16 @@ export class ModelConfig extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param logout The logout method from `keycloakContext`.
+   * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
-    super(apisauce, logout);
+  constructor(
+    apisauce: ApisauceInstance,
+    attemptToRefreshToken: <T>(
+      callback: () => T,
+      responseProblem: GeneralApiProblem
+    ) => Promise<GeneralApiProblem | T>
+  ) {
+    super(apisauce, attemptToRefreshToken);
   }
 
   /**
@@ -39,7 +46,10 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.getModelConfigs(projectId),
+            problem
+          );
         }
         return problem;
       }
@@ -88,7 +98,17 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.postModelConfig(
+                projectId,
+                name,
+                description,
+                acousticModelId,
+                languageModelId
+              ),
+            problem
+          );
         }
         return problem;
       }
@@ -123,7 +143,10 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteModelConfig(projectId, modelConfigId),
+            problem
+          );
         }
         return problem;
       }
