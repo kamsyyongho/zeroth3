@@ -1,4 +1,4 @@
-import { TableFooter, TablePagination } from '@material-ui/core';
+import { TableFooter, TablePagination, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -7,17 +7,22 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import PulseLoader from 'react-spinners/PulseLoader';
-import { CellProps, useFilters, usePagination, useTable } from 'react-table';
+import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { VoiceDataResults } from '../../../services/api/types';
+import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
 import { ModelConfig, VoiceData } from '../../../types';
+import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
   voiceDataResults: VoiceDataResults;
   modelConfigs: ModelConfig[];
   loading: boolean;
-  getVoiceData: (page?: number, size?: number) => Promise<void>;
+  getVoiceData: (options?: SearchDataRequest) => Promise<void>;
+}
+
+export interface ModelConfigsById {
+  [x: number]: ModelConfig
 }
 
 
@@ -26,9 +31,11 @@ export function TDPTable(props: TDPTableProps) {
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
+  const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
   const theme = useTheme();
 
-  const modelConfigsById = React.useMemo(
+
+  const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
       const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
       modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
@@ -45,41 +52,40 @@ export function TDPTable(props: TDPTableProps) {
   const renderCreatedAt = (cellData: CellProps<VoiceData>) => {
     const createdAt: VoiceData['createdAt'] = cellData.cell.value;
     const date = new Date(createdAt);
-    return `${date.toDateString()} ${date.toTimeString()}`
+    return `${date.toDateString()} ${date.toTimeString()}`;
   };
-
 
   // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Created',
+        Header: translate('common.createdAt'),
         accessor: 'createdAt',
         Cell: (cellData: CellProps<VoiceData>) => renderCreatedAt(cellData),
       },
       {
-        Header: 'Length',
+        Header: translate('common.length'),
         accessor: 'length',
       },
       {
-        Header: 'Score',
+        Header: translate('common.score'),
         accessor: 'score',
       },
       {
-        Header: 'Model Config Id',
+        Header: translate('modelConfig.header'),
         accessor: 'modelConfigId',
         Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
       },
       {
-        Header: 'Status',
+        Header: translate('forms.status'),
         accessor: 'status',
       },
       {
-        Header: 'Transcript',
+        Header: translate('forms.transcript'),
         accessor: 'transcript',
       },
     ],
-    [voiceDataResults]
+    [renderModelName]
   );
 
   // Use the state and functions returned from useTable to build your UI
@@ -117,40 +123,51 @@ export function TDPTable(props: TDPTableProps) {
     usePagination,
   );
 
+
+  /**
+   * update the stored options and get fresh data
+   * - resetting the page will trigger `getVoiceData` in `useEffect`
+   */
+  const handleFilterUpdate = (options: SearchDataRequest = {}) => {
+    setVoiceDataOptions(options);
+    gotoPage(0);
+  };
+
+
   // Listen for changes in pagination and use the state to fetch our new data
   React.useEffect(() => {
     // to prevent reloading the initial data from the parent
-    if(initialLoad) {
+    if (initialLoad) {
       setInitialLoad(false);
     } else {
-      getVoiceData(pageIndex, pageSize);
+      getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize });
     }
-  }, [pageIndex, pageSize]);
+  }, [getVoiceData, initialLoad, pageIndex, pageSize, voiceDataOptions]);
 
   // Render the UI for your table
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //@ts-ignore
-  const renderHeader = () => headerGroups.map((headerGroup, index) => (
+  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
+    <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+      {column.render('Header')}
+    </TableCell>);
+
+  const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
-      {/** //eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      //@ts-ignore */}
       {headerGroup.headers.map((column, idx) => (
-        <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-          {column.render('Header')}
-        </TableCell>
+        renderHeaderCell(column, idx)
       ))}
-    </TableRow>
-  ));
+    </TableRow>);
+
+  const renderHeader = () => (
+    <TableHead>
+      {headerGroups.map((headerGroup: HeaderGroup<VoiceData>, index: number) => (
+        renderHeaderRow(headerGroup, index)))}
+    </TableHead>);
 
   const renderRows = () => rows.map(
-    //eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    //@ts-ignore
-    (row, rowIndex) => {
+    (row: Row<VoiceData>, rowIndex: number) => {
       prepareRow(row);
       return (
         <TableRow key={`row-${rowIndex}`} {...row.getRowProps()}>
-          {/** //eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        //@ts-ignore */}
           {row.cells.map((cell, cellIndex) => {
             return (
               <TableCell key={`cell-${cellIndex}`} {...cell.getCellProps()}>
@@ -163,27 +180,29 @@ export function TDPTable(props: TDPTableProps) {
     });
 
   return (<>
+    <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />
     <Table stickyHeader {...getTableProps()}>
-      <TableHead>
-        {renderHeader()}
-      </TableHead>
-      <TableHead>
-        {renderHeader()}
-      </TableHead>
+      {renderHeader()}
       <TableBody>
-        {renderRows()}
+        {voiceData.length ? renderRows() : (
+          <TableRow>
+            <TableCell>
+              <Typography component='span' >{translate('table.noResults')}</Typography>
+            </TableCell>
+          </TableRow>
+          )}
       </TableBody>
     </Table>
-      <TableFooter component="div">
-        {loading && (
-            <PulseLoader
-              sizeUnit={"px"}
-              size={25}
-              color={theme.palette.primary.main}
-              loading={true}
-            />
-            )}
-      </TableFooter>
+    <TableFooter component="div">
+      {loading && (
+        <PulseLoader
+          sizeUnit={"px"}
+          size={25}
+          color={theme.palette.primary.main}
+          loading={true}
+        />
+      )}
+    </TableFooter>
     <TablePagination
       rowsPerPageOptions={[5, 10, 25, 50, 100]}
       component="div"
@@ -203,8 +222,8 @@ export function TDPTable(props: TDPTableProps) {
         setPageSize(Number(e.target.value));
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
-      labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', {from, count, to: to === -1 ? count : to})}
-      ActionsComponent={(paginationProps) => TDPTablePaginationActions({...paginationProps, pageCount})}
+      labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
+      ActionsComponent={(paginationProps) => TDPTablePaginationActions({ ...paginationProps, pageCount })}
     /></>
   );
 }

@@ -35,17 +35,33 @@ export interface VoiceDataResults {
 //////////////
 
 export interface SearchDataRequest {
-  from?: string;
+  from?: Date;
+  till?: Date;
+  /**
+   * in seconds
+   */
   'length-max'?: number;
+  /**
+   * in seconds
+   * - from `0`
+   */
   'length-min'?: number;
   'model-config'?: number;
   name?: string;
-  page?: number;
+  /**
+   * to `100`
+   */
   'score-max'?: number;
+  /**
+   * from `0`
+   */
   'score-min'?: number;
+  /**
+   * page size
+   */
   size?: number;
+  page?: number;
   status?: CONTENT_STATUS;
-  till?: Date;
   transcript?: string;
 }
 

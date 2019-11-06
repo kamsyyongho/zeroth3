@@ -27,16 +27,32 @@ export class VoiceData extends ParentApi {
   /**
    * Gets the voice data for a project
    * @param projectId
-   * @param request - all values are optional
+   * @param requestOptions - all values are optional
+   *```
+   *requestOptions = {
+   *from?: string;
+   *'length-max'?: number;
+   *'length-min'?: number;
+   *'model-config'?: number;
+   *name?: string;
+   *page?: number;
+   *'score-max'?: number;
+   *'score-min'?: number;
+   *size?: number;
+   *status?: CONTENT_STATUS;
+   *till?: Date;
+   *transcript?: string;
+   *}
+   *```
    */
   async searchData(
     projectId: number,
-    request: SearchDataRequest = {}
+    requestOptions: SearchDataRequest = {}
   ): Promise<searchDataResult> {
     // set default values
-    const { page = 0, size = 10 } = request;
+    const { page = 0, size = 10 } = requestOptions;
     const query: SearchDataRequest = {
-      ...request,
+      ...requestOptions,
       page,
       size,
     };

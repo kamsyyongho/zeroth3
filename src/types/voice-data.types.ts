@@ -20,3 +20,7 @@ export enum CONTENT_STATUS {
   TRAINABLE_SV = 'TRAINABLE_SV',
   TRAINABLE_USV = 'TRAINABLE_USV',
 }
+
+export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
+  statusKey => statusKey
+);

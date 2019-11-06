@@ -6,8 +6,8 @@ import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { ProblemKind, VoiceDataResults } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, VoiceData } from '../../types';
+import { ProblemKind, SearchDataRequest, VoiceDataResults } from '../../services/api/types';
+import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { TDPTable } from './components/TDPTable';
@@ -45,7 +45,6 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
   const [project, setProject] = React.useState<Project | undefined>(undefined);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
-  const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
 
 
   //!
@@ -54,19 +53,12 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
 
   const classes = useStyles();
 
-  const getVoiceData = React.useCallback(async (page = 0, size = 10) => {
+  const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api && api.voiceData) {
       setVoiceDataLoading(true);
-      const response = await api.voiceData.searchData(projectIdNumber, { page, size });
+      const response = await api.voiceData.searchData(projectIdNumber, options);
       if (response.kind === 'ok') {
-        log({
-          file: `TDP.tsx`,
-          caller: `getVoiceData`,
-          value: response.data,
-          important: true,
-        });
         setVoiceDataResults(response.data);
-        setVoiceData(response.data.content);
       } else {
         log({
           file: `TDP.tsx`,
@@ -141,10 +133,10 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{'INVALID PROJECT ID'}</Typography>;
+      return <Typography>{'TEST INVALID PROJECT ID'}</Typography>;
     }
     if (!project || !isValidProject) {
-      return <Typography>{'PROJECT NOT FOUND'}</Typography>;
+      return <Typography>{'TEST PROJECT NOT FOUND'}</Typography>;
     }
     const breadcrumbs: Breadcrumb[] = [
       PATHS.projects,
@@ -169,14 +161,12 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
       />
       <CardContent className={classes.cardContent} >
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
-          ((voiceData.length) ?
-            (<TDPTable
-              voiceDataResults={voiceDataResults}
-              modelConfigs={modelConfigs}
-              getVoiceData={getVoiceData}
-              loading={voiceDataLoading}
-            />) :
-            <p>NO RESULTS</p>)
+          <TDPTable
+            voiceDataResults={voiceDataResults}
+            modelConfigs={modelConfigs}
+            getVoiceData={getVoiceData}
+            loading={voiceDataLoading}
+          />
         }
       </CardContent>
     </Card>);

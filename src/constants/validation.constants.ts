@@ -24,4 +24,13 @@ export const VALIDATION = {
       },
     },
   },
+  TDP: {
+    length: {
+      min: 0,
+    },
+    score: {
+      min: 0,
+      max: 100,
+    },
+  },
 };
