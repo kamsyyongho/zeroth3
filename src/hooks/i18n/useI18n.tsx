@@ -37,13 +37,13 @@ export function extendLocaleType(locale: Locale | PickerLocale) {
 
 function getLanguageCode(locale: PickerLocale) {
   // to trim off any region from the language code
-  const shortLanguageCode = locale.code.slice(0,2)
+  const shortLanguageCode = locale.code.slice(0, 2);
   return shortLanguageCode;
 }
 
 function getDateTimeFormat(locale: Locale | PickerLocale) {
   const typedLocale = extendLocaleType(locale);
-  const {formatLong} = typedLocale;
+  const { formatLong } = typedLocale;
   const languageCode = getLanguageCode(typedLocale);
   // set length based on language
   let dateWidth: LocaleWidths = 'medium';
@@ -59,7 +59,7 @@ function getDateTimeFormat(locale: Locale | PickerLocale) {
       break;
   }
   // build the string
-  const dateTimeString = `${formatLong.date({width: dateWidth})} - ${formatLong.time({width: timeWidth})} a`;
+  const dateTimeString = `${formatLong.date({ width: dateWidth })} - ${formatLong.time({ width: timeWidth })}`;
   return dateTimeString;
 }
 
@@ -75,8 +75,8 @@ export const useI18n = (): ParsedI18n => {
    * @param key The i18next key.
    * @param options options object to pass for the translation -OR- a default/fallback value string
    */
-  const translate = (key: string, options?: TOptions | string): string | null => {
-    return key ? t(key, options) : null;
+  const translate = (key: string, options?: TOptions | string): string => {
+    return key ? t(key, options) : '';
   };
 
   /**
@@ -84,7 +84,7 @@ export const useI18n = (): ParsedI18n => {
    * - also changes the date-time picker locale
    */
   const toggleLanguage = () => {
-    const locale = i18n.language === LANGUAGES.en ? extendLocaleType(ko) : extendLocaleType(enUS)
+    const locale = i18n.language === LANGUAGES.en ? extendLocaleType(ko) : extendLocaleType(enUS);
     setPickerLocale(locale);
     const dateTimeFormat = getDateTimeFormat(locale);
     setDateTimeFormat(dateTimeFormat);
