@@ -46,7 +46,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File
 
   // validation translated text
-  const requiredTranslationText = translate("forms.validation.required") as string;
+  const requiredTranslationText = translate("forms.validation.required");
 
 
   const formSchema = yup.object({

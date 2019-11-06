@@ -48,10 +48,10 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
 
 
   // validation translated text
-  const requiredTranslationText = translate("forms.validation.required") as string;
-  const numberText = translate("forms.validation.number") as string;
-  const integerText = translate("forms.validation.integer") as string;
-  const descriptionText = translate("forms.description") as string;
+  const requiredTranslationText = translate("forms.validation.required");
+  const numberText = translate("forms.validation.number");
+  const integerText = translate("forms.validation.integer");
+  const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max }) as string;
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' }) as string;
   const sampleRateText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.sampleRate.min, second: VALIDATION.MODELS.ACOUSTIC.sampleRate.max }) as string;

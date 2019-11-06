@@ -52,12 +52,12 @@ export function ProjectDialog(props: ProjectDialogProps) {
   }, [])
 
   // validation translated text
-  const thresholdLcText = translate("forms.thresholdLc") as string;
-  const thresholdHcText = translate("forms.thresholdHc") as string;
-  const integerText = translate("forms.validation.integer") as string;
-  const numberText = translate("forms.validation.number") as string;
+  const thresholdLcText = translate("forms.thresholdLc");
+  const thresholdHcText = translate("forms.thresholdHc");
+  const integerText = translate("forms.validation.integer");
+  const numberText = translate("forms.validation.number");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters' }) as string;
-  const requiredTranslationText = translate("forms.validation.required") as string;
+  const requiredTranslationText = translate("forms.validation.required");
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
