@@ -172,8 +172,7 @@ export class Api {
   }
 
   /**
-   * Gets the current header that is being used for API calls
-   * - logs out if it fails to refresh
+   * Handler that is passed down the the child api controllers
    * @param callback - the callback to retry after refresh
    * @param responseProblem - the original server response
    */
@@ -185,7 +184,7 @@ export class Api {
   };
 
   /**
-   * Gets the current header that is being used for API calls
+   * Attempts to refresh the auth token if after getting an 'unauthorized' response
    * - logs out if it fails to refresh
    * @param callback - the callback to retry after refresh
    * @param responseProblem - the original server response

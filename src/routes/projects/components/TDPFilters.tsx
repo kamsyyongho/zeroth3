@@ -18,7 +18,7 @@ import { CONTENT_STATUS_VALUES } from '../../../types/voice-data.types';
 import { DateTimePickerFormField } from '../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
-import { ModelConfigsById } from './TDPTable';
+import { ModelConfigsById } from '../TDP';
 
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;

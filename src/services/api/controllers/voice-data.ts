@@ -1,10 +1,12 @@
-import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { ApisauceInstance } from 'apisauce';
+import { Segment, VoiceData as VoiceDataInterface } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  fetchUnconfirmedDataResult,
   GeneralApiProblem,
+  getAssignedDataResult,
+  getSegmentsDataResult,
   ProblemKind,
-  RenameOrganizationRequest,
-  renameOrganizationResult,
   SearchDataRequest,
   searchDataResult,
   ServerError,
@@ -90,26 +92,79 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Names / renames the current organization
-   * @param name
+   * Gets the voice data assigned to the current user
+   * - only `page` and `size` are valid options
+   * @param projectId
+   * @param requestOptions - both values are optional
+   *```
+   *requestOptions = {
+   *page?: number;
+   *size?: number;
+   *}
+   *```
    */
-  async renameOrganization(name: string): Promise<renameOrganizationResult> {
-    // compile data
-    const request: RenameOrganizationRequest = {
-      name,
+  async getAssignedData(
+    projectId: number,
+    requestOptions: SearchDataRequest = {}
+  ): Promise<getAssignedDataResult> {
+    // set default values
+    const { page = 0, size = 10 } = requestOptions;
+    const query: SearchDataRequest = {
+      page,
+      size,
     };
-    // make the api call
-    const response: ApiResponse<
-      undefined,
-      ServerError
-    > = await this.apisauce.patch(`/organizations/name`, request);
+    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
+      `/projects/${projectId}/data/assigned`,
+      query
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
           return this.attemptToRefreshToken(
-            () => this.renameOrganization(name),
+            () => this.getAssignedData(projectId, requestOptions),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const data = response.data as VoiceDataResults;
+      return { kind: 'ok', data };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Assigns a group of unconfirmed data to the current user
+   * - the server returns a `202` on success
+   * @param projectId
+   * @param modelConfigId
+   */
+  async fetchUnconfirmedData(
+    projectId: number,
+    modelConfigId: number
+  ): Promise<fetchUnconfirmedDataResult> {
+    const params = {
+      'model-config': modelConfigId,
+    };
+    const response = await this.apisauce.post<VoiceDataInterface, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/unconfirmed`,
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.fetchUnconfirmedData(projectId, modelConfigId),
             problem
           );
         }
@@ -117,5 +172,39 @@ export class VoiceData extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+
+  /**
+   * Gets the segments for the voice data
+   * @param projectId
+   * @param dataId
+   */
+  async getSegments(
+    projectId: number,
+    dataId: number
+  ): Promise<getSegmentsDataResult> {
+    const response = await this.apisauce.get<Segment[], ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.getSegments(projectId, dataId),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segments = response.data as Segment[];
+      return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

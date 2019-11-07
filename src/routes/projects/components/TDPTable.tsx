@@ -10,24 +10,22 @@ import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
-import { ModelConfig, VoiceData } from '../../../types';
+import { VoiceData } from '../../../types';
+import { ModelConfigsById } from '../TDP';
 import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
   voiceDataResults: VoiceDataResults;
-  modelConfigs: ModelConfig[];
+  modelConfigsById: ModelConfigsById;
+  onlyAssignedData: boolean;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
 }
 
-export interface ModelConfigsById {
-  [x: number]: ModelConfig
-}
-
 
 export function TDPTable(props: TDPTableProps) {
-  const { voiceDataResults, modelConfigs, loading, getVoiceData } = props;
+  const { voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
@@ -35,14 +33,6 @@ export function TDPTable(props: TDPTableProps) {
   const theme = useTheme();
 
 
-  const modelConfigsById: ModelConfigsById = React.useMemo(
-    () => {
-      const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
-      modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
-      return modelConfigsByIdTemp;
-    },
-    [modelConfigs]
-  );
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
@@ -85,7 +75,7 @@ export function TDPTable(props: TDPTableProps) {
         accessor: 'transcript',
       },
     ],
-    [renderModelName]
+    [renderModelName, translate]
   );
 
   // Use the state and functions returned from useTable to build your UI
@@ -180,7 +170,7 @@ export function TDPTable(props: TDPTableProps) {
     });
 
   return (<>
-    <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />
+    {!onlyAssignedData && <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />}
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
       <TableBody>
@@ -190,7 +180,7 @@ export function TDPTable(props: TDPTableProps) {
               <Typography component='span' >{translate('table.noResults')}</Typography>
             </TableCell>
           </TableRow>
-          )}
+        )}
       </TableBody>
     </Table>
     <TableFooter component="div">

@@ -1,13 +1,17 @@
-import { Card, CardContent, CardHeader, Container, Typography } from '@material-ui/core';
+import { Card, CardContent, CardHeader, Container, MenuItem, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { ProblemKind, SearchDataRequest, VoiceDataResults } from '../../services/api/types';
-import { ModelConfig, PATHS, Project } from '../../types';
+import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult, VoiceDataResults } from '../../services/api/types';
+import { ModelConfig, PATHS, Project, SnackbarError } from '../../types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { TDPTable } from './components/TDPTable';
@@ -15,6 +19,12 @@ import { TDPTable } from './components/TDPTable';
 interface ProjectDetailsProps {
   projectId: string;
 }
+
+
+export interface ModelConfigsById {
+  [x: number]: ModelConfig;
+}
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,12 +45,16 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
   const { projectId } = match.params;
   const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
+  const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
+  const [assignDataLoading, setAssignDataLoading] = React.useState(false);
+  const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<number | undefined>(undefined);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
   const [project, setProject] = React.useState<Project | undefined>(undefined);
@@ -56,7 +70,12 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api && api.voiceData) {
       setVoiceDataLoading(true);
-      const response = await api.voiceData.searchData(projectIdNumber, options);
+      let response: getAssignedDataResult | searchDataResult | undefined;
+      if (onlyAssignedData) {
+        response = await api.voiceData.getAssignedData(projectIdNumber, { page: options.page, size: options.size });
+      } else {
+        response = await api.voiceData.searchData(projectIdNumber, options);
+      }
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
       } else {
@@ -70,7 +89,7 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [api, projectIdNumber]);
+  }, [api, onlyAssignedData, projectIdNumber]);
 
   React.useEffect(() => {
     const getProject = async () => {
@@ -129,7 +148,41 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
     }
   }, [api, getVoiceData, projectId, projectIdNumber]);
 
+  const handleAssignSubmit = async () => {
+    if (!selectedModelConfigId) return;
+    if (api && api.voiceData) {
+      setAssignDataLoading(true);
+      const response = await api.voiceData.fetchUnconfirmedData(projectIdNumber, selectedModelConfigId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `handleAssignSubmit - failed assign data`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setAssignDataLoading(false);
+    }
+  };
 
+  const modelConfigsById: ModelConfigsById = React.useMemo(
+    () => {
+      const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
+      modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
+      return modelConfigsByIdTemp;
+    },
+    [modelConfigs]
+  );
 
   const renderContent = () => {
     if (!isValidId) {
@@ -150,21 +203,43 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
     ];
     return (<Card>
       <CardHeader
-        action={<Button
-          variant="contained"
-          color="primary"
-          onClick={() => { }}
-        >
-          {'TEST BUTTON'}
-        </Button>}
+        action={<>
+          {!!modelConfigs.length && <><FormControl fullWidth>
+            <InputLabel id="model-config-select-label">TEST MODEL CONFIG TO ASSIGN</InputLabel>
+            <Select
+              id="model-config-select"
+              value={selectedModelConfigId || ''}
+              onChange={(event) => setSelectedModelConfigId(event.target.value as number)}
+              autoWidth
+            >
+              {modelConfigs.map(modelConfig => (<MenuItem key={modelConfig.id} value={modelConfig.id}>{modelConfig.name}</MenuItem>))}
+            </Select>
+          </FormControl>
+            <Button
+              disabled={!selectedModelConfigId || assignDataLoading}
+              variant='outlined'
+              color="primary"
+              // onClick={() => api&& api.voiceData && api.voiceData.getSegments(projectIdNumber, 89)}
+              onClick={handleAssignSubmit}
+            >
+              {'TEST ASSIGN DATA'}
+            </Button></>}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOnlyAssignedData((prevValue) => !prevValue)}
+          >
+            {onlyAssignedData ? 'TEST SHOW ALL' : 'TEST SHOW ASSIGNED'}
+          </Button></>}
         title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
       />
       <CardContent className={classes.cardContent} >
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
           <TDPTable
+            modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
-            modelConfigs={modelConfigs}
             getVoiceData={getVoiceData}
+            onlyAssignedData={onlyAssignedData}
             loading={voiceDataLoading}
           />
         }
