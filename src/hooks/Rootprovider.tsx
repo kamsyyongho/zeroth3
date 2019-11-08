@@ -1,3 +1,4 @@
+import 'react-virtualized/styles.css'; // for the editor's lists
 import DateFnsUtils from '@date-io/date-fns';
 import { CssBaseline } from '@material-ui/core';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
