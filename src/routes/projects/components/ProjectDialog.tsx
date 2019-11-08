@@ -146,7 +146,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
               </Button>
               <Button
                 disabled={!formikProps.isValid}
-                onClick={formikProps.submitForm}
+                type='submit'
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

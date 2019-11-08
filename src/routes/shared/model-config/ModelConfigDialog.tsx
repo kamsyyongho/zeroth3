@@ -200,7 +200,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
               </Button>
               <Button
                 disabled={!formikProps.isValid}
-                onClick={formikProps.submitForm}
+                type='submit'
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

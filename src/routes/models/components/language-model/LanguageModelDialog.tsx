@@ -183,7 +183,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
               </Button>
               <Button
                 disabled={!formikProps.isValid}
-                onClick={formikProps.submitForm}
+                type='submit'
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

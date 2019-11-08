@@ -78,6 +78,8 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
       fullScreen={fullScreen}
       open={open}
       onClose={onClose}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
       aria-labelledby="responsive-dialog-title"
     >
       <DialogTitle id="responsive-dialog-title">{translate("IAM.inviteUser")}</DialogTitle>
@@ -90,12 +92,12 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={onClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
                 disabled={!formikProps.isValid}
-                onClick={formikProps.submitForm}
+                type='submit'
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

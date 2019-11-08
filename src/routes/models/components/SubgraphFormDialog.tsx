@@ -23,10 +23,10 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 
 interface SubgraphFormDialogProps {
-  open: boolean
-  onClose: () => void
-  onSuccess: (subGraph: SubGraph) => void
-  subGraphToEdit?: SubGraph
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (subGraph: SubGraph) => void;
+  subGraphToEdit?: SubGraph;
 }
 
 
@@ -35,15 +35,15 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [loading, setLoading] = React.useState(false)
-  const [isError, setIsError] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
   const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File
+  const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File;
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
@@ -63,7 +63,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       then: yup.string().required(requiredTranslationText).trim(),
       otherwise: yup.string().notRequired(),
     }),
-  })
+  });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
@@ -82,7 +82,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const handleSubmit = async (values: FormValues) => {
     const { shouldUploadFile, files } = values;
     if (shouldUploadFile && !validFilesCheck(files)) {
-      return
+      return;
     }
     if (api && api.models) {
       setLoading(true);
@@ -98,7 +98,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
         //!
         //!
         //!
-        return
+        return;
       } else {
         if (shouldUploadFile) {
           response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
@@ -118,7 +118,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
           caller: `handleSubmit - failed create new subgraph / upload subgraph file`,
           value: response,
           important: true,
-        })
+        });
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -129,7 +129,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog
@@ -159,7 +159,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
               </Button>
               <Button
                 disabled={!formikProps.isValid}
-                onClick={formikProps.submitForm}
+                type='submit'
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?
