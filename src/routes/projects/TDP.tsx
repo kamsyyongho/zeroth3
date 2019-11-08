@@ -16,7 +16,7 @@ import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { TDPTable } from './components/TDPTable';
 
-interface ProjectDetailsProps {
+interface TDPProps {
   projectId: string;
 }
 
@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
+export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const { projectId } = match.params;
   const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
@@ -226,16 +226,17 @@ export function TDP({ match }: RouteComponentProps<ProjectDetailsProps>) {
             </Button></>}
           <Button
             variant="contained"
-            color="primary"
+            color={onlyAssignedData ? 'secondary' : "primary"}
             onClick={() => setOnlyAssignedData((prevValue) => !prevValue)}
           >
             {onlyAssignedData ? 'TEST SHOW ALL' : 'TEST SHOW ASSIGNED'}
           </Button></>}
-        title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
+        title={<><HeaderBreadcrumbs breadcrumbs={breadcrumbs} /><Typography variant='h4'>{onlyAssignedData ? 'TEST ASSIGNED' : 'TEST ALL'}</Typography></>}
       />
       <CardContent className={classes.cardContent} >
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
           <TDPTable
+            projectId={projectIdNumber}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}

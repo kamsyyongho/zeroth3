@@ -1,21 +1,24 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
 import { VoiceData } from '../../../types';
+import { PATHS } from '../../../types/path.types';
 import { ModelConfigsById } from '../TDP';
 import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
+  projectId: number;
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
   onlyAssignedData: boolean;
@@ -23,16 +26,30 @@ interface TDPTableProps {
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
 }
 
+const useStyles = makeStyles(theme => ({
+  tableBody: {
+    cursor: 'pointer',
+  },
+}));
 
 export function TDPTable(props: TDPTableProps) {
-  const { voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
+  const { projectId, voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
+  const history = useHistory();
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
+
+  const classes = useStyles();
   const theme = useTheme();
 
-
+  /**
+   * navigates to the the editor
+   * @param voiceDataId 
+   */
+  const handleRowClick = (voiceDataId: number) => {
+    PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceDataId));
+  };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
@@ -157,10 +174,18 @@ export function TDPTable(props: TDPTableProps) {
     (row: Row<VoiceData>, rowIndex: number) => {
       prepareRow(row);
       return (
-        <TableRow key={`row-${rowIndex}`} {...row.getRowProps()}>
+        <TableRow
+          hover
+          onClick={() => handleRowClick(row.original.id)}
+          key={`row-${rowIndex}`}
+          {...row.getRowProps()}
+        >
           {row.cells.map((cell, cellIndex) => {
             return (
-              <TableCell key={`cell-${cellIndex}`} {...cell.getCellProps()}>
+              <TableCell
+                key={`cell-${cellIndex}`}
+                {...cell.getCellProps()}
+              >
                 {cell.render('Cell')}
               </TableCell>
             );
@@ -173,7 +198,7 @@ export function TDPTable(props: TDPTableProps) {
     {!onlyAssignedData && <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />}
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
-      <TableBody>
+      <TableBody className={classes.tableBody} >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
