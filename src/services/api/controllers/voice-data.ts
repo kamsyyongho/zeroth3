@@ -1,5 +1,9 @@
 import { ApisauceInstance } from 'apisauce';
-import { Segment, VoiceData as VoiceDataInterface } from '../../../types';
+import {
+  Segment,
+  VoiceData as VoiceDataInterface,
+  WordAlignment,
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   fetchUnconfirmedDataResult,
@@ -10,6 +14,8 @@ import {
   SearchDataRequest,
   searchDataResult,
   ServerError,
+  UpdateSegmentRequest,
+  updateSegmentResult,
   VoiceDataResults,
 } from '../types';
 import { ParentApi } from './parent-api';
@@ -203,6 +209,51 @@ export class VoiceData extends ParentApi {
     try {
       const segments = response.data as Segment[];
       return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Updates a segment's words
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param wordAlignments
+   */
+  async updateSegment(
+    projectId: number,
+    dataId: number,
+    segmentId: number,
+    wordAlignments: WordAlignment[]
+  ): Promise<updateSegmentResult> {
+    // compile data
+    const request: UpdateSegmentRequest = {
+      wordAlignments,
+    };
+    // make the api call
+    const response = await this.apisauce.patch<WordAlignment[], ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () =>
+              this.updateSegment(projectId, dataId, segmentId, wordAlignments),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
