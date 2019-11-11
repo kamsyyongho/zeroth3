@@ -108,6 +108,7 @@ export const ko: ResourceLanguage = {
       header_plural: 'Model configuration',
       create: 'Create configuration',
       edit: 'Edit configuration',
+      delete: 'Delete model configuration',
     },
     models: {
       header: 'Model Management',

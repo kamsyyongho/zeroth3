@@ -79,6 +79,20 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     });
   };
 
+  /**
+   * remove the deleted model config from the list
+   */
+  const handleModelConfigDelete = (modelConfigId: number) => {
+    const modelConfigsCopy = modelConfigs.slice();
+    // count down to account for removing indexes
+    for (let i = modelConfigsCopy.length - 1; i >= 0; i--) {
+      const modelConfig = modelConfigsCopy[i];
+      if (modelConfig.id === modelConfigId) {
+        modelConfigsCopy.splice(i, 1);
+      }
+    }
+    setModelConfigs(modelConfigsCopy);
+  };
 
   //!
   //TODO
@@ -279,6 +293,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         languageModels={languageModels}
         acousticModels={acousticModels}
         handleModelConfigCreate={handleModelConfigCreate}
+        handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphCreate={handleSubGraphCreate}
         handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}

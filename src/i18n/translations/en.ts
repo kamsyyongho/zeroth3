@@ -106,6 +106,7 @@ export const en: ResourceLanguage = {
       header_plural: 'Model configurations',
       create: 'Create configuration',
       edit: 'Edit configuration',
+      delete: 'Delete model configuration',
     },
     models: {
       header: 'Model Management',

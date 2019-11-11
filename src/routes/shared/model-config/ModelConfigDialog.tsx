@@ -88,21 +88,21 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     selectedAcousticModelId: 0,
     selectedLanguageModelId: 0,
     description: "",
   };
-  // if (configToEdit) {
-  //   initialValues = {
-  //     ...initialValues,
-  //     name: modelToEdit.name,
-  //     description: modelToEdit.description,
-  //     selectedTopGraphId: modelToEdit.topGraph.id,
-  //     selectedSubGraphIds: modelToEdit.subGraphs.map(subGraph => subGraph.id),
-  //   };
-  // }
+  if (configToEdit) {
+    initialValues = {
+      ...initialValues,
+      name: configToEdit.name,
+      selectedAcousticModelId: configToEdit.acousticModel.id,
+      selectedLanguageModelId: configToEdit.languageModel.id,
+      description: configToEdit.description,
+    };
+  }
 
   const handleClose = () => onClose((isEdit && configToEdit) ? configToEdit.id : undefined);
 
@@ -199,8 +199,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
-                type='submit'
+                disabled={!formikProps.isValid || isError}
+                onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?
