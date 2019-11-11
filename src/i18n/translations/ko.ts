@@ -129,6 +129,8 @@ export const ko: ResourceLanguage = {
       },
       createSubGraph: 'Create sub graph',
       editSubGraph: 'Edit sub graph',
+      deleteSubGraph: 'Delete sub graph',
+      deleteSubGraph_plural: 'Delete {{count}} sub graphs',
       createModel: 'Create model',
       editModel: 'Edit model',
     },

@@ -30,7 +30,7 @@ interface LanguageModelDialogProps {
   onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
 }
 
 interface SubGraphsById {
@@ -38,7 +38,7 @@ interface SubGraphsById {
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
-  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphCreate, modelToEdit } = props;
+  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -198,7 +198,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       <SubgraphFormDialog
         open={subOpen}
         onClose={() => setSubOpen(false)}
-        onSuccess={handleSubGraphCreate}
+        onSuccess={handleSubGraphListUpdate}
       />
     </Dialog>
   );

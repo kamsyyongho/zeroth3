@@ -81,7 +81,7 @@ export class Models extends ParentApi {
   /**
    * Create a new acoustic model
    * @param name
-   * @param sampleRate
+   * @param sampleRate - in kHz
    * @param location
    * @param description
    */
@@ -130,9 +130,10 @@ export class Models extends ParentApi {
    * Update an existing acoustic model
    * @param modelId
    * @param name
-   * @param sampleRate
+   * @param sampleRate - in kHz
    * @param location
    * @param description
+   * @returns a `conflict` kind if the model cannot be updated
    */
   async updateAcousticModel(
     modelId: number,
@@ -330,6 +331,7 @@ export class Models extends ParentApi {
    * @param topGraphId
    * @param subGraphIds
    * @param description
+   * @returns a `conflict` kind if the model cannot be updated
    */
   async updateLanguageModel(
     modelId: number,
@@ -482,10 +484,12 @@ export class Models extends ParentApi {
 
   /**
    * Update an existing subgraph
+   * - can only update with text
    * @param subGraphId
    * @param name
    * @param text
    * @param isPublic
+   * @returns a `conflict` kind if the subgraph cannot be updated
    */
   async updateSubGraph(
     subGraphId: number,

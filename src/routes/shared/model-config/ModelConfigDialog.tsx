@@ -33,7 +33,7 @@ interface ModelConfigDialogProps {
   subGraphs: SubGraph[];
   languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
@@ -53,7 +53,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     subGraphs,
     languageModels,
     acousticModels,
-    handleSubGraphCreate,
+    handleSubGraphListUpdate,
     handleAcousticModelCreate,
     handleLanguageModelCreate,
   } = props;
@@ -221,7 +221,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
         open={languageOpen}
         onClose={closeLanguageDialog}
         onSuccess={handleLanguageModelCreate}
-        handleSubGraphCreate={handleSubGraphCreate}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
       />

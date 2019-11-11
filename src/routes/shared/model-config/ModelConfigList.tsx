@@ -56,7 +56,7 @@ export interface ModelConfigListProps {
   acousticModels: AcousticModel[];
   languageModels: LanguageModel[];
   handleModelConfigCreate: (modelConfig: ModelConfig) => void;
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: number) => void;
@@ -69,7 +69,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     modelConfigsLoading,
     modelConfigs,
     handleModelConfigCreate,
-    handleSubGraphCreate,
+    handleSubGraphListUpdate,
     handleAcousticModelCreate,
     handleLanguageModelCreate,
     handleModelConfigDelete,
@@ -229,7 +229,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
         subGraphs={subGraphs}
         languageModels={languageModels}
         acousticModels={acousticModels}
-        handleSubGraphCreate={handleSubGraphCreate}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
       />

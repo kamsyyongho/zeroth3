@@ -25,7 +25,7 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 interface SubgraphFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (subGraph: SubGraph) => void;
+  onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
   subGraphToEdit?: SubGraph;
 }
 
@@ -40,6 +40,12 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
+
+  const handleClose = () => {
+    setIsError(false);
+    onClose();
+  };
+
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
@@ -47,7 +53,6 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
-
 
   const formSchema = yup.object({
     name: yup.string().required(requiredTranslationText).trim(),
@@ -102,7 +107,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.subGraph);
+        onSuccess(response.subGraph, isEdit);
         onClose();
       } else {
         log({
@@ -129,7 +134,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
     >
       <DialogTitle id="responsive-dialog-title">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
@@ -146,7 +151,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button disabled={loading} onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
@@ -162,7 +167,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     loading={true}
                   /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
-                {translate(isEdit ? "common.edit" : "common.submit")}
+                {translate(isEdit ? "common.edit" : "common.create")}
               </Button>
             </DialogActions>
           </>

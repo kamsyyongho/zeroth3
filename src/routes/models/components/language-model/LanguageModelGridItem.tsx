@@ -2,6 +2,7 @@ import { CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
+import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -10,7 +11,7 @@ import React from 'react';
 import { LanguageModel, SubGraph, TopGraph } from '../../../../types';
 import { ChipList } from '../../../shared/ChipList';
 import { LanguageModelDialog } from './LanguageModelDialog';
-import { EditOpenByModelId } from './LanguageModelGridList';
+import { CheckedModelById, EditOpenByModelId } from './LanguageModelGridList';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,20 +25,37 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface LanguageModelGridItemProps {
-  model: LanguageModel
-  topGraphs: TopGraph[]
-  subGraphs: SubGraph[]
-  editOpen: EditOpenByModelId
-  handleSubGraphCreate: (subGraph: SubGraph) => void
-  handleEditOpen: (modelId: number) => void
-  handleEditClose: (modelId: number) => void
-  handleEditSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void
+  model: LanguageModel;
+  topGraphs: TopGraph[];
+  subGraphs: SubGraph[];
+  editOpen: EditOpenByModelId;
+  checkedModels: CheckedModelById;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
+  handleEditOpen: (modelId: number) => void;
+  handleEditClose: (modelId: number) => void;
+  handleEditSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
+  handleModelCheck: (modelId: number, value: boolean) => void;
 }
 
 export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
-  const { model, topGraphs, subGraphs, editOpen, handleEditOpen, handleEditClose, handleEditSuccess, handleSubGraphCreate } = props;
+  const {
+    model,
+    topGraphs,
+    subGraphs,
+    editOpen,
+    checkedModels,
+    handleEditOpen,
+    handleEditClose,
+    handleEditSuccess,
+    handleSubGraphListUpdate,
+    handleModelCheck,
+  } = props;
   const classes = useStyles();
   const isOpen = !!editOpen[model.id];
+  let isChecked = false;
+  if (checkedModels && typeof checkedModels[model.id] === 'boolean') {
+    isChecked = checkedModels[model.id];
+  }
 
   return (<Grid item xs key={model.id}>
     <LanguageModelDialog
@@ -46,14 +64,15 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
       onSuccess={handleEditSuccess}
       topGraphs={topGraphs}
       subGraphs={subGraphs}
-      handleSubGraphCreate={handleSubGraphCreate}
+      handleSubGraphListUpdate={handleSubGraphListUpdate}
       modelToEdit={model}
     />
     <Card className={classes.card}>
-      <CardHeader title={model.name} className={classes.text} action={
+      <CardHeader title={model.name} className={classes.text} action={<>
+        <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
           <EditIcon />
-        </IconButton>} />
+        </IconButton></>} />
       <CardActionArea>
         <CardContent>
           <Typography gutterBottom color="textSecondary" className={classes.text}>

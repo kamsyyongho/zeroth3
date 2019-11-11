@@ -60,7 +60,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       return prevModelConfigs;
     });
   };
-  const handleSubGraphCreate = (newSubGraph: SubGraph) => {
+  const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
       return prevSubGraphs;
@@ -294,7 +294,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         acousticModels={acousticModels}
         handleModelConfigCreate={handleModelConfigCreate}
         handleModelConfigDelete={handleModelConfigDelete}
-        handleSubGraphCreate={handleSubGraphCreate}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
       />}
