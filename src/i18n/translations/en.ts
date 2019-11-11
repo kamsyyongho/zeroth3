@@ -10,6 +10,7 @@ export const en: ResourceLanguage = {
       cancel: 'Cancel',
       create: 'Create',
       edit: 'Edit',
+      save: 'Save',
       error: 'Error',
       success: 'Success',
       failure: 'Failure',

@@ -6,6 +6,7 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  confirmDataResult,
   fetchUnconfirmedDataResult,
   GeneralApiProblem,
   getAssignedDataResult,
@@ -16,6 +17,8 @@ import {
   ServerError,
   UpdateSegmentRequest,
   updateSegmentResult,
+  UpdateSegmentsRequest,
+  updateSegmentsResult,
   VoiceDataResults,
 } from '../types';
 import { ParentApi } from './parent-api';
@@ -146,6 +149,30 @@ export class VoiceData extends ParentApi {
   }
 
   /**
+   * Confirms and locks the voice data
+   * @param dataId
+   */
+  async confirmData(dataId: number): Promise<confirmDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+      `/data/${dataId}/confirm`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.confirmData(dataId),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
    * Assigns a group of unconfirmed data to the current user
    * - the server returns a `202` on success
    * @param projectId
@@ -232,7 +259,7 @@ export class VoiceData extends ParentApi {
       wordAlignments,
     };
     // make the api call
-    const response = await this.apisauce.patch<WordAlignment[], ServerError>(
+    const response = await this.apisauce.patch<undefined, ServerError>(
       `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
       request
     );
@@ -250,12 +277,40 @@ export class VoiceData extends ParentApi {
         return problem;
       }
     }
-    // transform the data into the format we are expecting
-    try {
-      const segment = response.data as Segment;
-      return { kind: 'ok', segment };
-    } catch {
-      return { kind: ProblemKind['bad-data'] };
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Updates a voice data's segments
+   * @param projectId
+   * @param dataId
+   * @param segments
+   */
+  async updateSegments(
+    projectId: number,
+    dataId: number,
+    segments: Segment[]
+  ): Promise<updateSegmentsResult> {
+    // compile data
+    const request: UpdateSegmentsRequest = segments;
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.updateSegments(projectId, dataId, segments),
+            problem
+          );
+        }
+        return problem;
+      }
     }
+    return { kind: 'ok' };
   }
 }

@@ -81,7 +81,6 @@ export function SubGraphList(props: SubGraphListProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-
   const renderListItems = () => subGraphs.map(subGraph => {
     let isChecked = false;
     if (checkedSubGraphs && typeof checkedSubGraphs[subGraph.id] === 'boolean') {

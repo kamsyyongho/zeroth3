@@ -1,8 +1,9 @@
-import { Button, Container } from '@material-ui/core';
-import ListItem from '@material-ui/core/ListItem';
+import { Button, Container, Grid } from '@material-ui/core';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import EditIcon from '@material-ui/icons/Edit';
+import LockIcon from '@material-ui/icons/Lock';
+import SaveIcon from '@material-ui/icons/Save';
+import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import AutosizeInput from 'react-input-autosize';
@@ -13,6 +14,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ModelConfig, Segment, WordAlignment } from '../../types';
+import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 
 
@@ -32,8 +34,10 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       height: '100%',
     },
+    segment: {
+      padding: 10,
+    },
     segmentTime: {
-      marginRight: 25,
       color: '#939393',
     }
   }),
@@ -86,7 +90,10 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
-  const [segmentsLoading, setSegmentsLoading] = React.useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  const [segmentsLoading, setSegmentsLoading] = React.useState(true);
+  const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
+  const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
   const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
 
@@ -121,31 +128,27 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const submitUpdates = async () => {
     if (api && api.voiceData) {
-      // setSegmentsLoading(true);
-      const segmentId = segments[0].id;
-      const updatedWordAlignments = segments[0].wordAlignments;
-      const response = await api.voiceData.updateSegment(projectIdNumber, dataIdNumber, segmentId, updatedWordAlignments);
+      setSaveSegmentsLoading(true);
+      const response = await api.voiceData.updateSegments(projectIdNumber, dataIdNumber, segments);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
-        //!
-        //!
-        //!
-        //TODO
-        //* ARRAY ORDER IS CHANGING AFTER UPDATE
-        // VERIFY WHEN TO UPDATE (BUTTON / ON BLUR)
-        console.log('response.segment', response.segment);
-        //!
-        //!
-        //!
-        // setSegments(response.segments);
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
       } else {
         log({
           file: `Editor.tsx`,
-          caller: `getSegments - failed to get segments`,
+          caller: `submitUpdates - update segments`,
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
-      // setSegmentsLoading(false);
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setSaveSegmentsLoading(false);
     }
   };
 
@@ -188,9 +191,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const getWordStyle = (focussed: boolean, wordConfidence: number) => {
-    const DEFAULT_LC_THRESHOLD = 50;
+    const DEFAULT_LC_THRESHOLD = 0.5;
     if (wordConfidence > DEFAULT_LC_THRESHOLD) {
-      return {};
+      return {
+        outline: 'none',
+        border: 0,
+      } as React.CSSProperties;
     }
     const LC_COLOR = '#ffe369';
     let wordStyle: React.CSSProperties = {
@@ -264,12 +270,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
         onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
         onChange={(event) =>
-          updateSegments(event, segment, wordAlignment, segmentIndex, wordIndex)}
+          updateSegments(event, segment, wordAlignment, segmentIndex, wordIndex)
+        }
       />;
     });
     return words;
   };
-
 
   function rowRenderer({ key, index, style, parent }: ListRowProps) {
     return (
@@ -281,10 +287,14 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         columnIndex={0}
         rowIndex={index}
       >
-        <ListItem divider style={style}>
-          <Typography className={classes.segmentTime} >{formatSecondsDuration(segments[index].start)}</Typography>
-          {renderWords(segments[index], index)}
-        </ListItem>
+        <Grid container spacing={2} className={classes.segment} >
+          <Grid item>
+            <Typography className={classes.segmentTime} >{formatSecondsDuration(segments[index].start)}</Typography>
+          </Grid>
+          <Grid item xs={12} sm container>
+            {renderWords(segments[index], index)}
+          </Grid>
+        </Grid>
       </CellMeasurer>
     );
   }
@@ -294,18 +304,32 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.8), minHeight: 500 }}>
           <Button
-            // disabled={!projectsToDelete.length}
-            variant="contained"
-            color="secondary"
+            disabled={saveSegmentsLoading || confirmSegmentsLoading}
+            variant="outlined"
+            color="primary"
             onClick={submitUpdates}
-            startIcon={segmentsLoading ? <MoonLoader
+            startIcon={saveSegmentsLoading ? <MoonLoader
               sizeUnit={"px"}
               size={15}
-              color={"#ffff"}
+              color={theme.palette.primary.main}
               loading={true}
-            /> : <EditIcon />}
+            /> : <SaveIcon />}
           >
-            {translate('common.edit')}
+            {translate('common.save')}
+          </Button>
+          <Button
+            disabled={saveSegmentsLoading || confirmSegmentsLoading}
+            variant="outlined"
+            color="secondary"
+            // onClick={submitUpdates}
+            startIcon={confirmSegmentsLoading ? <MoonLoader
+              sizeUnit={"px"}
+              size={15}
+              color={theme.palette.secondary.main}
+              loading={true}
+            /> : <LockIcon />}
+          >
+            {'TEST CONFIRM DATA'}
           </Button>
           <AutoSizer>
             {({ height, width }) => {
@@ -313,7 +337,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
                 <List
                   height={height}
                   rowCount={segments.length}
-                  rowHeight={40}
+                  rowHeight={virtualListCache.rowHeight}
                   rowRenderer={rowRenderer}
                   width={width}
                   deferredMeasurementCache={virtualListCache}

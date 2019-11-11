@@ -74,9 +74,13 @@ export interface UpdateSegmentRequest {
   wordAlignments: WordAlignment[];
 }
 
+export type UpdateSegmentsRequest = Segment[];
+
 /////////////
 // RESULTS //
 /////////////
+
+export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
@@ -92,6 +96,6 @@ export type getSegmentsDataResult =
   | { kind: 'ok'; segments: Segment[] }
   | GeneralApiProblem;
 
-export type updateSegmentResult =
-  | { kind: 'ok'; segment: Segment }
-  | GeneralApiProblem;
+export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;

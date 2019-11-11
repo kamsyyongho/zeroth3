@@ -10,6 +10,7 @@ export const ko: ResourceLanguage = {
       cancel: '취소',
       create: 'Create',
       edit: 'Edit',
+      save: 'Save',
       error: '오류',
       success: 'Success',
       failure: 'Failure',
