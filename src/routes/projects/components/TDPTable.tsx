@@ -27,7 +27,7 @@ interface TDPTableProps {
 }
 
 const useStyles = makeStyles(theme => ({
-  tableBody: {
+  clickableTableBody: {
     cursor: 'pointer',
   },
 }));
@@ -175,8 +175,8 @@ export function TDPTable(props: TDPTableProps) {
       prepareRow(row);
       return (
         <TableRow
-          hover
-          onClick={() => handleRowClick(row.original.id)}
+          hover={onlyAssignedData}
+          onClick={() => onlyAssignedData ? handleRowClick(row.original.id) : {}}
           key={`row-${rowIndex}`}
           {...row.getRowProps()}
         >
@@ -198,7 +198,7 @@ export function TDPTable(props: TDPTableProps) {
     {!onlyAssignedData && <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />}
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
-      <TableBody className={classes.tableBody} >
+      <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
