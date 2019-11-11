@@ -104,7 +104,10 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     };
   }
 
-  const handleClose = () => onClose((isEdit && configToEdit) ? configToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && configToEdit) ? configToEdit.id : undefined);
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.modelConfig) {
@@ -113,15 +116,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       const { name, description, selectedAcousticModelId, selectedLanguageModelId } = values;
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return;
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId);
       } else {
         response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId);
       }

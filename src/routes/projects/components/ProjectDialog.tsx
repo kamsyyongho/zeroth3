@@ -79,7 +79,10 @@ export function ProjectDialog(props: ProjectDialogProps) {
     };
   }
 
-  const handleClose = () => onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.projects) {

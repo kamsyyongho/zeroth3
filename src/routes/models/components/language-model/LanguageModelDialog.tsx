@@ -93,7 +93,10 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     };
   }
 
-  const handleClose = () => onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {

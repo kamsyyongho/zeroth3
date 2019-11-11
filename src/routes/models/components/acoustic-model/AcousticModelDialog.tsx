@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -14,6 +15,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { postAcousticModelResult } from '../../../../services/api/types';
 import { AcousticModel, SnackbarError } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
@@ -21,18 +23,20 @@ import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
 interface AcousticModelDialogProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (modelId?: number) => void;
   onSuccess: (model: AcousticModel) => void;
+  modelToEdit?: AcousticModel;
 }
 
 
 export function AcousticModelDialog(props: AcousticModelDialogProps) {
-  const { open, onClose, onSuccess } = props;
+  const { open, onClose, onSuccess, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const isEdit = !!modelToEdit;
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
@@ -63,25 +67,45 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     location: "",
     sampleRate: 8,
     description: "",
   };
+  if (modelToEdit) {
+    initialValues = {
+      ...initialValues,
+      name: modelToEdit.name,
+      location: modelToEdit.location,
+      description: modelToEdit.description,
+      // we receive Hz from the server, but our form sends send kHz
+      sampleRate: modelToEdit.sampleRate / 1000,
+    };
+  }
+
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {
       setLoading(true);
       setIsError(false);
       const { name, description, location, sampleRate } = values;
-      const response = await api.models.postAcousticModel(name.trim(), sampleRate, location.trim(), description.trim());
+      let response: postAcousticModelResult;
+      if (isEdit && modelToEdit) {
+        response = await api.models.updateAcousticModel(modelToEdit.id, name.trim(), sampleRate, location.trim(), description.trim());
+      } else {
+        response = await api.models.postAcousticModel(name.trim(), sampleRate, location.trim(), description.trim());
+      }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         onSuccess(response.acousticModel);
-        onClose();
+        handleClose();
       } else {
         log({
           file: `AcousticModelDialog.tsx`,
@@ -107,10 +131,10 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate('models.tabs.acousticModel.create')}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate(`models.tabs.acousticModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
@@ -124,12 +148,12 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button disabled={loading} onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
-                type='submit'
+                disabled={!formikProps.isValid || isError}
+                onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?
@@ -138,9 +162,9 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : <AddIcon />}
+                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
-                {translate('models.createModel')}
+                {translate(isEdit ? "common.edit" : "common.create")}
               </Button>
             </DialogActions>
           </>
