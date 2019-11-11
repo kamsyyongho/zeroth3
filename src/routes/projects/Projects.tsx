@@ -157,7 +157,7 @@ export function Projects() {
       }
     });
     // update the project list
-    handleDeleteSuccess();
+    handleDeleteSuccess(successIds);
     setDeleteLoading(false);
   };
 
