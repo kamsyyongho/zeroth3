@@ -5,7 +5,7 @@ import { GeneralApiProblem } from './api-problem.types';
 // REQUESTS //
 //////////////
 
-export interface PostModelConfigRequest {
+export interface ModelConfigRequest {
   acousticModelId: number;
   languageModelId: number;
   name: string;
@@ -20,6 +20,9 @@ export type getModelConfigsResult =
   | { kind: 'ok'; modelConfigs: ModelConfig[] }
   | GeneralApiProblem;
 export type postModelConfigResult =
+  | { kind: 'ok'; modelConfig: ModelConfig }
+  | GeneralApiProblem;
+export type updateModelConfigResult =
   | { kind: 'ok'; modelConfig: ModelConfig }
   | GeneralApiProblem;
 export type deleteModelConfigResult = { kind: 'ok' } | GeneralApiProblem;

@@ -11,6 +11,7 @@ import {
   deleteAcousticModelResult,
   deleteLanguageModelResult,
   deleteSubGraphResult,
+  GeneralApiProblem,
   getAcousticModelsResult,
   getLanguageModelsResult,
   getSubGraphsResult,
@@ -35,10 +36,16 @@ export class Models extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param logout The logout method from `keycloakContext`.
+   * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
-    super(apisauce, logout);
+  constructor(
+    apisauce: ApisauceInstance,
+    attemptToRefreshToken: <T>(
+      callback: () => T,
+      responseProblem: GeneralApiProblem
+    ) => Promise<GeneralApiProblem | T>
+  ) {
+    super(apisauce, attemptToRefreshToken);
   }
 
   /**
@@ -54,7 +61,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.getAcousticModels(),
+            problem
+          );
         }
         return problem;
       }
@@ -71,7 +81,7 @@ export class Models extends ParentApi {
   /**
    * Create a new acoustic model
    * @param name
-   * @param sampleRate
+   * @param sampleRate - in kHz
    * @param location
    * @param description
    */
@@ -98,7 +108,11 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.postAcousticModel(name, sampleRate, location, description),
+            problem
+          );
         }
         return problem;
       }
@@ -116,9 +130,10 @@ export class Models extends ParentApi {
    * Update an existing acoustic model
    * @param modelId
    * @param name
-   * @param sampleRate
+   * @param sampleRate - in kHz
    * @param location
    * @param description
+   * @returns a `conflict` kind if the model cannot be updated
    */
   async updateAcousticModel(
     modelId: number,
@@ -144,7 +159,17 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.updateAcousticModel(
+                modelId,
+                name,
+                sampleRate,
+                location,
+                description
+              ),
+            problem
+          );
         }
         return problem;
       }
@@ -176,7 +201,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteAcousticModel(modelId),
+            problem
+          );
         }
         return problem;
       }
@@ -198,7 +226,7 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(() => this.getTopGraphs(), problem);
         }
         return problem;
       }
@@ -226,7 +254,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.getLanguageModels(),
+            problem
+          );
         }
         return problem;
       }
@@ -270,7 +301,16 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.postLanguageModel(
+                name,
+                topGraphId,
+                subGraphIds,
+                description
+              ),
+            problem
+          );
         }
         return problem;
       }
@@ -291,6 +331,7 @@ export class Models extends ParentApi {
    * @param topGraphId
    * @param subGraphIds
    * @param description
+   * @returns a `conflict` kind if the model cannot be updated
    */
   async updateLanguageModel(
     modelId: number,
@@ -316,7 +357,17 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.updateLanguageModel(
+                modelId,
+                name,
+                topGraphId,
+                subGraphIds,
+                description
+              ),
+            problem
+          );
         }
         return problem;
       }
@@ -348,7 +399,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteLanguageModel(modelId),
+            problem
+          );
         }
         return problem;
       }
@@ -370,7 +424,7 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(() => this.getSubGraphs(), problem);
         }
         return problem;
       }
@@ -411,7 +465,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.postSubGraph(name, text, isPublic),
+            problem
+          );
         }
         return problem;
       }
@@ -427,10 +484,12 @@ export class Models extends ParentApi {
 
   /**
    * Update an existing subgraph
+   * - can only update with text
    * @param subGraphId
    * @param name
    * @param text
    * @param isPublic
+   * @returns a `conflict` kind if the subgraph cannot be updated
    */
   async updateSubGraph(
     subGraphId: number,
@@ -454,7 +513,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.updateSubGraph(subGraphId, name, text, isPublic),
+            problem
+          );
         }
         return problem;
       }
@@ -484,7 +546,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteSubGraph(subGraphId),
+            problem
+          );
         }
         return problem;
       }
@@ -526,7 +591,10 @@ export class Models extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.uploadSubGraphFile(name, file, isPublic),
+            problem
+          );
         }
         return problem;
       }

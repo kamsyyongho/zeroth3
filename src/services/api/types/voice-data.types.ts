@@ -1,4 +1,9 @@
-import { CONTENT_STATUS, VoiceData } from '../../../types';
+import {
+  CONTENT_STATUS,
+  Segment,
+  VoiceData,
+  WordAlignment,
+} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 interface Sort {
@@ -65,10 +70,28 @@ export interface SearchDataRequest {
   transcript?: string;
 }
 
+export interface UpdateSegmentRequest {
+  wordAlignments: WordAlignment[];
+}
+
 /////////////
 // RESULTS //
 /////////////
 
 export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
+  | GeneralApiProblem;
+
+export type getAssignedDataResult =
+  | { kind: 'ok'; data: VoiceDataResults }
+  | GeneralApiProblem;
+
+export type fetchUnconfirmedDataResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type getSegmentsDataResult =
+  | { kind: 'ok'; segments: Segment[] }
+  | GeneralApiProblem;
+
+export type updateSegmentResult =
+  | { kind: 'ok'; segment: Segment }
   | GeneralApiProblem;

@@ -6,7 +6,10 @@
 export interface Path {
   to?: string;
   title?: string;
-  function?: (param: string | number) => string;
+  function?: (
+    param: string | number,
+    ...restParams: (string | number)[]
+  ) => string;
 }
 
 export const PATHS: { [x: string]: Path } = {
@@ -29,6 +32,11 @@ export const PATHS: { [x: string]: Path } = {
   TDP: {
     to: '/projects/:projectId/tdp',
     function: (projectId: string | number) => `/projects/${projectId}/tdp`,
+  },
+  editor: {
+    to: '/projects/:projectId/tdp/:dataId/editor',
+    function: (projectId: string | number, dataId: string | number) =>
+      `/projects/${projectId}/tdp/${dataId}/editor`,
   },
   models: {
     to: '/models',

@@ -5,11 +5,12 @@ import {
   assignRolesResult,
   deleteRoleResult,
   deleteUserResult,
+  GeneralApiProblem,
   getRolesResult,
   getUserResult,
   inviteUserResult,
   ProblemKind,
-  ServerError
+  ServerError,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -20,10 +21,16 @@ export class IAM extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param logout The logout method from `keycloakContext`.
+   * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
-    super(apisauce, logout);
+  constructor(
+    apisauce: ApisauceInstance,
+    attemptToRefreshToken: <T>(
+      callback: () => T,
+      responseProblem: GeneralApiProblem
+    ) => Promise<GeneralApiProblem | T>
+  ) {
+    super(apisauce, attemptToRefreshToken);
   }
 
   /**
@@ -39,7 +46,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(() => this.getUsers(), problem);
         }
         return problem;
       }
@@ -66,7 +73,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(() => this.getRoles(), problem);
         }
         return problem;
       }
@@ -95,7 +102,10 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteUser(userId),
+            problem
+          );
         }
         return problem;
       }
@@ -114,7 +124,7 @@ export class IAM extends ParentApi {
   ): Promise<assignRolesResult> {
     // compile data
     const request = {
-      items: roleIds
+      items: roleIds,
     };
     // make the api call
     const response: ApiResponse<User[], ServerError> = await this.apisauce.post(
@@ -126,7 +136,10 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.assignRoles(userId, roleIds),
+            problem
+          );
         }
         return problem;
       }
@@ -156,7 +169,10 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteRole(userId, roleId),
+            problem
+          );
         }
         return problem;
       }
@@ -171,7 +187,7 @@ export class IAM extends ParentApi {
   async inviteUser(email: string): Promise<inviteUserResult> {
     // compile data
     const request = {
-      email
+      email,
     };
     // make the api call
     const response: ApiResponse<
@@ -183,7 +199,10 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.inviteUser(email),
+            problem
+          );
         }
         return problem;
       }

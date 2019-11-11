@@ -16,10 +16,15 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
+import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { AcousticModel, LanguageModel, ModelConfig, SubGraph, TopGraph } from '../../../types';
+import { SnackbarError } from '../../../types/snackbar.types';
+import log from '../../../util/log/logger';
+import { ConfirmationDialog } from '../ConfirmationDialog';
 import { ModelConfigDialog } from './ModelConfigDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -51,9 +56,10 @@ export interface ModelConfigListProps {
   acousticModels: AcousticModel[];
   languageModels: LanguageModel[];
   handleModelConfigCreate: (modelConfig: ModelConfig) => void;
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
+  handleModelConfigDelete: (modelConfigId: number) => void;
 }
 
 
@@ -63,19 +69,24 @@ export function ModelConfigList(props: ModelConfigListProps) {
     modelConfigsLoading,
     modelConfigs,
     handleModelConfigCreate,
-    handleSubGraphCreate,
+    handleSubGraphListUpdate,
     handleAcousticModelCreate,
     handleLanguageModelCreate,
+    handleModelConfigDelete,
     topGraphs,
     subGraphs,
     languageModels,
     acousticModels
   } = props;
+  const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const [configOpen, setCreateOpen] = React.useState(false);
   const [modelConfigToEdit, setModelConfigToEdit] = React.useState<ModelConfig | undefined>(undefined);
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -87,6 +98,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const openEditDialog = (modelConfigToEdit: ModelConfig) => {
     setModelConfigToEdit(modelConfigToEdit);
+    handleActionClose();
     setCreateOpen(true);
   };
 
@@ -97,22 +109,62 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const openCreateDialog = () => setCreateOpen(true);
 
+  const confirmDelete = (modelConfigToEdit: ModelConfig) => {
+    setModelConfigToEdit(modelConfigToEdit);
+    handleActionClose();
+    setConfirmationOpen(true);
+  };
+
+  const closeConfirmation = () => {
+    setConfirmationOpen(false);
+    setModelConfigToEdit(undefined);
+  };
+
+  const handleDelete = async () => {
+    if (api && api.modelConfig && modelConfigToEdit) {
+      setDeleteLoading(true);
+      const modelConfigId = modelConfigToEdit.id;
+      closeConfirmation();
+      const response = await api.modelConfig.deleteModelConfig(projectId, modelConfigId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        handleModelConfigDelete(modelConfigId);
+      } else {
+        log({
+          file: `ModelConfigList.tsx`,
+          caller: `handleDelete - failed to delete model config`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setDeleteLoading(false);
+    }
+  };
+
   const classes = useStyles();
 
-  const renderItemMenu = () => (<Menu
+  const renderItemMenu = (modelConfig: ModelConfig) => (<Menu
     id="list-item-menu"
     anchorEl={anchorEl}
     keepMounted
     open={Boolean(anchorEl)}
     onClose={handleActionClose}
   >
-    <MenuItem onClick={handleActionClose}>
+    <MenuItem disabled={deleteLoading} onClick={() => openEditDialog(modelConfig)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.edit')}</Typography>
     </MenuItem>
-    <MenuItem onClick={handleActionClose}>
+    <MenuItem onClick={() => confirmDelete(modelConfig)}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
       </ListItemIcon>
@@ -137,7 +189,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
             </IconButton>
           </ListItemSecondaryAction>
         </ListItem>
-        {renderItemMenu()}
+        {renderItemMenu(modelConfig)}
       </Card>
     );
   });
@@ -170,16 +222,24 @@ export function ModelConfigList(props: ModelConfigListProps) {
       <ModelConfigDialog
         projectId={projectId}
         open={configOpen}
-        configToEdit={undefined}
+        configToEdit={modelConfigToEdit}
         onClose={closeDialog}
         onSuccess={handleModelConfigCreate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
         languageModels={languageModels}
         acousticModels={acousticModels}
-        handleSubGraphCreate={handleSubGraphCreate}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
+      />
+      <ConfirmationDialog
+        destructive
+        titleText={`${translate('modelConfig.delete')}?`}
+        submitText={translate('common.delete')}
+        open={confirmationOpen}
+        onSubmit={handleDelete}
+        onCancel={closeConfirmation}
       />
     </Container>
   );

@@ -23,10 +23,10 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 
 interface SubgraphFormDialogProps {
-  open: boolean
-  onClose: () => void
-  onSuccess: (subGraph: SubGraph) => void
-  subGraphToEdit?: SubGraph
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
+  subGraphToEdit?: SubGraph;
 }
 
 
@@ -35,19 +35,24 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [loading, setLoading] = React.useState(false)
-  const [isError, setIsError] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
   const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
+
+  const handleClose = () => {
+    setIsError(false);
+    onClose();
+  };
+
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File
+  const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File;
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
-
 
   const formSchema = yup.object({
     name: yup.string().required(requiredTranslationText).trim(),
@@ -63,7 +68,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       then: yup.string().required(requiredTranslationText).trim(),
       otherwise: yup.string().notRequired(),
     }),
-  })
+  });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
@@ -82,7 +87,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const handleSubmit = async (values: FormValues) => {
     const { shouldUploadFile, files } = values;
     if (shouldUploadFile && !validFilesCheck(files)) {
-      return
+      return;
     }
     if (api && api.models) {
       setLoading(true);
@@ -90,15 +95,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       const { name, text, isPublic } = values;
       let response: postSubGraphResult;
       if (isEdit && subGraphToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return
+        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), isPublic);
       } else {
         if (shouldUploadFile) {
           response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
@@ -110,7 +107,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.subGraph);
+        onSuccess(response.subGraph, isEdit);
         onClose();
       } else {
         log({
@@ -118,7 +115,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
           caller: `handleSubmit - failed create new subgraph / upload subgraph file`,
           value: response,
           important: true,
-        })
+        });
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -129,7 +126,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog
@@ -137,28 +134,28 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate("models.createSubGraph")}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='shouldUploadFile' component={SwitchFormField} label={translate("forms.source")} text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />
+                {!isEdit && <Field name='shouldUploadFile' component={SwitchFormField} label={translate("forms.source")} text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />}
                 <Field hidden={!formikProps.values.shouldUploadFile} name='files' component={DropZoneFormField} errorOverride={isError} />
                 <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
                 <Field name='isPublic' component={SwitchFormField} label={translate("forms.privacySetting")} text={(value: boolean) => translate(value ? "forms.private" : "forms.public")} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button disabled={loading} onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
+                disabled={!formikProps.isValid || isError}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
@@ -170,7 +167,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     loading={true}
                   /> : (isEdit ? <EditIcon /> : <AddIcon />)}
               >
-                {translate(isEdit ? "common.edit" : "common.submit")}
+                {translate(isEdit ? "common.edit" : "common.create")}
               </Button>
             </DialogActions>
           </>

@@ -33,7 +33,7 @@ interface ModelConfigDialogProps {
   subGraphs: SubGraph[];
   languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
@@ -53,7 +53,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     subGraphs,
     languageModels,
     acousticModels,
-    handleSubGraphCreate,
+    handleSubGraphListUpdate,
     handleAcousticModelCreate,
     handleLanguageModelCreate,
   } = props;
@@ -88,23 +88,26 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
+  let initialValues: FormValues = {
     name: "",
     selectedAcousticModelId: 0,
     selectedLanguageModelId: 0,
     description: "",
   };
-  // if (configToEdit) {
-  //   initialValues = {
-  //     ...initialValues,
-  //     name: modelToEdit.name,
-  //     description: modelToEdit.description,
-  //     selectedTopGraphId: modelToEdit.topGraph.id,
-  //     selectedSubGraphIds: modelToEdit.subGraphs.map(subGraph => subGraph.id),
-  //   };
-  // }
+  if (configToEdit) {
+    initialValues = {
+      ...initialValues,
+      name: configToEdit.name,
+      selectedAcousticModelId: configToEdit.acousticModel.id,
+      selectedLanguageModelId: configToEdit.languageModel.id,
+      description: configToEdit.description,
+    };
+  }
 
-  const handleClose = () => onClose((isEdit && configToEdit) ? configToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && configToEdit) ? configToEdit.id : undefined);
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.modelConfig) {
@@ -113,15 +116,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       const { name, description, selectedAcousticModelId, selectedLanguageModelId } = values;
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return;
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId);
       } else {
         response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId);
       }
@@ -199,7 +194,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
+                disabled={!formikProps.isValid || isError}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
@@ -226,7 +221,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
         open={languageOpen}
         onClose={closeLanguageDialog}
         onSuccess={handleLanguageModelCreate}
-        handleSubGraphCreate={handleSubGraphCreate}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
       />

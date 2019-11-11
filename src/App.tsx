@@ -10,6 +10,7 @@ import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
 import { Models } from './routes/models/Models';
+import { Editor } from './routes/projects/Editor';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Projects } from './routes/projects/Projects';
 import { TDP } from './routes/projects/TDP';
@@ -62,6 +63,7 @@ function App() {
         <Route exact path={PATHS.projects.to} component={Projects} />
         <Route exact path={PATHS.project.to} component={ProjectDetails} />
         <Route exact path={PATHS.TDP.to} component={TDP} />
+        <Route exact path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
       </Router>
     </RootProvider>

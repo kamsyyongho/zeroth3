@@ -30,7 +30,7 @@ interface LanguageModelDialogProps {
   onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
-  handleSubGraphCreate: (subGraph: SubGraph) => void;
+  handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
 }
 
 interface SubGraphsById {
@@ -38,7 +38,7 @@ interface SubGraphsById {
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
-  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphCreate, modelToEdit } = props;
+  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -93,7 +93,10 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     };
   }
 
-  const handleClose = () => onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {
@@ -102,15 +105,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
       let response: postLanguageModelResult;
       if (isEdit && modelToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return;
+        response = await api.models.updateLanguageModel(modelToEdit.id, name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       } else {
         response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       }
@@ -118,7 +113,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.languageModel);
+        onSuccess(response.languageModel, isEdit);
         handleClose();
       } else {
         log({
@@ -182,7 +177,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
+                disabled={!formikProps.isValid || isError}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
@@ -203,7 +198,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       <SubgraphFormDialog
         open={subOpen}
         onClose={() => setSubOpen(false)}
-        onSuccess={handleSubGraphCreate}
+        onSuccess={handleSubGraphListUpdate}
       />
     </Dialog>
   );

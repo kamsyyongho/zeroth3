@@ -3,12 +3,14 @@ import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   deleteModelConfigResult,
+  GeneralApiProblem,
   getModelConfigsResult,
-  PostModelConfigRequest,
+  ModelConfigRequest,
   postModelConfigResult,
   ProblemKind,
   ServerError,
 } from '../types';
+import { updateModelConfigResult } from '../types/model-config.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -18,10 +20,16 @@ export class ModelConfig extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param logout The logout method from `keycloakContext`.
+   * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
-    super(apisauce, logout);
+  constructor(
+    apisauce: ApisauceInstance,
+    attemptToRefreshToken: <T>(
+      callback: () => T,
+      responseProblem: GeneralApiProblem
+    ) => Promise<GeneralApiProblem | T>
+  ) {
+    super(apisauce, attemptToRefreshToken);
   }
 
   /**
@@ -39,7 +47,10 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.getModelConfigs(projectId),
+            problem
+          );
         }
         return problem;
       }
@@ -69,7 +80,7 @@ export class ModelConfig extends ParentApi {
     languageModelId: number
   ): Promise<postModelConfigResult> {
     // compile data
-    const request: PostModelConfigRequest = {
+    const request: ModelConfigRequest = {
       name,
       description,
       acousticModelId,
@@ -88,7 +99,80 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () =>
+              this.postModelConfig(
+                projectId,
+                name,
+                description,
+                acousticModelId,
+                languageModelId
+              ),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const modelConfig = response.data as ModelConfigType;
+      return { kind: 'ok', modelConfig };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Create a new model config
+   * @param modelConfigId
+   * @param projectId
+   * @param name
+   * @param description
+   * @param acousticModelId
+   * @param languageModelId
+   * @returns a `conflict` kind if the model config cannot be updated
+   */
+  async updateModelConfig(
+    modelConfigId: number,
+    projectId: number,
+    name: string,
+    description: string,
+    acousticModelId: number,
+    languageModelId: number
+  ): Promise<updateModelConfigResult> {
+    // compile data
+    const request: ModelConfigRequest = {
+      name,
+      description,
+      acousticModelId,
+      languageModelId,
+    };
+    // make the api call
+    const response: ApiResponse<
+      ModelConfigType,
+      ServerError
+    > = await this.apisauce.put(
+      `/projects/${projectId}/model-config/${modelConfigId}`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () =>
+              this.updateModelConfig(
+                modelConfigId,
+                projectId,
+                name,
+                description,
+                acousticModelId,
+                languageModelId
+              ),
+            problem
+          );
         }
         return problem;
       }
@@ -123,7 +207,10 @@ export class ModelConfig extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
+          return this.attemptToRefreshToken(
+            () => this.deleteModelConfig(projectId, modelConfigId),
+            problem
+          );
         }
         return problem;
       }

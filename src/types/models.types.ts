@@ -9,6 +9,9 @@ export interface Model extends TopGraph {
 }
 
 export interface AcousticModel extends Model {
+  /**
+   * in Hz
+   */
   sampleRate: number;
   location: string;
 }

@@ -79,7 +79,10 @@ export function ProjectDialog(props: ProjectDialogProps) {
     };
   }
 
-  const handleClose = () => onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
+  const handleClose = () => {
+    setIsError(false);
+    onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.projects) {
@@ -145,7 +148,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
+                disabled={!formikProps.isValid || isError}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

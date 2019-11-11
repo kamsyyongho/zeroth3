@@ -8,8 +8,8 @@ import { GeneralApiProblem, ProblemKind, ServerError } from './types';
  */
 export function getGeneralApiProblem(
   response: ApiResponse<ServerError>
-): GeneralApiProblem | null {
-  let generalApiProblem: GeneralApiProblem | null = null;
+): GeneralApiProblem {
+  let generalApiProblem: GeneralApiProblem = {kind: ProblemKind['unknown']};
   switch (response.problem) {
     case 'CONNECTION_ERROR':
       generalApiProblem = {
@@ -52,7 +52,7 @@ export function getGeneralApiProblem(
       }
       break;
     case 'CANCEL_ERROR':
-      generalApiProblem = null;
+      generalApiProblem = {kind: ProblemKind['canceled']};
       break;
   }
 
