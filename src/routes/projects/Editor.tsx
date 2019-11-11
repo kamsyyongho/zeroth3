@@ -8,12 +8,14 @@ import React from "react";
 import { BulletList } from 'react-content-loader';
 import AutosizeInput from 'react-input-autosize';
 import { RouteComponentProps } from "react-router";
+import { useHistory } from 'react-router-dom';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from 'react-virtualized';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ModelConfig, Segment, WordAlignment } from '../../types';
+import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 
@@ -89,6 +91,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const dataIdNumber = Number(dataId);
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
+  const history = useHistory();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
@@ -98,12 +101,18 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
 
   const theme = useTheme();
+  const classes = useStyles();
 
   //!
   //TODO
   //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
 
-  const classes = useStyles();
+  /**
+   * navigates to the TDP page after confirming data
+   */
+  const handleNavigateAway = () => {
+    PATHS.TDP.function && history.push(PATHS.TDP.function(projectIdNumber));
+  };
 
   React.useEffect(() => {
     const getSegments = async () => {
@@ -126,7 +135,37 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     getSegments();
   }, [api, dataIdNumber, projectIdNumber]);
 
-  const submitUpdates = async () => {
+  const confirmData = async () => {
+    if (api && api.voiceData) {
+      setConfirmSegmentsLoading(true);
+      const response = await api.voiceData.confirmData(dataIdNumber);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // to allow the message to be displayed shortly before navigating away
+        setTimeout(() => {
+          handleNavigateAway();
+        }, 1500);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `confirmData - failed to confirm segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setConfirmSegmentsLoading(false);
+    }
+  };
+
+  const submitSegmentUpdates = async () => {
     if (api && api.voiceData) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegments(projectIdNumber, dataIdNumber, segments);
@@ -137,7 +176,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       } else {
         log({
           file: `Editor.tsx`,
-          caller: `submitUpdates - update segments`,
+          caller: `submitSegmentUpdates - failed to update segments`,
           value: response,
           important: true,
         });
@@ -307,7 +346,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"
             color="primary"
-            onClick={submitUpdates}
+            onClick={submitSegmentUpdates}
             startIcon={saveSegmentsLoading ? <MoonLoader
               sizeUnit={"px"}
               size={15}
@@ -321,7 +360,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"
             color="secondary"
-            // onClick={submitUpdates}
+            onClick={confirmData}
             startIcon={confirmSegmentsLoading ? <MoonLoader
               sizeUnit={"px"}
               size={15}
