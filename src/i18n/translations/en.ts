@@ -114,11 +114,16 @@ export const en: ResourceLanguage = {
         acousticModel: {
           header: 'Acoustic Model',
           create: 'Create acoustic model',
+          edit: 'Edit acoustic model',
+          delete: 'Delete acoustic model',
+          delete_plural: 'Delete {{count}} acoustic models',
         },
         languageModel: {
           header: 'Language Model',
           create: 'Create language model',
           edit: 'Edit language model',
+          delete: 'Delete language model',
+          delete_plural: 'Delete {{count}} language models',
         },
       },
       createSubGraph: 'Create sub graph',

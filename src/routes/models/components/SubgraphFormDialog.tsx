@@ -90,15 +90,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       const { name, text, isPublic } = values;
       let response: postSubGraphResult;
       if (isEdit && subGraphToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return;
+        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), isPublic);
       } else {
         if (shouldUploadFile) {
           response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
@@ -140,14 +132,14 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       onClose={onClose}
       aria-labelledby="responsive-dialog-title"
     >
-      <DialogTitle id="responsive-dialog-title">{translate("models.createSubGraph")}</DialogTitle>
+      <DialogTitle id="responsive-dialog-title">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='shouldUploadFile' component={SwitchFormField} label={translate("forms.source")} text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />
+                {!isEdit && <Field name='shouldUploadFile' component={SwitchFormField} label={translate("forms.source")} text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />}
                 <Field hidden={!formikProps.values.shouldUploadFile} name='files' component={DropZoneFormField} errorOverride={isError} />
                 <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
                 <Field name='isPublic' component={SwitchFormField} label={translate("forms.privacySetting")} text={(value: boolean) => translate(value ? "forms.private" : "forms.public")} errorOverride={isError} />
@@ -158,8 +150,8 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
-                type='submit'
+                disabled={!formikProps.isValid || isError}
+                onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

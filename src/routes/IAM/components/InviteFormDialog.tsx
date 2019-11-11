@@ -18,8 +18,8 @@ import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 interface InviteFormDialogProps {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
 }
 
 
@@ -28,8 +28,8 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [loading, setLoading] = React.useState(false)
-  const [isError, setIsError] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
 
   const theme = useTheme();
   // to expand to fullscreen on small displays
@@ -38,7 +38,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
 
   const formSchema = yup.object({
     email: yup.string().email(`${translate("forms.validation.email")}`).required(`${translate("forms.validation.required")}`).trim()
-  })
+  });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     email: "",
@@ -60,7 +60,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
           caller: `handleSubmit - failed send invite`,
           value: response,
           important: true,
-        })
+        });
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -71,7 +71,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog
@@ -96,8 +96,8 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
-                type='submit'
+                disabled={!formikProps.isValid || isError}
+                onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?

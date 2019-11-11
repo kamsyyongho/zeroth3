@@ -102,15 +102,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
       let response: postLanguageModelResult;
       if (isEdit && modelToEdit) {
-        //!
-        //!
-        //!
-        //TODO
-        //* HANDLE THE EDIT LOGIC HERE
-        //!
-        //!
-        //!
-        return;
+        response = await api.models.updateLanguageModel(modelToEdit.id, name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       } else {
         response = await api.models.postLanguageModel(name.trim(), selectedTopGraphId, selectedSubGraphIds, description.trim());
       }
@@ -118,7 +110,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.languageModel);
+        onSuccess(response.languageModel, isEdit);
         handleClose();
       } else {
         log({
@@ -182,8 +174,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid}
-                type='submit'
+                disabled={!formikProps.isValid || isError}
+                onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
                 startIcon={loading ?
