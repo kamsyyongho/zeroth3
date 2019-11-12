@@ -50,6 +50,8 @@ const virtualListCache = new CellMeasurerCache({
   defaultHeight: 50,
 });
 
+const DEFAULT_LC_THRESHOLD = 0.5;
+
 const WORD_KEY_SEPARATOR = '::';
 
 const parseWordKey = (key: string) => {
@@ -99,6 +101,16 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
   const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
+
+  /**
+   * used to keep track of which segments to send when updating
+   */
+  const editedSegmentIndexes = React.useMemo(() => new Set<number>(), []);
+
+  /**
+   * used to keep track of which segments to send when updating
+   */
+  const tabIndexesByWordKey = React.useMemo<{ [x: string]: number; }>(() => ({}), []);
 
   const theme = useTheme();
   const classes = useStyles();
@@ -168,11 +180,18 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const submitSegmentUpdates = async () => {
     if (api && api.voiceData) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.updateSegments(projectIdNumber, dataIdNumber, segments);
+
+      // to build which segments to send
+      const editedSegmentsToUpdate: Segment[] = [];
+      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
+
+      const response = await api.voiceData.updateSegments(projectIdNumber, dataIdNumber, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // to reset our list
+        editedSegmentIndexes.clear();
       } else {
         log({
           file: `Editor.tsx`,
@@ -202,6 +221,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     // prevents a react error
     // See https://fb.me/react-event-pooling for more information. 
     event.persist();
+
+    // to track which segments have been edited
+    editedSegmentIndexes.add(segmentIndex);
+
+    // update all segment values
     setSegments(prevSegments => {
       const updatedWord: WordAlignment = {
         ...wordAlignment,
@@ -230,7 +254,6 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const getWordStyle = (focussed: boolean, wordConfidence: number) => {
-    const DEFAULT_LC_THRESHOLD = 0.5;
     if (wordConfidence > DEFAULT_LC_THRESHOLD) {
       return {
         outline: 'none',
@@ -252,6 +275,13 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
     return wordStyle;
   };
+
+  /**
+   * Determines if an input field can be accessed via tabbing
+   * - Negative tab indexes are skipped when tabbing through fields
+   * @param wordConfidence 
+   */
+  const getTabIndex = (wordConfidence: number) => wordConfidence > DEFAULT_LC_THRESHOLD ? -1 : 1;
 
   const setFocus = (segmentIndex: number, wordIndex: number, isFocussed = true) => {
     setSegmentWordProperties((prevValue) => {
@@ -295,7 +325,9 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const key = generateWordKey(segmentIndex, wordIndex);
       const isFocussed = getWordFocussed(segmentIndex, wordIndex);
       const wordStyle = getWordStyle(isFocussed, wordAlignment.confidence);
+      const tabIndex = getTabIndex(wordAlignment.confidence);
       return <AutosizeInput
+        tabIndex={tabIndex}
         key={key}
         name={key}
         value={wordAlignment.word}
