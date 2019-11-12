@@ -2,6 +2,8 @@ import { Button, Container, Grid } from '@material-ui/core';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import LockIcon from '@material-ui/icons/Lock';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
+import PublishIcon from '@material-ui/icons/Publish';
 import SaveIcon from '@material-ui/icons/Save';
 import { useSnackbar } from 'notistack';
 import React from "react";
@@ -96,6 +98,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const history = useHistory();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [HCEditable, setHCEditable] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
@@ -253,8 +256,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     return focussed;
   };
 
-  const getWordStyle = (focussed: boolean, wordConfidence: number) => {
-    if (wordConfidence > DEFAULT_LC_THRESHOLD) {
+  const getWordStyle = (focussed: boolean, isLC: boolean) => {
+    if (!isLC) {
       return {
         outline: 'none',
         border: 0,
@@ -279,9 +282,9 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   /**
    * Determines if an input field can be accessed via tabbing
    * - Negative tab indexes are skipped when tabbing through fields
-   * @param wordConfidence 
+   * @param isLC 
    */
-  const getTabIndex = (wordConfidence: number) => wordConfidence > DEFAULT_LC_THRESHOLD ? -1 : 1;
+  const getTabIndex = (isLC: boolean) => isLC ? 1 : -1;
 
   const setFocus = (segmentIndex: number, wordIndex: number, isFocussed = true) => {
     setSegmentWordProperties((prevValue) => {
@@ -324,9 +327,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
       const key = generateWordKey(segmentIndex, wordIndex);
       const isFocussed = getWordFocussed(segmentIndex, wordIndex);
-      const wordStyle = getWordStyle(isFocussed, wordAlignment.confidence);
-      const tabIndex = getTabIndex(wordAlignment.confidence);
+      const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
+      const wordStyle = getWordStyle(isFocussed, isLC);
+      const tabIndex = getTabIndex(isLC);
       return <AutosizeInput
+        disabled={!HCEditable && !isLC}
         tabIndex={tabIndex}
         key={key}
         name={key}
@@ -398,9 +403,17 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
               size={15}
               color={theme.palette.secondary.main}
               loading={true}
-            /> : <LockIcon />}
+            /> : <PublishIcon />}
           >
             {'TEST CONFIRM DATA'}
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setHCEditable(!HCEditable)}
+            startIcon={HCEditable ? <LockOpenIcon /> : <LockIcon />}
+          >
+            {'TEST HC EDIT SWITCH'}
           </Button>
           <AutoSizer>
             {({ height, width }) => {
