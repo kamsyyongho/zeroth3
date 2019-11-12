@@ -226,10 +226,10 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{'INVALID PROJECT ID'}</Typography>;
+      return <Typography>{'TEST INVALID PROJECT ID'}</Typography>;
     }
     if (!project || !isValidProject) {
-      return <Typography>{'PROJECT NOT FOUND'}</Typography>;
+      return <Typography>{'TEST PROJECT NOT FOUND'}</Typography>;
     }
     const breadcrumbs: Breadcrumb[] = [
       PATHS.projects,

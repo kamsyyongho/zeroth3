@@ -1,26 +1,8 @@
 import { ApisauceInstance } from 'apisauce';
-import {
-  Segment,
-  VoiceData as VoiceDataInterface,
-  WordAlignment,
-} from '../../../types';
+import { Segment, WordAlignment } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  confirmDataResult,
-  fetchUnconfirmedDataResult,
-  GeneralApiProblem,
-  getAssignedDataResult,
-  getSegmentsDataResult,
-  ProblemKind,
-  SearchDataRequest,
-  searchDataResult,
-  ServerError,
-  UpdateSegmentRequest,
-  updateSegmentResult,
-  UpdateSegmentsRequest,
-  updateSegmentsResult,
-  VoiceDataResults,
-} from '../types';
+import { confirmDataResult, fetchUnconfirmedDataResult, FetchUnconfirmedQuery, GeneralApiProblem, getAssignedDataResult, getSegmentsDataResult, ProblemKind, SearchDataRequest, searchDataResult, ServerError, splitSegmentResult, UpdateSegmentRequest, updateSegmentResult, UpdateSegmentsRequest, updateSegmentsResult, VoiceDataResults } from '../types';
+import { MergeTwoSegmentsRequest, mergeTwoSegmentsResult, SplitSegmentQuery } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -182,10 +164,10 @@ export class VoiceData extends ParentApi {
     projectId: number,
     modelConfigId: number
   ): Promise<fetchUnconfirmedDataResult> {
-    const params = {
+    const params: FetchUnconfirmedQuery = {
       'model-config': modelConfigId,
     };
-    const response = await this.apisauce.post<VoiceDataInterface, ServerError>(
+    const response = await this.apisauce.post<undefined, ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/unconfirmed`,
       null,
@@ -312,5 +294,94 @@ export class VoiceData extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+
+  /**
+   * Splits a segment into two new segments
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param splitIndex
+   */
+  async splitSegment(
+    projectId: number,
+    dataId: number,
+    segmentId: number,
+    splitIndex: number
+  ): Promise<splitSegmentResult> {
+    const params: SplitSegmentQuery = {
+      'split-index': splitIndex,
+    };
+    const response = await this.apisauce.post<undefined, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.splitSegment(projectId, dataId, segmentId, splitIndex),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Merges two segments into one
+   * @param projectId
+   * @param dataId
+   * @param firstSegmentId
+   * @param secondSegmentId
+   * @returns the new segment to replace the two merged ones
+   */
+  async mergeTwoSegments(
+    projectId: number,
+    dataId: number,
+    firstSegmentId: number,
+    secondSegmentId: number
+  ): Promise<mergeTwoSegmentsResult> {
+    // compile data
+    const request: MergeTwoSegmentsRequest = {
+      segmentIdA: firstSegmentId,
+      segmentIdB: secondSegmentId,
+    };
+    const response = await this.apisauce.post<Segment, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/merge`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () =>
+              this.mergeTwoSegments(
+                projectId,
+                dataId,
+                firstSegmentId,
+                secondSegmentId
+              ),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

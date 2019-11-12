@@ -1,13 +1,18 @@
 import { Button, Container, Grid } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import CallSplitIcon from '@material-ui/icons/CallSplit';
 import LockIcon from '@material-ui/icons/Lock';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
+import MergeTypeIcon from '@material-ui/icons/MergeType';
 import PublishIcon from '@material-ui/icons/Publish';
 import SaveIcon from '@material-ui/icons/Save';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
+import { FaEdit, FaGripLinesVertical } from 'react-icons/fa';
+import { FiScissors } from 'react-icons/fi';
 import AutosizeInput from 'react-input-autosize';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
@@ -20,6 +25,8 @@ import { ModelConfig, Segment, WordAlignment } from '../../types';
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
+import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { SvgIconWrapper } from '../shared/SvgIconWrapper';
 
 
 interface EditorProps {
@@ -43,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     segmentTime: {
       color: '#939393',
-    }
+    },
   }),
 );
 
@@ -54,7 +61,7 @@ const virtualListCache = new CellMeasurerCache({
 
 const DEFAULT_LC_THRESHOLD = 0.5;
 
-const WORD_KEY_SEPARATOR = '::';
+const WORD_KEY_SEPARATOR = '-';
 
 const parseWordKey = (key: string) => {
   const [segmentIndex, wordIndex] = key.split(WORD_KEY_SEPARATOR);
@@ -98,12 +105,21 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const history = useHistory();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
+  // to force a state change that will rerender the segment buttons
+  const [numberOfSegmentsSelected, setNumberOfSegmentsSelected] = React.useState(0);
+  const [isSegmentSplitMode, setIsSegmentSplitMode] = React.useState(false);
   const [HCEditable, setHCEditable] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
+  const [initialSegments, setInitialSegments] = React.useState<Segment[]>([]);
   const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
+
+  const theme = useTheme();
+  const classes = useStyles();
 
   /**
    * used to keep track of which segments to send when updating
@@ -111,16 +127,50 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const editedSegmentIndexes = React.useMemo(() => new Set<number>(), []);
 
   /**
-   * used to keep track of which segments to send when updating
+   * used to keep track of which segments are selected for merging
    */
-  const tabIndexesByWordKey = React.useMemo<{ [x: string]: number; }>(() => ({}), []);
-
-  const theme = useTheme();
-  const classes = useStyles();
+  const segmentMergeIndexes = React.useMemo(() => new Set<number>(), []);
 
   //!
   //TODO
   //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
+
+
+  const openConfirmation = () => setConfirmationOpen(true);
+  const closeConfirmation = () => setConfirmationOpen(false);
+
+  const toggleSegmentEditMode = () => {
+    setIsSegmentEdit(!isSegmentEdit);
+    if (isSegmentEdit) {
+      setIsSegmentSplitMode(false);
+    }
+  };
+
+  const discardWordChanges = () => {
+    setSegments(initialSegments);
+    editedSegmentIndexes.clear();
+    toggleSegmentEditMode();
+    closeConfirmation();
+  };
+
+  const handleEditModeChange = () => {
+    if (!isSegmentEdit && editedSegmentIndexes.size) {
+      openConfirmation();
+    } else {
+      toggleSegmentEditMode();
+    }
+  };
+
+  const handleSegmentToMergeClick = (segmentIndex: number) => {
+    if (segmentMergeIndexes.has(segmentIndex)) {
+      segmentMergeIndexes.delete(segmentIndex);
+    } else if ((segmentMergeIndexes.size === 0) ||
+      // to only select segments that are next to each other
+      (Math.abs(segmentIndex - Array.from(segmentMergeIndexes)[0]) === 1)) {
+      segmentMergeIndexes.add(segmentIndex);
+    }
+    setNumberOfSegmentsSelected(segmentMergeIndexes.size);
+  };
 
   /**
    * navigates to the TDP page after confirming data
@@ -135,6 +185,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         setSegmentsLoading(true);
         const response = await api.voiceData.getSegments(projectIdNumber, dataIdNumber);
         if (response.kind === 'ok') {
+          setInitialSegments(response.segments);
           setSegments(response.segments);
         } else {
           log({
@@ -195,6 +246,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         // to reset our list
         editedSegmentIndexes.clear();
+        // reset our new default baseline
+        setInitialSegments(segments);
       } else {
         log({
           file: `Editor.tsx`,
@@ -210,6 +263,70 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       }
       snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setSaveSegmentsLoading(false);
+    }
+  };
+
+  const submitSegmentMerge = async () => {
+    if (numberOfSegmentsSelected !== 2) {
+      return;
+    }
+    if (api && api.voiceData) {
+      setSaveSegmentsLoading(true);
+
+      const segmentIndexesToMerge: number[] = Array.from(segmentMergeIndexes);
+      let firstSegmentIndex = 0;
+      let secondSegmentIndex = 0;
+      if (segmentIndexesToMerge[0] < segmentIndexesToMerge[1]) {
+        firstSegmentIndex = segmentIndexesToMerge[0];
+        secondSegmentIndex = segmentIndexesToMerge[1];
+      } else {
+        firstSegmentIndex = segmentIndexesToMerge[1];
+        secondSegmentIndex = segmentIndexesToMerge[0];
+      }
+
+      const firstSegmentId = segments[firstSegmentIndex].id;
+      const secondSegmentId = segments[secondSegmentIndex].id;
+
+      const response = await api.voiceData.mergeTwoSegments(projectIdNumber, dataIdNumber, firstSegmentId, secondSegmentId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // to reset our list
+        segmentMergeIndexes.clear();
+        setNumberOfSegmentsSelected(0);
+
+        //cut out and replace the old segments
+        const mergedSegments = [...segments];
+        mergedSegments.splice(firstSegmentIndex, 2, response.segment);
+
+        // reset our new default baseline
+        setSegments(mergedSegments);
+        setInitialSegments(mergedSegments);
+        setIsSegmentEdit(false);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `submitSegmentUpdates - failed to update segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
+  const handleSavePress = () => {
+    if (isSegmentEdit) {
+      submitSegmentMerge();
+    } else {
+      submitSegmentUpdates();
     }
   };
 
@@ -257,24 +374,26 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const getWordStyle = (focussed: boolean, isLC: boolean) => {
+    let wordStyle: React.CSSProperties = {};
     if (!isLC) {
-      return {
+      wordStyle = {
         outline: 'none',
         border: 0,
-      } as React.CSSProperties;
-    }
-    const LC_COLOR = '#ffe369';
-    let wordStyle: React.CSSProperties = {
-      boxShadow: 'none',
-      borderColor: theme.palette.background.default,
-      background: LC_COLOR,
-    };
-    if (focussed) {
-      wordStyle = {
-        borderColor: LC_COLOR,
-        outlineColor: LC_COLOR, // remove the blue focus outline
-        background: '#fafafa',
       };
+    } else {
+      const LC_COLOR = '#ffe369';
+      wordStyle = {
+        boxShadow: 'none',
+        borderColor: theme.palette.background.default,
+        background: LC_COLOR,
+      };
+      if (focussed) {
+        wordStyle = {
+          borderColor: LC_COLOR,
+          outlineColor: LC_COLOR, // remove the blue focus outline
+          background: '#fafafa',
+        };
+      }
     }
     return wordStyle;
   };
@@ -330,30 +449,53 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
       const wordStyle = getWordStyle(isFocussed, isLC);
       const tabIndex = getTabIndex(isLC);
-      return <AutosizeInput
-        disabled={!HCEditable && !isLC}
-        tabIndex={tabIndex}
-        key={key}
-        name={key}
-        value={wordAlignment.word}
-        minWidth={5}
-        inputStyle={{
-          ...theme.typography.body1, // font styling
-          ...wordStyle,
-          margin: theme.spacing(0.25),
-        }}
-        autoFocus={isFocussed}
-        onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
-        onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
-        onChange={(event) =>
-          updateSegments(event, segment, wordAlignment, segmentIndex, wordIndex)
-        }
-      />;
+      return (<React.Fragment key={key}>
+        {isSegmentSplitMode && !!wordIndex && (
+          <IconButton
+            aria-label="split-button"
+            size="small"
+            color='secondary'
+            onClick={() => console.log(key)}
+          >
+            <SvgIconWrapper fontSize='inherit' >
+              <FaGripLinesVertical />
+            </SvgIconWrapper>
+          </IconButton>
+        )}
+        <AutosizeInput
+          disabled={isSegmentEdit || (!HCEditable && !isLC)}
+          tabIndex={tabIndex}
+          key={key}
+          name={key}
+          value={wordAlignment.word}
+          minWidth={5}
+          inputStyle={{
+            ...theme.typography.body1, // font styling
+            ...wordStyle,
+            margin: theme.spacing(0.25),
+          }}
+          autoFocus={isFocussed}
+          onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
+          onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
+          onChange={(event) =>
+            updateSegments(event, segment, wordAlignment, segmentIndex, wordIndex)
+          }
+        />
+      </React.Fragment>);
     });
     return words;
   };
 
   function rowRenderer({ key, index, style, parent }: ListRowProps) {
+    const rowContent = (<><Grid item>
+      <Typography className={classes.segmentTime} >{formatSecondsDuration(segments[index].start)}</Typography>
+    </Grid>
+      <Grid item xs={12} sm container>
+        {renderWords(segments[index], index)}
+      </Grid></>);
+
+    const isRowSelected = segmentMergeIndexes.has(index);
+
     return (
       segments[index] && <CellMeasurer
         key={key}
@@ -364,12 +506,9 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         rowIndex={index}
       >
         <Grid container spacing={2} className={classes.segment} >
-          <Grid item>
-            <Typography className={classes.segmentTime} >{formatSecondsDuration(segments[index].start)}</Typography>
-          </Grid>
-          <Grid item xs={12} sm container>
-            {renderWords(segments[index], index)}
-          </Grid>
+          {(isSegmentEdit && !isSegmentSplitMode) ? <Button color={isRowSelected ? 'secondary' : 'primary'} variant='outlined' onClick={() => handleSegmentToMergeClick(index)} >
+            {rowContent}
+          </Button> : rowContent}
         </Grid>
       </CellMeasurer>
     );
@@ -383,7 +522,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"
             color="primary"
-            onClick={submitSegmentUpdates}
+            onClick={handleSavePress}
             startIcon={saveSegmentsLoading ? <MoonLoader
               sizeUnit={"px"}
               size={15}
@@ -409,12 +548,33 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           </Button>
           <Button
             variant="outlined"
-            color="secondary"
-            onClick={() => setHCEditable(!HCEditable)}
-            startIcon={HCEditable ? <LockOpenIcon /> : <LockIcon />}
+            color="primary"
+            onClick={handleEditModeChange}
+            startIcon={isSegmentEdit ? (
+              <SvgIconWrapper ><FiScissors /></SvgIconWrapper>) :
+              (<SvgIconWrapper ><FaEdit /></SvgIconWrapper>)}
           >
-            {'TEST HC EDIT SWITCH'}
+            {'TEST EDIT MODE'}
           </Button>
+          {isSegmentEdit ? (<Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              setIsSegmentSplitMode(!isSegmentSplitMode);
+            }}
+            startIcon={isSegmentSplitMode ? <CallSplitIcon /> : <MergeTypeIcon />}
+          >
+            {isSegmentSplitMode ? 'TEST SPLIT MODE' : 'TEST MERGE MODE'}
+          </Button>) : (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => setHCEditable(!HCEditable)}
+                startIcon={HCEditable ? <LockOpenIcon /> : <LockIcon />}
+              >
+                {'TEST HC EDIT SWITCH'}
+              </Button>
+            )}
           <AutoSizer>
             {({ height, width }) => {
               return (
@@ -431,6 +591,14 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           </AutoSizer>
         </div>
       }
+      <ConfirmationDialog
+        destructive
+        titleText={`TEST DISCARD CHANGES?`}
+        submitText={translate('common.discard')}
+        open={confirmationOpen}
+        onSubmit={discardWordChanges}
+        onCancel={closeConfirmation}
+      />
     </Container >
   );
 }
