@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
 import { VoiceData } from '../../../types';
 import { PATHS } from '../../../types/path.types';
@@ -19,6 +20,7 @@ import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
   projectId: number;
+  projectName: string;
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
   onlyAssignedData: boolean;
@@ -33,10 +35,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPTable(props: TDPTableProps) {
-  const { projectId, voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
+  const { projectId, projectName, voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
   const history = useHistory();
+  const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
 
@@ -48,6 +51,8 @@ export function TDPTable(props: TDPTableProps) {
    * @param voiceDataId 
    */
   const handleRowClick = (voiceDataId: number) => {
+    // to store props that will be used on the next page
+    setProps({ projectName });
     PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceDataId));
   };
 

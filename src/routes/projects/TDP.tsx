@@ -252,6 +252,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectIdNumber}
+            projectName={project.name}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}

@@ -1,6 +1,7 @@
 import enUSLocale from "date-fns/locale/en-US";
 import { i18n, TOptions } from 'i18next';
 import { createContext } from "react";
+import { noop } from '../../constants';
 import { extendLocaleType, PickerLocale } from './useI18n';
 
 export interface ParsedI18n {
@@ -19,7 +20,7 @@ export interface ParsedI18n {
 const defaultContext: ParsedI18n = {
   i18n: {} as i18n,
   translate: () => '',
-  toggleLanguage: () => { },
+  toggleLanguage: noop,
   language: "en",
   dateTimeFormat: "",
   pickerLocale: extendLocaleType(enUSLocale),

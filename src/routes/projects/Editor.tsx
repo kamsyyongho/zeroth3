@@ -20,12 +20,14 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from 'react-virtualized';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ModelConfig, Segment, WordAlignment } from '../../types';
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
 
 
@@ -104,6 +106,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const windowSize = useWindowSize();
   const history = useHistory();
   const api = React.useContext(ApiContext);
+  const { getProps, clearProps } = React.useContext(NavigationPropsContext);
   const { enqueueSnackbar } = useSnackbar();
   const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
@@ -121,6 +124,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const theme = useTheme();
   const classes = useStyles();
 
+  const { projectName } = getProps<{ projectName: string; }>(['projectName']);
+
   /**
    * used to keep track of which segments to send when updating
    */
@@ -131,10 +136,29 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
    */
   const segmentMergeIndexes = React.useMemo(() => new Set<number>(), []);
 
+  /**
+   * navigates to the TDP page after confirming data
+   */
+  const handleNavigateAway = () => {
+    PATHS.TDP.function && history.push(PATHS.TDP.function(projectIdNumber));
+  };
+
+  // to navigate away if we didn't navigate here from the TDP page
+  if (!projectName) {
+    handleNavigateAway();
+  }
+
+  // to clear any stored navigation props on component dismount
+  React.useEffect(() => {
+    return () => {
+      clearProps();
+    };
+  }, [clearProps]);
+
+
   //!
   //TODO
   //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
-
 
   const openConfirmation = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -142,6 +166,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const toggleSegmentEditMode = () => {
     setIsSegmentEdit(!isSegmentEdit);
     if (isSegmentEdit) {
+      // to reset selected segments
+      segmentMergeIndexes.clear();
       setIsSegmentSplitMode(false);
     }
   };
@@ -170,13 +196,6 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       segmentMergeIndexes.add(segmentIndex);
     }
     setNumberOfSegmentsSelected(segmentMergeIndexes.size);
-  };
-
-  /**
-   * navigates to the TDP page after confirming data
-   */
-  const handleNavigateAway = () => {
-    PATHS.TDP.function && history.push(PATHS.TDP.function(projectIdNumber));
   };
 
   React.useEffect(() => {
@@ -307,7 +326,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       } else {
         log({
           file: `Editor.tsx`,
-          caller: `submitSegmentUpdates - failed to update segments`,
+          caller: `submitSegmentMerge - failed to merge segments`,
           value: response,
           important: true,
         });
@@ -330,7 +349,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
   };
 
-  const updateSegments = (
+  const updateSegmentsOnChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     segment: Segment,
     wordAlignment: WordAlignment,
@@ -478,7 +497,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
           onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
           onChange={(event) =>
-            updateSegments(event, segment, wordAlignment, segmentIndex, wordIndex)
+            updateSegmentsOnChange(event, segment, wordAlignment, segmentIndex, wordIndex)
           }
         />
       </React.Fragment>);
@@ -514,8 +533,24 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     );
   }
 
+  const breadcrumbs: Breadcrumb[] = [
+    PATHS.projects,
+    {
+      to: PATHS.project.function && PATHS.project.function(projectId),
+      rawTitle: projectName,
+    },
+    {
+      to: PATHS.TDP.function && PATHS.TDP.function(projectId),
+      rawTitle: `${translate('projects.TDP')}`,
+    },
+    {
+      rawTitle: `${translate('projects.editor')}`,
+    },
+  ];
+
   return (
     <Container maxWidth={false} className={classes.container} >
+      <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.8), minHeight: 500 }}>
           <Button
