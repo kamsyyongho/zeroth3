@@ -5,6 +5,7 @@ import { Route, Router } from "react-router-dom";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
+import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
 import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
@@ -24,6 +25,7 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
+  const navigationProps = useNavigationProps();
 
   useEffect(() => {
     initKeycloak();
@@ -55,7 +57,7 @@ function App() {
   }
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} >
       <Router history={history}>
         <Header />
         <Route exact path={PATHS.home.to} component={Home} />

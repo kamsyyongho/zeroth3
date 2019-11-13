@@ -10,6 +10,8 @@ export const ko: ResourceLanguage = {
       cancel: '취소',
       create: 'Create',
       edit: 'Edit',
+      save: 'Save',
+      discard: 'Discard',
       error: '오류',
       success: 'Success',
       failure: 'Failure',
@@ -17,6 +19,7 @@ export const ko: ResourceLanguage = {
       createdAt: 'Creation date',
       length: 'Length',
       score: 'Score',
+      upload: 'Upload',
     },
     table: {
       page: 'Page',
@@ -52,7 +55,9 @@ export const ko: ResourceLanguage = {
         between: '{{target}} must between {{first}} and {{second}}',
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
+        maxFileSize: 'Max total file size exceeded. ({{value}})',
       },
+      numberFiles: 'Number of files to upload: {{count}}',
       email: '이메일',
       name: '이름',
       text: 'Text',
@@ -64,6 +69,7 @@ export const ko: ResourceLanguage = {
       sampleRate: 'Sample rate (kHz)',
       top: 'Top',
       sub: 'Sub',
+      modelConfig: 'Model configuration',
       privacySetting: 'Privacy setting',
       fileUpload: 'File upload',
       source: 'Source',
@@ -102,6 +108,8 @@ export const ko: ResourceLanguage = {
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
       TDP: 'TDP',
+      uploadData: 'Upload data',
+      editor: 'Editor',
     },
     modelConfig: {
       header: 'Model configuration',

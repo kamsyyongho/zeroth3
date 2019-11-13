@@ -157,9 +157,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
-      aria-labelledby="responsive-dialog-title"
+      aria-labelledby="model-config-dialog"
     >
-      <DialogTitle id="responsive-dialog-title">{translate(`modelConfig.header`)}</DialogTitle>
+      <DialogTitle id="model-config-dialog">{translate(`modelConfig.header`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

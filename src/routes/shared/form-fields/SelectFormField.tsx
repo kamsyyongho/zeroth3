@@ -20,6 +20,10 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, fu
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
+  // to account for initial empty fields being `null`
+  if (field.value === null) {
+    field.value = '';
+  }
   return (
     <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
       {label && <InputLabel>{label}</InputLabel>}

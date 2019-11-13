@@ -96,7 +96,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const handleClose = () => {
     setIsError(false);
     onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
-  }
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {
@@ -141,9 +141,9 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
-      aria-labelledby="responsive-dialog-title"
+      aria-labelledby="language-model-dialog"
     >
-      <DialogTitle id="responsive-dialog-title">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
+      <DialogTitle id="language-model-dialog">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

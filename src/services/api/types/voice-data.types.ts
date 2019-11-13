@@ -70,13 +70,30 @@ export interface SearchDataRequest {
   transcript?: string;
 }
 
+export interface FetchUnconfirmedQuery {
+  'model-config': number;
+}
+
+export interface SplitSegmentQuery {
+  'split-index': number;
+}
+
+export interface MergeTwoSegmentsRequest {
+  segmentIdA: number;
+  segmentIdB: number;
+}
+
 export interface UpdateSegmentRequest {
   wordAlignments: WordAlignment[];
 }
 
+export type UpdateSegmentsRequest = Segment[];
+
 /////////////
 // RESULTS //
 /////////////
+
+export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
@@ -92,6 +109,12 @@ export type getSegmentsDataResult =
   | { kind: 'ok'; segments: Segment[] }
   | GeneralApiProblem;
 
-export type updateSegmentResult =
+export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type splitSegmentResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }
   | GeneralApiProblem;

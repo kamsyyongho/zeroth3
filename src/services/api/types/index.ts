@@ -5,4 +5,5 @@ export * from './model-config.types';
 export * from './models.types';
 export * from './organizations.types';
 export * from './projects.types';
+export * from './raw-data.types';
 export * from './voice-data.types';

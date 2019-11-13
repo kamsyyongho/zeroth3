@@ -1,23 +1,8 @@
 import { ApisauceInstance } from 'apisauce';
-import {
-  Segment,
-  VoiceData as VoiceDataInterface,
-  WordAlignment,
-} from '../../../types';
+import { Segment, WordAlignment } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  fetchUnconfirmedDataResult,
-  GeneralApiProblem,
-  getAssignedDataResult,
-  getSegmentsDataResult,
-  ProblemKind,
-  SearchDataRequest,
-  searchDataResult,
-  ServerError,
-  UpdateSegmentRequest,
-  updateSegmentResult,
-  VoiceDataResults,
-} from '../types';
+import { confirmDataResult, fetchUnconfirmedDataResult, FetchUnconfirmedQuery, GeneralApiProblem, getAssignedDataResult, getSegmentsDataResult, ProblemKind, SearchDataRequest, searchDataResult, ServerError, splitSegmentResult, UpdateSegmentRequest, updateSegmentResult, UpdateSegmentsRequest, updateSegmentsResult, VoiceDataResults } from '../types';
+import { MergeTwoSegmentsRequest, mergeTwoSegmentsResult, SplitSegmentQuery } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -146,6 +131,30 @@ export class VoiceData extends ParentApi {
   }
 
   /**
+   * Confirms and locks the voice data
+   * @param dataId
+   */
+  async confirmData(dataId: number): Promise<confirmDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+      `/data/${dataId}/confirm`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.confirmData(dataId),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
    * Assigns a group of unconfirmed data to the current user
    * - the server returns a `202` on success
    * @param projectId
@@ -155,10 +164,10 @@ export class VoiceData extends ParentApi {
     projectId: number,
     modelConfigId: number
   ): Promise<fetchUnconfirmedDataResult> {
-    const params = {
+    const params: FetchUnconfirmedQuery = {
       'model-config': modelConfigId,
     };
-    const response = await this.apisauce.post<VoiceDataInterface, ServerError>(
+    const response = await this.apisauce.post<undefined, ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/unconfirmed`,
       null,
@@ -232,7 +241,7 @@ export class VoiceData extends ParentApi {
       wordAlignments,
     };
     // make the api call
-    const response = await this.apisauce.patch<WordAlignment[], ServerError>(
+    const response = await this.apisauce.patch<undefined, ServerError>(
       `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
       request
     );
@@ -244,6 +253,123 @@ export class VoiceData extends ParentApi {
           return this.attemptToRefreshToken(
             () =>
               this.updateSegment(projectId, dataId, segmentId, wordAlignments),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Updates a voice data's segments
+   * @param projectId
+   * @param dataId
+   * @param segments
+   */
+  async updateSegments(
+    projectId: number,
+    dataId: number,
+    segments: Segment[]
+  ): Promise<updateSegmentsResult> {
+    // compile data
+    const request: UpdateSegmentsRequest = segments;
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.updateSegments(projectId, dataId, segments),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Splits a segment into two new segments
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param splitIndex
+   */
+  async splitSegment(
+    projectId: number,
+    dataId: number,
+    segmentId: number,
+    splitIndex: number
+  ): Promise<splitSegmentResult> {
+    const params: SplitSegmentQuery = {
+      'split-index': splitIndex,
+    };
+    const response = await this.apisauce.post<undefined, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.splitSegment(projectId, dataId, segmentId, splitIndex),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Merges two segments into one
+   * @param projectId
+   * @param dataId
+   * @param firstSegmentId
+   * @param secondSegmentId
+   * @returns the new segment to replace the two merged ones
+   */
+  async mergeTwoSegments(
+    projectId: number,
+    dataId: number,
+    firstSegmentId: number,
+    secondSegmentId: number
+  ): Promise<mergeTwoSegmentsResult> {
+    // compile data
+    const request: MergeTwoSegmentsRequest = {
+      segmentIdA: firstSegmentId,
+      segmentIdB: secondSegmentId,
+    };
+    const response = await this.apisauce.post<Segment, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/merge`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () =>
+              this.mergeTwoSegments(
+                projectId,
+                dataId,
+                firstSegmentId,
+                secondSegmentId
+              ),
             problem
           );
         }

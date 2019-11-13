@@ -7,6 +7,7 @@ import { IAM } from './controllers/iam';
 import { ModelConfig } from './controllers/model-config';
 import { Models } from './controllers/models';
 import { Projects } from './controllers/projects';
+import { RawData } from './controllers/raw-data';
 import { VoiceData } from './controllers/voice-data';
 import { GeneralApiProblem } from './types';
 
@@ -61,6 +62,11 @@ export class Api {
   voiceData: VoiceData | undefined;
 
   /**
+   * Subclass that manages raw audio data requests.
+   */
+  rawData: RawData | undefined;
+
+  /**
    * Creates the api.
    * - Be as quick as possible in here.
    * @param config The configuration to use.
@@ -98,6 +104,7 @@ export class Api {
       this.attemptToRefreshToken
     );
     this.voiceData = new VoiceData(this.apisauce, this.attemptToRefreshToken);
+    this.rawData = new RawData(this.apisauce, this.attemptToRefreshToken);
     return true;
   }
 

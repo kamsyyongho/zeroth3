@@ -4,6 +4,7 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import BackupIcon from '@material-ui/icons/Backup';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
@@ -14,6 +15,7 @@ import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult
 import { ModelConfig, PATHS, Project, SnackbarError } from '../../types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
+import { AudioUploadDialog } from './components/AudioUploadDialog';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
@@ -48,6 +50,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
+  const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -66,6 +69,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
 
   const classes = useStyles();
+
+  const openDialog = () => setIsUploadOpen(true);
+  const closeDialog = () => setIsUploadOpen(false);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api && api.voiceData) {
@@ -219,24 +225,34 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
               disabled={!selectedModelConfigId || assignDataLoading}
               variant='outlined'
               color="primary"
-              // onClick={() => api&& api.voiceData && api.voiceData.getSegments(projectIdNumber, 89)}
               onClick={handleAssignSubmit}
             >
               {'TEST ASSIGN DATA'}
-            </Button></>}
+            </Button>
+          </>}
           <Button
             variant="contained"
             color={onlyAssignedData ? 'secondary' : "primary"}
             onClick={() => setOnlyAssignedData((prevValue) => !prevValue)}
           >
             {onlyAssignedData ? 'TEST SHOW ALL' : 'TEST SHOW ASSIGNED'}
-          </Button></>}
+          </Button>
+          <Button
+            variant='outlined'
+            color="secondary"
+            onClick={openDialog}
+            startIcon={<BackupIcon />}
+          >
+            {'TEST UPLOAD DATA'}
+          </Button>
+        </>}
         title={<><HeaderBreadcrumbs breadcrumbs={breadcrumbs} /><Typography variant='h4'>{onlyAssignedData ? 'TEST ASSIGNED' : 'TEST ALL'}</Typography></>}
       />
       <CardContent className={classes.cardContent} >
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectIdNumber}
+            projectName={project.name}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
@@ -253,6 +269,13 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       {projectLoading ? <BulletList /> :
         renderContent()
       }
+      <AudioUploadDialog
+        open={isUploadOpen}
+        onClose={closeDialog}
+        onSuccess={closeDialog}
+        projectId={projectIdNumber}
+        modelConfigs={modelConfigs}
+      />
     </Container >
   );
 }
