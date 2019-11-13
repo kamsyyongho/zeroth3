@@ -96,7 +96,7 @@ export function IAM() {
     };
     getUsers();
     getRoles();
-  }, [api]);
+  }, []);
 
   let usersToDelete: number[] = [];
   Object.keys(checkedUsers).forEach(userId => {
