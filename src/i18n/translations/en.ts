@@ -19,6 +19,7 @@ export const en: ResourceLanguage = {
       createdAt: 'Creation date',
       length: 'Length',
       score: 'Score',
+      upload: 'Upload',
     },
     table: {
       page: 'Page',
@@ -52,7 +53,9 @@ export const en: ResourceLanguage = {
         between: '{{target}} must between {{first}} and {{second}}',
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
+        maxFileSize: 'Max total file size exceeded. ({{value}})',
       },
+      numberFiles: 'Number of files to upload: {{count}}',
       email: 'Email',
       name: 'Name',
       text: 'Text',
@@ -64,6 +67,7 @@ export const en: ResourceLanguage = {
       sampleRate: 'Sample rate (kHz)',
       top: 'Top',
       sub: 'Sub',
+      modelConfig: 'Model configuration',
       privacySetting: 'Privacy setting',
       fileUpload: 'File upload',
       source: 'Source',
@@ -102,6 +106,8 @@ export const en: ResourceLanguage = {
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
       TDP: 'TDP',
+      uploadData: 'Upload data',
+      editor: 'Editor',
     },
     modelConfig: {
       header: 'Model configuration',

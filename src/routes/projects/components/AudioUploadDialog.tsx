@@ -5,8 +5,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import AddIcon from '@material-ui/icons/Add';
-import EditIcon from '@material-ui/icons/Edit';
+import BackupIcon from '@material-ui/icons/Backup';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -14,30 +13,31 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { postSubGraphResult } from '../../../services/api/types';
-import { SnackbarError, SubGraph } from '../../../types';
+import { ProblemKind } from '../../../services/api/types';
+import { ModelConfig, SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
-import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
+import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 
 
-interface SubgraphFormDialogProps {
+interface AudioUploadDialogProps {
   open: boolean;
+  projectId: number;
+  modelConfigs: ModelConfig[];
   onClose: () => void;
-  onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
-  subGraphToEdit?: SubGraph;
+  onSuccess: () => void;
 }
 
+const MAX_TOTAL_FILE_SIZE_LIMIT = 10000000; // 10 MB in bytes
+const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '10 MB';
 
-export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
-  const { open, onClose, onSuccess, subGraphToEdit } = props;
+export function AudioUploadDialog(props: AudioUploadDialogProps) {
+  const { open, projectId, modelConfigs, onClose, onSuccess } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
-  const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
 
@@ -49,74 +49,75 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const validFilesCheck = (files: File[]) => !!files.length && files[0] instanceof File;
+  const formSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => ({ label: modelConfig.name, value: modelConfig.id }));
+    return tempFormSelectOptions;
+  }, [modelConfigs]);
+
+  const validFilesCheck = (files: File[]) => !!files.length && files.every(file => file instanceof File);
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
+  const numberText = translate("forms.validation.number");
+  const integerText = translate("forms.validation.integer");
+  const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
+
+
+  const testMaxTotalFileSize = (files: File[]) => {
+    let fileSizeCounter = 0;
+    let isValid = true;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      fileSizeCounter += file.size;
+      if (fileSizeCounter >= MAX_TOTAL_FILE_SIZE_LIMIT) {
+        isValid = false;
+        break;
+      }
+    }
+    return isValid;
+  };
 
   const formSchema = yup.object({
-    name: yup.string().required(requiredTranslationText).trim(),
-    isPublic: yup.boolean(),
-    shouldUploadFile: yup.boolean(),
-    files: yup.array<File>().when('shouldUploadFile', {
-      is: true,
-      then: yup.array<File>().required(requiredTranslationText),
-      otherwise: yup.array<File>().notRequired(),
-    }),
-    text: yup.string().when('shouldUploadFile', {
-      is: false,
-      then: yup.string().required(requiredTranslationText).trim(),
-      otherwise: yup.string().notRequired(),
-    }),
+    selectedModelConfigId: yup.number().integer(integerText).typeError(numberText).nullable().required(requiredTranslationText),
+    files: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
   });
   type FormValues = yup.InferType<typeof formSchema>;
-  let initialValues: FormValues = {
-    name: "",
-    text: "",
-    isPublic: true,
-    shouldUploadFile: false,
+  const initialValues: FormValues = {
+    selectedModelConfigId: null,
     files: [],
   };
-  if (subGraphToEdit) {
-    initialValues = {
-      ...initialValues,
-      name: subGraphToEdit.name,
-    };
-  }
 
   const handleSubmit = async (values: FormValues) => {
-    const { shouldUploadFile, files } = values;
-    if (shouldUploadFile && !validFilesCheck(files)) {
+    const { files, selectedModelConfigId } = values;
+    if (!validFilesCheck(files) || selectedModelConfigId === null) {
       return;
     }
-    if (api && api.models) {
+    if (api && api.rawData) {
       setLoading(true);
       setIsError(false);
-      const { name, text, isPublic } = values;
-      let response: postSubGraphResult;
-      if (isEdit && subGraphToEdit) {
-        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), isPublic);
-      } else {
-        if (shouldUploadFile) {
-          // only send the first file, because our limit is 1 file only
-          response = await api.models.uploadSubGraphFile(name.trim(), files[0], isPublic);
-        } else {
-          response = await api.models.postSubGraph(name.trim(), text.trim(), isPublic);
-        }
-      }
+      const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.subGraph, isEdit);
+        onSuccess();
         onClose();
       } else {
-        log({
-          file: `SubgraphFormDialog.tsx`,
-          caller: `handleSubmit - failed to create new subgraph / upload subgraph file`,
-          value: response,
-          important: true,
-        });
+        if (response.kind === ProblemKind['rejected']) {
+          log({
+            file: `AudioUploadDialog.tsx`,
+            caller: `handleSubmit - uploaded file size exceeded`,
+            value: response,
+            important: true,
+          });
+        } else {
+          log({
+            file: `AudioUploadDialog.tsx`,
+            caller: `handleSubmit - failed to upload audio file(s)`,
+            value: response,
+            important: true,
+          });
+        }
         snackbarError.isError = true;
         setIsError(true);
         const { serverError } = response;
@@ -136,29 +137,26 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
-      aria-labelledby="sub-graph-dialog"
+      aria-labelledby="audio-upload-dialog"
     >
-      <DialogTitle id="sub-graph-dialog">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
+      <DialogTitle id="audio-upload-dialog">{translate(`projects.uploadData`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
-            {console.log('formikProps', formikProps)}
             <DialogContent>
               <Form>
-                <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                {!isEdit && <Field name='shouldUploadFile' component={SwitchFormField} label={translate("forms.source")} text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />}
+                <Field name='selectedModelConfigId' component={SelectFormField}
+                  options={formSelectOptions} label={translate("forms.modelConfig")} errorOverride={isError} />
                 <Field
                   showPreviews
-                  filesLimit={1}
-                  acceptedFiles={['text/*']}
-                  hidden={!formikProps.values.shouldUploadFile}
+                  maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
+                  acceptedFiles={['audio/*']}
                   name='files'
                   component={DropZoneFormField}
+                  helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
                   errorOverride={isError || !!formikProps.errors.files}
                   errorTextOverride={formikProps.errors.files}
                 />
-                <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
-                <Field name='isPublic' component={SwitchFormField} label={translate("forms.privacySetting")} text={(value: boolean) => translate(value ? "forms.private" : "forms.public")} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
@@ -176,9 +174,9 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                     size={15}
                     color={theme.palette.primary.main}
                     loading={true}
-                  /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                  /> : <BackupIcon />}
               >
-                {translate(isEdit ? "common.edit" : "common.create")}
+                {translate("common.upload")}
               </Button>
             </DialogActions>
           </>

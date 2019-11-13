@@ -80,9 +80,9 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
       onClose={onClose}
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
-      aria-labelledby="responsive-dialog-title"
+      aria-labelledby="invite-dialog"
     >
-      <DialogTitle id="responsive-dialog-title">{translate("IAM.inviteUser")}</DialogTitle>
+      <DialogTitle id="invite-dialog">{translate("IAM.inviteUser")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

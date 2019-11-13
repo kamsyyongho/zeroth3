@@ -82,7 +82,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
   const handleClose = () => {
     setIsError(false);
     onClose((isEdit && projectToEdit) ? projectToEdit.id : undefined);
-  }
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.projects) {
@@ -128,9 +128,9 @@ export function ProjectDialog(props: ProjectDialogProps) {
       disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
-      aria-labelledby="responsive-dialog-title"
+      aria-labelledby="project-dialog"
     >
-      <DialogTitle id="responsive-dialog-title">{translate(isEdit ? "projects.editProject" : "projects.createProject")}</DialogTitle>
+      <DialogTitle id="project-dialog">{translate(isEdit ? "projects.editProject" : "projects.createProject")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

@@ -87,7 +87,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   const handleClose = () => {
     setIsError(false);
     onClose((isEdit && modelToEdit) ? modelToEdit.id : undefined);
-  }
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (api && api.models) {
@@ -132,9 +132,9 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       disableEscapeKeyDown={loading}
       open={open}
       onClose={handleClose}
-      aria-labelledby="responsive-dialog-title"
+      aria-labelledby="acoustic-model-dialog"
     >
-      <DialogTitle id="responsive-dialog-title">{translate(`models.tabs.acousticModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
+      <DialogTitle id="acoustic-model-dialog">{translate(`models.tabs.acousticModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
