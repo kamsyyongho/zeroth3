@@ -142,7 +142,6 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
-            {console.log('formikProps', formikProps)}
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />

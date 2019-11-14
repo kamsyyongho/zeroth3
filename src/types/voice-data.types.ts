@@ -8,6 +8,7 @@ export interface VoiceData {
   status: CONTENT_STATUS;
   transcriberId: number;
   transcript: string;
+  audioUrl: string;
 }
 
 export enum CONTENT_STATUS {

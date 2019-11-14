@@ -124,7 +124,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        onSuccess(response.modelConfig);
+        onSuccess(response.modelConfig, isEdit);
         handleClose();
       } else {
         log({

@@ -1569,6 +1569,11 @@
   dependencies:
     "@types/react" "*"
 
+"@types/wavesurfer.js@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/wavesurfer.js/-/wavesurfer.js-2.0.2.tgz#b98a4d57ca24ee2028ae6dd5c2208b568bb73842"
+  integrity sha512-078vSMwH9LNVg9oAe7/M27p1MjfJ3ncuj54ROj+nL4vnrvDEV7Ye1v+o/LTR0Z396r6u6DTNkoEq5kKgJkzFrQ==
+
 "@types/yargs-parser@*":
   version "13.1.0"
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-13.1.0.tgz#c563aa192f39350a1d18da36c5a8da382bbd8228"
@@ -10715,6 +10720,11 @@ watchpack@^1.6.0:
     chokidar "^2.0.2"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+
+wavesurfer.js@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/wavesurfer.js/-/wavesurfer.js-3.2.0.tgz#c316f3bd1b9f0f4d26188c6865a57e29a13efedc"
+  integrity sha512-P75SSpYTpzpCKFKjxmHkdp2jGpcm4neaGncBGV/jzfI5FPSIfl5mXTTZlZFpJhs7To+NI34Dj5y661JI43HEzA==
 
 wbuf@^1.1.0, wbuf@^1.7.3:
   version "1.7.3"

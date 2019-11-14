@@ -55,7 +55,7 @@ export interface ModelConfigListProps {
   subGraphs: SubGraph[];
   acousticModels: AcousticModel[];
   languageModels: LanguageModel[];
-  handleModelConfigCreate: (modelConfig: ModelConfig) => void;
+  handleModelConfigUpdate: (modelConfig: ModelConfig, isEdit?: boolean) => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
@@ -68,7 +68,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     projectId,
     modelConfigsLoading,
     modelConfigs,
-    handleModelConfigCreate,
+    handleModelConfigUpdate,
     handleSubGraphListUpdate,
     handleAcousticModelCreate,
     handleLanguageModelCreate,
@@ -88,7 +88,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
-  const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>, modelConfig: ModelConfig) => {
+    setModelConfigToEdit(modelConfig);
     setAnchorEl(event.currentTarget);
   };
 
@@ -96,8 +97,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     setAnchorEl(null);
   };
 
-  const openEditDialog = (modelConfigToEdit: ModelConfig) => {
-    setModelConfigToEdit(modelConfigToEdit);
+  const openEditDialog = () => {
     handleActionClose();
     setCreateOpen(true);
   };
@@ -109,8 +109,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const openCreateDialog = () => setCreateOpen(true);
 
-  const confirmDelete = (modelConfigToEdit: ModelConfig) => {
-    setModelConfigToEdit(modelConfigToEdit);
+  const confirmDelete = () => {
     handleActionClose();
     setConfirmationOpen(true);
   };
@@ -151,20 +150,20 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const classes = useStyles();
 
-  const renderItemMenu = (modelConfig: ModelConfig) => (<Menu
+  const renderItemMenu = () => (<Menu
     id="list-item-menu"
     anchorEl={anchorEl}
     keepMounted
     open={Boolean(anchorEl)}
     onClose={handleActionClose}
   >
-    <MenuItem disabled={deleteLoading} onClick={() => openEditDialog(modelConfig)}>
+    <MenuItem disabled={deleteLoading} onClick={openEditDialog}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.edit')}</Typography>
     </MenuItem>
-    <MenuItem onClick={() => confirmDelete(modelConfig)}>
+    <MenuItem onClick={confirmDelete}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
       </ListItemIcon>
@@ -184,12 +183,12 @@ export function ModelConfigList(props: ModelConfigListProps) {
           <ListSubheader component='div' >{acousticModel.name}</ListSubheader>
           <ListSubheader component='div' >{languageModel.name}</ListSubheader>
           <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="edit" onClick={handleActionClick} >
+            <IconButton edge="end" aria-label="edit" onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleActionClick(event, modelConfig)} >
               <MoreVertIcon />
             </IconButton>
           </ListItemSecondaryAction>
         </ListItem>
-        {renderItemMenu(modelConfig)}
+        {renderItemMenu()}
       </Card>
     );
   });
@@ -224,7 +223,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
         open={configOpen}
         configToEdit={modelConfigToEdit}
         onClose={closeDialog}
-        onSuccess={handleModelConfigCreate}
+        onSuccess={handleModelConfigUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
         languageModels={languageModels}

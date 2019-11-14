@@ -48,12 +48,12 @@ export function TDPTable(props: TDPTableProps) {
 
   /**
    * navigates to the the editor
-   * @param voiceDataId 
+   * @param voiceData 
    */
-  const handleRowClick = (voiceDataId: number) => {
+  const handleRowClick = (voiceData: VoiceData) => {
     // to store props that will be used on the next page
-    setProps({ projectName });
-    PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceDataId));
+    setProps({ projectName, voiceData });
+    PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceData.id));
   };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
@@ -181,7 +181,7 @@ export function TDPTable(props: TDPTableProps) {
       return (
         <TableRow
           hover={onlyAssignedData}
-          onClick={() => onlyAssignedData ? handleRowClick(row.original.id) : {}}
+          onClick={() => onlyAssignedData ? handleRowClick(row.original) : {}}
           key={`row-${rowIndex}`}
           {...row.getRowProps()}
         >

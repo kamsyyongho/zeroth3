@@ -72,14 +72,14 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedTopGraphId: yup.number().integer(integerText).typeError(numberText).required(requiredTranslationText),
+    selectedTopGraphId: yup.number().integer(integerText).typeError(numberText).nullable().required(requiredTranslationText),
     selectedSubGraphIds: yup.array().of(yup.number().integer(integerText).typeError(numberText)),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
-    selectedTopGraphId: topGraphs[0] && topGraphs[0].id || 0,
+    selectedTopGraphId: topGraphs[0] && topGraphs[0].id || null,
     selectedSubGraphIds: [],
     description: "",
   };
@@ -99,6 +99,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
+    if(values.selectedTopGraphId === null) return
     if (api && api.models) {
       setLoading(true);
       setIsError(false);
