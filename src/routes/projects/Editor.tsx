@@ -22,10 +22,11 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { ModelConfig, Segment, WordAlignment } from '../../types';
+import { ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
+import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
@@ -108,6 +109,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const api = React.useContext(ApiContext);
   const { getProps, clearProps } = React.useContext(NavigationPropsContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [playbackTime, setPlaybackTime] = React.useState(0);
+  const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
   const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
@@ -124,7 +127,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const theme = useTheme();
   const classes = useStyles();
 
-  const { projectName } = getProps<{ projectName: string; }>(['projectName']);
+  interface NavigationPropsToGet {
+    projectName: string;
+    voiceData: VoiceData;
+  }
+
+  const { projectName, voiceData } = getProps<NavigationPropsToGet>(['projectName', 'voiceData']);
 
   /**
    * used to keep track of which segments to send when updating
@@ -144,7 +152,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   // to navigate away if we didn't navigate here from the TDP page
-  if (!projectName) {
+  if (!projectName || !voiceData) {
     handleNavigateAway();
   }
 
@@ -349,6 +357,38 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
   };
 
+  const calculateWordTime = (segmentIndex: number, wordIndex: number) => {
+    const segment = segments[segmentIndex];
+    const word = segment.wordAlignments[wordIndex];
+    const segmentTime = segment.start;
+    const wordTime = word.start;
+    const totalTime = segmentTime + wordTime;
+    return totalTime;
+  };
+
+  const calculateIsPlaying = (segmentIndex: number, wordIndex: number) => {
+    const totalTime = calculateWordTime(segmentIndex, wordIndex);
+    if (playbackTime < totalTime) {
+      return false;
+    }
+    const isLastWord = !(wordIndex < segments[segmentIndex].wordAlignments.length - 1);
+    const isLastSegment = !(segmentIndex < segments.length - 1);
+    if (isLastWord && isLastSegment) {
+      return true;
+    }
+
+    let nextTotalTime = totalTime;
+    if (!isLastWord) {
+      nextTotalTime = calculateWordTime(segmentIndex, wordIndex + 1);
+    } else if (!isLastSegment) {
+      nextTotalTime = calculateWordTime(segmentIndex + 1, 0);
+    }
+    if (playbackTime < nextTotalTime) {
+      return true;
+    }
+    return false;
+  };
+
   const updateSegmentsOnChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     segment: Segment,
@@ -392,7 +432,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     return focussed;
   };
 
-  const getWordStyle = (focussed: boolean, isLC: boolean) => {
+  const getWordStyle = (focussed: boolean, isLC: boolean, isPlaying: boolean) => {
     let wordStyle: React.CSSProperties = {};
     if (!isLC) {
       wordStyle = {
@@ -414,6 +454,9 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
         };
       }
     }
+    if (isPlaying) {
+      wordStyle.background = 'red';
+    }
     return wordStyle;
   };
 
@@ -424,6 +467,10 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
    */
   const getTabIndex = (isLC: boolean) => isLC ? 1 : -1;
 
+  /**
+   * Sets the the focus state of the the word based on its location in the segments
+   * @param isFocussed - the focus state of the word
+   */
   const setFocus = (segmentIndex: number, wordIndex: number, isFocussed = true) => {
     setSegmentWordProperties((prevValue) => {
       if (prevValue && prevValue[segmentIndex]) {
@@ -445,11 +492,18 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     });
   };
 
+  /**
+   * - sets which word is focussed
+   * - sets the seek time in the audio player
+   * - refreshes all segments to force them to rerender
+   */
   const handleFocus = (
     segmentIndex: number,
     wordIndex: number,
   ) => {
     setFocus(segmentIndex, wordIndex);
+    const wordTime = calculateWordTime(segmentIndex, wordIndex);
+    setTimeToSeekTo(wordTime);
     setSegments(prevSegments => ([...prevSegments]));
   };
 
@@ -458,6 +512,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     wordIndex: number,
   ) => {
     setFocus(segmentIndex, wordIndex, false);
+    setTimeToSeekTo(undefined);
     setSegments(prevSegments => ([...prevSegments]));
   };
 
@@ -466,7 +521,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const key = generateWordKey(segmentIndex, wordIndex);
       const isFocussed = getWordFocussed(segmentIndex, wordIndex);
       const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
-      const wordStyle = getWordStyle(isFocussed, isLC);
+      const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
+      const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
       const tabIndex = getTabIndex(isLC);
       return (<React.Fragment key={key}>
         {isSegmentSplitMode && !!wordIndex && (
@@ -548,11 +604,18 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     },
   ];
 
+  const handlePlaybackTimeChange = (time: number) => setPlaybackTime(time);
+
+  // to not display anything if we weren't passed props between pages
+  if (!projectName || !voiceData) {
+    return null;
+  }
+
   return (
     <Container maxWidth={false} className={classes.container} >
       <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
-        <div style={{ height: windowSize.height && (windowSize.height * 0.8), minHeight: 500 }}>
+        <div style={{ height: windowSize.height && (windowSize.height * 0.5), minHeight: 250 }}>
           <Button
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"
@@ -607,7 +670,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
                 onClick={() => setHCEditable(!HCEditable)}
                 startIcon={HCEditable ? <LockOpenIcon /> : <LockIcon />}
               >
-                {'TEST HC EDIT SWITCH'}
+                {'TEST HC EDIT '}{HCEditable ? 'ON' : 'OFF'}
               </Button>
             )}
           <AutoSizer>
@@ -626,6 +689,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           </AutoSizer>
         </div>
       }
+      <AudioPlayer
+        url={voiceData.audioUrl}
+        onTimeChange={handlePlaybackTimeChange}
+        timeToSeekTo={timeToSeekTo}
+      />
       <ConfirmationDialog
         destructive
         titleText={`TEST DISCARD CHANGES?`}

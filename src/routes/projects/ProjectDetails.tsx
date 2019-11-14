@@ -53,12 +53,23 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
 
-
-  const handleModelConfigCreate = (newModelConfig: ModelConfig) => {
-    setModelConfigs((prevModelConfigs) => {
-      prevModelConfigs.push(newModelConfig);
-      return prevModelConfigs;
-    });
+  const handleModelConfigUpdate = (modelConfig: ModelConfig, isEdit?: boolean) => {
+    if (isEdit) {
+      setModelConfigs(prevConfigs => {
+        const idToUpdate = modelConfig.id;
+        for (let i = 0; i < prevConfigs.length; i++) {
+          if (prevConfigs[i].id === idToUpdate) {
+            prevConfigs[i] = modelConfig;
+          }
+        }
+        return prevConfigs;
+      });
+    } else {
+      setModelConfigs(prevConfigs => {
+        prevConfigs.push(modelConfig);
+        return prevConfigs;
+      });
+    }
   };
   const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
     setSubGraphs((prevSubGraphs) => {
@@ -292,7 +303,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         subGraphs={subGraphs}
         languageModels={languageModels}
         acousticModels={acousticModels}
-        handleModelConfigCreate={handleModelConfigCreate}
+        handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleAcousticModelCreate={handleAcousticModelCreate}
