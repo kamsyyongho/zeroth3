@@ -39,8 +39,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
-  const [duration, setDuration] = React.useState(0);
   const [currentTime, setCurrentTime] = React.useState(0);
+  const [duration, setDuration] = React.useState(0);
+  const [durationDisplay, setDurationDisplay] = React.useState('0');
 
   const classes = useStyles();
 
@@ -77,7 +78,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (waveSurfer) {
       try {
         setIsReady(true);
-        setDuration(Number(waveSurfer.getDuration().toFixed(2)));
+        const duration = waveSurfer.getDuration();
+        setDuration(duration);
+        setDurationDisplay(duration.toFixed(2));
       } catch {
         // do nothing
       }
@@ -179,7 +182,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         title={<IconButton aria-label="play/pause" onClick={handlePlayPause} >
           {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
         </IconButton>}
-        subheader={`${currentTime} / ${duration}`}
+        subheader={`${currentTime} / ${durationDisplay}`}
       />}
       <CardContent className={classes.content}>
         {!url && <Typography>TEST NO AUDIO URL</Typography>}

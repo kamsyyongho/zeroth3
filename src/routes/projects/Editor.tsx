@@ -62,6 +62,13 @@ const virtualListCache = new CellMeasurerCache({
   defaultHeight: 50,
 });
 
+/**
+ * ensures that the selected word will be correctly
+ * highlighted when setting the audio player seek 
+ * from a text input focus
+ */
+const SEEK_SLOP = 0.01
+
 const DEFAULT_LC_THRESHOLD = 0.5;
 
 const WORD_KEY_SEPARATOR = '-';
@@ -503,7 +510,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   ) => {
     setFocus(segmentIndex, wordIndex);
     const wordTime = calculateWordTime(segmentIndex, wordIndex);
-    setTimeToSeekTo(wordTime);
+    setTimeToSeekTo(wordTime + SEEK_SLOP);
     setSegments(prevSegments => ([...prevSegments]));
   };
 
