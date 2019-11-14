@@ -235,7 +235,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
             color={onlyAssignedData ? 'secondary' : "primary"}
             onClick={() => setOnlyAssignedData((prevValue) => !prevValue)}
           >
-            {onlyAssignedData ? 'TEST SHOW ALL' : 'TEST SHOW ASSIGNED'}
+            {onlyAssignedData ? 'TEST SHOWING ASSIGNED' : 'TEST SHOWING ALL'}
           </Button>
           <Button
             variant='outlined'

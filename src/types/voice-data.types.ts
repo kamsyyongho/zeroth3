@@ -6,7 +6,10 @@ export interface VoiceData {
   length: number;
   score: number;
   status: CONTENT_STATUS;
-  transcriberId: number;
+  /**
+   * name of the user that transcribed
+   */
+  transcriber: string;
   transcript: string;
   audioUrl: string;
 }

@@ -93,6 +93,10 @@ export function TDPTable(props: TDPTableProps) {
         accessor: 'status',
       },
       {
+        Header: 'TEST TRANSCRIBER',
+        accessor: 'transcriber',
+      },
+      {
         Header: translate('forms.transcript'),
         accessor: 'transcript',
       },
