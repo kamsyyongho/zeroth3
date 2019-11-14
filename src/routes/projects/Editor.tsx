@@ -153,7 +153,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     return () => {
       clearProps();
     };
-  }, [clearProps]);
+  }, []);
 
 
   //!
