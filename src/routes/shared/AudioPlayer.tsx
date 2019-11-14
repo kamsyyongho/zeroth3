@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Typography } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import Forward5Icon from '@material-ui/icons/Forward5';
 import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import Replay5Icon from '@material-ui/icons/Replay5';
+import StopIcon from '@material-ui/icons/Stop';
 import React from 'react';
 import WaveSurfer from 'wavesurfer.js';
 // //@ts-ignore
@@ -29,13 +32,14 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface AudioPlayerProps {
   url: string;
-  onTimeChange: (timeInSeconds: number) => void;
   timeToSeekTo?: number;
+  onTimeChange: (timeInSeconds: number) => void;
+  onReady: () => void;
 }
 
 
 export function AudioPlayer(props: AudioPlayerProps) {
-  const { url, onTimeChange, timeToSeekTo } = props;
+  const { url, onTimeChange, timeToSeekTo, onReady } = props;
   const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
@@ -59,9 +63,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
   }, []);
 
-  // set the seek location based on the parent
-  React.useEffect(() => {
-    if (typeof timeToSeekTo === 'number' && waveSurfer) {
+  const seekToTime = (timeToSeekTo: number) => {
+    if (waveSurfer) {
       try {
         let progress = 0;
         if (timeToSeekTo > 0) {
@@ -72,7 +75,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
         // do nothing
       }
     }
+  };
+
+  // set the seek location based on the parent
+  React.useEffect(() => {
+    if (typeof timeToSeekTo === 'number') {
+      seekToTime(timeToSeekTo);
+    }
   }, [timeToSeekTo]);
+
 
   const handleReady = (waveSurfer: WaveSurfer) => {
     if (waveSurfer) {
@@ -81,6 +92,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         const duration = waveSurfer.getDuration();
         setDuration(duration);
         setDurationDisplay(duration.toFixed(2));
+        if (onReady && typeof onReady === 'function') {
+          onReady();
+        }
       } catch {
         // do nothing
       }
@@ -110,6 +124,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
         // do nothing
       }
     }
+  };
+
+  const handleStop = () => {
+    if (waveSurfer) {
+      try {
+        waveSurfer.stop();
+        setIsPlay(false);
+      } catch {
+        // do nothing
+      }
+    }
+  };
+
+  const handleSkip = (rewind = false) => {
+    const interval = rewind ? -5 : 5;
+    let timeToSeekTo = currentTime + interval;
+    if (timeToSeekTo < 0) {
+      timeToSeekTo = 0;
+    } else if (timeToSeekTo > duration) {
+      timeToSeekTo = duration;
+    }
+    seekToTime(timeToSeekTo);
   };
 
   const handleFinish = () => setIsPlay(false);
@@ -175,13 +211,25 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, []);
 
+  const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
+    <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
+      <Replay5Icon />
+    </Button>
+    <Button aria-label="stop" onClick={handleStop} >
+      <StopIcon />
+    </Button>
+    <Button aria-label="play/pause" onClick={handlePlayPause} >
+      {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
+    </Button>
+    <Button aria-label="forward-5s" onClick={() => handleSkip()} >
+      <Forward5Icon />
+    </Button>
+  </ButtonGroup>);
 
   return (
     <Card >
       {isReady && <CardHeader
-        title={<IconButton aria-label="play/pause" onClick={handlePlayPause} >
-          {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
-        </IconButton>}
+        title={playerControls}
         subheader={`${currentTime} / ${durationDisplay}`}
       />}
       <CardContent className={classes.content}>

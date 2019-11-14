@@ -48,6 +48,9 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       height: '100%',
     },
+    list: {
+      outline: 'none', // removes the focus outline
+    },
     segment: {
       padding: 10,
     },
@@ -67,7 +70,7 @@ const virtualListCache = new CellMeasurerCache({
  * highlighted when setting the audio player seek 
  * from a text input focus
  */
-const SEEK_SLOP = 0.01
+const SEEK_SLOP = 0.01;
 
 const DEFAULT_LC_THRESHOLD = 0.5;
 
@@ -116,6 +119,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const api = React.useContext(ApiContext);
   const { getProps, clearProps } = React.useContext(NavigationPropsContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
   const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
@@ -374,6 +378,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const calculateIsPlaying = (segmentIndex: number, wordIndex: number) => {
+    if (!canPlayAudio) return false;
+
     const totalTime = calculateWordTime(segmentIndex, wordIndex);
     if (playbackTime < totalTime) {
       return false;
@@ -441,13 +447,13 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const getWordStyle = (focussed: boolean, isLC: boolean, isPlaying: boolean) => {
     let wordStyle: React.CSSProperties = {};
+    const LC_COLOR = '#ffe369';
     if (!isLC) {
       wordStyle = {
         outline: 'none',
         border: 0,
       };
     } else {
-      const LC_COLOR = '#ffe369';
       wordStyle = {
         boxShadow: 'none',
         borderColor: theme.palette.background.default,
@@ -463,6 +469,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
     if (isPlaying) {
       wordStyle.background = 'red';
+      wordStyle.color = isLC ? LC_COLOR : 'white';
     }
     return wordStyle;
   };
@@ -500,8 +507,18 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   /**
-   * - sets which word is focussed
    * - sets the seek time in the audio player
+   */
+  const handleWordClick = (
+    segmentIndex: number,
+    wordIndex: number,
+  ) => {
+    const wordTime = calculateWordTime(segmentIndex, wordIndex);
+    setTimeToSeekTo(wordTime + SEEK_SLOP);
+  };
+
+  /**
+   * - sets which word is focussed
    * - refreshes all segments to force them to rerender
    */
   const handleFocus = (
@@ -509,8 +526,6 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     wordIndex: number,
   ) => {
     setFocus(segmentIndex, wordIndex);
-    const wordTime = calculateWordTime(segmentIndex, wordIndex);
-    setTimeToSeekTo(wordTime + SEEK_SLOP);
     setSegments(prevSegments => ([...prevSegments]));
   };
 
@@ -522,6 +537,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     setTimeToSeekTo(undefined);
     setSegments(prevSegments => ([...prevSegments]));
   };
+
+  const handlePlayerRendered = () => setCanPlayAudio(true);
 
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
@@ -557,6 +574,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
             margin: theme.spacing(0.25),
           }}
           autoFocus={isFocussed}
+          onClick={(event) => handleWordClick(segmentIndex, wordIndex)}
           onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
           onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
           onChange={(event) =>
@@ -611,7 +629,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     },
   ];
 
-  const handlePlaybackTimeChange = (time: number) => setPlaybackTime(time);
+  const handlePlaybackTimeChange = (time: number) => {
+    setPlaybackTime(time);
+    // to allow us to continue to force seeking the same word during playback
+    setTimeToSeekTo(undefined);
+  };
 
   // to not display anything if we weren't passed props between pages
   if (!projectName || !voiceData) {
@@ -684,6 +706,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
             {({ height, width }) => {
               return (
                 <List
+                  className={classes.list}
                   height={height}
                   rowCount={segments.length}
                   rowHeight={virtualListCache.rowHeight}
@@ -698,8 +721,9 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       }
       <AudioPlayer
         url={voiceData.audioUrl}
-        onTimeChange={handlePlaybackTimeChange}
         timeToSeekTo={timeToSeekTo}
+        onTimeChange={handlePlaybackTimeChange}
+        onReady={handlePlayerRendered}
       />
       <ConfirmationDialog
         destructive
