@@ -44,9 +44,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
 
   const formSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = [];
-    for (let i = VALIDATION.MODELS.ACOUSTIC.sampleRate.min; i <= VALIDATION.MODELS.ACOUSTIC.sampleRate.max; i++) {
-      tempFormSelectOptions.push({ label: `${i} kHz`, value: i });
-    }
+    VALIDATION.MODELS.ACOUSTIC.sampleRates.forEach(value => tempFormSelectOptions.push({ label: `${value} kHz`, value }))
     return tempFormSelectOptions;
   }, []);
 
