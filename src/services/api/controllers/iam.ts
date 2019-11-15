@@ -127,7 +127,7 @@ export class IAM extends ParentApi {
       items: roleIds,
     };
     // make the api call
-    const response: ApiResponse<User[], ServerError> = await this.apisauce.post(
+    const response: ApiResponse<User, ServerError> = await this.apisauce.post(
       `/iam/users/${userId}/roles`,
       request
     );
@@ -146,8 +146,8 @@ export class IAM extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const users = response.data as User[];
-      return { kind: 'ok', users };
+      const user = response.data as User;
+      return { kind: 'ok', user };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

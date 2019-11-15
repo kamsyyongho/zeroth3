@@ -98,6 +98,20 @@ export function IAM() {
     getRoles();
   }, []);
 
+  /**
+   * remove the deleted users from all lists
+   */
+  const handleUpdateSuccess = (updatedUser: User) => {
+    const usersCopy = users.slice();
+    for (let i = users.length - 1; i >= 0; i--) {
+      const user = users[i];
+      if (user.id === updatedUser.id) {
+        usersCopy.splice(i, 1, updatedUser);
+      }
+      setUsers(usersCopy);
+    };
+  };
+
   let usersToDelete: number[] = [];
   Object.keys(checkedUsers).forEach(userId => {
     const checked = checkedUsers[Number(userId)];
@@ -208,7 +222,14 @@ export function IAM() {
           title={translate("IAM.header")}
         />
         <CardContent className={classes.cardContent} >
-          {usersLoading || rolesLoading ? <BulletList /> : <IAMTable users={users} roles={roles} setCheckedUsers={setCheckedUsers} />}
+          {usersLoading || rolesLoading ? <BulletList /> :
+            <IAMTable
+              users={users}
+              roles={roles}
+              setCheckedUsers={setCheckedUsers}
+              handleUpdateSuccess={handleUpdateSuccess}
+            />
+          }
         </CardContent>
         <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
         <ConfirmationDialog
@@ -222,4 +243,4 @@ export function IAM() {
       </Card>
     </Container >
   );
-}
+};

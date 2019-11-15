@@ -1,56 +1,65 @@
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import React from 'react'
-import { CellProps, useTable } from 'react-table'
-import { I18nContext } from '../../../hooks/i18n/I18nContext'
-import { Role, User } from "../../../types"
-import { CheckedUsersByUserId } from '../IAM'
-import { IAMCellCheckbox } from './IAMCellCheckbox'
-import { IAMCellMultiSelect } from './IAMCellMultiSelect'
-import { IAMCellSubmitButton } from './IAMCellSubmitButton'
-import { IAMHeaderCheckbox } from './IAMHeaderCheckbox'
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import React from 'react';
+import { CellProps, useTable } from 'react-table';
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { Role, User } from "../../../types";
+import { CheckedUsersByUserId } from '../IAM';
+import { IAMCellCheckbox } from './IAMCellCheckbox';
+import { IAMCellMultiSelect } from './IAMCellMultiSelect';
+import { IAMCellSubmitButton } from './IAMCellSubmitButton';
+import { IAMHeaderCheckbox } from './IAMHeaderCheckbox';
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IAMTableProps {
-  users: User[]
-  roles: Role[]
-  setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>
+  users: User[];
+  roles: Role[];
+  setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>;
+  handleUpdateSuccess: (updatedUser: User) => void;
 }
 
 export interface ParsedRolesById {
-  [id: number]: Role
+  [id: number]: Role;
 }
 
 export interface SelectedRoleIdsByIndex {
-  [index: number]: number[]
+  [index: number]: number[];
 }
 
 
 export function IAMTable(props: IAMTableProps) {
-  const { users, roles, setCheckedUsers } = props;
+  const { users, roles, setCheckedUsers, handleUpdateSuccess } = props;
 
   // used in the multi-select to quicly access the role by id 
-  const parsedRolesById: ParsedRolesById = {}
-  roles.forEach(role => parsedRolesById[role.id] = role)
+  const parsedRolesById: ParsedRolesById = {};
+  roles.forEach(role => parsedRolesById[role.id] = role);
 
   const { translate, language } = React.useContext(I18nContext);
-  const [allChecked, setAllChecked] = React.useState(false)
+  const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
 
   const handleUserCheck = (userId: number, value: boolean): void => {
     setCheckedUsers((prevCheckedUsers) => {
-      return { ...prevCheckedUsers, [userId]: value }
-    })
-  }
+      return { ...prevCheckedUsers, [userId]: value };
+    });
+  };
 
   const handleRoleCheck = (userIndex: number, value: number[]): void => {
     setSelectedRoles((prevSelectedRoles) => {
-      return { ...prevSelectedRoles, [userIndex]: value }
-    })
-  }
+      return { ...prevSelectedRoles, [userIndex]: value };
+    });
+  };
+
+  const onUpdateRoleSuccess = (updatedUser: User, userIndex: number): void => {
+    handleUpdateSuccess(updatedUser);
+    const currentRoles = updatedUser.roles.map(role => role.id);
+    setSelectedRoles((prevSelectedRoles) => {
+      return { ...prevSelectedRoles, [userIndex]: currentRoles };
+    });
+  };
 
   // define the logic and what the columns should render
   const columns = React.useMemo(
@@ -68,11 +77,11 @@ export function IAMTable(props: IAMTableProps) {
       {
         Header: ' ',
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => IAMCellSubmitButton({ cellData: data, selectedRoles }),
+        Cell: (data: CellProps<User>) => IAMCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess }),
       },
     ],
     [users, roles, language, allChecked, selectedRoles]
-  )
+  );
 
   // Use the state and functions returned from useTable to build your UI
   const {
@@ -83,7 +92,7 @@ export function IAMTable(props: IAMTableProps) {
   } = useTable<User>({
     columns,
     data: users,
-  })
+  });
 
   // Render the UI for your table
   const renderHeader = () => headerGroups.map((headerGroup, index) => (
@@ -94,7 +103,7 @@ export function IAMTable(props: IAMTableProps) {
         </TableCell>
       ))}
     </TableRow>
-  ))
+  ));
 
   const renderRows = () => rows.map(
     (row, rowIndex) => {
@@ -106,11 +115,11 @@ export function IAMTable(props: IAMTableProps) {
               <TableCell key={`cell-${cellIndex}`} {...cell.getCellProps()}>
                 {cell.render('Cell')}
               </TableCell>
-            )
+            );
           })}
         </TableRow>
-      )
-    })
+      );
+    });
 
   return (
     <Table stickyHeader {...getTableProps()}>
@@ -121,7 +130,7 @@ export function IAMTable(props: IAMTableProps) {
         {renderRows()}
       </TableBody>
     </Table>
-  )
+  );
 }
 
 
