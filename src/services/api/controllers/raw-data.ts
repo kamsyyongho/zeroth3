@@ -38,7 +38,7 @@ export class RawData extends ParentApi {
     const response = await this.apisauce.get<
       RawDataAdditionalProps,
       ServerError
-    >(`/projects/${projectId}/data/raw`);
+    >(`/projects/${projectId}/data/raw-data`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

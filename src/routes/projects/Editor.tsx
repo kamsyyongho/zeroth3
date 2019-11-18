@@ -266,7 +266,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const confirmData = async () => {
     if (api && api.voiceData) {
       setConfirmSegmentsLoading(true);
-      const response = await api.voiceData.confirmData(dataIdNumber);
+      const response = await api.voiceData.confirmData(projectIdNumber, dataIdNumber);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -568,7 +568,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
     if (firstLCWordTabIndex === undefined) {
       firstLCWordTabIndex = wordTabIndex;
-      firstLCWordLocation= [segmentIndex, wordIndex];
+      firstLCWordLocation = [segmentIndex, wordIndex];
     }
     return wordTabIndex;
   };
@@ -611,7 +611,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     if (isLast && !event.shiftKey && event.key === 'Tab') {
       event.preventDefault();
       firstLCWordReference && firstLCWordReference.focus();
-    } else if(isFirst && event.shiftKey && event.key === 'Tab') {
+    } else if (isFirst && event.shiftKey && event.key === 'Tab') {
       event.preventDefault();
       lastLCWordReference && lastLCWordReference.focus();
     }
