@@ -312,7 +312,7 @@ export class VoiceData extends ParentApi {
     const params: SplitSegmentQuery = {
       'split-index': splitIndex,
     };
-    const response = await this.apisauce.post<Segment[], ServerError>(
+    const response = await this.apisauce.post<[Segment, Segment], ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
       null,
@@ -333,7 +333,7 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const segments = response.data as Segment[];
+      const segments = response.data as [Segment, Segment];
       return { kind: 'ok', segments };
     } catch {
       return { kind: ProblemKind['bad-data'] };
