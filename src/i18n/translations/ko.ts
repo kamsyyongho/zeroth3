@@ -39,6 +39,10 @@ export const ko: ResourceLanguage = {
       login: '로그인',
       logout: '로그아웃',
       changeLanguage: '언어 바꾸기',
+      profile: 'Profile',
+    },
+    profile: {
+      fullName: '{{family}} {{given}}',
     },
     forms: {
       validation: {

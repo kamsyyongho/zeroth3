@@ -39,6 +39,10 @@ export const en: ResourceLanguage = {
       login: 'Login',
       logout: 'Logout',
       changeLanguage: 'Change language',
+      profile: 'Profile',
+    },
+    profile: {
+      fullName: '{{given}} {{family}}',
     },
     forms: {
       validation: {
