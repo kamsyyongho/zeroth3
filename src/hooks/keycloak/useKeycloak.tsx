@@ -5,18 +5,33 @@ import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
 
+export interface KeycloakUser {
+  familyName?: string;
+  givenName?: string;
+  email?: string;
+  name?: string;
+  preferredUsername?: string;
+  organizationId?: number;
+}
+
 interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
-  organization_id?: number
+  family_name?: string;
+  given_name?: string;
+  email?: string;
+  name?: string;
+  preferred_username?: string;
+  organization_id?: number;
 }
 
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
-  tokenParsed?: CustomKeycloakTokenParsed
+  tokenParsed?: CustomKeycloakTokenParsed;
 }
+
 export const useKeycloak = () => {
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
-  const [keycloak, setKeycloak] = useState(rawKeycloak)
+  const [keycloak, setKeycloak] = useState(rawKeycloak);
 
   const init = () => {
     return new Promise<boolean>((resolve, reject) => {
@@ -26,8 +41,8 @@ export const useKeycloak = () => {
           checkLoginIframe: false // without this, IE goes into redirect loop
         })
         .success((authenticated: boolean) => {
-          setKeycloak(keycloak)
-          resolve(authenticated)
+          setKeycloak(keycloak);
+          resolve(authenticated);
         })
         .error((error) => reject(error));
     });
@@ -41,13 +56,13 @@ export const useKeycloak = () => {
           caller: `initKeycloak - init error`,
           value: error,
           error: true,
-        })
-        return false
-      })
+        });
+        return false;
+      });
       setkeycloakInitialized(keycloakResponse);
     };
     startInit();
-  }
+  };
 
   /**
    * Logs out of keycloak and redirects to the login page.
@@ -58,16 +73,23 @@ export const useKeycloak = () => {
     const logoutOptions = { redirectUri: ENV.HOME_URL };
     setkeycloakInitialized(false);
     keycloak.logout(logoutOptions);
-  }
+  };
 
-  let roles: string[] = []
-  let organizationId: number | undefined = undefined
+  let roles: string[] = [];
+  let user: KeycloakUser = {};
   try {
     if (keycloak && keycloak.tokenParsed && keycloak.tokenParsed.realm_access) {
-      roles = keycloak.tokenParsed.realm_access.roles
+      roles = keycloak.tokenParsed.realm_access.roles;
     }
     if (keycloak && keycloak.tokenParsed) {
-      organizationId = keycloak.tokenParsed.organization_id
+      user = {
+        organizationId: keycloak.tokenParsed.organization_id,
+        familyName: keycloak.tokenParsed.family_name,
+        givenName: keycloak.tokenParsed.given_name,
+        email: keycloak.tokenParsed.email,
+        name: keycloak.tokenParsed.name,
+        preferredUsername: keycloak.tokenParsed.preferred_username,
+      };
     }
   } catch (error) {
     log({
@@ -75,10 +97,10 @@ export const useKeycloak = () => {
       caller: `initKeycloak - parse error`,
       value: error,
       error: true,
-    })
+    });
   }
 
-  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, organizationId }
+  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user };
 
-  return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak }
-}
+  return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
+};
