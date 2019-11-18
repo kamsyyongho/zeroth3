@@ -113,7 +113,7 @@ export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;
 
-export type splitSegmentResult = { kind: 'ok' } | GeneralApiProblem;
+export type splitSegmentResult = { kind: 'ok', segments: Segment[] } | GeneralApiProblem;
 
 export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }

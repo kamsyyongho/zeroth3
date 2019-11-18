@@ -108,6 +108,12 @@ interface SegmentWordProperties {
   };
 }
 
+interface SegmentSplitLocation {
+  segmentId: number;
+  segmentIndex: number;
+  splitIndex: number;
+}
+
 
 export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const { projectId, dataId } = match.params;
@@ -122,6 +128,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
+  const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
   const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
@@ -360,8 +367,52 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
   };
 
+  const submitSegmentSplit = async () => {
+    if (!splitLocation) return;
+    if (api && api.voiceData) {
+      setSaveSegmentsLoading(true);
+      const { segmentId, segmentIndex, splitIndex } = splitLocation;
+      const response = await api.voiceData.splitSegment(projectIdNumber, dataIdNumber, segmentId, splitIndex);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+
+        // to reset our selected segment
+        setSplitLocation(undefined);
+
+        //cut out and replace the old segment
+        const splitSegments = [...segments];
+        const [firstSegment, secondSegment] = response.segments;
+        splitSegments.splice(segmentIndex, 2, firstSegment, secondSegment);
+
+        // reset our new default baseline
+        setSegments(splitSegments);
+        setInitialSegments(splitSegments);
+        setIsSegmentEdit(false);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `submitSegmentSplit - failed to split segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
   const handleSavePress = () => {
     if (isSegmentEdit) {
+      if (isSegmentSplitMode) {
+        submitSegmentSplit();
+      }
       submitSegmentMerge();
     } else {
       submitSegmentUpdates();
@@ -540,6 +591,22 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const handlePlayerRendered = () => setCanPlayAudio(true);
 
+  const handleSplitLocationPress = (segmentId: number, segmentIndex: number, splitIndex: number) => {
+    if (splitLocation && (
+      (segmentId === (splitLocation.segmentId)) &&
+      (segmentIndex === (splitLocation.segmentIndex)) &&
+      (splitIndex === (splitLocation.splitIndex))
+    )) {
+      setSplitLocation(undefined);
+    } else {
+      setSplitLocation({
+        segmentId,
+        segmentIndex,
+        splitIndex,
+      });
+    }
+  };
+
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
       const key = generateWordKey(segmentIndex, wordIndex);
@@ -548,13 +615,23 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
       const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
       const tabIndex = getTabIndex(isLC);
+
+      let isSplitSelected = false;
+      if (splitLocation &&
+        splitLocation.segmentId === segment.id &&
+        splitLocation.segmentIndex === segmentIndex &&
+        splitLocation.splitIndex === wordIndex) {
+        isSplitSelected = true;
+      }
+
       return (<React.Fragment key={key}>
         {isSegmentSplitMode && !!wordIndex && (
           <IconButton
             aria-label="split-button"
             size="small"
-            color='secondary'
-            onClick={() => console.log(key)}
+            color={isSplitSelected ? 'secondary' : 'primary'}
+            // variant={isSplitSelected ? 'contained' : undefined}
+            onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
           >
             <SvgIconWrapper fontSize='inherit' >
               <FaGripLinesVertical />
