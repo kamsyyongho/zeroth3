@@ -3,7 +3,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { useTheme } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import React, { useContext, useState } from 'react';
@@ -22,11 +21,7 @@ function MenuPopup() {
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const theme = useTheme();
   const isCurrentPath = location.pathname === PATHS.profile.to;
-
-  console.log('isCurrentPath', isCurrentPath);
-  console.log('theme.palette.primary', theme.palette.primary);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
