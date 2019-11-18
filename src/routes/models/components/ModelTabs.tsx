@@ -24,6 +24,8 @@ export function ModelTabs() {
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
+  const [shouldRenderAcousticTab, setShouldRenderAcousticTab] = React.useState(false);
+  const [shouldRenderLanguageTab, setShouldRenderLanguageTab] = React.useState(false);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([] as TopGraph[]);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([] as SubGraph[]);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
@@ -31,6 +33,13 @@ export function ModelTabs() {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [checkedSubGraphs, setCheckedSubGraphs] = React.useState<CheckedSubGraphById>({});
+
+  /** used to prevent tabs from rendering before they should be displayed */
+  const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set(), []);
+
+  React.useEffect(() => {
+    tabsThatShouldRender.add(activeTab);
+  }, []);
 
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -163,8 +172,9 @@ export function ModelTabs() {
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setActiveTab(newValue);
+  const handleChange = (event: React.ChangeEvent<{}>, newActiveTab: number) => {
+    tabsThatShouldRender.add(newActiveTab);
+    setActiveTab(newActiveTab);
   };
 
   return (
@@ -180,24 +190,26 @@ export function ModelTabs() {
         <Tab label={translate('models.tabs.languageModel.header')} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
-        <AcousticModelGridList />
+        {tabsThatShouldRender.has(0) && <AcousticModelGridList />}
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
-        <LanguageModelGridList
-          topGraphs={topGraphs}
-          subGraphs={subGraphs}
-          handleSubGraphListUpdate={handleSubGraphListUpdate}
-        />
-        <SubGraphList
-          subGraphsLoading={subGraphsLoading}
-          checkedSubGraphs={checkedSubGraphs}
-          handleSubGraphCheck={handleSubGraphCheck}
-          confirmDelete={confirmDelete}
-          deleteLoading={deleteLoading}
-          canDelete={!!subGraphsToDelete.length}
-          subGraphs={subGraphs}
-          handleSubGraphListUpdate={handleSubGraphListUpdate}
-        />
+        {tabsThatShouldRender.has(1) && <>
+          <LanguageModelGridList
+            topGraphs={topGraphs}
+            subGraphs={subGraphs}
+            handleSubGraphListUpdate={handleSubGraphListUpdate}
+          />
+          <SubGraphList
+            subGraphsLoading={subGraphsLoading}
+            checkedSubGraphs={checkedSubGraphs}
+            handleSubGraphCheck={handleSubGraphCheck}
+            confirmDelete={confirmDelete}
+            deleteLoading={deleteLoading}
+            canDelete={!!subGraphsToDelete.length}
+            subGraphs={subGraphs}
+            handleSubGraphListUpdate={handleSubGraphListUpdate}
+          />
+        </>}
       </TabPanel>
       <ConfirmationDialog
         destructive
