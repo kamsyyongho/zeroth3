@@ -11,6 +11,7 @@ import "./i18n"; // to immediately initialize i18n
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
 import { Models } from './routes/models/Models';
+import { UserProfile } from './routes/profile/UserProfile';
 import { Editor } from './routes/projects/Editor';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Projects } from './routes/projects/Projects';
@@ -43,7 +44,7 @@ function App() {
       //TODO
       //* TO DEAL WITH A RACE CONDITION WITH ACCOUNT CREATION AND ORGANIZATION ID CREATION
       //!
-      if (keycloak.organizationId === undefined) keycloak.logout();
+      if (keycloak.user.organizationId === undefined) keycloak.logout();
       //!
       //////////////////////////////////////////
       // TEST CODE - DELETE BEFORE PRODUCTION //
@@ -67,6 +68,7 @@ function App() {
         <Route exact path={PATHS.TDP.to} component={TDP} />
         <Route exact path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
+        <Route path={PATHS.profile.to} component={UserProfile} />
       </Router>
     </RootProvider>
   );

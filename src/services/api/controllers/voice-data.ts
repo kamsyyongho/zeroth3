@@ -1,8 +1,29 @@
 import { ApisauceInstance } from 'apisauce';
 import { Segment, WordAlignment } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { confirmDataResult, fetchUnconfirmedDataResult, FetchUnconfirmedQuery, GeneralApiProblem, getAssignedDataResult, getSegmentsDataResult, ProblemKind, SearchDataRequest, searchDataResult, ServerError, splitSegmentResult, UpdateSegmentRequest, updateSegmentResult, UpdateSegmentsRequest, updateSegmentsResult, VoiceDataResults } from '../types';
-import { MergeTwoSegmentsRequest, mergeTwoSegmentsResult, SplitSegmentQuery } from '../types/voice-data.types';
+import {
+  confirmDataResult,
+  fetchUnconfirmedDataResult,
+  FetchUnconfirmedQuery,
+  GeneralApiProblem,
+  getAssignedDataResult,
+  getSegmentsDataResult,
+  ProblemKind,
+  SearchDataRequest,
+  searchDataResult,
+  ServerError,
+  splitSegmentResult,
+  UpdateSegmentRequest,
+  updateSegmentResult,
+  UpdateSegmentsRequest,
+  updateSegmentsResult,
+  VoiceDataResults,
+} from '../types';
+import {
+  MergeTwoSegmentsRequest,
+  mergeTwoSegmentsResult,
+  SplitSegmentQuery,
+} from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -132,11 +153,15 @@ export class VoiceData extends ParentApi {
 
   /**
    * Confirms and locks the voice data
+   * @param projectId
    * @param dataId
    */
-  async confirmData(dataId: number): Promise<confirmDataResult> {
+  async confirmData(
+    projectId: number,
+    dataId: number
+  ): Promise<confirmDataResult> {
     const response = await this.apisauce.put<undefined, ServerError>(
-      `/data/${dataId}/confirm`
+      `/projects/${projectId}/data/${dataId}/confirm`
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -144,7 +169,7 @@ export class VoiceData extends ParentApi {
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
           return this.attemptToRefreshToken(
-            () => this.confirmData(dataId),
+            () => this.confirmData(projectId, dataId),
             problem
           );
         }
@@ -312,7 +337,7 @@ export class VoiceData extends ParentApi {
     const params: SplitSegmentQuery = {
       'split-index': splitIndex,
     };
-    const response = await this.apisauce.post<undefined, ServerError>(
+    const response = await this.apisauce.post<[Segment, Segment], ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
       null,
@@ -331,7 +356,13 @@ export class VoiceData extends ParentApi {
         return problem;
       }
     }
-    return { kind: 'ok' };
+    // transform the data into the format we are expecting
+    try {
+      const segments = response.data as [Segment, Segment];
+      return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 
   /**

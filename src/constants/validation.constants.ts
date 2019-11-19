@@ -15,9 +15,10 @@ export const VALIDATION = {
         min: 2,
         max: 50,
       },
+      sampleRates: [8,16],
       sampleRate: {
         min: 8,
-        max: 64,
+        max: 16,
       },
       description: {
         max: 250,
@@ -33,4 +34,10 @@ export const VALIDATION = {
       max: 100,
     },
   },
+  ORGANIZATION: {
+    name: {
+      min: 2,
+      max: 50,
+    }
+  }
 };

@@ -17,6 +17,9 @@ export const PATHS: { [x: string]: Path } = {
     to: '/',
     title: 'home',
   },
+  profile: {
+    to: '/profile',
+  },
   IAM: {
     to: '/iam',
     title: 'IAM',

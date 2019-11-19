@@ -92,7 +92,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
     if (!validFilesCheck(files) || selectedModelConfigId === null) {
       return;
     }
-    if (api && api.rawData) {
+    if (api && api.rawData && !loading) {
       setLoading(true);
       setIsError(false);
       const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
@@ -164,7 +164,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

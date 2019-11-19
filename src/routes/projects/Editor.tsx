@@ -66,6 +66,18 @@ const virtualListCache = new CellMeasurerCache({
 });
 
 /**
+ * reference used to reset focus to the first input 
+ * when tabbing should wrap around to the beginning
+ */
+let firstLCWordReference: HTMLInputElement | null = null;
+
+/**
+ * reference used to reset focus to the last input 
+ * when shift-tabbing should wrap around to the end
+ */
+let lastLCWordReference: HTMLInputElement | null = null;
+
+/**
  * ensures that the selected word will be correctly
  * highlighted when setting the audio player seek 
  * from a text input focus
@@ -108,6 +120,11 @@ interface SegmentWordProperties {
   };
 }
 
+interface SegmentSplitLocation {
+  segmentId: number;
+  segmentIndex: number;
+  splitIndex: number;
+}
 
 export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const { projectId, dataId } = match.params;
@@ -122,6 +139,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
+  const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
   const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
@@ -174,6 +192,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     };
   }, []);
 
+  // to keep track of word focus and to reset the loop while tabbing through
+  let firstLCWordLocation: [number, number] = React.useMemo(() => [0, 0], []);
+  let lastLCWordLocation: [number, number] = React.useMemo(() => [0, 0], []);
+  let wordTabIndex = React.useMemo(() => 1, []);
+  let firstLCWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
+  let lastLCWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
 
   //!
   //TODO
@@ -242,7 +266,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const confirmData = async () => {
     if (api && api.voiceData) {
       setConfirmSegmentsLoading(true);
-      const response = await api.voiceData.confirmData(dataIdNumber);
+      const response = await api.voiceData.confirmData(projectIdNumber, dataIdNumber);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -360,8 +384,52 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     }
   };
 
+  const submitSegmentSplit = async () => {
+    if (!splitLocation) return;
+    if (api && api.voiceData) {
+      setSaveSegmentsLoading(true);
+      const { segmentId, segmentIndex, splitIndex } = splitLocation;
+      const response = await api.voiceData.splitSegment(projectIdNumber, dataIdNumber, segmentId, splitIndex);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+
+        // to reset our selected segment
+        setSplitLocation(undefined);
+
+        //cut out and replace the old segment
+        const splitSegments = [...segments];
+        const [firstSegment, secondSegment] = response.segments;
+        splitSegments.splice(segmentIndex, 2, firstSegment, secondSegment);
+
+        // reset our new default baseline
+        setSegments(splitSegments);
+        setInitialSegments(splitSegments);
+        setIsSegmentEdit(false);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `submitSegmentSplit - failed to split segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
   const handleSavePress = () => {
     if (isSegmentEdit) {
+      if (isSegmentSplitMode) {
+        submitSegmentSplit();
+      }
       submitSegmentMerge();
     } else {
       submitSegmentUpdates();
@@ -474,12 +542,37 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     return wordStyle;
   };
 
+
+  // let maxTabIndex = React.useMemo(() => 0, []);
+
   /**
    * Determines if an input field can be accessed via tabbing
    * - Negative tab indexes are skipped when tabbing through fields
+   * @param segmentIndex 
+   * @param wordIndex 
    * @param isLC 
    */
-  const getTabIndex = (isLC: boolean) => isLC ? 1 : -1;
+  const getTabIndex = (segmentIndex: number, wordIndex: number, isLC: boolean) => {
+    if (!isLC) {
+      return -1;
+    }
+    const [maxSegmentIndex, maxWordIndex] = lastLCWordLocation;
+    wordTabIndex++;
+    if (segmentIndex > maxSegmentIndex) {
+      lastLCWordLocation = [segmentIndex, wordIndex];
+    } else if (segmentIndex === maxSegmentIndex && wordIndex > maxWordIndex) {
+      lastLCWordLocation = [segmentIndex, wordIndex];
+      if (lastLCWordTabIndex === undefined || lastLCWordTabIndex < wordTabIndex) {
+        lastLCWordTabIndex = wordTabIndex;
+      }
+    }
+    if (firstLCWordTabIndex === undefined) {
+      firstLCWordTabIndex = wordTabIndex;
+      firstLCWordLocation = [segmentIndex, wordIndex];
+    }
+    return wordTabIndex;
+  };
+
 
   /**
    * Sets the the focus state of the the word based on its location in the segments
@@ -506,6 +599,24 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     });
   };
 
+  const handleTabKeyCatch = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    segmentIndex: number,
+    wordIndex: number,
+  ) => {
+    const [firstSegmentIndex, firstWordIndex] = firstLCWordLocation;
+    const [lastSegmentIndex, lastWordIndex] = lastLCWordLocation;
+    const isLast = segmentIndex === lastSegmentIndex && wordIndex === lastWordIndex;
+    const isFirst = segmentIndex === firstSegmentIndex && wordIndex === firstWordIndex;
+    if (isLast && !event.shiftKey && event.key === 'Tab') {
+      event.preventDefault();
+      firstLCWordReference && firstLCWordReference.focus();
+    } else if (isFirst && event.shiftKey && event.key === 'Tab') {
+      event.preventDefault();
+      lastLCWordReference && lastLCWordReference.focus();
+    }
+  };
+
   /**
    * - sets the seek time in the audio player
    */
@@ -520,6 +631,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   /**
    * - sets which word is focussed
    * - refreshes all segments to force them to rerender
+   * - sets the seek time in the audio player
    */
   const handleFocus = (
     segmentIndex: number,
@@ -527,6 +639,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   ) => {
     setFocus(segmentIndex, wordIndex);
     setSegments(prevSegments => ([...prevSegments]));
+    handleWordClick(segmentIndex, wordIndex);
   };
 
   const handleBlur = (
@@ -540,6 +653,22 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const handlePlayerRendered = () => setCanPlayAudio(true);
 
+  const handleSplitLocationPress = (segmentId: number, segmentIndex: number, splitIndex: number) => {
+    if (splitLocation && (
+      (segmentId === (splitLocation.segmentId)) &&
+      (segmentIndex === (splitLocation.segmentIndex)) &&
+      (splitIndex === (splitLocation.splitIndex))
+    )) {
+      setSplitLocation(undefined);
+    } else {
+      setSplitLocation({
+        segmentId,
+        segmentIndex,
+        splitIndex,
+      });
+    }
+  };
+
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
       const key = generateWordKey(segmentIndex, wordIndex);
@@ -547,14 +676,26 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
       const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
       const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
-      const tabIndex = getTabIndex(isLC);
+      const tabIndex = getTabIndex(segmentIndex, wordIndex, isLC);
+
+      const isFirst = firstLCWordTabIndex === tabIndex;
+      const isLast = lastLCWordTabIndex === tabIndex;
+
+      let isSplitSelected = false;
+      if (splitLocation &&
+        splitLocation.segmentId === segment.id &&
+        splitLocation.segmentIndex === segmentIndex &&
+        splitLocation.splitIndex === wordIndex) {
+        isSplitSelected = true;
+      }
+
       return (<React.Fragment key={key}>
         {isSegmentSplitMode && !!wordIndex && (
           <IconButton
             aria-label="split-button"
             size="small"
-            color='secondary'
-            onClick={() => console.log(key)}
+            color={isSplitSelected ? 'secondary' : 'primary'}
+            onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
           >
             <SvgIconWrapper fontSize='inherit' >
               <FaGripLinesVertical />
@@ -562,6 +703,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           </IconButton>
         )}
         <AutosizeInput
+          inputRef={
+            isFirst ?
+              ((inputRef) => firstLCWordReference = inputRef) :
+              (isLast ?
+                ((inputRef) => lastLCWordReference = inputRef) : undefined)}
           disabled={isSegmentEdit || (!HCEditable && !isLC)}
           tabIndex={tabIndex}
           key={key}
@@ -577,6 +723,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           onClick={(event) => handleWordClick(segmentIndex, wordIndex)}
           onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
           onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
+          onKeyDown={(event) => handleTabKeyCatch(event, segmentIndex, wordIndex)}
           onChange={(event) =>
             updateSegmentsOnChange(event, segment, wordAlignment, segmentIndex, wordIndex)
           }

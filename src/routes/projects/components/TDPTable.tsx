@@ -208,7 +208,7 @@ export function TDPTable(props: TDPTableProps) {
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
       <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
-        {voiceData.length ? renderRows() : (
+        {!!voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
               <Typography component='span' >{translate('table.noResults')}</Typography>
@@ -227,7 +227,7 @@ export function TDPTable(props: TDPTableProps) {
         />
       )}
     </TableFooter>
-    <TablePagination
+    {!!voiceData.length && <TablePagination
       rowsPerPageOptions={[5, 10, 25, 50, 100]}
       component="div"
       count={voiceDataResults.totalElements}
@@ -248,6 +248,7 @@ export function TDPTable(props: TDPTableProps) {
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => TDPTablePaginationActions({ ...paginationProps, pageCount })}
-    /></>
+    />}
+    </>
   );
 }

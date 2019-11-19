@@ -1,6 +1,8 @@
 import { KeycloakInstance } from "keycloak-js";
 import { createContext } from "react";
 import { noop } from '../../constants';
+import { KeycloakUser } from './useKeycloak';
+import { ROLES } from '../../types';
 
 export interface ParsedKeycloak {
   /**
@@ -15,14 +17,19 @@ export interface ParsedKeycloak {
    * current roles assigned to the user
    */
   roles: string[];
-  organizationId?: number;
+  user: KeycloakUser;
+  /**
+   * checks if the user has the required permissions
+   */
+  hasPermission: (permittedRoles: ROLES[]) => boolean;
 }
 
 const defaultContext: ParsedKeycloak = {
   keycloak: {} as KeycloakInstance,
   logout: noop,
   roles: [],
-  organizationId: undefined
+  user: {},
+  hasPermission: noop,
 };
 
 export const KeycloakContext = createContext(defaultContext);

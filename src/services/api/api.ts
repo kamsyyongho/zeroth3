@@ -10,6 +10,7 @@ import { Projects } from './controllers/projects';
 import { RawData } from './controllers/raw-data';
 import { VoiceData } from './controllers/voice-data';
 import { GeneralApiProblem } from './types';
+import { Organizations } from './controllers/organizations';
 
 /**
  * Main class that manages all requests to the API.
@@ -67,6 +68,11 @@ export class Api {
   rawData: RawData | undefined;
 
   /**
+   * Subclass that organization data requests.
+   */
+  organizations: Organizations | undefined;
+
+  /**
    * Creates the api.
    * - Be as quick as possible in here.
    * @param config The configuration to use.
@@ -105,6 +111,7 @@ export class Api {
     );
     this.voiceData = new VoiceData(this.apisauce, this.attemptToRefreshToken);
     this.rawData = new RawData(this.apisauce, this.attemptToRefreshToken);
+    this.organizations = new Organizations(this.apisauce, this.attemptToRefreshToken);
     return true;
   }
 

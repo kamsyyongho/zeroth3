@@ -44,9 +44,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
 
   const formSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = [];
-    for (let i = VALIDATION.MODELS.ACOUSTIC.sampleRate.min; i <= VALIDATION.MODELS.ACOUSTIC.sampleRate.max; i++) {
-      tempFormSelectOptions.push({ label: `${i} kHz`, value: i });
-    }
+    VALIDATION.MODELS.ACOUSTIC.sampleRates.forEach(value => tempFormSelectOptions.push({ label: `${value} kHz`, value }));
     return tempFormSelectOptions;
   }, []);
 
@@ -90,7 +88,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.models) {
+    if (api && api.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description, location, sampleRate } = values;
@@ -152,7 +150,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
