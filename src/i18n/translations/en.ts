@@ -12,6 +12,7 @@ export const en: ResourceLanguage = {
       edit: 'Edit',
       save: 'Save',
       discard: 'Discard',
+      dismiss: 'Dismiss',
       error: 'Error',
       success: 'Success',
       failure: 'Failure',
@@ -43,6 +44,10 @@ export const en: ResourceLanguage = {
     },
     profile: {
       fullName: '{{given}} {{family}}',
+    },
+    organization: {
+      rename: 'Rename',
+      renameOrg: 'Rename organization',
     },
     forms: {
       validation: {

@@ -12,6 +12,7 @@ export const ko: ResourceLanguage = {
       edit: 'Edit',
       save: 'Save',
       discard: 'Discard',
+      dismiss: 'Dismiss',
       error: '오류',
       success: 'Success',
       failure: 'Failure',
@@ -43,6 +44,10 @@ export const ko: ResourceLanguage = {
     },
     profile: {
       fullName: '{{family}} {{given}}',
+    },
+    organization: {
+      rename: 'Rename',
+      renameOrg: 'Rename organization',
     },
     forms: {
       validation: {

@@ -2,10 +2,16 @@ import { Button, Toolbar } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import { Link, useLocation } from "react-router-dom";
+import { PERMISSIONS } from '../../../constants';
+import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { PATHS } from '../../../types';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import { Organization, PATHS } from '../../../types';
+import log from '../../../util/log/logger';
+import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
 import MenuPopup from './components/MenuPopup';
 
 
@@ -21,14 +27,77 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Header: React.FunctionComponent<{}> = (props) => {
-  const classes = useStyles()
-  const location = useLocation()
+  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const api = React.useContext(ApiContext);
+  const location = useLocation();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
+  const [organization, setOrganization] = React.useState<Organization>({} as Organization);
+  const [organizationLoading, setOrganizationLoading] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const classes = useStyles();
+
+  const showDialog = () => setIsOpen(true);
+  const hideDialog = () => setIsOpen(false);
+
+  const getOrganization = async () => {
+    if (api && api.organizations) {
+      setOrganizationLoading(true);
+      const response = await api.organizations.getOrganization();
+      if (response.kind === 'ok') {
+        setOrganization(response.organization);
+      } else {
+        log({
+          file: `Header.tsx`,
+          caller: `getOrganization - failed to get organization`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+    setOrganizationLoading(false);
+  };
+
+  React.useEffect(() => {
+    if (user.organizationId) {
+      getOrganization();
+    } else {
+      setOrganizationLoading(false);
+    }
+  }, []);
+
+  const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
+  const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
+  const showRenameAlert = false;
+  // const showRenameAlert = canRename && shouldRenameOrganization;
+  React.useEffect(() => {
+    if (canRename && shouldRenameOrganization) {
+      const action = (key: number) => (
+        <>
+          <Button color='secondary' onClick={() => closeSnackbar(key)} >
+            {translate('common.dismiss')}
+          </Button>
+          <Button onClick={() => {
+            showDialog();
+            closeSnackbar(key);
+          }} >
+            {translate('organization.rename')}
+          </Button>
+        </>
+      );
+      enqueueSnackbar(translate('organization.renameOrg'), {
+        variant: 'warning',
+        persist: true,
+        action,
+      });
+    }
+  }, [canRename, shouldRenameOrganization]);
 
   const pathButtons: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
-    const path = PATHS[key]
-    const { to, title } = path
+    const path = PATHS[key];
+    const { to, title } = path;
     if (title && to) {
       let isCurrentPath = false;
       if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
@@ -36,9 +105,9 @@ const Header: React.FunctionComponent<{}> = (props) => {
       } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
         isCurrentPath = true;
       }
-      pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>)
+      pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>);
     }
-  })
+  });
 
   return (
     <AppBar
@@ -51,6 +120,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
         {pathButtons}
         <MenuPopup />
       </Toolbar>
+      <RenameOrganizationDialog open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
     </AppBar>
   );
 };
