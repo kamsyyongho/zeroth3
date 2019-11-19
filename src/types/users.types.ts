@@ -6,5 +6,16 @@ export interface User {
 
 export interface Role {
   id: number;
-  name: string;
+  name: ROLES;
+}
+
+/**
+ * the valid roles that can be assigned to a user
+ */
+export enum ROLES {
+  root = 'root',
+  admin = 'admin',
+  user = 'user',
+  manager = 'manager',
+  transcriber = 'transcriber',
 }

@@ -34,4 +34,10 @@ export const VALIDATION = {
       max: 100,
     },
   },
+  ORGANIZATION: {
+    name: {
+      min: 2,
+      max: 50,
+    }
+  }
 };

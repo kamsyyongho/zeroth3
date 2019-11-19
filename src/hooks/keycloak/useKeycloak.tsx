@@ -1,6 +1,7 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
 import ENV from '../../services/env';
+import { ROLES } from '../../types';
 import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
@@ -100,7 +101,20 @@ export const useKeycloak = () => {
     });
   }
 
-  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user };
+  /**
+   * checks if the user has the required permissions
+   */
+  const hasPermission = (permittedRoles: ROLES[]) => {
+    const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
+    for(let i = 0; i < roles.length; i++){
+      if(permittedRolesStrings.includes(roles[i])){
+        return true
+      }
+    }
+    return false;
+  }
+
+  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user, hasPermission };
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
 };
