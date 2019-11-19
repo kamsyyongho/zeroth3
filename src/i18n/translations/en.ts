@@ -14,6 +14,7 @@ export const en: ResourceLanguage = {
       discard: 'Discard',
       dismiss: 'Dismiss',
       error: 'Error',
+      reset: 'Reset',
       success: 'Success',
       failure: 'Failure',
       clear: 'Clear',
@@ -43,7 +44,10 @@ export const en: ResourceLanguage = {
       profile: 'Profile',
     },
     profile: {
+      user: 'User profile',
+      organization: 'Organization profile',
       fullName: '{{given}} {{family}}',
+      resetPassword: 'Reset password',
     },
     organization: {
       rename: 'Rename',

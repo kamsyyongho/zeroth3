@@ -14,6 +14,7 @@ export const ko: ResourceLanguage = {
       discard: 'Discard',
       dismiss: 'Dismiss',
       error: '오류',
+      reset: 'Reset',
       success: 'Success',
       failure: 'Failure',
       clear: 'Clear',
@@ -43,7 +44,10 @@ export const ko: ResourceLanguage = {
       profile: 'Profile',
     },
     profile: {
+      user: 'User profile',
+      organization: 'Organization profile',
       fullName: '{{family}} {{given}}',
+      resetPassword: 'Reset password',
     },
     organization: {
       rename: 'Rename',
