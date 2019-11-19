@@ -22,6 +22,7 @@ export const ko: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      forbidden: 'Forbidden',
     },
     table: {
       page: 'Page',
