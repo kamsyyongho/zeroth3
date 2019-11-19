@@ -110,7 +110,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.modelConfig) {
+    if (api && api.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description, selectedAcousticModelId, selectedLanguageModelId } = values;
@@ -194,7 +194,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

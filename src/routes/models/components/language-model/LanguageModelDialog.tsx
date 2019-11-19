@@ -99,8 +99,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if(values.selectedTopGraphId === null) return
-    if (api && api.models) {
+    if (values.selectedTopGraphId === null) return;
+    if (api && api.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
@@ -178,7 +178,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

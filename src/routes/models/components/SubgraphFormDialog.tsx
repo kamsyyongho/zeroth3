@@ -89,7 +89,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     if (shouldUploadFile && !validFilesCheck(files)) {
       return;
     }
-    if (api && api.models) {
+    if (api && api.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, text, isPublic } = values;
@@ -165,7 +165,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

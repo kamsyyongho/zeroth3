@@ -69,8 +69,8 @@ const Header: React.FunctionComponent<{}> = (props) => {
 
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
   const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
-  const showRenameAlert = false;
-  // const showRenameAlert = canRename && shouldRenameOrganization;
+
+  // to show a notification when the organization name should be changed
   React.useEffect(() => {
     if (canRename && shouldRenameOrganization) {
       const action = (key: number) => (

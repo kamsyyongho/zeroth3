@@ -85,7 +85,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.projects) {
+    if (api && api.projects && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, thresholdHc, thresholdLc } = values;
@@ -148,7 +148,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

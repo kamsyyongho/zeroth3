@@ -45,7 +45,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.IAM) {
+    if (api && api.IAM && !loading) {
       setLoading(true);
       setIsError(false);
       const response = await api.IAM.inviteUser(values.email.trim());
@@ -96,7 +96,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError}
+                disabled={!formikProps.isValid || isError || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
