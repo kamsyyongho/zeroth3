@@ -121,7 +121,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
         {pathButtons}
         <MenuPopup />
       </Toolbar>
-      <RenameOrganizationDialog open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <RenameOrganizationDialog name={organization.name} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
     </AppBar>
   );
 };
