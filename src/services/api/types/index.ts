@@ -6,4 +6,5 @@ export * from './models.types';
 export * from './organizations.types';
 export * from './projects.types';
 export * from './raw-data.types';
+export * from './user.types';
 export * from './voice-data.types';

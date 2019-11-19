@@ -11,6 +11,7 @@ import { RawData } from './controllers/raw-data';
 import { VoiceData } from './controllers/voice-data';
 import { GeneralApiProblem } from './types';
 import { Organizations } from './controllers/organizations';
+import { User } from './controllers/user';
 
 /**
  * Main class that manages all requests to the API.
@@ -68,9 +69,14 @@ export class Api {
   rawData: RawData | undefined;
 
   /**
-   * Subclass that organization data requests.
+   * Subclass that manages organization data requests.
    */
   organizations: Organizations | undefined;
+
+  /**
+   * Subclass that manages user data requests.
+   */
+  user: User | undefined;
 
   /**
    * Creates the api.
@@ -112,6 +118,7 @@ export class Api {
     this.voiceData = new VoiceData(this.apisauce, this.attemptToRefreshToken);
     this.rawData = new RawData(this.apisauce, this.attemptToRefreshToken);
     this.organizations = new Organizations(this.apisauce, this.attemptToRefreshToken);
+    this.user = new User(this.apisauce, this.attemptToRefreshToken);
     return true;
   }
 
