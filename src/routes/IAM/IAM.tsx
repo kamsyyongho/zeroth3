@@ -10,13 +10,16 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { ServerError } from '../../services/api/types';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { ProblemKind, ServerError } from '../../services/api/types';
 import { deleteUserResult } from '../../services/api/types/iam.types';
 import { Role, User } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { Forbidden } from '../shared/Forbidden';
 import { IAMTable } from './components/IAMTable';
 import { InviteFormDialog } from './components/InviteFormDialog';
 
@@ -38,10 +41,12 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export function IAM() {
   const api = React.useContext(ApiContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = React.useState<User[]>([]);
   const [roles, setRoles] = React.useState<Role[]>([]);
+  const [isForbidden, setIsForbidden] = React.useState(false);
   const [usersLoading, setUsersLoading] = React.useState(true);
   const [rolesLoading, setRolesLoading] = React.useState(true);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
@@ -49,17 +54,8 @@ export function IAM() {
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
 
-  //!
-  //TODO
-  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
-
-  const handleInviteOpen = () => {
-    setInviteOpen(true);
-  };
-  const handleInviteClose = () => {
-    setInviteOpen(false);
-  };
-
+  const classes = useStyles();
+  const theme = useTheme();
 
   React.useEffect(() => {
     const getUsers = async () => {
@@ -68,6 +64,9 @@ export function IAM() {
         if (response.kind === 'ok') {
           setUsers(response.users);
         } else {
+          if (response.kind === ProblemKind['forbidden']) {
+            setIsForbidden(true);
+          }
           log({
             file: `IAM.tsx`,
             caller: `getUsers - failed to get users`,
@@ -84,6 +83,9 @@ export function IAM() {
         if (response.kind === 'ok') {
           setRoles(response.roles);
         } else {
+          if (response.kind === ProblemKind['forbidden']) {
+            setIsForbidden(true);
+          }
           log({
             file: `IAM.tsx`,
             caller: `getRoles - failed to get roles`,
@@ -94,9 +96,25 @@ export function IAM() {
         setRolesLoading(false);
       }
     };
-    getUsers();
-    getRoles();
+    const hasAccess = hasPermission(PERMISSIONS.IAM);
+    if (hasAccess) {
+      getUsers();
+      getRoles();
+    } else {
+      setIsForbidden(true);
+    }
   }, []);
+
+  if (isForbidden) {
+    return <Forbidden />;
+  }
+
+  const handleInviteOpen = () => {
+    setInviteOpen(true);
+  };
+  const handleInviteClose = () => {
+    setInviteOpen(false);
+  };
 
   /**
    * remove the deleted users from all lists
@@ -182,9 +200,6 @@ export function IAM() {
     handleDeleteSuccess(successIds);
     setDeleteLoading(false);
   };
-
-  const classes = useStyles();
-  const theme = useTheme();
 
   const renderCardHeaderAction = () => (<Grid container spacing={1} >
     <Grid item >
