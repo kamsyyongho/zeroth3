@@ -70,6 +70,8 @@ const Header: React.FunctionComponent<{}> = (props) => {
   }, []);
 
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
+  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+
   const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
 
   // to show a notification when the organization name should be changed
@@ -97,16 +99,19 @@ const Header: React.FunctionComponent<{}> = (props) => {
 
   const pathButtons: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
-    const path = PATHS[key];
-    const { to, title } = path;
-    if (title && to) {
-      let isCurrentPath = false;
-      if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
-        isCurrentPath = true;
-      } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
-        isCurrentPath = true;
+    // to only display links for pages we are allowed to go to
+    if (key !== 'models' || (key === 'models' && canSeeModels)) {
+      const path = PATHS[key];
+      const { to, title } = path;
+      if (title && to) {
+        let isCurrentPath = false;
+        if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
+          isCurrentPath = true;
+        } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
+          isCurrentPath = true;
+        }
+        pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>);
       }
-      pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>);
     }
   });
 

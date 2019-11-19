@@ -16,7 +16,7 @@ export function Forbidden() {
     style={{ minHeight: '100vh' }}
   >
     <Grid item xs={3}>
-      <Typography variant='h4' >{translate('common.forbidden')}</Typography>
+      <Typography variant='h4' >{'403 '}{translate('common.forbidden')}</Typography>
     </Grid>
     <Grid item xs={3}>
       <Button color='primary' variant='contained' component={Link} to={PATHS.home.to || '/'} >{translate('path.home')}</Button>
