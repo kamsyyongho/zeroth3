@@ -1,7 +1,9 @@
 import { Button, Toolbar } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
+import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import CloseIcon from '@material-ui/icons/Close';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { Link, useLocation } from "react-router-dom";
@@ -75,19 +77,18 @@ const Header: React.FunctionComponent<{}> = (props) => {
     if (canRename && shouldRenameOrganization) {
       const action = (key: number) => (
         <>
-          <Button color='secondary' onClick={() => closeSnackbar(key)} >
-            {translate('common.dismiss')}
-          </Button>
-          <Button onClick={() => {
+          <Button color='secondary' onClick={() => {
             showDialog();
             closeSnackbar(key);
           }} >
             {translate('organization.rename')}
           </Button>
+          <IconButton color='inherit' onClick={() => closeSnackbar(key)}>
+            <CloseIcon />
+          </IconButton>
         </>
       );
       enqueueSnackbar(translate('organization.renameOrg'), {
-        variant: 'warning',
         persist: true,
         action,
       });
