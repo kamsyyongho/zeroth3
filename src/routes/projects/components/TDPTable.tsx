@@ -93,8 +93,8 @@ export function TDPTable(props: TDPTableProps) {
         accessor: 'status',
       },
       {
-        Header: 'TEST TRANSCRIBER',
-        accessor: 'transcriber',
+        Header: translate('forms.transcriber'),
+        accessor: (row: VoiceData) => row.transcriber || '',
       },
       {
         Header: translate('forms.transcript'),
@@ -208,7 +208,7 @@ export function TDPTable(props: TDPTableProps) {
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
       <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
-        {!!voiceData.length ? renderRows() : (
+        {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
               <Typography component='span' >{translate('table.noResults')}</Typography>
@@ -249,6 +249,6 @@ export function TDPTable(props: TDPTableProps) {
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => TDPTablePaginationActions({ ...paginationProps, pageCount })}
     />}
-    </>
+  </>
   );
 }
