@@ -17,7 +17,12 @@ import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageM
 import { AcousticModelDialog } from './AcousticModelDialog';
 import { AcousticModelGridItem } from './AcousticModelGridItem';
 
-export function AcousticModelGridList() {
+interface AcousticModelGridListProps {
+  canModify: boolean;
+}
+
+export function AcousticModelGridList(props: AcousticModelGridListProps) {
+  const { canModify } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -96,6 +101,7 @@ export function AcousticModelGridList() {
   }, [api]);
 
   const handleModelDelete = async () => {
+    if(!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteAcousticModelResult>[] = [];
@@ -164,6 +170,7 @@ export function AcousticModelGridList() {
     <AcousticModelGridItem
       key={index}
       model={model}
+      canModify={canModify}
       editOpen={editOpen}
       checkedModels={checkedModels}
       handleEditOpen={handleEditOpen}
@@ -190,7 +197,7 @@ export function AcousticModelGridList() {
             {renderModels()}
           </Grid>
         </CardContent>)}
-      <CardActions>
+      {canModify && <CardActions>
         {!!models.length && <Button
           disabled={!modelsToDelete.length}
           variant="contained"
@@ -213,7 +220,7 @@ export function AcousticModelGridList() {
         >
           {translate('models.tabs.acousticModel.create')}
         </Button>
-      </CardActions>
+      </CardActions>}
       <ConfirmationDialog
         destructive
         titleText={`${translate('models.tabs.acousticModel.delete', { count: modelsToDelete.length })}?`}

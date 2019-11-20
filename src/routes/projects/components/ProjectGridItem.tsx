@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ProjectGridItemProps {
   project: Project;
+  canModify: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
   handleEditOpen: (projectId: number) => void;
@@ -37,7 +38,7 @@ interface ProjectGridItemProps {
 
 
 export function ProjectGridItem(props: ProjectGridItemProps) {
-  const { project, editOpen, handleEditClose, handleEditOpen, checkedProjects, handleEditSuccess, handleProjectCheck } = props;
+  const { project, canModify, editOpen, handleEditClose, handleEditOpen, checkedProjects, handleEditSuccess, handleProjectCheck } = props;
   const classes = useStyles();
   const isOpen = !!editOpen[project.id];
   let isChecked = false;
@@ -52,12 +53,12 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
       projectToEdit={project}
     />
     <Card className={classes.card}>
-      <CardHeader title={project.name} action={<>
+      <CardHeader title={project.name} action={(canModify && <>
         <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleProjectCheck(project.id, event.target.checked)} />
         <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
           <EditIcon />
         </IconButton>
-      </>} />
+      </>)} />
       <CardActionArea component={Link} to={`${PATHS.project.function && PATHS.project.function(project.id)}`} >
         <CardContent>
           <Typography gutterBottom color="textPrimary" className={classes.text}>

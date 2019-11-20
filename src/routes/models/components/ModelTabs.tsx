@@ -14,6 +14,8 @@ import { TabPanel } from '../../shared/TabPanel';
 import { AcousticModelGridList } from './acoustic-model/AcousticModelGridList';
 import { LanguageModelGridList } from './language-model/LanguageModelGridList';
 import { SubGraphList } from './subgraph/SubGraphList';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import { PERMISSIONS } from '../../../constants';
 
 const STARTING_TAB_INDEX = 1;
 
@@ -22,10 +24,9 @@ export type CheckedSubGraphById = BooleanById;
 export function ModelTabs() {
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
-  const [shouldRenderAcousticTab, setShouldRenderAcousticTab] = React.useState(false);
-  const [shouldRenderLanguageTab, setShouldRenderLanguageTab] = React.useState(false);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([] as TopGraph[]);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([] as SubGraph[]);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
@@ -40,6 +41,9 @@ export function ModelTabs() {
   React.useEffect(() => {
     tabsThatShouldRender.add(activeTab);
   }, []);
+
+
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -76,6 +80,7 @@ export function ModelTabs() {
   };
 
   const handleSubGraphDelete = async () => {
+    if(!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteSubGraphResult>[] = [];
@@ -190,16 +195,18 @@ export function ModelTabs() {
         <Tab label={translate('models.tabs.languageModel.header')} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
-        {tabsThatShouldRender.has(0) && <AcousticModelGridList />}
+        {tabsThatShouldRender.has(0) && <AcousticModelGridList canModify={canModify} />}
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
         {tabsThatShouldRender.has(1) && <>
           <LanguageModelGridList
+            canModify={canModify}
             topGraphs={topGraphs}
             subGraphs={subGraphs}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
           />
           <SubGraphList
+            canModify={canModify}
             subGraphsLoading={subGraphsLoading}
             checkedSubGraphs={checkedSubGraphs}
             handleSubGraphCheck={handleSubGraphCheck}

@@ -5,8 +5,10 @@ import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { Link } from 'react-router-dom';
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
@@ -38,6 +40,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -52,6 +55,10 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
   const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
+
+  const classes = useStyles();
+
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig, isEdit?: boolean) => {
     if (isEdit) {
@@ -104,12 +111,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     }
     setModelConfigs(modelConfigsCopy);
   };
-
-  //!
-  //TODO
-  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
-
-  const classes = useStyles();
 
   React.useEffect(() => {
     const getProject = async () => {
@@ -225,13 +226,15 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         value: projectId,
         important: true,
       });
-    } else {
-      getProject();
-      getModelConfigs();
+    // these are only used for modifying data
+    } else if(canModify) {
       getTopGraphs();
       getSubGraphs();
       getLanguageModels();
       getAcousticModels();
+    } else {
+      getProject();
+      getModelConfigs();
     }
   }, [api, projectId, projectIdNumber]);
 
@@ -297,6 +300,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
       {isValidProject && <ModelConfigList
         projectId={projectIdNumber}
+        canModify={canModify}
         modelConfigs={modelConfigs}
         modelConfigsLoading={modelConfigsLoading}
         topGraphs={topGraphs}

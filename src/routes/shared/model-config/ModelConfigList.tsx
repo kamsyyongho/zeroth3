@@ -49,6 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export interface ModelConfigListProps {
   projectId: number;
+  canModify: boolean;
   modelConfigsLoading: boolean;
   modelConfigs: ModelConfig[];
   topGraphs: TopGraph[];
@@ -66,6 +67,7 @@ export interface ModelConfigListProps {
 export function ModelConfigList(props: ModelConfigListProps) {
   const {
     projectId,
+    canModify,
     modelConfigsLoading,
     modelConfigs,
     handleModelConfigUpdate,
@@ -182,11 +184,11 @@ export function ModelConfigList(props: ModelConfigListProps) {
           />
           <ListSubheader component='div' >{acousticModel.name}</ListSubheader>
           <ListSubheader component='div' >{languageModel.name}</ListSubheader>
-          <ListItemSecondaryAction>
+          {canModify && <ListItemSecondaryAction>
             <IconButton edge="end" aria-label="edit" onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleActionClick(event, modelConfig)} >
               <MoreVertIcon />
             </IconButton>
-          </ListItemSecondaryAction>
+          </ListItemSecondaryAction>}
         </ListItem>
         {renderItemMenu()}
       </Card>
@@ -206,7 +208,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
                 {renderListItems()}
               </List>
             </CardContent>
-            <CardActions>
+            {canModify && <CardActions>
               <Button
                 color="primary"
                 variant='contained'
@@ -215,7 +217,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
               >
                 {translate('modelConfig.create')}
               </Button>
-            </CardActions>
+            </CardActions>}
           </>)}
       </Card>
       <ModelConfigDialog

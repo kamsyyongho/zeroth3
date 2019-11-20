@@ -5,10 +5,11 @@ import { CheckedProjectsById } from '../Projects';
 import { ProjectGridItem } from './ProjectGridItem';
 
 interface ProjectGridListProps {
-  projects: Project[]
-  checkedProjects: CheckedProjectsById
-  setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>
-  onUpdate: (project: Project, isEdit?: boolean) => void
+  projects: Project[];
+  canModify: boolean;
+  checkedProjects: CheckedProjectsById;
+  setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>;
+  onUpdate: (project: Project, isEdit?: boolean) => void;
 }
 
 export interface EditOpenByProjectId {
@@ -16,7 +17,7 @@ export interface EditOpenByProjectId {
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
-  const { projects, checkedProjects, setCheckedProjects, onUpdate } = props;
+  const { projects, canModify, checkedProjects, setCheckedProjects, onUpdate } = props;
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
 
   const handleEditOpen = (projectId: number) => setEditOpen(prevOpen => {
@@ -41,6 +42,7 @@ export function ProjectGridList(props: ProjectGridListProps) {
     <ProjectGridItem
       key={index}
       project={project}
+      canModify={canModify}
       handleEditClose={handleEditClose}
       handleEditOpen={handleEditOpen}
       editOpen={editOpen}
