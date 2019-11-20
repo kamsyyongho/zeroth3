@@ -226,15 +226,15 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         value: projectId,
         important: true,
       });
-    // these are only used for modifying data
-    } else if(canModify) {
-      getTopGraphs();
-      getSubGraphs();
-      getLanguageModels();
-      getAcousticModels();
     } else {
       getProject();
       getModelConfigs();
+      if (canModify) {
+        getTopGraphs();
+        getSubGraphs();
+        getLanguageModels();
+        getAcousticModels();
+      }
     }
   }, [api, projectId, projectIdNumber]);
 

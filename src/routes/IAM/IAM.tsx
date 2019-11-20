@@ -57,26 +57,27 @@ export function IAM() {
   const classes = useStyles();
   const theme = useTheme();
 
-  React.useEffect(() => {
-    const getUsers = async () => {
-      if (api && api.IAM) {
-        const response = await api.IAM.getUsers();
-        if (response.kind === 'ok') {
-          setUsers(response.users);
-        } else {
-          if (response.kind === ProblemKind['forbidden']) {
-            setIsForbidden(true);
-          }
-          log({
-            file: `IAM.tsx`,
-            caller: `getUsers - failed to get users`,
-            value: response,
-            important: true,
-          });
+  const getUsers = async () => {
+    if (api && api.IAM) {
+      const response = await api.IAM.getUsers();
+      if (response.kind === 'ok') {
+        setUsers(response.users);
+      } else {
+        if (response.kind === ProblemKind['forbidden']) {
+          setIsForbidden(true);
         }
-        setUsersLoading(false);
+        log({
+          file: `IAM.tsx`,
+          caller: `getUsers - failed to get users`,
+          value: response,
+          important: true,
+        });
       }
-    };
+      setUsersLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
     const getRoles = async () => {
       if (api && api.IAM) {
         const response = await api.IAM.getRoles();
@@ -114,6 +115,9 @@ export function IAM() {
   };
   const handleInviteClose = () => {
     setInviteOpen(false);
+    // to get an updated list
+    // the new user will immediately be available
+    getUsers();
   };
 
   /**
