@@ -99,6 +99,7 @@ export const ko: ResourceLanguage = {
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',
+      transcriber: 'Transcriber',
       none: 'None',
       today: '오늘',
     },
@@ -121,8 +122,12 @@ export const ko: ResourceLanguage = {
       apiSecret: 'API Secret',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+    },
+    TDP: {
       TDP: 'TDP',
       uploadData: 'Upload data',
+    },
+    editor: {
       editor: 'Editor',
     },
     modelConfig: {

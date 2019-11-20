@@ -139,7 +139,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       onClose={handleClose}
       aria-labelledby="audio-upload-dialog"
     >
-      <DialogTitle id="audio-upload-dialog">{translate(`projects.uploadData`)}</DialogTitle>
+      <DialogTitle id="audio-upload-dialog">{translate(`TDP.uploadData`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

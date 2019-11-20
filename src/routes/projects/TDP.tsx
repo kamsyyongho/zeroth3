@@ -207,7 +207,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         rawTitle: project.name,
       },
       {
-        rawTitle: `${translate('projects.TDP')}`,
+        rawTitle: `${translate('TDP.TDP')}`,
       },
     ];
     return (<Card>

@@ -769,10 +769,10 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     },
     {
       to: PATHS.TDP.function && PATHS.TDP.function(projectId),
-      rawTitle: `${translate('projects.TDP')}`,
+      rawTitle: `${translate('TDP.TDP')}`,
     },
     {
-      rawTitle: `${translate('projects.editor')}`,
+      rawTitle: `${translate('editor.editor')}`,
     },
   ];
 

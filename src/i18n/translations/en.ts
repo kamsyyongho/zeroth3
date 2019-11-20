@@ -97,6 +97,7 @@ export const en: ResourceLanguage = {
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',
+      transcriber: 'Transcriber',
       none: 'None',
       today: 'Today',
     },
@@ -119,8 +120,12 @@ export const en: ResourceLanguage = {
       apiSecret: 'API Secret',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+    },
+    TDP: {
       TDP: 'TDP',
       uploadData: 'Upload data',
+    },
+    editor: {
       editor: 'Editor',
     },
     modelConfig: {
