@@ -4,7 +4,6 @@ export interface VoiceData {
   sessionId: string;
   modelConfigId: number;
   length: number;
-  score: number;
   status: CONTENT_STATUS;
   /**
    * name of the user that transcribed

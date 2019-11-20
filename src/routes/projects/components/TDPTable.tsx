@@ -94,6 +94,7 @@ export function TDPTable(props: TDPTableProps) {
       },
       {
         Header: translate('forms.transcriber'),
+        // to only display if it has a value
         accessor: (row: VoiceData) => row.transcriber || '',
       },
       {

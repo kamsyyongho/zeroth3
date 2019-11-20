@@ -58,16 +58,12 @@ export function TDPFilters(props: TDPFiltersProps) {
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
   const lengthMinText = translate("forms.validation.greaterEqualTo", { target: translate('forms.lengthMin'), value: VALIDATION.TDP.length.min });
-  const scoreMinText = translate("forms.validation.greaterEqualTo", { target: translate('forms.scoreMin'), value: VALIDATION.TDP.score.min });
-  const scoreMaxText = translate("forms.validation.lessEqualTo", { target: translate('forms.scoreMax'), value: VALIDATION.TDP.score.min });
 
   const formSchema = yup.object({
     startDate: yup.date().nullable().notRequired(),
     endDate: yup.date().nullable().notRequired(),
     maxLength: yup.number().typeError(numberText).integer(integerText).notRequired(),
     minLength: yup.number().typeError(numberText).integer(integerText).min(VALIDATION.TDP.length.min, lengthMinText).notRequired(),
-    maxScore: yup.number().typeError(numberText).integer(integerText).max(VALIDATION.TDP.score.max, scoreMaxText).notRequired(),
-    minScore: yup.number().typeError(numberText).integer(integerText).min(VALIDATION.TDP.score.min, scoreMinText).notRequired(),
     transcript: yup.string().notRequired(),
     status: yup.mixed().oneOf(CONTENT_STATUS_VALUES.concat([''])).notRequired(),
     modelConfigId: yup.mixed<number | ''>().notRequired(),
@@ -89,8 +85,6 @@ export function TDPFilters(props: TDPFiltersProps) {
       endDate,
       maxLength,
       minLength,
-      maxScore,
-      minScore,
       transcript,
       status,
       modelConfigId,
@@ -103,8 +97,6 @@ export function TDPFilters(props: TDPFiltersProps) {
       till,
       'length-max': maxLength,
       'length-min': minLength,
-      'score-max': maxScore,
-      'score-min': minScore,
       transcript,
       status: status === '' ? undefined : status,
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
@@ -198,26 +190,6 @@ export function TDPFilters(props: TDPFiltersProps) {
                       component={SelectFormField}
                       options={modelConfigFormSelectOptions}
                       label={translate("modelConfig.header")}
-                    />
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Field
-                      name='minScore'
-                      component={TextFormField}
-                      label={translate('forms.scoreMin')}
-                      placeholder={`${VALIDATION.TDP.score.min}`}
-                      type='number'
-                      variant="outlined"
-                      margin="normal"
-                    />
-                    <Field
-                      name='maxScore'
-                      component={TextFormField}
-                      label={translate('forms.scoreMax')}
-                      placeholder={`${VALIDATION.TDP.score.max}`}
-                      type='number'
-                      variant="outlined"
-                      margin="normal"
                     />
                   </Grid>
                 </Grid>
