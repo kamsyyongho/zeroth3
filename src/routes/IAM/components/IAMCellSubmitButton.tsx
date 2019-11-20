@@ -74,7 +74,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
   const addRoles = async (rolesToAdd: number[]) => {
     if (api && api.IAM) {
       setIsAddLoading(true);
-      const response = await api.IAM.assignRoles(user.id, rolesToAdd);
+      const response = await api.IAM.assignRolesToUser(user.id, rolesToAdd);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
@@ -119,7 +119,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
     let roleIdIndexCounter = 0;
 
     const responseArray = await Promise.all(deleteRolePromises);
-    let snackbarError: SnackbarError = {} as SnackbarError;
+    const snackbarError: SnackbarError = {} as SnackbarError;
     responseArray.forEach(response => {
       if (response.kind === "ok") {
         // to build the array of deleted user role IDs
@@ -186,7 +186,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
         <MoonLoader
           sizeUnit={"px"}
           size={15}
-          color={'#ffff'}
+          color={theme.palette.common.white}
           loading={true}
         /> : <CheckIcon />}
     >{translate("common.submit")}</Button>

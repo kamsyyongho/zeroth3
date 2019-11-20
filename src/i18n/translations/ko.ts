@@ -111,6 +111,7 @@ export const ko: ResourceLanguage = {
       inviteUser: 'Invite user',
       deleteUser: 'Delete user',
       deleteUser_plural: 'Delete {{count}} users',
+      resetUserPassword: `({{email}}) - Reset password`,
     },
     projects: {
       createProject: 'Create project',

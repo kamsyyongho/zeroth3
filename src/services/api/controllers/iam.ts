@@ -2,7 +2,7 @@ import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Role, User } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  assignRolesResult,
+  assignRolesToUserResult,
   deleteRoleResult,
   deleteUserResult,
   GeneralApiProblem,
@@ -10,6 +10,7 @@ import {
   getUserResult,
   inviteUserResult,
   ProblemKind,
+  resetPasswordOfUserResult,
   ServerError,
 } from '../types';
 import { ParentApi } from './parent-api';
@@ -118,10 +119,10 @@ export class IAM extends ParentApi {
    * @param userId
    * @param roleIds
    */
-  async assignRoles(
+  async assignRolesToUser(
     userId: number,
     roleIds: number[]
-  ): Promise<assignRolesResult> {
+  ): Promise<assignRolesToUserResult> {
     // compile data
     const request = {
       items: roleIds,
@@ -137,7 +138,7 @@ export class IAM extends ParentApi {
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
           return this.attemptToRefreshToken(
-            () => this.assignRoles(userId, roleIds),
+            () => this.assignRolesToUser(userId, roleIds),
             problem
           );
         }
@@ -201,6 +202,34 @@ export class IAM extends ParentApi {
         if (problem.kind === ProblemKind['unauthorized']) {
           return this.attemptToRefreshToken(
             () => this.inviteUser(email),
+            problem
+          );
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Reset a user's password on behalf of the user
+   * @param userId
+   */
+  async resetPasswordOfUser(
+    userId: number
+  ): Promise<resetPasswordOfUserResult> {
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.post(`/iam/users/${userId}/reset-password`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          return this.attemptToRefreshToken(
+            () => this.resetPasswordOfUser(userId),
             problem
           );
         }

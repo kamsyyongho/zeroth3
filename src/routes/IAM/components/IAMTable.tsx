@@ -12,6 +12,7 @@ import { IAMCellCheckbox } from './IAMCellCheckbox';
 import { IAMCellMultiSelect } from './IAMCellMultiSelect';
 import { IAMCellSubmitButton } from './IAMCellSubmitButton';
 import { IAMHeaderCheckbox } from './IAMHeaderCheckbox';
+import { IAMCellResetPasswordButton } from './IAMCellResetPasswordButton';
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IAMTableProps {
@@ -78,6 +79,11 @@ export function IAMTable(props: IAMTableProps) {
         Header: ' ',
         accessor: (row: User) => row,
         Cell: (data: CellProps<User>) => IAMCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess }),
+      },
+      {
+        Header: '  ',
+        accessor: (row: User) => row,
+        Cell: (data: CellProps<User>) => IAMCellResetPasswordButton({ cellData: data }),
       },
     ],
     [users, roles, language, allChecked, selectedRoles]
