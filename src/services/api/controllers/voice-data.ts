@@ -5,7 +5,6 @@ import {
   confirmDataResult,
   fetchUnconfirmedDataResult,
   FetchUnconfirmedQuery,
-  GeneralApiProblem,
   getAssignedDataResult,
   getSegmentsDataResult,
   ProblemKind,
@@ -35,14 +34,8 @@ export class VoiceData extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -86,10 +79,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.searchData(projectId, requestOptions),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -134,10 +124,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getAssignedData(projectId, requestOptions),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -168,10 +155,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.confirmData(projectId, dataId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -203,10 +187,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.fetchUnconfirmedData(projectId, modelConfigId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -231,10 +212,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getSegments(projectId, dataId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -275,11 +253,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () =>
-              this.updateSegment(projectId, dataId, segmentId, wordAlignments),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -310,10 +284,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.updateSegments(projectId, dataId, segments),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -348,10 +319,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.splitSegment(projectId, dataId, segmentId, splitIndex),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -393,16 +361,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () =>
-              this.mergeTwoSegments(
-                projectId,
-                dataId,
-                firstSegmentId,
-                secondSegmentId
-              ),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -414,5 +373,80 @@ export class VoiceData extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Manually updates the status of
+   * @param projectId
+   * @param dataId
+   */
+  async updateStatus(
+    projectId: number,
+    dataId: number
+  ): Promise<confirmDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/confirm`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Confirms and locks the voice data
+   * @param projectId
+   * @param dataId
+   */
+  async assignUnconfirmedDataToTranscriber(
+    projectId: number,
+    dataId: number
+  ): Promise<confirmDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/confirm`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Confirms and locks the voice data
+   * @param projectId
+   * @param dataId
+   */
+  async rateTranscript(
+    projectId: number,
+    dataId: number
+  ): Promise<confirmDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/confirm`
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 }

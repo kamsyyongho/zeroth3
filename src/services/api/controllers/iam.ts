@@ -5,7 +5,6 @@ import {
   assignRolesToUserResult,
   deleteRoleResult,
   deleteUserResult,
-  GeneralApiProblem,
   getRolesResult,
   getUserResult,
   inviteUserResult,
@@ -24,14 +23,8 @@ export class IAM extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -47,7 +40,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(() => this.getUsers(), problem);
+          this.logout();
         }
         return problem;
       }
@@ -74,7 +67,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(() => this.getRoles(), problem);
+          this.logout();
         }
         return problem;
       }
@@ -103,10 +96,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.deleteUser(userId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -137,10 +127,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.assignRolesToUser(userId, roleIds),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -170,10 +157,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.deleteRole(userId, roleId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -200,10 +184,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.inviteUser(email),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -228,10 +209,7 @@ export class IAM extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.resetPasswordOfUser(userId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }

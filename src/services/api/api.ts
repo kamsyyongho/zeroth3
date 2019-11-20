@@ -1,4 +1,5 @@
 import { ApiResponse, ApisauceInstance, create, HEADERS } from 'apisauce';
+import { AxiosRequestConfig } from 'axios';
 import { KeycloakInstance } from 'keycloak-js';
 import log from '../../util/log/logger';
 import ENV from '../env/index';
@@ -6,12 +7,11 @@ import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { IAM } from './controllers/iam';
 import { ModelConfig } from './controllers/model-config';
 import { Models } from './controllers/models';
+import { Organizations } from './controllers/organizations';
 import { Projects } from './controllers/projects';
 import { RawData } from './controllers/raw-data';
-import { VoiceData } from './controllers/voice-data';
-import { GeneralApiProblem } from './types';
-import { Organizations } from './controllers/organizations';
 import { User } from './controllers/user';
+import { VoiceData } from './controllers/voice-data';
 
 /**
  * Main class that manages all requests to the API.
@@ -102,23 +102,21 @@ export class Api {
       timeout: this.config.timeout,
       headers: this.generateHeader(),
     });
-    // verify valid keys
-    this.apisauce.addMonitor(this.checkTokenValidity);
+
+    // interceptor to refresh token on every request
+    this.apisauce.axiosInstance.interceptors.request.use(this.tokenInterceptor);
     // log all responses
     if (!ENV.isProduction) {
       this.apisauce.addMonitor(this.responseMonitor);
     }
-    this.IAM = new IAM(this.apisauce, this.attemptToRefreshToken);
-    this.projects = new Projects(this.apisauce, this.attemptToRefreshToken);
-    this.models = new Models(this.apisauce, this.attemptToRefreshToken);
-    this.modelConfig = new ModelConfig(
-      this.apisauce,
-      this.attemptToRefreshToken
-    );
-    this.voiceData = new VoiceData(this.apisauce, this.attemptToRefreshToken);
-    this.rawData = new RawData(this.apisauce, this.attemptToRefreshToken);
-    this.organizations = new Organizations(this.apisauce, this.attemptToRefreshToken);
-    this.user = new User(this.apisauce, this.attemptToRefreshToken);
+    this.IAM = new IAM(this.apisauce, this.logout);
+    this.projects = new Projects(this.apisauce, this.logout);
+    this.models = new Models(this.apisauce, this.logout);
+    this.modelConfig = new ModelConfig(this.apisauce, this.logout);
+    this.voiceData = new VoiceData(this.apisauce, this.logout);
+    this.rawData = new RawData(this.apisauce, this.logout);
+    this.organizations = new Organizations(this.apisauce, this.logout);
+    this.user = new User(this.apisauce, this.logout);
     return true;
   }
 
@@ -193,30 +191,11 @@ export class Api {
   }
 
   /**
-   * Handler that is passed down the the child api controllers
-   * @param callback - the callback to retry after refresh
-   * @param responseProblem - the original server response
-   */
-  private attemptToRefreshToken = <T>(
-    callback: () => T,
-    responseProblem: GeneralApiProblem
-  ): Promise<GeneralApiProblem | T> => {
-    return this.refreshTokenWhenUnauthorized(callback, responseProblem);
-  };
-
-  /**
-   * Attempts to refresh the auth token if after getting an 'unauthorized' response
-   * - logs out if it fails to refresh
-   * @param callback - the callback to retry after refresh
-   * @param responseProblem - the original server response
+   * Updates the keycloak authorization token
    * @param minValidity - in seconds
    */
-  private refreshTokenWhenUnauthorized<T>(
-    callback: () => T,
-    responseProblem: GeneralApiProblem,
-    minValidity = 60
-  ): Promise<GeneralApiProblem | T> {
-    return new Promise(resolve => {
+  private refreshToken(minValidity = 60): Promise<void> {
+    return new Promise((resolve, reject) => {
       this.keycloak &&
         this.keycloak
           .updateToken(minValidity)
@@ -224,58 +203,44 @@ export class Api {
             if (refreshed) {
               log({
                 file: `api.ts`,
-                caller: `refreshTokenWhenUnauthorized - Token refreshed`,
+                caller: `refreshToken - Token refreshed`,
                 value: refreshed,
                 important: true,
               });
               this.updateAuthToken();
             }
-            resolve(callback());
+            resolve();
           })
           .error(() => {
             log({
               file: `api.ts`,
-              caller: `refreshTokenWhenUnauthorized - FAILED TO REFRESH TOKEN`,
-              value: responseProblem,
+              caller: `refreshToken - FAILED TO REFRESH TOKEN`,
+              value: 'FAILED TO REFRESH TOKEN',
               important: true,
             });
             this.logout();
+            reject();
           });
     });
   }
 
   /**
    * Interceptor that will refresh token if almost expired
-   * @param response from `apisauce` - required for apisauce monitors
-   * @param minValidity - in seconds
+   * @param config
+   * @returns the updated config
    */
-  private checkTokenValidity(
-    response: ApiResponse<unknown, unknown>,
-    minValidity = 60
-  ) {
-    this.keycloak &&
-      this.keycloak
-        .updateToken(minValidity)
-        .success((refreshed: boolean) => {
-          if (refreshed) {
-            log({
-              file: `api.ts`,
-              caller: `checkTokenValidity - Token refreshed`,
-              value: refreshed,
-              api: true,
-            });
-            this.updateAuthToken();
-          }
-        })
-        .error(() => {
-          log({
-            file: `api.ts`,
-            caller: `checkTokenValidity - FAILED TO REFRESH TOKEN`,
-            value: 'FAILED TO REFRESH TOKEN',
-            important: true,
-          });
-        });
-  }
+  private tokenInterceptor = (config: AxiosRequestConfig) => {
+    this.refreshToken()
+      .then(() => {
+        if (this.keycloak) {
+          const { token } = this.keycloak;
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return Promise.resolve(config);
+      })
+      .catch(() => this.logout());
+    return Promise.resolve(config);
+  };
 
   /**
    * Gets the current header that is being used for API calls

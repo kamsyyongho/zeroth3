@@ -22,12 +22,9 @@ export class Organizations extends ParentApi {
    */
   constructor(
     apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
+    logout: () => void,
   ) {
-    super(apisauce, attemptToRefreshToken);
+    super(apisauce, logout);
   }
 
   /**
@@ -42,10 +39,7 @@ export class Organizations extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getOrganization(),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -78,10 +72,7 @@ export class Organizations extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.renameOrganization(name),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
