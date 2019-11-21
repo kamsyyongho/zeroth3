@@ -14,7 +14,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult, VoiceDataResults } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SnackbarError } from '../../types';
+import { ModelConfig, PATHS, Project, SnackbarError, VoiceData } from '../../types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { AudioUploadDialog } from './components/AudioUploadDialog';
@@ -181,6 +181,17 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     }
   };
 
+  /**
+   * Updates a single item after updating
+   */
+  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1, voiceData);
+      return {...prevResults, content: updatedContent}
+    })
+  }
+
   const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
       const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
@@ -260,6 +271,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             onlyAssignedData={onlyAssignedData}
+            handleVoiceDataUpdate={handleVoiceDataUpdate}
             loading={voiceDataLoading}
           />
         }

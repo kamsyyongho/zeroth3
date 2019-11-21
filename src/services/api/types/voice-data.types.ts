@@ -78,10 +78,8 @@ export interface SplitSegmentQuery {
   'split-index': number;
 }
 
-export interface UpdateStatusQuery {
-  dto: {
-    status: CONTENT_STATUS;
-  };
+export interface UpdateStatusRequest {
+  status: CONTENT_STATUS;
 }
 
 export interface AssignUnconfirmedQuery {

@@ -15,6 +15,7 @@ import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types
 import { VoiceData } from '../../../types';
 import { PATHS } from '../../../types/path.types';
 import { ModelConfigsById } from '../TDP';
+import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
@@ -26,6 +27,7 @@ interface TDPTableProps {
   onlyAssignedData: boolean;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
+  handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -35,7 +37,16 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPTable(props: TDPTableProps) {
-  const { projectId, projectName, voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
+  const {
+    projectId,
+    projectName,
+    voiceDataResults,
+    modelConfigsById,
+    onlyAssignedData,
+    loading,
+    getVoiceData,
+    handleVoiceDataUpdate,
+  } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
   const history = useHistory();
@@ -59,6 +70,10 @@ export function TDPTable(props: TDPTableProps) {
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
     return modelConfigsById[id].name;
+  };
+
+  const renderStatus = (cellData: CellProps<VoiceData>) => {
+    return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
   };
 
   const renderCreatedAt = (cellData: CellProps<VoiceData>) => {
@@ -91,6 +106,7 @@ export function TDPTable(props: TDPTableProps) {
       {
         Header: translate('forms.status'),
         accessor: 'status',
+        Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
       {
         Header: translate('forms.transcriber'),

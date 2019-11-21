@@ -30,7 +30,7 @@ import {
   AssignUnconfirmedQuery,
   assignUnconfirmedResult,
   RateTranscriptQuery,
-  UpdateStatusQuery,
+  UpdateStatusRequest,
   updateStatusResult,
 } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
@@ -396,16 +396,14 @@ export class VoiceData extends ParentApi {
     dataId: number,
     status: CONTENT_STATUS
   ): Promise<updateStatusResult> {
-    const params: UpdateStatusQuery = {
-      dto: {
-        status,
-      },
+    // compile data
+    const request: UpdateStatusRequest = {
+      status,
     };
     const response = await this.apisauce.put<IVoiceData, ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/status`,
-      null,
-      { params }
+      request
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
