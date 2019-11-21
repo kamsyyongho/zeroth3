@@ -29,6 +29,7 @@ interface TDPFiltersProps {
 const useStyles = makeStyles(theme => ({
   root: {
     background: theme.palette.background.default,
+    marginBottom: 1,
   },
   heading: {
     marginLeft: 15,
@@ -105,7 +106,12 @@ export function TDPFilters(props: TDPFiltersProps) {
   };
 
   return (
-    <Formik isInitialValid initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
+    <Formik
+      isInitialValid
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={formSchema}
+    >
       {(formikProps) => (
         <ExpansionPanel className={classes.root}>
           <ExpansionPanelSummary

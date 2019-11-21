@@ -205,7 +205,15 @@ export function TDPTable(props: TDPTableProps) {
     });
 
   return (<>
-    {!onlyAssignedData && <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />}
+    {!onlyAssignedData &&
+      <div style={{ marginBottom: 1 }}>
+        <TDPFilters
+          updateVoiceData={handleFilterUpdate}
+          loading={loading}
+          modelConfigsById={modelConfigsById}
+        />
+      </div>
+    }
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
       <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
