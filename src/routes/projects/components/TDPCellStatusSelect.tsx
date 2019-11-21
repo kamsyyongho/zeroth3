@@ -106,7 +106,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
       direction='row'
       alignContent='center'
       alignItems='center'
-      justify='center'
+      justify='flex-start'
     >
       <FormControl className={classes.formControl} >
         <Select

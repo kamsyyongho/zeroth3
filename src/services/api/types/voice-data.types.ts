@@ -88,10 +88,8 @@ export interface AssignUnconfirmedQuery {
     voiceDataIds: number[];
   };
 }
-export interface RateTranscriptQuery {
-  dto: {
-    rating: number;
-  };
+export interface RateTranscriptRequest {
+  rating: number;
 }
 
 export interface MergeTwoSegmentsRequest {

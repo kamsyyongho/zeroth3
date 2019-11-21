@@ -10,6 +10,7 @@ export interface VoiceData {
    */
   transcriber: string;
   transcript: string;
+  transcriptionRating: number;
   audioUrl: string;
 }
 

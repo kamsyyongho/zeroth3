@@ -29,7 +29,7 @@ import {
 import {
   AssignUnconfirmedQuery,
   assignUnconfirmedResult,
-  RateTranscriptQuery,
+  RateTranscriptRequest,
   UpdateStatusRequest,
   updateStatusResult,
 } from '../types/voice-data.types';
@@ -464,23 +464,21 @@ export class VoiceData extends ParentApi {
    * Submits a rating for the target transcript data
    * @param projectId
    * @param dataId
-   * @param rating
+   * @param rating - <= 1 || >= 5
    */
   async rateTranscript(
     projectId: number,
     dataId: number,
     rating: number
   ): Promise<confirmDataResult> {
-    const params: RateTranscriptQuery = {
-      dto: {
-        rating,
-      },
+    // compile data
+    const request: RateTranscriptRequest = {
+      rating,
     };
     const response = await this.apisauce.put<undefined, ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/rate`,
-      null,
-      { params }
+      request
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
