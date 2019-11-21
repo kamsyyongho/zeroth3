@@ -149,7 +149,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       getVoiceData();
       getModelConfigs();
     }
-  }, [api, getVoiceData, projectId, projectIdNumber]);
+  }, []);
 
   const handleAssignSubmit = async () => {
     if (!selectedModelConfigId) return;
@@ -188,9 +188,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     setVoiceDataResults(prevResults => {
       const updatedContent = [...prevResults.content];
       updatedContent.splice(dataIndex, 1, voiceData);
-      return {...prevResults, content: updatedContent}
-    })
-  }
+      return { ...prevResults, content: updatedContent };
+    });
+  };
 
   const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
