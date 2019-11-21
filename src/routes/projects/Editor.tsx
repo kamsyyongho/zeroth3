@@ -29,7 +29,9 @@ import log from '../../util/log/logger';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
+import { StarRating } from '../shared/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
+import { CONTENT_STATUS } from '../../types';
 
 
 interface EditorProps {
@@ -172,6 +174,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
    * used to keep track of which segments are selected for merging
    */
   const segmentMergeIndexes = React.useMemo(() => new Set<number>(), []);
+
+  /**
+   * Only `CONFIRMED` data can be rated, so we won't show if not
+   */
+  const ratingAvailable = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, []);
 
   /**
    * navigates to the TDP page after confirming data
@@ -792,6 +799,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.5), minHeight: 250 }}>
+
+        {ratingAvailable && <StarRating 
+          voiceData={voiceData}
+          projectId={projectIdNumber}
+        />}
           <Button
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"
