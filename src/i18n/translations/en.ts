@@ -23,6 +23,7 @@ export const en: ResourceLanguage = {
       score: 'Score',
       upload: 'Upload',
       forbidden: 'Forbidden',
+      view: 'View',
     },
     table: {
       page: 'Page',

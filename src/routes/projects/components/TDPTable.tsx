@@ -1,15 +1,19 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import LaunchIcon from '@material-ui/icons/Launch';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
+import { PERMISSIONS } from '../../../constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
 import { VoiceData } from '../../../types';
@@ -49,6 +53,7 @@ export function TDPTable(props: TDPTableProps) {
   } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const history = useHistory();
   const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
@@ -56,6 +61,8 @@ export function TDPTable(props: TDPTableProps) {
 
   const classes = useStyles();
   const theme = useTheme();
+
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   /**
    * navigates to the the editor
@@ -73,6 +80,10 @@ export function TDPTable(props: TDPTableProps) {
   };
 
   const renderStatus = (cellData: CellProps<VoiceData>) => {
+    // to only make editable when showing all
+    if (loading || onlyAssignedData) {
+      return cellData.cell.value;
+    }
     return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
   };
 
@@ -185,6 +196,9 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
+      {canModify && !onlyAssignedData && <TableCell key={`column-view`}>
+        {translate('common.view')}
+      </TableCell>}
       {headerGroup.headers.map((column, idx) => (
         renderHeaderCell(column, idx)
       ))}
@@ -201,11 +215,22 @@ export function TDPTable(props: TDPTableProps) {
       prepareRow(row);
       return (
         <TableRow
-          hover={onlyAssignedData}
-          onClick={() => onlyAssignedData ? handleRowClick(row.original) : {}}
+          hover={(onlyAssignedData || !canModify)}
+          onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
           key={`row-${rowIndex}`}
           {...row.getRowProps()}
         >
+          {canModify && !onlyAssignedData && (
+            <TableCell key={`cell-view`}>
+              <IconButton
+                color='primary'
+                size='medium'
+                aria-label="open"
+                onClick={() => handleRowClick(row.original)}
+              >
+                <LaunchIcon />
+              </IconButton>
+            </TableCell>)}
           {row.cells.map((cell, cellIndex) => {
             return (
               <TableCell
@@ -232,7 +257,7 @@ export function TDPTable(props: TDPTableProps) {
     }
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
-      <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
+      <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
