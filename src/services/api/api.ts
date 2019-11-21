@@ -194,7 +194,7 @@ export class Api {
    * Updates the keycloak authorization token
    * @param minValidity - in seconds
    */
-  private refreshToken(minValidity = 60): Promise<void> {
+  private refreshToken(minValidity = 5): Promise<void> {
     return new Promise((resolve, reject) => {
       this.keycloak &&
         this.keycloak
@@ -229,17 +229,13 @@ export class Api {
    * @param config
    * @returns the updated config
    */
-  private tokenInterceptor = (config: AxiosRequestConfig) => {
-    this.refreshToken()
-      .then(() => {
-        if (this.keycloak) {
-          const { token } = this.keycloak;
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return Promise.resolve(config);
-      })
-      .catch(() => this.logout());
-    return Promise.resolve(config);
+  private tokenInterceptor = async (config: AxiosRequestConfig) => {
+    await this.refreshToken();
+    if (this.keycloak) {
+      const { token } = this.keycloak;
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   };
 
   /**
