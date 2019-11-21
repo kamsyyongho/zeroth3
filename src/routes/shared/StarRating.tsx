@@ -89,7 +89,7 @@ export const StarRating = (props: StarRatingProps) => {
     >
       <Rating
         readOnly={!canRate}
-        value={rating}
+        value={rating || undefined}
         max={5}
         onChange={(value: number) => setRating(value)}
       />

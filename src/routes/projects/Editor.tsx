@@ -22,7 +22,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
@@ -31,7 +31,6 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { StarRating } from '../shared/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
-import { CONTENT_STATUS } from '../../types';
 
 
 interface EditorProps {
