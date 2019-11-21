@@ -2,7 +2,6 @@ import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Organization } from '../../../types/organizations.types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  GeneralApiProblem,
   getOrganizationResult,
   ProblemKind,
   RenameOrganizationRequest,
@@ -20,14 +19,8 @@ export class Organizations extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -42,10 +35,7 @@ export class Organizations extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getOrganization(),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -78,10 +68,7 @@ export class Organizations extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.renameOrganization(name),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }

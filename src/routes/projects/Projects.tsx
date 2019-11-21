@@ -10,8 +10,10 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
 import { deleteProjectResult } from '../../services/api/types/projects.types';
 import { Project } from '../../types';
@@ -39,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export function Projects() {
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
@@ -47,12 +50,13 @@ export function Projects() {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
 
+  const classes = useStyles();
+  const theme = useTheme();
+
   const handleCreateOpen = () => setCreateOpen(true);
   const handleCreateClose = () => setCreateOpen(false);
 
-  //!
-  //TODO
-  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
 
   React.useEffect(() => {
@@ -124,6 +128,7 @@ export function Projects() {
   };
 
   const handleProjectDelete = async () => {
+    if (!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteProjectResult>[] = [];
@@ -162,9 +167,6 @@ export function Projects() {
   };
 
 
-  const classes = useStyles();
-  const theme = useTheme();
-
   const renderCardHeaderAction = () => (<Grid container spacing={1} >
     {!!projects.length && <Grid item >
       <Button
@@ -198,13 +200,14 @@ export function Projects() {
     <Container maxWidth={false} className={classes.container} >
       <Card>
         <CardHeader
-          action={!projectsLoading && renderCardHeaderAction()}
+          action={canModify && !projectsLoading && renderCardHeaderAction()}
           title={translate("projects.header")}
         />
         <CardContent className={classes.cardContent} >
           {projectsLoading ? <BulletList /> :
             <ProjectGridList
               projects={projects}
+              canModify={canModify}
               checkedProjects={checkedProjects}
               setCheckedProjects={setCheckedProjects}
               onUpdate={handleProjectListUpdate}

@@ -22,6 +22,8 @@ export const ko: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      forbidden: 'Forbidden',
+      view: 'View',
     },
     table: {
       page: 'Page',
@@ -98,6 +100,7 @@ export const ko: ResourceLanguage = {
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',
+      transcriber: 'Transcriber',
       none: 'None',
       today: '오늘',
     },
@@ -109,6 +112,7 @@ export const ko: ResourceLanguage = {
       inviteUser: 'Invite user',
       deleteUser: 'Delete user',
       deleteUser_plural: 'Delete {{count}} users',
+      resetUserPassword: `({{email}}) - Reset password`,
     },
     projects: {
       createProject: 'Create project',
@@ -120,8 +124,12 @@ export const ko: ResourceLanguage = {
       apiSecret: 'API Secret',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+    },
+    TDP: {
       TDP: 'TDP',
       uploadData: 'Upload data',
+    },
+    editor: {
       editor: 'Editor',
     },
     modelConfig: {

@@ -1,20 +1,25 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import LaunchIcon from '@material-ui/icons/Launch';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
+import { PERMISSIONS } from '../../../constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
 import { VoiceData } from '../../../types';
 import { PATHS } from '../../../types/path.types';
 import { ModelConfigsById } from '../TDP';
+import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
@@ -26,6 +31,7 @@ interface TDPTableProps {
   onlyAssignedData: boolean;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
+  handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -35,9 +41,19 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPTable(props: TDPTableProps) {
-  const { projectId, projectName, voiceDataResults, modelConfigsById, onlyAssignedData, loading, getVoiceData } = props;
+  const {
+    projectId,
+    projectName,
+    voiceDataResults,
+    modelConfigsById,
+    onlyAssignedData,
+    loading,
+    getVoiceData,
+    handleVoiceDataUpdate,
+  } = props;
   const voiceData = voiceDataResults.content;
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const history = useHistory();
   const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
@@ -45,6 +61,8 @@ export function TDPTable(props: TDPTableProps) {
 
   const classes = useStyles();
   const theme = useTheme();
+
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   /**
    * navigates to the the editor
@@ -59,6 +77,14 @@ export function TDPTable(props: TDPTableProps) {
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
     return modelConfigsById[id].name;
+  };
+
+  const renderStatus = (cellData: CellProps<VoiceData>) => {
+    // to only make editable when showing all
+    if (loading || onlyAssignedData) {
+      return cellData.cell.value;
+    }
+    return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
   };
 
   const renderCreatedAt = (cellData: CellProps<VoiceData>) => {
@@ -91,10 +117,12 @@ export function TDPTable(props: TDPTableProps) {
       {
         Header: translate('forms.status'),
         accessor: 'status',
+        Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
       {
-        Header: 'TEST TRANSCRIBER',
-        accessor: 'transcriber',
+        Header: translate('forms.transcriber'),
+        // to only display if it has a value
+        accessor: (row: VoiceData) => row.transcriber || '',
       },
       {
         Header: translate('forms.transcript'),
@@ -168,6 +196,9 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
+      {canModify && !onlyAssignedData && <TableCell key={`column-view`}>
+        {translate('common.view')}
+      </TableCell>}
       {headerGroup.headers.map((column, idx) => (
         renderHeaderCell(column, idx)
       ))}
@@ -184,11 +215,22 @@ export function TDPTable(props: TDPTableProps) {
       prepareRow(row);
       return (
         <TableRow
-          hover={onlyAssignedData}
-          onClick={() => onlyAssignedData ? handleRowClick(row.original) : {}}
+          hover={(onlyAssignedData || !canModify)}
+          onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
           key={`row-${rowIndex}`}
           {...row.getRowProps()}
         >
+          {canModify && !onlyAssignedData && (
+            <TableCell key={`cell-view`}>
+              <IconButton
+                color='primary'
+                size='medium'
+                aria-label="open"
+                onClick={() => handleRowClick(row.original)}
+              >
+                <LaunchIcon />
+              </IconButton>
+            </TableCell>)}
           {row.cells.map((cell, cellIndex) => {
             return (
               <TableCell
@@ -204,11 +246,19 @@ export function TDPTable(props: TDPTableProps) {
     });
 
   return (<>
-    {!onlyAssignedData && <TDPFilters updateVoiceData={handleFilterUpdate} loading={loading} modelConfigsById={modelConfigsById} />}
+    {!onlyAssignedData &&
+      <div style={{ marginBottom: 1 }}>
+        <TDPFilters
+          updateVoiceData={handleFilterUpdate}
+          loading={loading}
+          modelConfigsById={modelConfigsById}
+        />
+      </div>
+    }
     <Table stickyHeader {...getTableProps()}>
       {renderHeader()}
-      <TableBody className={onlyAssignedData ? classes.clickableTableBody : undefined} >
-        {!!voiceData.length ? renderRows() : (
+      <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
+        {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell>
               <Typography component='span' >{translate('table.noResults')}</Typography>
@@ -249,6 +299,6 @@ export function TDPTable(props: TDPTableProps) {
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => TDPTablePaginationActions({ ...paginationProps, pageCount })}
     />}
-    </>
+  </>
   );
 }

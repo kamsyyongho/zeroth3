@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface LanguageModelGridItemProps {
   model: LanguageModel;
+  canModify: boolean;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   editOpen: EditOpenByModelId;
@@ -40,6 +41,7 @@ interface LanguageModelGridItemProps {
 export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
   const {
     model,
+    canModify,
     topGraphs,
     subGraphs,
     editOpen,
@@ -68,11 +70,11 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
       modelToEdit={model}
     />
     <Card className={classes.card}>
-      <CardHeader title={model.name} className={classes.text} action={<>
+      <CardHeader title={model.name} className={classes.text} action={(canModify && <>
         <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
           <EditIcon />
-        </IconButton></>} />
+        </IconButton></>)} />
       <CardActionArea>
         <CardContent>
           <Typography gutterBottom color="textSecondary" className={classes.text}>

@@ -22,6 +22,8 @@ export const en: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      forbidden: 'Forbidden',
+      view: 'View',
     },
     table: {
       page: 'Page',
@@ -96,6 +98,7 @@ export const en: ResourceLanguage = {
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',
+      transcriber: 'Transcriber',
       none: 'None',
       today: 'Today',
     },
@@ -107,6 +110,7 @@ export const en: ResourceLanguage = {
       inviteUser: 'Invite user',
       deleteUser: 'Delete user',
       deleteUser_plural: 'Delete {{count}} users',
+      resetUserPassword: `({{email}}) - Reset password`,
     },
     projects: {
       createProject: 'Create project',
@@ -118,8 +122,12 @@ export const en: ResourceLanguage = {
       apiSecret: 'API Secret',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+    },
+    TDP: {
       TDP: 'TDP',
       uploadData: 'Upload data',
+    },
+    editor: {
       editor: 'Editor',
     },
     modelConfig: {

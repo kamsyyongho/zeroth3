@@ -16,6 +16,7 @@ import { LanguageModelDialog } from './LanguageModelDialog';
 import { LanguageModelGridItem } from './LanguageModelGridItem';
 
 interface LanguageModelGridListProps {
+  canModify: boolean;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
@@ -26,7 +27,7 @@ export type EditOpenByModelId = BooleanById;
 export type CheckedModelById = BooleanById;
 
 export function LanguageModelGridList(props: LanguageModelGridListProps) {
-  const { topGraphs, subGraphs, handleSubGraphListUpdate } = props;
+  const { canModify, topGraphs, subGraphs, handleSubGraphListUpdate } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -124,6 +125,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   };
 
   const handleModelDelete = async () => {
+    if(!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteLanguageModelResult>[] = [];
@@ -170,6 +172,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     <LanguageModelGridItem
       key={index}
       model={model}
+      canModify={canModify}
       editOpen={editOpen}
       checkedModels={checkedModels}
       topGraphs={topGraphs}
@@ -202,7 +205,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
             {renderModels()}
           </Grid>
         </CardContent>)}
-      <CardActions>
+      {canModify && <CardActions>
         {!!models.length && <Button
           disabled={!modelsToDelete.length}
           variant="contained"
@@ -225,7 +228,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         >
           {translate('models.tabs.languageModel.create')}
         </Button>
-      </CardActions>
+      </CardActions>}
       <ConfirmationDialog
         destructive
         titleText={`${translate('models.tabs.languageModel.delete', { count: modelsToDelete.length })}?`}

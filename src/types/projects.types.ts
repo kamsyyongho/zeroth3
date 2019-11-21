@@ -9,8 +9,9 @@ export interface Project {
 }
 
 /**
- * The confidence threshold values
- * - `1 >=` threshold `<= 100`
+ * The confidence threshold value
+ * - float
+ * - `threshold >= 0`
  * - `thresholdHc` `>` `thresholdLc`
  */
 export type Threshold = number;

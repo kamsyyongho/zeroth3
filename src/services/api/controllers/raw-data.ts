@@ -1,7 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  GeneralApiProblem,
   getRawDataResult,
   ProblemKind,
   ServerError,
@@ -19,14 +18,8 @@ export class RawData extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -38,16 +31,13 @@ export class RawData extends ParentApi {
     const response = await this.apisauce.get<
       RawDataAdditionalProps,
       ServerError
-    >(`/projects/${projectId}/data/raw-data`);
+    >(`/projects/${projectId}/raw-data`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getRawData(projectId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -88,7 +78,7 @@ export class RawData extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      `/projects/${projectId}/data/raw`,
+      `/projects/${projectId}/raw-data`,
       request,
       config
     );
@@ -97,10 +87,7 @@ export class RawData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.uploadRawData(projectId, modelConfigId, files),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }

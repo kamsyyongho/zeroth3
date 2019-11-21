@@ -18,7 +18,6 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { postProjectResult, updateProjectResult } from '../../../services/api/types';
 import { Project, SnackbarError } from '../../../types';
 import log from '../../../util/log/logger';
-import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 
@@ -43,32 +42,24 @@ export function ProjectDialog(props: ProjectDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const formSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = [];
-    for (let i = VALIDATION.PROJECT.threshold.min; i <= VALIDATION.PROJECT.threshold.max; i++) {
-      tempFormSelectOptions.push({ label: `${i}`, value: i });
-    }
-    return tempFormSelectOptions;
-  }, []);
 
   // validation translated text
   const thresholdLcText = translate("forms.thresholdLc");
   const thresholdHcText = translate("forms.thresholdHc");
-  const integerText = translate("forms.validation.integer");
   const numberText = translate("forms.validation.number");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters' });
   const requiredTranslationText = translate("forms.validation.required");
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
-    thresholdLc: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).required(requiredTranslationText),
-    thresholdHc: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.PROJECT.threshold.min).max(VALIDATION.PROJECT.threshold.max).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).required(requiredTranslationText),
+    thresholdLc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).nullable().required(requiredTranslationText),
+    thresholdHc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).nullable().required(requiredTranslationText),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
-    thresholdLc: VALIDATION.PROJECT.threshold.min,
-    thresholdHc: VALIDATION.PROJECT.threshold.max,
+    thresholdLc: null,
+    thresholdHc: null,
   };
   if (projectToEdit) {
     initialValues = {
@@ -85,10 +76,12 @@ export function ProjectDialog(props: ProjectDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
+    const { thresholdHc, thresholdLc } = values;
+    if(thresholdHc === null || thresholdLc === null) return;
     if (api && api.projects && !loading) {
       setLoading(true);
       setIsError(false);
-      const { name, thresholdHc, thresholdLc } = values;
+      const { name } = values;
       let response: updateProjectResult | postProjectResult;
       if (isEdit && projectToEdit) {
         response = await api.projects.updateProject(name.trim(), thresholdHc, thresholdLc, projectToEdit.id);
@@ -137,10 +130,23 @@ export function ProjectDialog(props: ProjectDialogProps) {
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='thresholdLc' component={SelectFormField}
-                  options={formSelectOptions} label={thresholdLcText} errorOverride={isError} />
-                <Field name='thresholdHc' component={SelectFormField}
-                  options={formSelectOptions} label={thresholdHcText} errorOverride={isError} />
+                <Field
+                  name='thresholdLc'
+                  component={TextFormField}
+                  label={thresholdLcText}
+                  placeholder={`${VALIDATION.PROJECT.threshold.min}`}
+                  type='number'
+                  margin="normal"
+                  errorOverride={isError}
+                />
+                <Field
+                  name='thresholdHc'
+                  component={TextFormField}
+                  label={thresholdHcText}
+                  type='number'
+                  margin="normal"
+                  errorOverride={isError}
+                />
               </Form>
             </DialogContent>
             <DialogActions>

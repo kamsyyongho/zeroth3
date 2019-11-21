@@ -19,12 +19,13 @@ import { TextFormField } from './form-fields/TextFormField';
 
 interface RenameOrganizationDialogProps {
   open: boolean;
+  name: string;
   onSuccess: () => void;
   onClose: () => void;
 }
 
 export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
-  const { open, onSuccess, onClose } = props;
+  const { open, name, onSuccess, onClose } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -42,7 +43,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
-    name: "",
+    name: name || '',
   };
 
   const handleSubmit = async (values: FormValues) => {

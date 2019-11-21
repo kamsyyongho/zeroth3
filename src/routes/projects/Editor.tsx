@@ -22,13 +22,14 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
+import { StarRating } from '../shared/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
 
 
@@ -172,6 +173,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
    * used to keep track of which segments are selected for merging
    */
   const segmentMergeIndexes = React.useMemo(() => new Set<number>(), []);
+
+  /**
+   * Only `CONFIRMED` data can be rated, so we won't show if not
+   */
+  const ratingAvailable = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, []);
 
   /**
    * navigates to the TDP page after confirming data
@@ -769,10 +775,10 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     },
     {
       to: PATHS.TDP.function && PATHS.TDP.function(projectId),
-      rawTitle: `${translate('projects.TDP')}`,
+      rawTitle: `${translate('TDP.TDP')}`,
     },
     {
-      rawTitle: `${translate('projects.editor')}`,
+      rawTitle: `${translate('editor.editor')}`,
     },
   ];
 
@@ -792,6 +798,11 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.5), minHeight: 250 }}>
+
+        {ratingAvailable && <StarRating 
+          voiceData={voiceData}
+          projectId={projectIdNumber}
+        />}
           <Button
             disabled={saveSegmentsLoading || confirmSegmentsLoading}
             variant="outlined"

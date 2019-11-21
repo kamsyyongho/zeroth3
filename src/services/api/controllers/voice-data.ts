@@ -1,17 +1,24 @@
 import { ApisauceInstance } from 'apisauce';
-import { Segment, WordAlignment } from '../../../types';
+import {
+  CONTENT_STATUS,
+  Segment,
+  VoiceData as IVoiceData,
+  WordAlignment,
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   confirmDataResult,
   fetchUnconfirmedDataResult,
   FetchUnconfirmedQuery,
-  GeneralApiProblem,
   getAssignedDataResult,
   getSegmentsDataResult,
+  MergeTwoSegmentsRequest,
+  mergeTwoSegmentsResult,
   ProblemKind,
   SearchDataRequest,
   searchDataResult,
   ServerError,
+  SplitSegmentQuery,
   splitSegmentResult,
   UpdateSegmentRequest,
   updateSegmentResult,
@@ -20,9 +27,11 @@ import {
   VoiceDataResults,
 } from '../types';
 import {
-  MergeTwoSegmentsRequest,
-  mergeTwoSegmentsResult,
-  SplitSegmentQuery,
+  AssignUnconfirmedQuery,
+  assignUnconfirmedResult,
+  RateTranscriptRequest,
+  UpdateStatusRequest,
+  updateStatusResult,
 } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
@@ -35,14 +44,8 @@ export class VoiceData extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -86,10 +89,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.searchData(projectId, requestOptions),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -134,10 +134,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getAssignedData(projectId, requestOptions),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -168,10 +165,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.confirmData(projectId, dataId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -203,10 +197,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.fetchUnconfirmedData(projectId, modelConfigId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -231,10 +222,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getSegments(projectId, dataId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -275,11 +263,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () =>
-              this.updateSegment(projectId, dataId, segmentId, wordAlignments),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -310,10 +294,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.updateSegments(projectId, dataId, segments),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -348,10 +329,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.splitSegment(projectId, dataId, segmentId, splitIndex),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -393,16 +371,7 @@ export class VoiceData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () =>
-              this.mergeTwoSegments(
-                projectId,
-                dataId,
-                firstSegmentId,
-                secondSegmentId
-              ),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -414,5 +383,113 @@ export class VoiceData extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Manually updates the status of voice data
+   * @param projectId
+   * @param dataId
+   * @param status
+   */
+  async updateStatus(
+    projectId: number,
+    dataId: number,
+    status: CONTENT_STATUS
+  ): Promise<updateStatusResult> {
+    // compile data
+    const request: UpdateStatusRequest = {
+      status,
+    };
+    const response = await this.apisauce.put<IVoiceData, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/status`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const data = response.data as IVoiceData;
+      return { kind: 'ok', data };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Assigns data (one or multiple) to a specific user
+   * @param projectId
+   * @param userId
+   * @param voiceDataIds
+   */
+  async assignUnconfirmedDataToTranscriber(
+    projectId: number,
+    userId: number,
+    voiceDataIds: number[]
+  ): Promise<assignUnconfirmedResult> {
+    const params: AssignUnconfirmedQuery = {
+      dto: {
+        transcriberId: userId,
+        voiceDataIds,
+      },
+    };
+    const response = await this.apisauce.put<undefined, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/assign`,
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Submits a rating for the target transcript data
+   * @param projectId
+   * @param dataId
+   * @param rating - <= 1 || >= 5
+   */
+  async rateTranscript(
+    projectId: number,
+    dataId: number,
+    rating: number
+  ): Promise<confirmDataResult> {
+    // compile data
+    const request: RateTranscriptRequest = {
+      rating,
+    };
+    const response = await this.apisauce.put<undefined, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/rate`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 }

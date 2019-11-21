@@ -3,7 +3,6 @@ import { Project } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   deleteProjectResult,
-  GeneralApiProblem,
   getProjectResult,
   getProjectsResult,
   postProjectResult,
@@ -23,14 +22,8 @@ export class Projects extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -47,10 +40,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.getProject(projectId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -78,7 +68,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(() => this.getProjects(), problem);
+          this.logout();
         }
         return problem;
       }
@@ -119,10 +109,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.postProject(name, thresholdHc, thresholdLc),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -151,10 +138,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.deleteProject(projectId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -191,10 +175,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.updateProject(name, thresholdHc, thresholdLc, projectId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }
@@ -223,10 +204,7 @@ export class Projects extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.updateSecret(projectId),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }

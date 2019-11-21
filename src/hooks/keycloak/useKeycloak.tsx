@@ -106,13 +106,13 @@ export const useKeycloak = () => {
    */
   const hasPermission = (permittedRoles: ROLES[]) => {
     const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
-    for(let i = 0; i < roles.length; i++){
-      if(permittedRolesStrings.includes(roles[i])){
-        return true
+    for (let i = 0; i < roles.length; i++) {
+      if (permittedRolesStrings.includes(roles[i])) {
+        return true;
       }
     }
     return false;
-  }
+  };
 
   const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user, hasPermission };
 

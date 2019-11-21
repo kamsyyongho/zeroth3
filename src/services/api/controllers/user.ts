@@ -1,11 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  GeneralApiProblem,
-  ProblemKind,
-  resetPasswordResult,
-  ServerError,
-} from '../types';
+import { ProblemKind, resetPasswordResult, ServerError } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -17,14 +12,8 @@ export class User extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    attemptToRefreshToken: <T>(
-      callback: () => T,
-      responseProblem: GeneralApiProblem
-    ) => Promise<GeneralApiProblem | T>
-  ) {
-    super(apisauce, attemptToRefreshToken);
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
+    super(apisauce, logout);
   }
 
   /**
@@ -41,10 +30,7 @@ export class User extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
-          return this.attemptToRefreshToken(
-            () => this.resetPassword(),
-            problem
-          );
+          this.logout();
         }
         return problem;
       }

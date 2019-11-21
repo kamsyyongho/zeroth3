@@ -78,6 +78,20 @@ export interface SplitSegmentQuery {
   'split-index': number;
 }
 
+export interface UpdateStatusRequest {
+  status: CONTENT_STATUS;
+}
+
+export interface AssignUnconfirmedQuery {
+  dto: {
+    transcriberId: number;
+    voiceDataIds: number[];
+  };
+}
+export interface RateTranscriptRequest {
+  rating: number;
+}
+
 export interface MergeTwoSegmentsRequest {
   segmentIdA: number;
   segmentIdB: number;
@@ -113,10 +127,16 @@ export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;
 
+export type assignUnconfirmedResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type splitSegmentResult =
   | { kind: 'ok'; segments: [Segment, Segment] }
   | GeneralApiProblem;
 
 export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }
+  | GeneralApiProblem;
+
+export type updateStatusResult =
+  | { kind: 'ok'; data: VoiceData }
   | GeneralApiProblem;

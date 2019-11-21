@@ -1,8 +1,7 @@
 export const VALIDATION = {
   PROJECT: {
     threshold: {
-      min: 1,
-      max: 100,
+      min: 0,
     },
     name: {
       min: 3,
@@ -15,7 +14,8 @@ export const VALIDATION = {
         min: 2,
         max: 50,
       },
-      sampleRates: [8,16],
+      /** kHz */
+      sampleRates: [8, 16],
       sampleRate: {
         min: 8,
         max: 16,
@@ -29,15 +29,11 @@ export const VALIDATION = {
     length: {
       min: 0,
     },
-    score: {
-      min: 0,
-      max: 100,
-    },
   },
   ORGANIZATION: {
     name: {
       min: 2,
       max: 50,
-    }
-  }
+    },
+  },
 };

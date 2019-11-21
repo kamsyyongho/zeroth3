@@ -9,10 +9,12 @@ import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
+import { PERMISSIONS } from '../../constants/permission.constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult, VoiceDataResults } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SnackbarError } from '../../types';
+import { ModelConfig, PATHS, Project, SnackbarError, VoiceData } from '../../types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { AudioUploadDialog } from './components/AudioUploadDialog';
@@ -47,6 +49,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const { projectId } = match.params;
   const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
@@ -63,15 +66,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const [project, setProject] = React.useState<Project | undefined>(undefined);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
-
-  //!
-  //TODO
-  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
-
   const classes = useStyles();
 
-  const openDialog = () => setIsUploadOpen(true);
-  const closeDialog = () => setIsUploadOpen(false);
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api && api.voiceData) {
@@ -152,7 +149,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       getVoiceData();
       getModelConfigs();
     }
-  }, [api, getVoiceData, projectId, projectIdNumber]);
+  }, []);
 
   const handleAssignSubmit = async () => {
     if (!selectedModelConfigId) return;
@@ -163,6 +160,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // to show the newly assigned data
+        setOnlyAssignedData(true);
+        getVoiceData();
       } else {
         log({
           file: `TDP.tsx`,
@@ -181,6 +181,17 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     }
   };
 
+  /**
+   * Updates a single item after updating
+   */
+  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1, voiceData);
+      return { ...prevResults, content: updatedContent };
+    });
+  };
+
   const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
       const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
@@ -189,6 +200,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     },
     [modelConfigs]
   );
+
+  const openDialog = () => setIsUploadOpen(true);
+  const closeDialog = () => setIsUploadOpen(false);
 
   const renderContent = () => {
     if (!isValidId) {
@@ -204,7 +218,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         rawTitle: project.name,
       },
       {
-        rawTitle: `${translate('projects.TDP')}`,
+        rawTitle: `${translate('TDP.TDP')}`,
       },
     ];
     return (<Card>
@@ -237,14 +251,14 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
           >
             {onlyAssignedData ? 'TEST SHOWING ASSIGNED' : 'TEST SHOWING ALL'}
           </Button>
-          <Button
+          {canModify && <Button
             variant='outlined'
             color="secondary"
             onClick={openDialog}
             startIcon={<BackupIcon />}
           >
             {'TEST UPLOAD DATA'}
-          </Button>
+          </Button>}
         </>}
         title={<><HeaderBreadcrumbs breadcrumbs={breadcrumbs} /><Typography variant='h4'>{onlyAssignedData ? 'TEST ASSIGNED' : 'TEST ALL'}</Typography></>}
       />
@@ -257,6 +271,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             onlyAssignedData={onlyAssignedData}
+            handleVoiceDataUpdate={handleVoiceDataUpdate}
             loading={voiceDataLoading}
           />
         }

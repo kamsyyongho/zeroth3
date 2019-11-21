@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface SubGraphListProps {
+  canModify: boolean;
   subGraphsLoading: boolean;
   subGraphs: SubGraph[];
   checkedSubGraphs: CheckedSubGraphById;
@@ -53,6 +54,7 @@ export interface SubGraphListProps {
 
 export function SubGraphList(props: SubGraphListProps) {
   const {
+    canModify,
     subGraphsLoading,
     subGraphs,
     checkedSubGraphs,
@@ -89,11 +91,11 @@ export function SubGraphList(props: SubGraphListProps) {
     return (
       <ListItem key={subGraph.id}>
         <Card className={classes.card}>
-          <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={<>
+          <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
             <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
             <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
               <EditIcon />
-            </IconButton></>} />
+            </IconButton></>)} />
         </Card>
       </ListItem>
     );
@@ -118,7 +120,7 @@ export function SubGraphList(props: SubGraphListProps) {
                 {renderListItems()}
               </List>
             </CardContent>
-            <CardActions>
+            {canModify && <CardActions>
               {!!subGraphs.length && <Button
                 disabled={!canDelete}
                 variant="contained"
@@ -141,7 +143,7 @@ export function SubGraphList(props: SubGraphListProps) {
               >
                 {translate('models.createSubGraph')}
               </Button>
-            </CardActions>
+            </CardActions>}
           </>)}
       </Card>
     </Container>

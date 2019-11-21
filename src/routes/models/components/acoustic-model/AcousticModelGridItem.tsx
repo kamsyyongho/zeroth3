@@ -2,15 +2,15 @@ import { CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
+import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
 import { AcousticModel } from '../../../../types';
-import { EditOpenByModelId, CheckedModelById } from '../language-model/LanguageModelGridList';
+import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
-import Checkbox from '@material-ui/core/Checkbox';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface AcousticModelGridItemProps {
   model: AcousticModel;
+  canModify: boolean;
   editOpen: EditOpenByModelId;
   checkedModels: CheckedModelById;
   handleEditOpen: (modelId: number) => void;
@@ -34,7 +35,7 @@ interface AcousticModelGridItemProps {
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
-  const { model, editOpen, checkedModels, handleEditOpen, handleEditClose, handleEditSuccess, handleModelCheck } = props;
+  const { model, canModify, editOpen, checkedModels, handleEditOpen, handleEditClose, handleEditSuccess, handleModelCheck } = props;
   const classes = useStyles();
   const isOpen = !!editOpen[model.id];
   let isChecked = false;
@@ -51,11 +52,11 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
       modelToEdit={model}
     />
     <Card className={classes.card}>
-      <CardHeader title={model.name} className={classes.text} action={<>
+      <CardHeader title={model.name} className={classes.text} action={canModify && (<>
         <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
           <EditIcon />
-        </IconButton></>} />
+        </IconButton></>)} />
       <CardActionArea>
         <CardContent>
           <Typography gutterBottom color="textSecondary" className={classes.text}>

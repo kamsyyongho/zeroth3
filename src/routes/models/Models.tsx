@@ -4,12 +4,15 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import React from 'react';
+import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { Forbidden } from '../shared/Forbidden';
 import { ModelTabs } from './components/ModelTabs';
 
 
 export interface CheckedProjectsById {
-  [index: number]: boolean
+  [index: number]: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -25,8 +28,15 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export function Models() {
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
 
   const classes = useStyles();
+
+  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+
+  if (!canSeeModels) {
+    return <Forbidden />;
+  }
 
   return (
     <Container maxWidth={false} className={classes.container} >
