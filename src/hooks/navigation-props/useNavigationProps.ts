@@ -21,8 +21,9 @@ export function useNavigationProps() {
     return navProps as T;
   }
 
-  function setProps(props: { [x: string]: unknown }): void {
-    setNavigationProps(props);
+  function setProps(props: { [x: string]: unknown }, update = false): void {
+    const newProps = update ? { ...navigationProps, ...props } : props;
+    setNavigationProps(newProps);
   }
 
   function clearProps() {

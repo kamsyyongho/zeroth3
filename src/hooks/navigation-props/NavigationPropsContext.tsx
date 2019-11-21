@@ -8,8 +8,9 @@ export interface ParsedNavigationProps {
   getProps: <T>(propKeys: string[]) => T;
   /**
    * sets the props to be used in another page
+   * @param update will merge the current state with the incoming props
    */
-  setProps: (props: { [x: string]: unknown; }) => void;
+  setProps: (props: { [x: string]: unknown; }, update?: boolean) => void;
   /**
    * removes any stored props
    */
