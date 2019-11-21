@@ -2,7 +2,6 @@ import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Organization } from '../../../types/organizations.types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  GeneralApiProblem,
   getOrganizationResult,
   ProblemKind,
   RenameOrganizationRequest,
@@ -20,10 +19,7 @@ export class Organizations extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param attemptToRefreshToken parent method to refresh the keycloak token
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void,
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 

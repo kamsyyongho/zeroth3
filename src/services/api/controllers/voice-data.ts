@@ -1,5 +1,10 @@
 import { ApisauceInstance } from 'apisauce';
-import { Segment, WordAlignment } from '../../../types';
+import {
+  CONTENT_STATUS,
+  Segment,
+  VoiceData as IVoiceData,
+  WordAlignment,
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   confirmDataResult,
@@ -7,10 +12,13 @@ import {
   FetchUnconfirmedQuery,
   getAssignedDataResult,
   getSegmentsDataResult,
+  MergeTwoSegmentsRequest,
+  mergeTwoSegmentsResult,
   ProblemKind,
   SearchDataRequest,
   searchDataResult,
   ServerError,
+  SplitSegmentQuery,
   splitSegmentResult,
   UpdateSegmentRequest,
   updateSegmentResult,
@@ -19,9 +27,11 @@ import {
   VoiceDataResults,
 } from '../types';
 import {
-  MergeTwoSegmentsRequest,
-  mergeTwoSegmentsResult,
-  SplitSegmentQuery,
+  AssignUnconfirmedQuery,
+  assignUnconfirmedResult,
+  RateTranscriptQuery,
+  UpdateStatusQuery,
+  updateStatusResult,
 } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
@@ -376,16 +386,26 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Manually updates the status of
+   * Manually updates the status of voice data
    * @param projectId
    * @param dataId
+   * @param status
    */
   async updateStatus(
     projectId: number,
-    dataId: number
-  ): Promise<confirmDataResult> {
-    const response = await this.apisauce.put<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/confirm`
+    dataId: number,
+    status: CONTENT_STATUS
+  ): Promise<updateStatusResult> {
+    const params: UpdateStatusQuery = {
+      dto: {
+        status,
+      },
+    };
+    const response = await this.apisauce.put<IVoiceData, ServerError>(
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/status`,
+      null,
+      { params }
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -397,20 +417,37 @@ export class VoiceData extends ParentApi {
         return problem;
       }
     }
-    return { kind: 'ok' };
+    // transform the data into the format we are expecting
+    try {
+      const data = response.data as IVoiceData;
+      return { kind: 'ok', data };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 
   /**
-   * Confirms and locks the voice data
+   * Assigns data (one or multiple) to a specific user
    * @param projectId
-   * @param dataId
+   * @param userId
+   * @param voiceDataIds
    */
   async assignUnconfirmedDataToTranscriber(
     projectId: number,
-    dataId: number
-  ): Promise<confirmDataResult> {
+    userId: number,
+    voiceDataIds: number[]
+  ): Promise<assignUnconfirmedResult> {
+    const params: AssignUnconfirmedQuery = {
+      dto: {
+        transcriberId: userId,
+        voiceDataIds,
+      },
+    };
     const response = await this.apisauce.put<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/confirm`
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/assign`,
+      null,
+      { params }
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -426,16 +463,26 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Confirms and locks the voice data
+   * Submits a rating for the target transcript data
    * @param projectId
    * @param dataId
+   * @param rating
    */
   async rateTranscript(
     projectId: number,
-    dataId: number
+    dataId: number,
+    rating: number
   ): Promise<confirmDataResult> {
+    const params: RateTranscriptQuery = {
+      dto: {
+        rating,
+      },
+    };
     const response = await this.apisauce.put<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/confirm`
+      // query params on a post are the third (3) parameter
+      `/projects/${projectId}/data/${dataId}/rate`,
+      null,
+      { params }
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
