@@ -16,6 +16,7 @@ import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult, VoiceDataResults } from '../../services/api/types';
 import { ModelConfig, PATHS, Project, SnackbarError, VoiceData } from '../../types';
 import log from '../../util/log/logger';
+import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { AudioUploadDialog } from './components/AudioUploadDialog';
 import { TDPTable } from './components/TDPTable';
@@ -244,13 +245,19 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
               {'TEST ASSIGN DATA'}
             </Button>
           </>}
-          <Button
-            variant="contained"
-            color={onlyAssignedData ? 'secondary' : "primary"}
-            onClick={() => setOnlyAssignedData((prevValue) => !prevValue)}
-          >
-            {onlyAssignedData ? 'TEST SHOWING ASSIGNED' : 'TEST SHOWING ALL'}
-          </Button>
+          <DualLabelSwitch
+            startLabel={'TEST ALL'}
+            endLabel={'TEST ASSIGNED'}
+            switchProps={{
+              checked: onlyAssignedData,
+              value: onlyAssignedData,
+              onChange: () => setOnlyAssignedData((prevValue) => !prevValue),
+            }}
+            labelProps={{
+              label: 'TEST SHOWING',
+              labelPlacement: 'top',
+            }}
+          />
           {canModify && <Button
             variant='outlined'
             color="secondary"

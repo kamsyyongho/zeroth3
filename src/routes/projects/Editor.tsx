@@ -28,6 +28,7 @@ import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { StarRating } from '../shared/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
@@ -177,7 +178,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   /**
    * Only `CONFIRMED` data can be rated, so we won't show if not
    */
-  const ratingAvailable = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, []);
+  const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, []);
 
   /**
    * navigates to the TDP page after confirming data
@@ -270,7 +271,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   }, [api, dataIdNumber, projectIdNumber]);
 
   const confirmData = async () => {
-    if (api && api.voiceData) {
+    if (api && api.voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
       const response = await api.voiceData.confirmData(projectIdNumber, dataIdNumber);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -300,7 +301,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const submitSegmentUpdates = async () => {
-    if (api && api.voiceData) {
+    if (api && api.voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       // to build which segments to send
@@ -338,7 +339,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     if (numberOfSegmentsSelected !== 2) {
       return;
     }
-    if (api && api.voiceData) {
+    if (api && api.voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       const segmentIndexesToMerge: number[] = Array.from(segmentMergeIndexes);
@@ -392,7 +393,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const submitSegmentSplit = async () => {
     if (!splitLocation) return;
-    if (api && api.voiceData) {
+    if (api && api.voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const { segmentId, segmentIndex, splitIndex } = splitLocation;
       const response = await api.voiceData.splitSegment(projectIdNumber, dataIdNumber, segmentId, splitIndex);
@@ -798,68 +799,88 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.5), minHeight: 250 }}>
-
-        {ratingAvailable && <StarRating 
-          voiceData={voiceData}
-          projectId={projectIdNumber}
-        />}
-          <Button
-            disabled={saveSegmentsLoading || confirmSegmentsLoading}
-            variant="outlined"
-            color="primary"
-            onClick={handleSavePress}
-            startIcon={saveSegmentsLoading ? <MoonLoader
-              sizeUnit={"px"}
-              size={15}
-              color={theme.palette.primary.main}
-              loading={true}
-            /> : <SaveIcon />}
-          >
-            {translate('common.save')}
-          </Button>
-          <Button
-            disabled={saveSegmentsLoading || confirmSegmentsLoading}
-            variant="outlined"
-            color="secondary"
-            onClick={confirmData}
-            startIcon={confirmSegmentsLoading ? <MoonLoader
-              sizeUnit={"px"}
-              size={15}
-              color={theme.palette.secondary.main}
-              loading={true}
-            /> : <PublishIcon />}
-          >
-            {'TEST CONFIRM DATA'}
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleEditModeChange}
-            startIcon={isSegmentEdit ? (
-              <SvgIconWrapper ><FiScissors /></SvgIconWrapper>) :
-              (<SvgIconWrapper ><FaEdit /></SvgIconWrapper>)}
-          >
-            {'TEST EDIT MODE'}
-          </Button>
-          {isSegmentEdit ? (<Button
-            variant="outlined"
-            color="primary"
-            onClick={() => {
-              setIsSegmentSplitMode(!isSegmentSplitMode);
-            }}
-            startIcon={isSegmentSplitMode ? <CallSplitIcon /> : <MergeTypeIcon />}
-          >
-            {isSegmentSplitMode ? 'TEST SPLIT MODE' : 'TEST MERGE MODE'}
-          </Button>) : (
+          <Typography>{voiceData.status}</Typography>
+          {alreadyConfirmed ? (<StarRating
+            voiceData={voiceData}
+            projectId={projectIdNumber}
+          />) :
+            (<>
               <Button
+                disabled={saveSegmentsLoading || confirmSegmentsLoading}
                 variant="outlined"
                 color="primary"
-                onClick={() => setHCEditable(!HCEditable)}
-                startIcon={HCEditable ? <LockOpenIcon /> : <LockIcon />}
+                onClick={handleSavePress}
+                startIcon={saveSegmentsLoading ? <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.primary.main}
+                  loading={true}
+                /> : <SaveIcon />}
               >
-                {'TEST HC EDIT '}{HCEditable ? 'ON' : 'OFF'}
+                {translate('common.save')}
               </Button>
-            )}
+              <Button
+                disabled={saveSegmentsLoading || confirmSegmentsLoading}
+                variant="outlined"
+                color="secondary"
+                onClick={confirmData}
+                startIcon={confirmSegmentsLoading ? <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.secondary.main}
+                  loading={true}
+                /> : <PublishIcon />}
+              >
+                {'TEST CONFIRM DATA'}
+              </Button>
+              <DualLabelSwitch
+                    startLabel={'WORD'}
+                    endLabel={'CUT'}
+                    startIcon={<SvgIconWrapper ><FaEdit /></SvgIconWrapper>}
+                    endIcon={<SvgIconWrapper ><FiScissors /></SvgIconWrapper>}
+                    switchProps={{
+                      checked: isSegmentEdit,
+                      value: isSegmentEdit,
+                      onChange: handleEditModeChange,
+                    }}
+                    labelProps={{
+                      label: 'TEST EDIT MODE',
+                      labelPlacement: 'top',
+                    }}
+                  />
+              {isSegmentEdit ? (
+                <DualLabelSwitch
+                    startLabel={'TEST MERGE'}
+                    endLabel={'TEST SPLIT'}
+                    startIcon={<MergeTypeIcon />}
+                    endIcon={<CallSplitIcon />}
+                    switchProps={{
+                      checked: isSegmentSplitMode,
+                      value: isSegmentSplitMode,
+                      onChange: () => setIsSegmentSplitMode(!isSegmentSplitMode),
+                    }}
+                    labelProps={{
+                      label: 'TEST CUT MODE',
+                      labelPlacement: 'top',
+                    }}
+                  />) : (
+                  <DualLabelSwitch
+                    startLabel={'TEST OFF'}
+                    endLabel={'TEST ON'}
+                    startIcon={<LockIcon />}
+                    endIcon={<LockOpenIcon />}
+                    switchProps={{
+                      checked: HCEditable,
+                      value: HCEditable,
+                      onChange: () => setHCEditable(!HCEditable),
+                    }}
+                    labelProps={{
+                      label: 'TEST LC EDIT',
+                      labelPlacement: 'top',
+                    }}
+                  />
+                )}
+            </>)}
           <AutoSizer>
             {({ height, width }) => {
               return (
