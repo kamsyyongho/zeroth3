@@ -219,6 +219,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       // to reset selected segments
       segmentMergeIndexes.clear();
       setIsSegmentSplitMode(false);
+    } else {
+      setHCEditable(false);
     }
   };
 
@@ -834,36 +836,36 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
                 {'TEST CONFIRM DATA'}
               </Button>
               <DualLabelSwitch
-                    startLabel={'WORD'}
-                    endLabel={'CUT'}
-                    startIcon={<SvgIconWrapper ><FaEdit /></SvgIconWrapper>}
-                    endIcon={<SvgIconWrapper ><FiScissors /></SvgIconWrapper>}
-                    switchProps={{
-                      checked: isSegmentEdit,
-                      value: isSegmentEdit,
-                      onChange: handleEditModeChange,
-                    }}
-                    labelProps={{
-                      label: 'TEST EDIT MODE',
-                      labelPlacement: 'top',
-                    }}
-                  />
+                startLabel={'TEST WORD'}
+                endLabel={'TEST CUT'}
+                startIcon={<SvgIconWrapper ><FaEdit /></SvgIconWrapper>}
+                endIcon={<SvgIconWrapper ><FiScissors /></SvgIconWrapper>}
+                switchProps={{
+                  checked: isSegmentEdit,
+                  value: isSegmentEdit,
+                  onChange: handleEditModeChange,
+                }}
+                labelProps={{
+                  label: 'TEST EDIT MODE',
+                  labelPlacement: 'top',
+                }}
+              />
               {isSegmentEdit ? (
                 <DualLabelSwitch
-                    startLabel={'TEST MERGE'}
-                    endLabel={'TEST SPLIT'}
-                    startIcon={<MergeTypeIcon />}
-                    endIcon={<CallSplitIcon />}
-                    switchProps={{
-                      checked: isSegmentSplitMode,
-                      value: isSegmentSplitMode,
-                      onChange: () => setIsSegmentSplitMode(!isSegmentSplitMode),
-                    }}
-                    labelProps={{
-                      label: 'TEST CUT MODE',
-                      labelPlacement: 'top',
-                    }}
-                  />) : (
+                  startLabel={'TEST MERGE'}
+                  endLabel={'TEST SPLIT'}
+                  startIcon={<MergeTypeIcon />}
+                  endIcon={<CallSplitIcon />}
+                  switchProps={{
+                    checked: isSegmentSplitMode,
+                    value: isSegmentSplitMode,
+                    onChange: () => setIsSegmentSplitMode(!isSegmentSplitMode),
+                  }}
+                  labelProps={{
+                    label: 'TEST CUT MODE',
+                    labelPlacement: 'top',
+                  }}
+                />) : (
                   <DualLabelSwitch
                     startLabel={'TEST OFF'}
                     endLabel={'TEST ON'}
