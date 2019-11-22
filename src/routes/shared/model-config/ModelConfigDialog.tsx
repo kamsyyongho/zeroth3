@@ -83,15 +83,15 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedAcousticModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).required(requiredTranslationText),
-    selectedLanguageModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).required(requiredTranslationText),
+    selectedAcousticModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).nullable().required(requiredTranslationText),
+    selectedLanguageModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).nullable().required(requiredTranslationText),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
-    selectedAcousticModelId: 0,
-    selectedLanguageModelId: 0,
+    selectedAcousticModelId: null,
+    selectedLanguageModelId: null,
     description: "",
   };
   if (configToEdit) {
@@ -110,10 +110,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
+    const { selectedAcousticModelId, selectedLanguageModelId } = values;
+    if(selectedAcousticModelId === null || selectedLanguageModelId === null) return;
     if (api && api.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const { name, description, selectedAcousticModelId, selectedLanguageModelId } = values;
+      const { name, description } = values;
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
         response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId);
