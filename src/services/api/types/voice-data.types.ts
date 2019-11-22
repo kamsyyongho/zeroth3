@@ -4,36 +4,8 @@ import {
   VoiceData,
   WordAlignment,
 } from '../../../types';
+import { VoiceDataResults } from '../../../types/voice-data.types';
 import { GeneralApiProblem } from './api-problem.types';
-
-interface Sort {
-  empty: boolean;
-  sorted: boolean;
-  unsorted: boolean;
-}
-
-interface Pageable {
-  offset: number;
-  pageNumber: number;
-  pageSize: number;
-  paged: boolean;
-  unpaged: boolean;
-  sort: Sort;
-}
-
-export interface VoiceDataResults {
-  content: VoiceData[];
-  empty: boolean;
-  first: boolean;
-  last: boolean;
-  number: number;
-  numberOfElements: number;
-  pageable: Pageable;
-  size: number;
-  sort: Sort;
-  totalElements: number;
-  totalPages: number;
-}
 
 //////////////
 // REQUESTS //
@@ -83,10 +55,12 @@ export interface UpdateStatusRequest {
 }
 
 export interface AssignUnconfirmedQuery {
-  dto: {
-    transcriberId: number;
-    voiceDataIds: number[];
-  };
+  'model-config': number;
+}
+
+export interface AssignUnconfirmedRequest {
+  transcriberId: number;
+  voiceDataIds: number[];
 }
 export interface RateTranscriptRequest {
   rating: number;

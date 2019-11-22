@@ -1,3 +1,4 @@
+import { PaginatedResults } from './pagination.types';
 export interface VoiceData {
   id: number;
   createdAt: Date;
@@ -12,6 +13,10 @@ export interface VoiceData {
   transcript: string;
   transcriptionRating: number;
   audioUrl: string;
+}
+
+export interface VoiceDataResults extends PaginatedResults {
+  content: VoiceData[];
 }
 
 export enum CONTENT_STATUS {

@@ -3,10 +3,14 @@ import {
   CONTENT_STATUS,
   Segment,
   VoiceData as IVoiceData,
+  VoiceDataResults,
   WordAlignment,
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  AssignUnconfirmedQuery,
+  AssignUnconfirmedRequest,
+  assignUnconfirmedResult,
   confirmDataResult,
   fetchUnconfirmedDataResult,
   FetchUnconfirmedQuery,
@@ -15,6 +19,7 @@ import {
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
   ProblemKind,
+  RateTranscriptRequest,
   SearchDataRequest,
   searchDataResult,
   ServerError,
@@ -24,15 +29,9 @@ import {
   updateSegmentResult,
   UpdateSegmentsRequest,
   updateSegmentsResult,
-  VoiceDataResults,
-} from '../types';
-import {
-  AssignUnconfirmedQuery,
-  assignUnconfirmedResult,
-  RateTranscriptRequest,
   UpdateStatusRequest,
   updateStatusResult,
-} from '../types/voice-data.types';
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -401,7 +400,6 @@ export class VoiceData extends ParentApi {
       status,
     };
     const response = await this.apisauce.put<IVoiceData, ServerError>(
-      // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/status`,
       request
     );
@@ -426,25 +424,31 @@ export class VoiceData extends ParentApi {
 
   /**
    * Assigns data (one or multiple) to a specific user
+   * - only assignable when the status is `UNCONFIRMED_LC`
+   * - in the server: `status` will be set to `FETCHED` and the `transcriber` will be set to the email
    * @param projectId
    * @param userId
+   * @param modelConfigId
    * @param voiceDataIds
    */
   async assignUnconfirmedDataToTranscriber(
     projectId: number,
     userId: number,
+    modelConfigId: number,
     voiceDataIds: number[]
   ): Promise<assignUnconfirmedResult> {
+    // compile data
+    const request: AssignUnconfirmedRequest = {
+      transcriberId: userId,
+      voiceDataIds,
+    };
     const params: AssignUnconfirmedQuery = {
-      dto: {
-        transcriberId: userId,
-        voiceDataIds,
-      },
+      'model-config': modelConfigId,
     };
     const response = await this.apisauce.put<undefined, ServerError>(
       // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/assign`,
-      null,
+      request,
       { params }
     );
     // the typical ways to die when calling an api
@@ -476,7 +480,6 @@ export class VoiceData extends ParentApi {
       rating,
     };
     const response = await this.apisauce.put<undefined, ServerError>(
-      // query params on a post are the third (3) parameter
       `/projects/${projectId}/data/${dataId}/rate`,
       request
     );
