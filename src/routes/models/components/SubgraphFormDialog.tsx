@@ -152,6 +152,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                   acceptedFiles={['text/*']}
                   hidden={!formikProps.values.shouldUploadFile}
                   name='files'
+                  dropZoneText={translate('forms.dropZone.text')}
                   component={DropZoneFormField}
                   errorOverride={isError || !!formikProps.errors.files}
                   errorTextOverride={formikProps.errors.files}

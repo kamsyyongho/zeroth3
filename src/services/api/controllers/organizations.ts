@@ -1,5 +1,5 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { Organization } from '../../../types/organizations.types';
+import { Organization } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getOrganizationResult,

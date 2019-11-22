@@ -72,6 +72,19 @@ export const ko: ResourceLanguage = {
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
       },
+      dropZone: {
+        main: 'Drag and drop a file or click',
+        text: 'Drag and drop a text file or click',
+        audio: 'Drag and drop an audio file or click',
+        main_plural: 'Drag and drop files or click',
+        text_plural: 'Drag and drop text files or click',
+        audio_plural: 'Drag and drop audio files or click',
+        reject: {
+          main: 'File {{name}} was rejected.',
+          notSupported: 'File type not supported.',
+          exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
+        },
+      },
       numberFiles: 'Number of files to upload: {{count}}',
       email: '이메일',
       name: '이름',
@@ -163,5 +176,8 @@ export const ko: ResourceLanguage = {
       createModel: 'Create model',
       editModel: 'Edit model',
     },
+    audioPlayer: {
+      noUrl: 'No audio URL'
+    }
   },
 };

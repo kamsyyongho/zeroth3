@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Button, Typography } from '@material-ui/core';
+import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -10,6 +10,8 @@ import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import Replay5Icon from '@material-ui/icons/Replay5';
 import StopIcon from '@material-ui/icons/Stop';
+import WarningIcon from '@material-ui/icons/Warning';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import WaveSurfer from 'wavesurfer.js';
 // //@ts-ignore
@@ -18,13 +20,17 @@ import WaveSurfer from 'wavesurfer.js';
 // import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
 //@ts-ignore
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
+import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     content: {
       padding: 0,
-      overflow: 'hidden',
+    },
+    hidden: {
+      visibility: 'hidden',
+      height: 0,
     },
   }),
 );
@@ -40,7 +46,10 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url, onTimeChange, timeToSeekTo, onReady } = props;
+  const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
+  const [errorText, setErrorText] = React.useState('');
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
@@ -63,6 +72,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
   }, []);
 
+  const displayError = (errorText: string) => {
+    enqueueSnackbar(errorText, { variant: 'error' });
+    setErrorText(errorText);
+  };
+
+  const handleStop = () => {
+    if (waveSurfer) {
+      try {
+        waveSurfer.stop();
+        setIsPlay(false);
+      } catch (error) {
+        displayError(error.message);
+      }
+    }
+  };
+
+  const handleError = (errorText: string) => {
+    displayError(errorText);
+    handleStop();
+  };
+
+
   const seekToTime = (timeToSeekTo: number) => {
     if (waveSurfer) {
       try {
@@ -71,8 +102,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           progress = timeToSeekTo / duration;
         }
         waveSurfer.seekTo(progress);
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -95,8 +126,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (onReady && typeof onReady === 'function') {
           onReady();
         }
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -109,8 +140,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (onTimeChange && typeof onTimeChange === 'function') {
           onTimeChange(currentTime);
         }
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -120,19 +151,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       try {
         waveSurfer.playPause();
         setIsPlay(prevValue => !prevValue);
-      } catch {
-        // do nothing
-      }
-    }
-  };
-
-  const handleStop = () => {
-    if (waveSurfer) {
-      try {
-        waveSurfer.stop();
-        setIsPlay(false);
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -149,6 +169,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleFinish = () => setIsPlay(false);
+
 
   React.useEffect(() => {
     const initPlayer = () => {
@@ -189,6 +210,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // });
       const initialWaveSurfer = WaveSurfer.create({
         container: '#waveform',
+        backend: 'MediaElement', // tell it to use pre-recorded peaks
         scrollParent: true,
         plugins: [
           timeline,
@@ -197,13 +219,36 @@ export function AudioPlayer(props: AudioPlayerProps) {
         ]
       });
 
-      initialWaveSurfer.load(url);
+      const peaksUrl = 'https://tidesquare-data.s3.ap-northeast-2.amazonaws.com/form.json';
+      // initialWaveSurfer.load(url);
+
+      fetch(peaksUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP error: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(peaks => {
+          console.log(
+            'loaded peaks! sample_rate: ' + peaks.sample_rate
+          );
+
+          // load peaks into wavesurfer.js
+          initialWaveSurfer.load(url, peaks.data);
+          document.body.scrollTop = 0;
+        })
+        .catch((error) => {
+          handleError(`PEAKS ERROR: ${error.message}`);
+          console.error('error', error);
+        });
 
       // set listeners
       initialWaveSurfer.on('ready', () => handleReady(initialWaveSurfer));
       initialWaveSurfer.on('seek', () => handleSeek(initialWaveSurfer));
       initialWaveSurfer.on('audioprocess', () => handleSeek(initialWaveSurfer));
       initialWaveSurfer.on('finish', handleFinish);
+      initialWaveSurfer.on('error', handleError);
       setWaveSurfer(initialWaveSurfer);
     };
     if (url) {
@@ -228,12 +273,29 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   return (
     <Card >
-      {isReady && <CardHeader
+      {(isReady && !errorText) && <CardHeader
         title={playerControls}
         subheader={`${currentTime} / ${durationDisplay}`}
       />}
-      <CardContent className={classes.content}>
-        {!url && <Typography>TEST NO AUDIO URL</Typography>}
+      {(!url || !!errorText) && (
+        <CardContent>
+          <Grid
+            container
+            direction='row'
+            spacing={1}
+            justify='center'
+            alignItems='center'
+            alignContent='center'
+          >
+            <Grid item>
+              <WarningIcon color='secondary' />
+            </Grid>
+            <Grid item>
+              <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
+            </Grid>
+          </Grid>
+        </CardContent>)}
+      <CardContent className={errorText ? classes.hidden : classes.content}>
         <div id="waveform" />
         <div id="wave-timeline" />
       </CardContent>

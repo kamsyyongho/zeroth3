@@ -16,7 +16,6 @@ import { SnackbarError, VoiceData } from '../../types';
 import log from '../../util/log/logger';
 
 
-
 interface StarRatingProps {
   projectId: number;
   voiceData: VoiceData;

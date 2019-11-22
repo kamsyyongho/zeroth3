@@ -152,6 +152,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                   maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
                   acceptedFiles={['audio/*']}
                   name='files'
+                  dropZoneText={translate('forms.dropZone.audio_plural')}
                   component={DropZoneFormField}
                   helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
                   errorOverride={isError || !!formikProps.errors.files}

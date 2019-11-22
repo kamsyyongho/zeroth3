@@ -10,6 +10,7 @@ import { Models } from './controllers/models';
 import { Organizations } from './controllers/organizations';
 import { Projects } from './controllers/projects';
 import { RawData } from './controllers/raw-data';
+import { Transcriber } from './controllers/transcriber';
 import { User } from './controllers/user';
 import { VoiceData } from './controllers/voice-data';
 
@@ -79,6 +80,11 @@ export class Api {
   user: User | undefined;
 
   /**
+   * Subclass that manages transcriber management data requests.
+   */
+  transcriber: Transcriber | undefined;
+
+  /**
    * Creates the api.
    * - Be as quick as possible in here.
    * @param config The configuration to use.
@@ -117,6 +123,7 @@ export class Api {
     this.rawData = new RawData(this.apisauce, this.logout);
     this.organizations = new Organizations(this.apisauce, this.logout);
     this.user = new User(this.apisauce, this.logout);
+    this.transcriber = new Transcriber(this.apisauce, this.logout);
     return true;
   }
 
@@ -218,7 +225,6 @@ export class Api {
               value: 'FAILED TO REFRESH TOKEN',
               important: true,
             });
-            this.logout();
             reject();
           });
     });
