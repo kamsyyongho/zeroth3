@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Button, Typography } from '@material-ui/core';
+import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -10,6 +10,7 @@ import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import Replay5Icon from '@material-ui/icons/Replay5';
 import StopIcon from '@material-ui/icons/Stop';
+import WarningIcon from '@material-ui/icons/Warning';
 import React from 'react';
 import WaveSurfer from 'wavesurfer.js';
 // //@ts-ignore
@@ -18,13 +19,13 @@ import WaveSurfer from 'wavesurfer.js';
 // import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
 //@ts-ignore
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
+import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     content: {
       padding: 0,
-      overflow: 'hidden',
     },
   }),
 );
@@ -40,6 +41,7 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url, onTimeChange, timeToSeekTo, onReady } = props;
+  const {translate} = React.useContext(I18nContext);
   const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
@@ -189,6 +191,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // });
       const initialWaveSurfer = WaveSurfer.create({
         container: '#waveform',
+        backend: 'MediaElement', // tell it to use pre-recorded peaks
         scrollParent: true,
         plugins: [
           timeline,
@@ -197,7 +200,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
         ]
       });
 
-      initialWaveSurfer.load(url);
+      const peaksUrl = 'https://tidesquare-data.s3.ap-northeast-2.amazonaws.com/form.json';
+      // initialWaveSurfer.load(url);
+
+      fetch(peaksUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP error ' + response.status);
+          }
+          return response.json();
+        })
+        .then(peaks => {
+          console.log(
+            'loaded peaks! sample_rate: ' + peaks.sample_rate
+          );
+
+          // load peaks into wavesurfer.js
+          initialWaveSurfer.load(url, peaks.data);
+          document.body.scrollTop = 0;
+        })
+        .catch(e => {
+          console.error('error', e);
+        });
 
       // set listeners
       initialWaveSurfer.on('ready', () => handleReady(initialWaveSurfer));
@@ -232,8 +256,25 @@ export function AudioPlayer(props: AudioPlayerProps) {
         title={playerControls}
         subheader={`${currentTime} / ${durationDisplay}`}
       />}
+      {!url && (
+        <CardContent>
+          <Grid
+            container
+            direction='row'
+            spacing={1}
+            justify='center'
+            alignItems='center'
+            alignContent='center'
+          >
+            <Grid item>
+              <WarningIcon color='secondary' />
+            </Grid>
+            <Grid item>
+              <Typography>{translate('audioPlayer.noUrl')}</Typography>
+            </Grid>
+          </Grid>
+        </CardContent>)}
       <CardContent className={classes.content}>
-        {!url && <Typography>TEST NO AUDIO URL</Typography>}
         <div id="waveform" />
         <div id="wave-timeline" />
       </CardContent>

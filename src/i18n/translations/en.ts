@@ -175,5 +175,8 @@ export const en: ResourceLanguage = {
       createModel: 'Create model',
       editModel: 'Edit model',
     },
+    audioPlayer: {
+      noUrl: 'No audio URL'
+    }
   },
 };

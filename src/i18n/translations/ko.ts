@@ -176,5 +176,8 @@ export const ko: ResourceLanguage = {
       createModel: 'Create model',
       editModel: 'Edit model',
     },
+    audioPlayer: {
+      noUrl: 'No audio URL'
+    }
   },
 };
