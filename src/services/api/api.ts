@@ -218,7 +218,6 @@ export class Api {
               value: 'FAILED TO REFRESH TOKEN',
               important: true,
             });
-            this.logout();
             reject();
           });
     });
