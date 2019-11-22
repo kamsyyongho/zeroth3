@@ -13,8 +13,8 @@ import { PERMISSIONS } from '../../constants/permission.constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult, VoiceDataResults } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SnackbarError, VoiceData } from '../../types';
+import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult } from '../../services/api/types';
+import { ModelConfig, PATHS, Project, SnackbarError, Transcriber, VoiceData, VoiceDataResults } from '../../types';
 import log from '../../util/log/logger';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
@@ -63,7 +63,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const [assignDataLoading, setAssignDataLoading] = React.useState(false);
   const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<number | undefined>(undefined);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
+  const [transcribersLoading, setTranscribersLoading] = React.useState(true);
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
+  const [transcribers, setTranscribers] = React.useState<Transcriber[]>([]);
   const [project, setProject] = React.useState<Project | undefined>(undefined);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
@@ -136,6 +138,22 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         setModelConfigsLoading(false);
       }
     };
+    const getTranscribers = async () => {
+      if (api && api.transcriber) {
+        const response = await api.transcriber.getTranscribers();
+        if (response.kind === 'ok') {
+          setTranscribers(response.transcribers);
+        } else {
+          log({
+            file: `TDP.tsx`,
+            caller: `getTranscribers - failed to get transcribers`,
+            value: response,
+            important: true,
+          });
+        }
+        setTranscribersLoading(false);
+      }
+    };
     if (isNaN(projectIdNumber)) {
       setIsValidId(true);
       setProjectLoading(false);
@@ -146,6 +164,10 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         important: true,
       });
     } else {
+      // don't need transcribers if we can't modify
+      if (canModify) {
+        getTranscribers();
+      }
       getProject();
       getVoiceData();
       getModelConfigs();
@@ -280,6 +302,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
             onlyAssignedData={onlyAssignedData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
             loading={voiceDataLoading}
+            transcribers={transcribers}
           />
         }
       </CardContent>

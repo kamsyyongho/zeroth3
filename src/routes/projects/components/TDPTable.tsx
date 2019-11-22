@@ -15,17 +15,18 @@ import { PERMISSIONS } from '../../../constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
-import { SearchDataRequest, VoiceDataResults } from '../../../services/api/types';
-import { VoiceData } from '../../../types';
-import { PATHS } from '../../../types/path.types';
+import { SearchDataRequest } from '../../../services/api/types';
+import { CONTENT_STATUS, PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
 import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
+import { TDPCellTranscriberSelect } from './TDPCellTranscriberSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
   projectId: number;
   projectName: string;
+  transcribers: Transcriber[];
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
   onlyAssignedData: boolean;
@@ -44,6 +45,7 @@ export function TDPTable(props: TDPTableProps) {
   const {
     projectId,
     projectName,
+    transcribers,
     voiceDataResults,
     modelConfigsById,
     onlyAssignedData,
@@ -87,6 +89,15 @@ export function TDPTable(props: TDPTableProps) {
     return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
   };
 
+  const renderTranscriber = (cellData: CellProps<VoiceData>) => {
+    // to only make editable when showing all and has permissions
+    const canAssign = cellData.cell.row.original.status === CONTENT_STATUS.UNCONFIRMED_LC;
+    if (canModify && canAssign && !(loading || onlyAssignedData)) {
+      return TDPCellTranscriberSelect({ cellData, projectId, transcribers, onSuccess: handleVoiceDataUpdate });
+    }
+    return cellData.cell.value || '';
+  };
+
   const renderCreatedAt = (cellData: CellProps<VoiceData>) => {
     const createdAt: VoiceData['createdAt'] = cellData.cell.value;
     const date = new Date(createdAt);
@@ -123,13 +134,14 @@ export function TDPTable(props: TDPTableProps) {
         Header: translate('forms.transcriber'),
         // to only display if it has a value
         accessor: (row: VoiceData) => row.transcriber || '',
+        Cell: (cellData: CellProps<VoiceData>) => renderTranscriber(cellData),
       },
       {
         Header: translate('forms.transcript'),
         accessor: 'transcript',
       },
     ],
-    [renderModelName, translate]
+    [voiceData, renderModelName, translate]
   );
 
   // Use the state and functions returned from useTable to build your UI
