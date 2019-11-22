@@ -1,6 +1,5 @@
 import { CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
@@ -57,19 +56,17 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
           <EditIcon />
         </IconButton></>)} />
-      <CardActionArea>
-        <CardContent>
-          <Typography gutterBottom color="textSecondary" className={classes.text}>
-            {model.version}
-          </Typography>
-          <Typography component="p">
-            {model.sampleRate}{' Hz'}
-          </Typography>
-          <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
-            {model.description}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
+      <CardContent>
+        <Typography gutterBottom color="textSecondary" className={classes.text}>
+          {model.version}
+        </Typography>
+        <Typography component="p">
+          {model.sampleRate}{' Hz'}
+        </Typography>
+        <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
+          {model.description}
+        </Typography>
+      </CardContent>
     </Card>
   </Grid>);
 };
