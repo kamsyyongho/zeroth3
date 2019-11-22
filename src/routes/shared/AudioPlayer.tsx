@@ -11,6 +11,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import Replay5Icon from '@material-ui/icons/Replay5';
 import StopIcon from '@material-ui/icons/Stop';
 import WarningIcon from '@material-ui/icons/Warning';
+import { useSnackbar } from 'notistack';
 import React from 'react';
 import WaveSurfer from 'wavesurfer.js';
 // //@ts-ignore
@@ -27,6 +28,10 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       padding: 0,
     },
+    hidden: {
+      visibility: 'hidden',
+      height: 0,
+    },
   }),
 );
 
@@ -41,8 +46,10 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url, onTimeChange, timeToSeekTo, onReady } = props;
-  const {translate} = React.useContext(I18nContext);
+  const { translate } = React.useContext(I18nContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
+  const [errorText, setErrorText] = React.useState('');
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
@@ -65,6 +72,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
   }, []);
 
+  const displayError = (errorText: string) => {
+    enqueueSnackbar(errorText, { variant: 'error' });
+    setErrorText(errorText);
+  };
+
+  const handleStop = () => {
+    if (waveSurfer) {
+      try {
+        waveSurfer.stop();
+        setIsPlay(false);
+      } catch (error) {
+        displayError(error.message);
+      }
+    }
+  };
+
+  const handleError = (errorText: string) => {
+    displayError(errorText);
+    handleStop();
+  };
+
+
   const seekToTime = (timeToSeekTo: number) => {
     if (waveSurfer) {
       try {
@@ -73,8 +102,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           progress = timeToSeekTo / duration;
         }
         waveSurfer.seekTo(progress);
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -97,8 +126,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (onReady && typeof onReady === 'function') {
           onReady();
         }
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -111,8 +140,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (onTimeChange && typeof onTimeChange === 'function') {
           onTimeChange(currentTime);
         }
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -122,19 +151,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       try {
         waveSurfer.playPause();
         setIsPlay(prevValue => !prevValue);
-      } catch {
-        // do nothing
-      }
-    }
-  };
-
-  const handleStop = () => {
-    if (waveSurfer) {
-      try {
-        waveSurfer.stop();
-        setIsPlay(false);
-      } catch {
-        // do nothing
+      } catch (error) {
+        handleError(error.message);
       }
     }
   };
@@ -151,6 +169,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleFinish = () => setIsPlay(false);
+
 
   React.useEffect(() => {
     const initPlayer = () => {
@@ -206,7 +225,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       fetch(peaksUrl)
         .then(response => {
           if (!response.ok) {
-            throw new Error('HTTP error ' + response.status);
+            throw new Error('HTTP error: ' + response.status);
           }
           return response.json();
         })
@@ -219,8 +238,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
           initialWaveSurfer.load(url, peaks.data);
           document.body.scrollTop = 0;
         })
-        .catch(e => {
-          console.error('error', e);
+        .catch((error) => {
+          handleError(`PEAKS ERROR: ${error.message}`);
+          console.error('error', error);
         });
 
       // set listeners
@@ -228,6 +248,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       initialWaveSurfer.on('seek', () => handleSeek(initialWaveSurfer));
       initialWaveSurfer.on('audioprocess', () => handleSeek(initialWaveSurfer));
       initialWaveSurfer.on('finish', handleFinish);
+      initialWaveSurfer.on('error', handleError);
       setWaveSurfer(initialWaveSurfer);
     };
     if (url) {
@@ -252,11 +273,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   return (
     <Card >
-      {isReady && <CardHeader
+      {(isReady && !errorText) && <CardHeader
         title={playerControls}
         subheader={`${currentTime} / ${durationDisplay}`}
       />}
-      {!url && (
+      {(!url || !!errorText) && (
         <CardContent>
           <Grid
             container
@@ -270,11 +291,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
               <WarningIcon color='secondary' />
             </Grid>
             <Grid item>
-              <Typography>{translate('audioPlayer.noUrl')}</Typography>
+              <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
             </Grid>
           </Grid>
         </CardContent>)}
-      <CardContent className={classes.content}>
+      <CardContent className={errorText ? classes.hidden : classes.content}>
         <div id="waveform" />
         <div id="wave-timeline" />
       </CardContent>
