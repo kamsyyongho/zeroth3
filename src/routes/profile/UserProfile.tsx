@@ -98,7 +98,7 @@ export function UserProfile() {
         <CardHeader title={translate('profile.user')} />
         <CardContent>
           <Typography color="textPrimary" gutterBottom >
-            {translate('profile.fullName', { family: familyName, given: givenName })}
+            {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
           </Typography>
           <Typography color="textSecondary" >
             {preferredUsername}
