@@ -1,6 +1,7 @@
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
+import InputLabel from '@material-ui/core/InputLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -19,7 +20,7 @@ import log from '../../../util/log/logger';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
-      minWidth: 80,
+      minWidth: 130,
       maxWidth: 300,
     },
     hidden: {
@@ -46,7 +47,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   const index = cellData.cell.row.index;
   const key = `${index}-transcriber`;
 
-  const [transcriberId, setTranscriberId] = React.useState<number | string>('');
+  const [transcriberId, setTranscriberId] = React.useState<number | ''>('');
   const [loading, setLoading] = React.useState(false);
 
   const classes = useStyles();
@@ -103,13 +104,18 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   };
 
   const renderMenuItems = () => {
-    return transcribers.map((transcriber, index) => {
+    const menuItems = transcribers.map((transcriber, index) => {
       return (
         <MenuItem key={index} value={transcriber.id}>
           <ListItemText primary={transcriber.email} />
         </MenuItem>
       );
     });
+    // to allow us to unselect transcribers
+    menuItems.unshift(<MenuItem value=''>
+      <em>{translate('forms.none')}</em>
+    </MenuItem>);
+    return menuItems;
   };
 
 
@@ -117,12 +123,14 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
     <Grid
       key={key}
       container
+      wrap='nowrap'
       direction='row'
       alignContent='center'
       alignItems='center'
       justify='flex-start'
     >
       <FormControl className={classes.formControl} >
+        <InputLabel id="transcriber-select-label">{translate('forms.assign')}</InputLabel>
         <Select
           value={transcriberId}
           onChange={handleChange}
