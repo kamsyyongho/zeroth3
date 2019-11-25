@@ -114,6 +114,7 @@ export const en: ResourceLanguage = {
       transcriber: 'Transcriber',
       none: 'None',
       today: 'Today',
+      assign: 'Assign',
     },
     IAM: {
       user: 'User',
@@ -176,7 +177,7 @@ export const en: ResourceLanguage = {
       editModel: 'Edit model',
     },
     audioPlayer: {
-      noUrl: 'No audio URL'
-    }
+      noUrl: 'No audio URL',
+    },
   },
 };

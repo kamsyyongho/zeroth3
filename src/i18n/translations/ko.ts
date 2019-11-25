@@ -116,6 +116,7 @@ export const ko: ResourceLanguage = {
       transcriber: 'Transcriber',
       none: 'None',
       today: '오늘',
+      assign: 'Assign',
     },
     IAM: {
       user: '사용자',
