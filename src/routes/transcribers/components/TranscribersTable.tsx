@@ -11,7 +11,7 @@ import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination,
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { PaginatedResults, TranscriberStats, VoiceData } from '../../../types';
 import { Pagination } from '../../shared/Pagination';
-import { TranscriberRating } from './TranscriberRating';
+import { RatingDisplay } from '../../shared/RatingDisplay';
 
 interface TranscribersTableProps {
   transcribersStats: TranscriberStats[];
@@ -48,7 +48,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
       {
         Header: translate('transcribers.rating'),
         accessor: 'rating',
-        Cell: (data: CellProps<TranscriberStats>) => TranscriberRating({ rating: data.cell.value }),
+        Cell: (data: CellProps<TranscriberStats>) => RatingDisplay({ rating: data.cell.value }),
       },
     ],
     [transcribersStats]

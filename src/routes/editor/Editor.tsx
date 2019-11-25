@@ -30,7 +30,7 @@ import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
-import { StarRating } from '../shared/StarRating';
+import { StarRating } from './components/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
 
 

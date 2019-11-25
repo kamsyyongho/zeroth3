@@ -7,13 +7,13 @@ import Rating from 'material-ui-rating';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
-import { PERMISSIONS } from '../../constants';
-import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
-import { SnackbarError, VoiceData } from '../../types';
-import log from '../../util/log/logger';
+import { PERMISSIONS } from '../../../constants';
+import { ApiContext } from '../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
+import { SnackbarError, VoiceData } from '../../../types';
+import log from '../../../util/log/logger';
 
 
 interface StarRatingProps {
@@ -81,6 +81,7 @@ export const StarRating = (props: StarRatingProps) => {
   return (
     <Grid
       container
+      wrap='nowrap'
       direction='row'
       alignContent='center'
       alignItems='center'
