@@ -38,6 +38,7 @@ export const en: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
+      transcribers: 'Transcribers',
     },
     menu: {
       login: 'Login',
@@ -54,6 +55,10 @@ export const en: ResourceLanguage = {
     organization: {
       rename: 'Rename',
       renameOrg: 'Rename organization',
+    },
+    transcribers: {
+      count: 'Count',
+      rating: 'Rating',
     },
     forms: {
       validation: {

@@ -8,16 +8,17 @@ import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
 import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
+import { Editor } from './routes/editor/Editor';
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
 import { Models } from './routes/models/Models';
 import { UserProfile } from './routes/profile/UserProfile';
-import { Editor } from './routes/editor/Editor';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Projects } from './routes/projects/Projects';
-import { TDP } from './routes/TDP/TDP';
 import Header from './routes/shared/header/Header';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
+import { TDP } from './routes/TDP/TDP';
+import { TranscribersSummary } from './routes/transcribers/TranscribersSummary';
 import { PATHS } from './types';
 
 const history = createBrowserHistory();
@@ -69,6 +70,7 @@ function App() {
         <Route exact path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
         <Route path={PATHS.profile.to} component={UserProfile} />
+        <Route path={PATHS.transcribers.to} component={TranscribersSummary} />
       </Router>
     </RootProvider>
   );
