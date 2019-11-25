@@ -20,11 +20,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-interface TDPTablePaginationActionsProps extends TablePaginationActionsProps {
+interface PaginationProps extends TablePaginationActionsProps {
   pageCount: number;
 }
 
-export function TDPTablePaginationActions(props: TDPTablePaginationActionsProps) {
+export function Pagination(props: PaginationProps) {
   const classes = useStyles();
   const theme = useTheme();
   const {
@@ -82,7 +82,7 @@ export function TDPTablePaginationActions(props: TDPTablePaginationActionsProps)
         value={page}
         onChange={handlePageChange}
         className={classes.select}
-        style={{paddingTop: 6}}
+        style={{ paddingTop: 6 }}
       >
         {pageSelectItems}
       </Select>
