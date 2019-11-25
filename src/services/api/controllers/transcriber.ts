@@ -1,5 +1,6 @@
 import { ApisauceInstance } from 'apisauce';
 import {
+  PaginatedResults,
   Transcriber as TranscriberInterface,
   TrascriberStatsResults,
 } from '../../../types';
@@ -84,7 +85,10 @@ export class Transcriber extends ParentApi {
     // transform the data into the format we are expecting
     try {
       const data = response.data as TrascriberStatsResults;
-      return { kind: 'ok', data };
+      const transcribersStats = data.content;
+      delete data.content;
+      const pagination: PaginatedResults = { ...data };
+      return { kind: 'ok', transcribersStats, pagination };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

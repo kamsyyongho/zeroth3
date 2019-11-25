@@ -1,4 +1,8 @@
-import { Transcriber, TrascriberStatsResults } from '../../../types';
+import {
+  PaginatedResults,
+  Transcriber,
+  TranscriberStats,
+} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -19,5 +23,9 @@ export type getTranscribersResult =
   | GeneralApiProblem;
 
 export type getTranscribersWithStatsResults =
-  | { kind: 'ok'; data: TrascriberStatsResults }
+  | {
+      kind: 'ok';
+      transcribersStats: TranscriberStats[];
+      pagination: PaginatedResults;
+    }
   | GeneralApiProblem;

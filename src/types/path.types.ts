@@ -24,6 +24,10 @@ export const PATHS: { [x: string]: Path } = {
     to: '/iam',
     title: 'IAM',
   },
+  transcribers: {
+    to: '/transcribers',
+    title: 'transcribers',
+  },
   projects: {
     to: '/projects',
     title: 'projects',
