@@ -112,7 +112,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
       );
     });
     // to allow us to unselect transcribers
-    menuItems.unshift(<MenuItem value=''>
+    menuItems.unshift(<MenuItem key={-1} value=''>
       <em>{translate('forms.none')}</em>
     </MenuItem>);
     return menuItems;

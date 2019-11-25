@@ -18,7 +18,7 @@ import { ModelConfig, PATHS, Project, SnackbarError, Transcriber, VoiceData, Voi
 import log from '../../util/log/logger';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
-import { AudioUploadDialog } from './components/AudioUploadDialog';
+import { AudioUploadDialog } from '../projects/components/AudioUploadDialog';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
