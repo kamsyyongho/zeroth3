@@ -61,18 +61,18 @@ const Header: React.FunctionComponent<{}> = (props) => {
     setOrganizationLoading(false);
   };
 
+  const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
+  const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
+
   React.useEffect(() => {
-    if (user.organizationId) {
+    // no need to get organization to check if we don't have the permission to rename
+    if (user.organizationId && canRename) {
       getOrganization();
     } else {
       setOrganizationLoading(false);
     }
   }, []);
 
-  const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
-  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
-
-  const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
 
   // to show a notification when the organization name should be changed
   React.useEffect(() => {
@@ -97,10 +97,19 @@ const Header: React.FunctionComponent<{}> = (props) => {
     }
   }, [canRename, shouldRenameOrganization]);
 
+
+  const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+
   const pathButtons: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
     // to only display links for pages we are allowed to go to
-    if (key !== 'models' || (key === 'models' && canSeeModels)) {
+    let shouldRender = true;
+    if ((key === 'models' && !canSeeModels) || (key === 'transcribers' && !canSeeTranscribers)) {
+      shouldRender = false;
+    }
+
+    if (shouldRender) {
       const path = PATHS[key];
       const { to, title } = path;
       if (title && to) {
