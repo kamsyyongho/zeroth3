@@ -16,9 +16,9 @@ import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult } from '../../services/api/types';
 import { ModelConfig, PATHS, Project, SnackbarError, Transcriber, VoiceData, VoiceDataResults } from '../../types';
 import log from '../../util/log/logger';
+import { AudioUploadDialog } from '../projects/components/AudioUploadDialog';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
-import { AudioUploadDialog } from './components/AudioUploadDialog';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {

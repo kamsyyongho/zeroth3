@@ -424,6 +424,7 @@ export class VoiceData extends ParentApi {
 
   /**
    * Assigns data (one or multiple) to a specific user
+   * - can assign multiple voice data at once
    * - only assignable when the status is `UNCONFIRMED_LC`
    * - in the server: `status` will be set to `FETCHED` and the `transcriber` will be set to the email
    * @param projectId

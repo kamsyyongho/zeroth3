@@ -38,6 +38,7 @@ export const en: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
+      transcribers: 'Transcribers',
     },
     menu: {
       login: 'Login',
@@ -54,6 +55,10 @@ export const en: ResourceLanguage = {
     organization: {
       rename: 'Rename',
       renameOrg: 'Rename organization',
+    },
+    transcribers: {
+      count: 'Count',
+      rating: 'Rating',
     },
     forms: {
       validation: {
@@ -114,6 +119,7 @@ export const en: ResourceLanguage = {
       transcriber: 'Transcriber',
       none: 'None',
       today: 'Today',
+      assign: 'Assign',
     },
     IAM: {
       user: 'User',
@@ -176,7 +182,7 @@ export const en: ResourceLanguage = {
       editModel: 'Edit model',
     },
     audioPlayer: {
-      noUrl: 'No audio URL'
-    }
+      noUrl: 'No audio URL',
+    },
   },
 };

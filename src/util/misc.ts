@@ -40,3 +40,12 @@ export function differencesBetweenSets<T>(aSet: Set<T>, bSet: Set<T>) {
   }
   return { extra, missing };
 }
+
+/**
+ * Rounds to the nearest half decimal place
+ * @param num 
+ * @returns a float `#.0`, `#.5`
+ */
+export function roundHalf (num: number) { 
+  return (Math.round(num*2)/2).toFixed(1);
+} 

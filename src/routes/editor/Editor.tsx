@@ -877,7 +877,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
                       onChange: () => setHCEditable(!HCEditable),
                     }}
                     labelProps={{
-                      label: 'TEST LC EDIT',
+                      label: 'TEST HC EDIT',
                       labelPlacement: 'top',
                     }}
                   />

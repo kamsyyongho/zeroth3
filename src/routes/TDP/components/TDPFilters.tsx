@@ -224,7 +224,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                       size={15}
                       color={theme.palette.common.white}
                       loading={true}
-                    />}{'TEST SUBMIT'}</Button>
+                    />}{translate('common.submit')}</Button>
                   <Button
                     disabled={loading}
                     onClick={() => formikProps.resetForm()}

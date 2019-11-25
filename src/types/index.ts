@@ -1,6 +1,7 @@
 export * from './misc.types';
 export * from './models.types';
 export * from './organizations.types';
+export * from './pagination.types';
 export * from './path.types';
 export * from './projects.types';
 export * from './snackbar.types';

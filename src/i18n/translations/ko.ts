@@ -38,6 +38,7 @@ export const ko: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
+      transcribers: 'Transcribers',
     },
     menu: {
       login: '로그인',
@@ -54,6 +55,10 @@ export const ko: ResourceLanguage = {
     organization: {
       rename: 'Rename',
       renameOrg: 'Rename organization',
+    },
+    transcribers: {
+      count: 'Count',
+      rating: 'Rating',
     },
     forms: {
       validation: {
@@ -116,6 +121,7 @@ export const ko: ResourceLanguage = {
       transcriber: 'Transcriber',
       none: 'None',
       today: '오늘',
+      assign: 'Assign',
     },
     IAM: {
       user: '사용자',
@@ -177,7 +183,7 @@ export const ko: ResourceLanguage = {
       editModel: 'Edit model',
     },
     audioPlayer: {
-      noUrl: 'No audio URL'
-    }
+      noUrl: 'No audio URL',
+    },
   },
 };

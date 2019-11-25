@@ -1,6 +1,6 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -17,11 +17,11 @@ import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest } from '../../../services/api/types';
 import { CONTENT_STATUS, PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
+import { Pagination } from '../../shared/Pagination';
 import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPCellTranscriberSelect } from './TDPCellTranscriberSelect';
 import { TDPFilters } from './TDPFilters';
-import { TDPTablePaginationActions } from './TDPTablePaginationActions';
 
 interface TDPTableProps {
   projectId: number;
@@ -35,11 +35,12 @@ interface TDPTableProps {
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
-const useStyles = makeStyles(theme => ({
-  clickableTableBody: {
-    cursor: 'pointer',
-  },
-}));
+const useStyles = makeStyles(theme =>
+  createStyles({
+    clickableTableBody: {
+      cursor: 'pointer',
+    },
+  }));
 
 export function TDPTable(props: TDPTableProps) {
   const {
@@ -198,7 +199,7 @@ export function TDPTable(props: TDPTableProps) {
     } else {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize });
     }
-  }, [getVoiceData, initialLoad, pageIndex, pageSize, voiceDataOptions]);
+  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions]);
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
@@ -309,7 +310,7 @@ export function TDPTable(props: TDPTableProps) {
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
-      ActionsComponent={(paginationProps) => TDPTablePaginationActions({ ...paginationProps, pageCount })}
+      ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
     />}
   </>
   );
