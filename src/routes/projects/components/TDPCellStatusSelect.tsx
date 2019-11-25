@@ -103,6 +103,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
     <Grid
       key={key}
       container
+      wrap='nowrap'
       direction='row'
       alignContent='center'
       alignItems='center'
