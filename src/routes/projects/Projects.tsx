@@ -3,7 +3,7 @@ import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
@@ -172,7 +172,7 @@ export function Projects() {
       <Button
         disabled={!projectsToDelete.length}
         variant="contained"
-        color="primary"
+        color="secondary"
         onClick={confirmDelete}
         startIcon={deleteLoading ? <MoonLoader
           sizeUnit={"px"}
@@ -187,7 +187,7 @@ export function Projects() {
     <Grid item >
       <Button
         variant="contained"
-        color="secondary"
+        color="primary"
         onClick={handleCreateOpen}
         startIcon={<AddIcon />}
       >
