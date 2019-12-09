@@ -82,7 +82,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
 
   React.useEffect(() => {
     const getModels = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getAcousticModels();
         if (response.kind === 'ok') {
           setModels(response.acousticModels);
@@ -107,7 +107,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     const deleteProjectPromises: Promise<deleteAcousticModelResult>[] = [];
     const successIds: string[] = [];
     modelsToDelete.forEach(modelId => {
-      if (api && api.models) {
+      if (api?.models) {
         deleteProjectPromises.push(api.models.deleteAcousticModel(modelId));
       } else {
         return;
@@ -125,7 +125,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
         });
         serverError = response.serverError;
         let errorMessageText = translate('common.error');
-        if (serverError && serverError.message) {
+        if (serverError?.message) {
           errorMessageText = serverError.message;
         }
         enqueueSnackbar(errorMessageText, { variant: 'error' });

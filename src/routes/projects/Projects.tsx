@@ -61,7 +61,7 @@ export function Projects() {
 
   React.useEffect(() => {
     const getProjects = async () => {
-      if (api && api.projects) {
+      if (api?.projects) {
         const response = await api.projects.getProjects();
         if (response.kind === 'ok') {
           setProjects(response.projects);
@@ -134,7 +134,7 @@ export function Projects() {
     const deleteProjectPromises: Promise<deleteProjectResult>[] = [];
     const successIds: string[] = [];
     projectsToDelete.forEach(projectId => {
-      if (api && api.projects) {
+      if (api?.projects) {
         deleteProjectPromises.push(api.projects.deleteProject(projectId));
       } else {
         return;
@@ -152,7 +152,7 @@ export function Projects() {
         });
         serverError = response.serverError;
         let errorMessageText = translate('common.error');
-        if (serverError && serverError.message) {
+        if (serverError?.message) {
           errorMessageText = serverError.message;
         }
         enqueueSnackbar(errorMessageText, { variant: 'error' });

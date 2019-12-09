@@ -44,7 +44,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
   const hideDialog = () => setIsOpen(false);
 
   const getOrganization = async () => {
-    if (api && api.organizations) {
+    if (api?.organizations) {
       setOrganizationLoading(true);
       const response = await api.organizations.getOrganization();
       if (response.kind === 'ok') {

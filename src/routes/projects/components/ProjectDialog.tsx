@@ -78,7 +78,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
   const handleSubmit = async (values: FormValues) => {
     const { thresholdHc, thresholdLc } = values;
     if (thresholdHc === null || thresholdLc === null) return;
-    if (api && api.projects && !loading) {
+    if (api?.projects && !loading) {
       setLoading(true);
       setIsError(false);
       const { name } = values;
@@ -109,7 +109,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

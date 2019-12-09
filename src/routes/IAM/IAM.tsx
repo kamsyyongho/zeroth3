@@ -58,7 +58,7 @@ export function IAM() {
   const theme = useTheme();
 
   const getUsers = async () => {
-    if (api && api.IAM) {
+    if (api?.IAM) {
       const response = await api.IAM.getUsers();
       if (response.kind === 'ok') {
         setUsers(response.users);
@@ -79,7 +79,7 @@ export function IAM() {
 
   React.useEffect(() => {
     const getRoles = async () => {
-      if (api && api.IAM) {
+      if (api?.IAM) {
         const response = await api.IAM.getRoles();
         if (response.kind === 'ok') {
           setRoles(response.roles);
@@ -168,7 +168,7 @@ export function IAM() {
     const deleteUserPromises: Promise<deleteUserResult>[] = [];
     const successIds: string[] = [];
     usersToDelete.forEach(userId => {
-      if (api && api.IAM) {
+      if (api?.IAM) {
         deleteUserPromises.push(api.IAM.deleteUser(userId));
       } else {
         return;
@@ -191,7 +191,7 @@ export function IAM() {
         });
         serverError = response.serverError;
         let errorMessageText = translate('common.error');
-        if (serverError && serverError.message) {
+        if (serverError?.message) {
           errorMessageText = serverError.message;
         }
         enqueueSnackbar(errorMessageText, { variant: 'error' });

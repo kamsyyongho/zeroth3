@@ -35,7 +35,7 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
   const closeConfirmation = () => setConfirmationOpen(false);
 
   const resetPassword = async () => {
-    if (api && api.IAM) {
+    if (api?.IAM) {
       closeConfirmation();
       setIsLoading(true);
       const response = await api.IAM.resetPasswordOfUser(user.id);
@@ -56,7 +56,7 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setIsLoading(false);
     }
   };

@@ -238,7 +238,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   React.useEffect(() => {
     const getSegments = async () => {
-      if (api && api.voiceData) {
+      if (api?.voiceData) {
         setSegmentsLoading(true);
         const response = await api.voiceData.getSegments(projectId, dataId);
         if (response.kind === 'ok') {
@@ -259,7 +259,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   }, [api, dataId, projectId]);
 
   const confirmData = async () => {
-    if (api && api.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
       const response = await api.voiceData.confirmData(projectId, dataId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -283,13 +283,13 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setConfirmSegmentsLoading(false);
     }
   };
 
   const submitSegmentUpdates = async () => {
-    if (api && api.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       // to build which segments to send
@@ -318,7 +318,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setSaveSegmentsLoading(false);
     }
   };
@@ -327,7 +327,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     if (numberOfSegmentsSelected !== 2) {
       return;
     }
-    if (api && api.voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       const segmentIndexesToMerge: number[] = Array.from(segmentMergeIndexes);
@@ -374,14 +374,14 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setSaveSegmentsLoading(false);
     }
   };
 
   const submitSegmentSplit = async () => {
     if (!splitLocation) return;
-    if (api && api.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const { segmentId, segmentIndex, splitIndex } = splitLocation;
       const response = await api.voiceData.splitSegment(projectId, dataId, segmentId, splitIndex);
@@ -415,7 +415,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setSaveSegmentsLoading(false);
     }
   };

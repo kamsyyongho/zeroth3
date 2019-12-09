@@ -43,7 +43,7 @@ export function UserProfile() {
   const { givenName, familyName, preferredUsername, email, organizationId } = user;
 
   const getOrganization = async () => {
-    if (api && api.organizations) {
+    if (api?.organizations) {
       setOrganizationLoading(true);
       const response = await api.organizations.getOrganization();
       if (response.kind === 'ok') {
@@ -61,7 +61,7 @@ export function UserProfile() {
   };
 
   const resetPassword = async () => {
-    if (api && api.user) {
+    if (api?.user) {
       closeConfirmation();
       setPasswordResetLoading(true);
       const response = await api.user.resetPassword();
@@ -81,7 +81,7 @@ export function UserProfile() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setPasswordResetLoading(false);
     }
   };

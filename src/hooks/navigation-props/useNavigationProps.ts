@@ -10,6 +10,7 @@ export function useNavigationProps() {
 
   function getProps<T>(propKeys: string[]): T {
     const state = navigationProps || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const navProps: any = {};
     try {
       propKeys.forEach(key => {

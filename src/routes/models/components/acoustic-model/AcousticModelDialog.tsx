@@ -88,7 +88,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.models && !loading) {
+    if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description, location, sampleRate } = values;
@@ -118,7 +118,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

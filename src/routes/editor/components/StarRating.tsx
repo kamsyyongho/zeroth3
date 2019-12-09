@@ -47,7 +47,7 @@ export const StarRating = (props: StarRatingProps) => {
 
 
   const updateRating = async () => {
-    if (api && api.voiceData && ratingChanged && !loading && typeof rating === 'number') {
+    if (api?.voiceData && ratingChanged && !loading && typeof rating === 'number') {
       setLoading(true);
       const response = await api.voiceData.rateTranscript(projectId, voiceData.id, rating);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -71,7 +71,7 @@ export const StarRating = (props: StarRatingProps) => {
             snackbarError.errorText = serverError;
           }
         }
-        snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
         setLoading(false);
       }
     }

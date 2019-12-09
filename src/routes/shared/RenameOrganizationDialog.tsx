@@ -47,7 +47,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (api && api.organizations && !loading) {
+    if (api?.organizations && !loading) {
       setLoading(true);
       setIsError(false);
       const response = await api.organizations.renameOrganization(values.name);
@@ -71,7 +71,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

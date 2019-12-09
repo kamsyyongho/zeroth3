@@ -122,7 +122,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   };
 
   const handleDelete = async () => {
-    if (api && api.modelConfig && modelConfigToEdit) {
+    if (api?.modelConfig && modelConfigToEdit) {
       setDeleteLoading(true);
       const modelConfigId = modelConfigToEdit.id;
       closeConfirmation();
@@ -145,7 +145,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setDeleteLoading(false);
     }
   };

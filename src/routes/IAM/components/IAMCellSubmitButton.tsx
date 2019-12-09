@@ -72,7 +72,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
   const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
 
   const addRoles = async (rolesToAdd: string[]) => {
-    if (api && api.IAM) {
+    if (api?.IAM) {
       setIsAddLoading(true);
       const response = await api.IAM.assignRolesToUser(user.id, rolesToAdd);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -93,7 +93,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setIsAddLoading(false);
     }
   };
@@ -109,7 +109,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
     setIsDeleteLoading(true);
     const deleteRolePromises: Promise<deleteRoleResult>[] = [];
     rolesToDelete.forEach(roleId => {
-      if (api && api.IAM) {
+      if (api?.IAM) {
         deleteRolePromises.push(api.IAM.deleteRole(user.id, roleId));
       } else {
         return;
@@ -141,7 +141,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       }
       roleIdIndexCounter++;
     });

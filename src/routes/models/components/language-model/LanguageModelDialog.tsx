@@ -99,7 +99,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
 
   const handleSubmit = async (values: FormValues) => {
     if (values.selectedTopGraphId === null) return;
-    if (api && api.models && !loading) {
+    if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description, selectedTopGraphId, selectedSubGraphIds } = values;
@@ -129,7 +129,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

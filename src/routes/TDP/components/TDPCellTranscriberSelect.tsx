@@ -61,7 +61,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   }
 
   const assignTranscriber = async () => {
-    if (api && api.voiceData && canAssign && !loading) {
+    if (api?.voiceData && canAssign && !loading) {
       setLoading(true);
       const response = await api.voiceData.assignUnconfirmedDataToTranscriber(projectId, transcriberId, voiceData.modelConfigId, [voiceData.id]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -92,7 +92,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
         setLoading(false);
       }
     }

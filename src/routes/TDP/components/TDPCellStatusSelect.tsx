@@ -56,7 +56,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
   const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.RAW;
 
   const updateStatus = async () => {
-    if (api && api.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.RAW) {
+    if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.RAW) {
       setLoading(true);
       const response = await api.voiceData.updateStatus(projectId, voiceData.id, status);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -77,7 +77,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
         setLoading(false);
       }
     }

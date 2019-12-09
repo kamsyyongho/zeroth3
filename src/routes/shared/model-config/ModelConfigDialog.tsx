@@ -106,7 +106,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const handleSubmit = async (values: FormValues) => {
     const { selectedAcousticModelId, selectedLanguageModelId } = values;
     if (selectedAcousticModelId === null || selectedLanguageModelId === null) return;
-    if (api && api.modelConfig && !loading) {
+    if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, description } = values;
@@ -136,7 +136,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };
