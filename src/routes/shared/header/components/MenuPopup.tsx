@@ -1,4 +1,6 @@
+import { Divider } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
+import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
@@ -8,11 +10,11 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import PersonIcon from '@material-ui/icons/Person';
 import React from 'react';
 import { FiLogOut } from 'react-icons/fi';
-import { MdTranslate } from 'react-icons/md';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { PATHS } from '../../../../types/path.types';
+import { KeycloakUser } from '../../../../hooks/keycloak/useKeycloak';
+import { Organization, PATHS } from '../../../../types';
 import { SvgIconWrapper } from '../../SvgIconWrapper';
 
 const useStyles = makeStyles((theme) =>
@@ -23,7 +25,13 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-function MenuPopup() {
+interface MenuPopupProps {
+  user?: KeycloakUser;
+  organization?: Organization;
+}
+
+function MenuPopup(props: MenuPopupProps) {
+  const { user, organization } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const history = useHistory();
@@ -60,6 +68,15 @@ function MenuPopup() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
+        {(user?.email || organization?.name) && (<div>
+          <ListItem >
+            <ListItemText
+              primary={user?.email ? user.email : undefined}
+              secondary={organization?.name ? organization.name : undefined}
+            />
+          </ListItem>
+          <Divider />
+        </div>)}
         <MenuItem onClick={navigateToProfile} >
           <ListItemIcon >
             <PersonIcon color={isCurrentPath ? 'primary' : undefined} />

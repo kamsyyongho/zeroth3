@@ -165,7 +165,10 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             >
               <SvgIconWrapper ><MdTranslate /></SvgIconWrapper>
             </IconButton>
-            <MenuPopup />
+            <MenuPopup
+              user={user}
+              organization={organization}
+            />
           </Grid>
         </Grid>
       </Toolbar>
