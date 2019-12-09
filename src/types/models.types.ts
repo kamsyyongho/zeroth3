@@ -23,10 +23,3 @@ export interface LanguageModel extends Model {
 
 export type SubGraph = TopGraph;
 
-export interface ModelConfig {
-  acousticModel: AcousticModel;
-  name: string;
-  description: string;
-  id: string;
-  languageModel: LanguageModel;
-}

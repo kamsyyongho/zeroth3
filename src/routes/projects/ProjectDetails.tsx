@@ -216,7 +216,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setAcousticModelsLoading(false);
       }
     };
-    if (projectId) {
+    if (!projectId) {
       setIsValidId(false);
       setProjectLoading(false);
       log({

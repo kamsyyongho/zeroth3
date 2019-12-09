@@ -67,12 +67,6 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
           <Typography gutterBottom color="textSecondary" className={classes.text}>
             {project.apiSecret}
           </Typography>
-          <Typography variant="body1" component="p" className={classes.text}>
-            {project.thresholdHc}
-          </Typography>
-          <Typography variant="body1" component="p" className={classes.text}>
-            {project.thresholdLc}
-          </Typography>
           <Typography variant="body2" gutterBottom component="p" className={classes.text}>
             {new Date(project.validFrom).toDateString()}
           </Typography>

@@ -44,29 +44,20 @@ export function ProjectDialog(props: ProjectDialogProps) {
 
 
   // validation translated text
-  const thresholdLcText = translate("forms.thresholdLc");
-  const thresholdHcText = translate("forms.thresholdHc");
-  const numberText = translate("forms.validation.number");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.PROJECT.name.min, second: VALIDATION.PROJECT.name.max, context: 'characters' });
   const requiredTranslationText = translate("forms.validation.required");
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.PROJECT.name.min, nameText).max(VALIDATION.PROJECT.name.max, nameText).required(requiredTranslationText).trim(),
-    thresholdLc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).nullable().required(requiredTranslationText),
-    thresholdHc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).nullable().required(requiredTranslationText),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
-    thresholdLc: null,
-    thresholdHc: null,
   };
   if (projectToEdit) {
     initialValues = {
       ...initialValues,
       name: projectToEdit.name,
-      thresholdLc: projectToEdit.thresholdLc,
-      thresholdHc: projectToEdit.thresholdHc,
     };
   }
 
@@ -76,17 +67,15 @@ export function ProjectDialog(props: ProjectDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { thresholdHc, thresholdLc } = values;
-    if (thresholdHc === null || thresholdLc === null) return;
     if (api?.projects && !loading) {
       setLoading(true);
       setIsError(false);
       const { name } = values;
       let response: updateProjectResult | postProjectResult;
       if (isEdit && projectToEdit) {
-        response = await api.projects.updateProject(name.trim(), thresholdHc, thresholdLc, projectToEdit.id);
+        response = await api.projects.updateProject(name.trim(), projectToEdit.id);
       } else {
-        response = await api.projects.postProject(name.trim(), thresholdHc, thresholdLc);
+        response = await api.projects.postProject(name.trim());
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -130,23 +119,6 @@ export function ProjectDialog(props: ProjectDialogProps) {
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field
-                  name='thresholdLc'
-                  component={TextFormField}
-                  label={thresholdLcText}
-                  placeholder={`${VALIDATION.PROJECT.threshold.min}`}
-                  type='number'
-                  margin="normal"
-                  errorOverride={isError}
-                />
-                <Field
-                  name='thresholdHc'
-                  component={TextFormField}
-                  label={thresholdHcText}
-                  type='number'
-                  margin="normal"
-                  errorOverride={isError}
-                />
               </Form>
             </DialogContent>
             <DialogActions>
