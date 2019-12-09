@@ -6,8 +6,8 @@ import { GeneralApiProblem } from './api-problem.types';
 //////////////
 
 export interface ModelConfigRequest {
-  acousticModelId: number;
-  languageModelId: number;
+  acousticModelId: string;
+  languageModelId: string;
   name: string;
   description: string;
 }

@@ -122,7 +122,7 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the model cannot be updated
    */
   async updateAcousticModel(
-    modelId: number,
+    modelId: string,
     name: string,
     sampleRate: number,
     location: string,
@@ -165,7 +165,7 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the model cannot be deleted
    */
   async deleteAcousticModel(
-    modelId: number
+    modelId: string
   ): Promise<deleteAcousticModelResult> {
     // make the api call
     const response: ApiResponse<
@@ -250,8 +250,8 @@ export class Models extends ParentApi {
    */
   async postLanguageModel(
     name: string,
-    topGraphId: number,
-    subGraphIds: number[],
+    topGraphId: string,
+    subGraphIds: string[],
     description = ''
   ): Promise<postLanguageModelResult> {
     // compile data
@@ -295,10 +295,10 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the model cannot be updated
    */
   async updateLanguageModel(
-    modelId: number,
+    modelId: string,
     name: string,
-    topGraphId: number,
-    subGraphIds: number[],
+    topGraphId: string,
+    subGraphIds: string[],
     description = ''
   ): Promise<updateLanguageModelResult> {
     // compile data
@@ -338,7 +338,7 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the model cannot be deleted
    */
   async deleteLanguageModel(
-    modelId: number
+    modelId: string
   ): Promise<deleteLanguageModelResult> {
     // make the api call
     const response: ApiResponse<
@@ -437,7 +437,7 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the subgraph cannot be updated
    */
   async updateSubGraph(
-    subGraphId: number,
+    subGraphId: string,
     name: string,
     text: string,
     isPublic?: boolean
@@ -477,7 +477,7 @@ export class Models extends ParentApi {
    * @param subGraphId
    * @returns a `conflict` kind if the subgraph cannot be deleted
    */
-  async deleteSubGraph(subGraphId: number): Promise<deleteSubGraphResult> {
+  async deleteSubGraph(subGraphId: string): Promise<deleteSubGraphResult> {
     // make the api call
     const response: ApiResponse<
       undefined,

@@ -49,7 +49,7 @@ export interface SubGraphListProps {
   canDelete: boolean;
   confirmDelete: () => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleSubGraphCheck: (subGraphId: number, value: boolean) => void;
+  handleSubGraphCheck: (subGraphId: string, value: boolean) => void;
 }
 
 export function SubGraphList(props: SubGraphListProps) {

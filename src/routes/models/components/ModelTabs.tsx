@@ -3,8 +3,10 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import { useSnackbar } from 'notistack';
 import React from 'react';
+import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { deleteSubGraphResult } from '../../../services/api/types';
 import { ServerError } from '../../../services/api/types/api-problem.types';
 import { BooleanById, SubGraph, TopGraph } from '../../../types';
@@ -14,8 +16,6 @@ import { TabPanel } from '../../shared/TabPanel';
 import { AcousticModelGridList } from './acoustic-model/AcousticModelGridList';
 import { LanguageModelGridList } from './language-model/LanguageModelGridList';
 import { SubGraphList } from './subgraph/SubGraphList';
-import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { PERMISSIONS } from '../../../constants';
 
 const STARTING_TAB_INDEX = 1;
 
@@ -48,18 +48,18 @@ export function ModelTabs() {
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
 
-  let subGraphsToDelete: number[] = [];
+  let subGraphsToDelete: string[] = [];
   Object.keys(checkedSubGraphs).forEach(subGraphId => {
-    const checked = checkedSubGraphs[Number(subGraphId)];
+    const checked = checkedSubGraphs[subGraphId];
     if (checked) {
-      subGraphsToDelete.push(Number(subGraphId));
+      subGraphsToDelete.push(subGraphId);
     }
   });
 
   /**
    * remove the deleted subGraph from all lists
    */
-  const handleDeleteSuccess = (idsToDelete: number[]) => {
+  const handleDeleteSuccess = (idsToDelete: string[]) => {
     const subGraphsCopy = subGraphs.slice();
     // count down to account for removing indexes
     for (let i = subGraphs.length - 1; i >= 0; i--) {
@@ -73,18 +73,18 @@ export function ModelTabs() {
     setSubGraphs(subGraphsCopy);
   };
 
-  const handleSubGraphCheck = (subGraphId: number, value: boolean): void => {
+  const handleSubGraphCheck = (subGraphId: string, value: boolean): void => {
     setCheckedSubGraphs((prevCheckedSubGraphs) => {
       return { ...prevCheckedSubGraphs, [subGraphId]: value };
     });
   };
 
   const handleSubGraphDelete = async () => {
-    if(!canModify) return;
+    if (!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteSubGraphResult>[] = [];
-    const successIds: number[] = [];
+    const successIds: string[] = [];
     subGraphsToDelete.forEach(subGraphId => {
       if (api && api.models) {
         deleteProjectPromises.push(api.models.deleteSubGraph(subGraphId));

@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface TDPCellTranscriberSelectProps {
   cellData: CellProps<VoiceData>;
-  projectId: number;
+  projectId: string;
   transcribers: Transcriber[];
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
@@ -47,7 +47,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   const index = cellData.cell.row.index;
   const key = `${index}-transcriber`;
 
-  const [transcriberId, setTranscriberId] = React.useState<number | ''>('');
+  const [transcriberId, setTranscriberId] = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
 
   const classes = useStyles();
@@ -61,7 +61,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   }
 
   const assignTranscriber = async () => {
-    if (api && api.voiceData && canAssign && !loading && typeof transcriberId === 'number') {
+    if (api && api.voiceData && canAssign && !loading) {
       setLoading(true);
       const response = await api.voiceData.assignUnconfirmedDataToTranscriber(projectId, transcriberId, voiceData.modelConfigId, [voiceData.id]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -99,7 +99,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   };
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown; }>) => {
-    const value = event.target.value as number;
+    const value = event.target.value as string;
     setTranscriberId(value);
   };
 
@@ -139,7 +139,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
         </Select>
       </FormControl>
       <IconButton
-        className={typeof transcriberId !== 'number' ? classes.hidden : undefined}
+        className={transcriberId.length ? undefined : classes.hidden}
         disabled={loading}
         color='primary'
         size='small'

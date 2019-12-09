@@ -1,10 +1,11 @@
 import orange from '@material-ui/core/colors/orange';
+import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import StarIcon from '@material-ui/icons/Star';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import StarHalfIcon from '@material-ui/icons/StarHalf';
 import React from "react";
-import { roundHalf } from '../../../util/misc';
+import { roundHalf } from '../../util/misc';
 
 
 const useStyles = makeStyles(theme =>
@@ -14,12 +15,13 @@ const useStyles = makeStyles(theme =>
     }
   }));
 
-interface TranscriberRatingProps {
+interface RatingDisplayProps {
   rating: number;
+  small?: boolean;
 }
 
-export function TranscriberRating(props: TranscriberRatingProps) {
-  const { rating } = props;
+export function RatingDisplay(props: RatingDisplayProps) {
+  const { rating, small } = props;
   const classes = useStyles();
 
   const roundedRating = roundHalf(rating);
@@ -34,20 +36,20 @@ export function TranscriberRating(props: TranscriberRatingProps) {
 
   // add the full stars
   for (let i = 0; i < fullStarsNumber; i++) {
-    stars.push(<StarIcon key={`full-${i}`} className={classes.icon} />);
+    stars.push(<StarIcon fontSize={small ? 'small' : undefined} key={`full-${i}`} className={classes.icon} />);
   }
 
   // add a half star if needed
   if (halfStarNumber) {
-    stars.push(<StarHalfIcon key={`half`} className={classes.icon} />);
+    stars.push(<StarHalfIcon fontSize={small ? 'small' : undefined} key={`half`} className={classes.icon} />);
   }
 
   // fill the rest of the space
   for (let i = stars.length; i < 5; i++) {
-    stars.push(<StarBorderIcon key={`empty-${i}`} className={classes.icon} />);
+    stars.push(<StarBorderIcon fontSize={small ? 'small' : undefined} key={`empty-${i}`} className={classes.icon} />);
   }
 
   return (
-    <div>{stars}</div>
+    <Grid container wrap='nowrap'>{stars}</Grid>
   );
 }

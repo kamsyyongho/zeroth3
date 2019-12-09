@@ -27,7 +27,7 @@ interface TDPProps {
 
 
 export interface ModelConfigsById {
-  [x: number]: ModelConfig;
+  [x: string]: ModelConfig;
 }
 
 
@@ -48,7 +48,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const { projectId } = match.params;
-  const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
   const { hasPermission } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -61,7 +60,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
   const [assignDataLoading, setAssignDataLoading] = React.useState(false);
-  const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<number | undefined>(undefined);
+  const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<string | undefined>(undefined);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [transcribersLoading, setTranscribersLoading] = React.useState(true);
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
@@ -78,9 +77,9 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       setVoiceDataLoading(true);
       let response: getAssignedDataResult | searchDataResult | undefined;
       if (onlyAssignedData) {
-        response = await api.voiceData.getAssignedData(projectIdNumber, { page: options.page, size: options.size });
+        response = await api.voiceData.getAssignedData(projectId, { page: options.page, size: options.size });
       } else {
-        response = await api.voiceData.searchData(projectIdNumber, options);
+        response = await api.voiceData.searchData(projectId, options);
       }
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
@@ -95,12 +94,12 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [api, onlyAssignedData, projectIdNumber]);
+  }, [api, onlyAssignedData, projectId]);
 
   React.useEffect(() => {
     const getProject = async () => {
       if (api && api.projects) {
-        const response = await api.projects.getProject(projectIdNumber);
+        const response = await api.projects.getProject(projectId);
         if (response.kind === 'ok') {
           setProject(response.project);
         } else if (response.kind === ProblemKind["not-found"]) {
@@ -124,7 +123,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     };
     const getModelConfigs = async () => {
       if (api && api.modelConfig) {
-        const response = await api.modelConfig.getModelConfigs(projectIdNumber);
+        const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {
           setModelConfigs(response.modelConfigs);
         } else {
@@ -154,8 +153,8 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         setTranscribersLoading(false);
       }
     };
-    if (isNaN(projectIdNumber)) {
-      setIsValidId(true);
+    if (!projectId) {
+      setIsValidId(false);
       setProjectLoading(false);
       log({
         file: `TDP.tsx`,
@@ -178,7 +177,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
     if (!selectedModelConfigId) return;
     if (api && api.voiceData) {
       setAssignDataLoading(true);
-      const response = await api.voiceData.fetchUnconfirmedData(projectIdNumber, selectedModelConfigId);
+      const response = await api.voiceData.fetchUnconfirmedData(projectId, selectedModelConfigId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -217,7 +216,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
 
   const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
-      const modelConfigsByIdTemp: { [x: number]: ModelConfig; } = {};
+      const modelConfigsByIdTemp: { [x: string]: ModelConfig; } = {};
       modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
       return modelConfigsByIdTemp;
     },
@@ -252,7 +251,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
             <Select
               id="model-config-select"
               value={selectedModelConfigId || ''}
-              onChange={(event) => setSelectedModelConfigId(event.target.value as number)}
+              onChange={(event) => setSelectedModelConfigId(event.target.value as string)}
               autoWidth
             >
               {modelConfigs.map(modelConfig => (<MenuItem key={modelConfig.id} value={modelConfig.id}>{modelConfig.name}</MenuItem>))}
@@ -294,7 +293,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       <CardContent className={classes.cardContent} >
         {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
           <TDPTable
-            projectId={projectIdNumber}
+            projectId={projectId}
             projectName={project.name}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
@@ -318,7 +317,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         open={isUploadOpen}
         onClose={closeDialog}
         onSuccess={closeDialog}
-        projectId={projectIdNumber}
+        projectId={projectId}
         modelConfigs={modelConfigs}
       />
     </Container >

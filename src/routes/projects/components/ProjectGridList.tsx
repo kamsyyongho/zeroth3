@@ -13,30 +13,30 @@ interface ProjectGridListProps {
 }
 
 export interface EditOpenByProjectId {
-  [x: number]: boolean
+  [x: string]: boolean;
 }
 
 export function ProjectGridList(props: ProjectGridListProps) {
   const { projects, canModify, checkedProjects, setCheckedProjects, onUpdate } = props;
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
 
-  const handleEditOpen = (projectId: number) => setEditOpen(prevOpen => {
-    return { ...prevOpen, [projectId]: true }
+  const handleEditOpen = (projectId: string) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [projectId]: true };
   });
-  const handleEditClose = (projectId: number) => setEditOpen(prevOpen => {
-    return { ...prevOpen, [projectId]: false }
+  const handleEditClose = (projectId: string) => setEditOpen(prevOpen => {
+    return { ...prevOpen, [projectId]: false };
   });
 
   const handleEditSuccess = (updatedProject: Project, isEdit?: boolean) => {
     onUpdate(updatedProject, isEdit);
     handleEditClose(updatedProject.id);
-  }
+  };
 
-  const handleProjectCheck = (projectId: number, value: boolean): void => {
+  const handleProjectCheck = (projectId: string, value: boolean): void => {
     setCheckedProjects((prevCheckedProjects) => {
-      return { ...prevCheckedProjects, [projectId]: value }
-    })
-  }
+      return { ...prevCheckedProjects, [projectId]: value };
+    });
+  };
 
   const renderProjects = () => projects.map((project, index) => (
     <ProjectGridItem
@@ -50,11 +50,11 @@ export function ProjectGridList(props: ProjectGridListProps) {
       handleEditSuccess={handleEditSuccess}
       handleProjectCheck={handleProjectCheck}
     />
-  ))
+  ));
 
   return (
     <Grid container spacing={2} >
       {renderProjects()}
     </Grid>
-  )
+  );
 }

@@ -30,25 +30,19 @@ export function TranscribersSummary() {
   const api = React.useContext(ApiContext);
   const { hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
-  const { enqueueSnackbar } = useSnackbar();
   const [isForbidden, setIsForbidden] = React.useState(false);
-  const [usersLoading, setUsersLoading] = React.useState(true);
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
   const [initialDataLoading, setInitialDataLoading] = React.useState(true);
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
-  const [deleteLoading, setDeleteLoading] = React.useState(false);
-  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
-  const [inviteOpen, setInviteOpen] = React.useState(false);
 
   const classes = useStyles();
-  const theme = useTheme();
 
 
   const getTranscribersWithStats = async (page?: number, size?: number) => {
     if (api && api.transcriber) {
       setTranscriberStatDataLoading(true);
-      const response = await api.transcriber.getTranscribersWithStats();
+      const response = await api.transcriber.getTranscribersWithStats(page, size);
       if (response.kind === 'ok') {
         setTranscribersStats(response.transcribersStats);
         setPagination(response.pagination);

@@ -23,7 +23,7 @@ import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
 interface AcousticModelDialogProps {
   open: boolean;
-  onClose: (modelId?: number) => void;
+  onClose: (modelId?: string) => void;
   onSuccess: (model: AcousticModel) => void;
   modelToEdit?: AcousticModel;
 }

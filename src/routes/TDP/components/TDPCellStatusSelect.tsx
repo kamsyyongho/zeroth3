@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface TDPCellStatusSelectProps {
   cellData: CellProps<VoiceData>;
-  projectId: number;
+  projectId: string;
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 

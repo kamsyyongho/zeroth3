@@ -15,8 +15,8 @@ export type AcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
 export interface LanguageModelRequest {
   name: string;
   description: string;
-  topGraphId: number;
-  subGraphIds: number[];
+  topGraphId: string;
+  subGraphIds: string[];
 }
 
 export interface SubGraphRequest {

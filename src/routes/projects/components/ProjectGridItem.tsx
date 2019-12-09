@@ -30,10 +30,10 @@ interface ProjectGridItemProps {
   canModify: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
-  handleEditOpen: (projectId: number) => void;
-  handleEditClose: (projectId: number) => void;
+  handleEditOpen: (projectId: string) => void;
+  handleEditClose: (projectId: string) => void;
   handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void;
-  handleProjectCheck: (projectId: number, value: boolean) => void;
+  handleProjectCheck: (projectId: string, value: boolean) => void;
 }
 
 

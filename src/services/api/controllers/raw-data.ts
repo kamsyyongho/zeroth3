@@ -1,11 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  getRawDataResult,
-  ProblemKind,
-  ServerError,
-  uploadRawDataResult,
-} from '../types';
+import { getRawDataResult, ProblemKind, ServerError, uploadRawDataResult } from '../types';
 import { RawDataAdditionalProps } from '../types/raw-data.types';
 import { ParentApi } from './parent-api';
 
@@ -26,7 +21,7 @@ export class RawData extends ParentApi {
    * Gets raw audio data
    * @param projectId
    */
-  async getRawData(projectId: number): Promise<getRawDataResult> {
+  async getRawData(projectId: string): Promise<getRawDataResult> {
     // make the api call
     const response = await this.apisauce.get<
       RawDataAdditionalProps,
@@ -60,8 +55,8 @@ export class RawData extends ParentApi {
    * - total size of all files together must be less than 10MB
    */
   async uploadRawData(
-    projectId: number,
-    modelConfigId: number,
+    projectId: string,
+    modelConfigId: string,
     files: File[]
   ): Promise<uploadRawDataResult> {
     // compile data

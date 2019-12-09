@@ -1,14 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  deleteModelConfigResult,
-  getModelConfigsResult,
-  ModelConfigRequest,
-  postModelConfigResult,
-  ProblemKind,
-  ServerError,
-} from '../types';
+import { deleteModelConfigResult, getModelConfigsResult, ModelConfigRequest, postModelConfigResult, ProblemKind, ServerError } from '../types';
 import { updateModelConfigResult } from '../types/model-config.types';
 import { ParentApi } from './parent-api';
 
@@ -29,7 +22,7 @@ export class ModelConfig extends ParentApi {
    * Gets a list of associated model configs
    * @param projectId
    */
-  async getModelConfigs(projectId: number): Promise<getModelConfigsResult> {
+  async getModelConfigs(projectId: string): Promise<getModelConfigsResult> {
     // make the api call
     const response: ApiResponse<
       ModelConfigType[],
@@ -63,11 +56,11 @@ export class ModelConfig extends ParentApi {
    * @param languageModelId
    */
   async postModelConfig(
-    projectId: number,
+    projectId: string,
     name: string,
     description: string,
-    acousticModelId: number,
-    languageModelId: number
+    acousticModelId: string,
+    languageModelId: string
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -114,12 +107,12 @@ export class ModelConfig extends ParentApi {
    * @returns a `conflict` kind if the model config cannot be updated
    */
   async updateModelConfig(
-    modelConfigId: number,
-    projectId: number,
+    modelConfigId: string,
+    projectId: string,
     name: string,
     description: string,
-    acousticModelId: number,
-    languageModelId: number
+    acousticModelId: string,
+    languageModelId: string
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -161,8 +154,8 @@ export class ModelConfig extends ParentApi {
    * @param modelConfigId
    */
   async deleteModelConfig(
-    projectId: number,
-    modelConfigId: number
+    projectId: string,
+    modelConfigId: string
   ): Promise<deleteModelConfigResult> {
     // make the api call
     const response: ApiResponse<

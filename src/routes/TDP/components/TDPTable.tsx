@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import LaunchIcon from '@material-ui/icons/Launch';
+import Rating from 'material-ui-rating';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
@@ -18,6 +19,7 @@ import { NavigationPropsContext } from '../../../hooks/navigation-props/Navigati
 import { SearchDataRequest } from '../../../services/api/types';
 import { CONTENT_STATUS, PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
 import { Pagination } from '../../shared/Pagination';
+import { RatingDisplay } from '../../shared/RatingDisplay';
 import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPCellTranscriberSelect } from './TDPCellTranscriberSelect';
@@ -39,6 +41,10 @@ const useStyles = makeStyles(theme =>
   createStyles({
     clickableTableBody: {
       cursor: 'pointer',
+    },
+    ratingStar: {
+      heght: 5,
+      width: 5,
     },
   }));
 
@@ -82,6 +88,26 @@ export function TDPTable(props: TDPTableProps) {
     return modelConfigsById[id].name;
   };
 
+  const renderRating = (cellData: CellProps<VoiceData>) => {
+    const rating: VoiceData['transcriptionRating'] = cellData.cell.value;
+    if (!rating) return '';
+    const smallStyles = makeStyles(() => createStyles({
+      iconButton: {
+        width: 72,
+        height: 72,
+        padding: 16
+      },
+      icon: {
+        width: 36,
+        height: 36,
+      }
+    }));
+    return <RatingDisplay rating={rating} small />;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    //@ts-ignore
+    return <Rating readOnly value={rating} max={5} style={{ height: 15 }} />;
+  };
+
   const renderStatus = (cellData: CellProps<VoiceData>) => {
     // to only make editable when showing all
     if (loading || onlyAssignedData) {
@@ -119,7 +145,8 @@ export function TDPTable(props: TDPTableProps) {
       },
       {
         Header: translate('common.score'),
-        accessor: 'score',
+        accessor: 'transcriptionRating',
+        Cell: (cellData: CellProps<VoiceData>) => renderRating(cellData),
       },
       {
         Header: translate('modelConfig.header'),

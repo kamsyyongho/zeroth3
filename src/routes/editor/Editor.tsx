@@ -26,12 +26,13 @@ import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '
 import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
+import { formatSecondsDuration } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
-import { StarRating } from '../shared/StarRating';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
+import { StarRating } from './components/StarRating';
 
 
 interface EditorProps {
@@ -100,19 +101,6 @@ const generateWordKey = (segmentIndex: number, wordIndex: number) => {
   return key;
 };
 
-const formatSecondsDuration = (seconds: number) => {
-  const milliseconds = 1000 * seconds;
-  const tempDateString = new Date(milliseconds).toISOString();
-  let timeStartIndex = 14; // MM:SS
-  const HH = tempDateString.substr(timeStartIndex, 2); // HH
-  let timeStringLength = 5; //MM:SS
-  if (Number(HH) > 0) {
-    timeStringLength = 8; // HH:MM:SS
-    timeStartIndex = 11; // HH:MM:SS
-  }
-  return tempDateString.substr(timeStartIndex, timeStringLength);
-};
-
 interface SegmentWordProperties {
   [x: number]: {
     [x: number]: {
@@ -123,15 +111,13 @@ interface SegmentWordProperties {
 }
 
 interface SegmentSplitLocation {
-  segmentId: number;
+  segmentId: string;
   segmentIndex: number;
   splitIndex: number;
 }
 
 export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const { projectId, dataId } = match.params;
-  const projectIdNumber = Number(projectId);
-  const dataIdNumber = Number(dataId);
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const history = useHistory();
@@ -184,7 +170,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
    * navigates to the TDP page after confirming data
    */
   const handleNavigateAway = () => {
-    PATHS.TDP.function && history.push(PATHS.TDP.function(projectIdNumber));
+    PATHS.TDP.function && history.push(PATHS.TDP.function(projectId));
   };
 
   // to navigate away if we didn't navigate here from the TDP page
@@ -254,7 +240,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     const getSegments = async () => {
       if (api && api.voiceData) {
         setSegmentsLoading(true);
-        const response = await api.voiceData.getSegments(projectIdNumber, dataIdNumber);
+        const response = await api.voiceData.getSegments(projectId, dataId);
         if (response.kind === 'ok') {
           setInitialSegments(response.segments);
           setSegments(response.segments);
@@ -270,12 +256,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       }
     };
     getSegments();
-  }, [api, dataIdNumber, projectIdNumber]);
+  }, [api, dataId, projectId]);
 
   const confirmData = async () => {
     if (api && api.voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
-      const response = await api.voiceData.confirmData(projectIdNumber, dataIdNumber);
+      const response = await api.voiceData.confirmData(projectId, dataId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -310,7 +296,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const editedSegmentsToUpdate: Segment[] = [];
       editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
 
-      const response = await api.voiceData.updateSegments(projectIdNumber, dataIdNumber, editedSegmentsToUpdate);
+      const response = await api.voiceData.updateSegments(projectId, dataId, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -358,7 +344,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const firstSegmentId = segments[firstSegmentIndex].id;
       const secondSegmentId = segments[secondSegmentIndex].id;
 
-      const response = await api.voiceData.mergeTwoSegments(projectIdNumber, dataIdNumber, firstSegmentId, secondSegmentId);
+      const response = await api.voiceData.mergeTwoSegments(projectId, dataId, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -398,7 +384,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     if (api && api.voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const { segmentId, segmentIndex, splitIndex } = splitLocation;
-      const response = await api.voiceData.splitSegment(projectIdNumber, dataIdNumber, segmentId, splitIndex);
+      const response = await api.voiceData.splitSegment(projectId, dataId, segmentId, splitIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -662,7 +648,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const handlePlayerRendered = () => setCanPlayAudio(true);
 
-  const handleSplitLocationPress = (segmentId: number, segmentIndex: number, splitIndex: number) => {
+  const handleSplitLocationPress = (segmentId: string, segmentIndex: number, splitIndex: number) => {
     if (splitLocation && (
       (segmentId === (splitLocation.segmentId)) &&
       (segmentIndex === (splitLocation.segmentIndex)) &&
@@ -804,7 +790,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
           <Typography>{voiceData.status}</Typography>
           {alreadyConfirmed ? (<StarRating
             voiceData={voiceData}
-            projectId={projectIdNumber}
+            projectId={projectId}
           />) :
             (<>
               <Button

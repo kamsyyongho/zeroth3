@@ -36,10 +36,10 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
 
   const theme = useTheme();
 
-  const handleEditOpen = (modelId: number) => setEditOpen(prevOpen => {
+  const handleEditOpen = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: true };
   });
-  const handleEditClose = (modelId: number) => setEditOpen(prevOpen => {
+  const handleEditClose = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: false };
   });
 
@@ -49,18 +49,18 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
 
-  let modelsToDelete: number[] = [];
+  let modelsToDelete: string[] = [];
   Object.keys(checkedModels).forEach(modelId => {
-    const checked = checkedModels[Number(modelId)];
+    const checked = checkedModels[modelId];
     if (checked) {
-      modelsToDelete.push(Number(modelId));
+      modelsToDelete.push(modelId);
     }
   });
 
   /**
    * remove the deleted models from all lists
    */
-  const handleDeleteSuccess = (idsToDelete: number[]) => {
+  const handleDeleteSuccess = (idsToDelete: string[]) => {
     const modelsCopy = models.slice();
     // count down to account for removing indexes
     for (let i = models.length - 1; i >= 0; i--) {
@@ -74,7 +74,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     setModels(modelsCopy);
   };
 
-  const handleModelCheck = (modelId: number, value: boolean): void => {
+  const handleModelCheck = (modelId: string, value: boolean): void => {
     setCheckedModels((prevCheckedModels) => {
       return { ...prevCheckedModels, [modelId]: value };
     });
@@ -101,11 +101,11 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   }, [api]);
 
   const handleModelDelete = async () => {
-    if(!canModify) return;
+    if (!canModify) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteAcousticModelResult>[] = [];
-    const successIds: number[] = [];
+    const successIds: string[] = [];
     modelsToDelete.forEach(modelId => {
       if (api && api.models) {
         deleteProjectPromises.push(api.models.deleteAcousticModel(modelId));

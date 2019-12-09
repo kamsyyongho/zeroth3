@@ -28,7 +28,7 @@ interface IAMCellMultiSelectProps {
   availableRoles: Role[];
   parsedRolesById: ParsedRolesById;
   selectedRoles: SelectedRoleIdsByIndex;
-  onRoleCheck: (userIndex: number, value: number[]) => void;
+  onRoleCheck: (userIndex: number, value: string[]) => void;
 }
 
 export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
@@ -39,7 +39,7 @@ export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
   const index = cellData.cell.row.index;
   const key = `${index}-roles`;
 
-  const initialSelectedRoleIds: number[] = React.useMemo(
+  const initialSelectedRoleIds: string[] = React.useMemo(
     () => {
       if (!userRoles.length) {
         return [];
@@ -47,22 +47,22 @@ export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
       return userRoles.map(role => role.id);
     }, []);
 
-  let defaultState: number[] | undefined;
+  let defaultState: string[] | undefined;
   if (selectedRoles[index] && selectedRoles[index] instanceof Array) {
     defaultState = selectedRoles[index];
   }
 
   const classes = useStyles();
 
-  const [userselectedRoles, setUserSelectedRoles] = React.useState<number[]>(defaultState || initialSelectedRoleIds);
+  const [userselectedRoles, setUserSelectedRoles] = React.useState<string[]>(defaultState || initialSelectedRoleIds);
 
-  const joinSelectedText = (selected: number[]) => {
+  const joinSelectedText = (selected: string[]) => {
     const selectedRoleNames: string[] = (selected).map(selectedId => (parsedRolesById[selectedId] && parsedRolesById[selectedId].name) || "");
     return selectedRoleNames.join(', ');
   };
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown; }>) => {
-    const value = event.target.value as number[];
+    const value = event.target.value as string[];
     setUserSelectedRoles(value);
   };
 
@@ -90,7 +90,7 @@ export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
         value={userselectedRoles}
         onChange={handleChange}
         onClose={handleClose}
-        renderValue={(selected) => joinSelectedText(selected as number[])}
+        renderValue={(selected) => joinSelectedText(selected as string[])}
       >
         {renderMenuItems()}
       </Select>

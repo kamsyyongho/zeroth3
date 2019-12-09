@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProps>) {
   const { projectId } = match.params;
-  const projectIdNumber = Number(projectId);
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const { hasPermission } = React.useContext(KeycloakContext);
@@ -100,7 +99,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   /**
    * remove the deleted model config from the list
    */
-  const handleModelConfigDelete = (modelConfigId: number) => {
+  const handleModelConfigDelete = (modelConfigId: string) => {
     const modelConfigsCopy = modelConfigs.slice();
     // count down to account for removing indexes
     for (let i = modelConfigsCopy.length - 1; i >= 0; i--) {
@@ -115,7 +114,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   React.useEffect(() => {
     const getProject = async () => {
       if (api && api.projects) {
-        const response = await api.projects.getProject(projectIdNumber);
+        const response = await api.projects.getProject(projectId);
         if (response.kind === 'ok') {
           setProject(response.project);
         } else if (response.kind === ProblemKind["not-found"]) {
@@ -139,7 +138,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     };
     const getModelConfigs = async () => {
       if (api && api.modelConfig) {
-        const response = await api.modelConfig.getModelConfigs(projectIdNumber);
+        const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {
           setModelConfigs(response.modelConfigs);
         } else {
@@ -217,8 +216,8 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setAcousticModelsLoading(false);
       }
     };
-    if (isNaN(projectIdNumber)) {
-      setIsValidId(true);
+    if (projectId) {
+      setIsValidId(false);
       setProjectLoading(false);
       log({
         file: `ProjectDetails.tsx`,
@@ -236,7 +235,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         getAcousticModels();
       }
     }
-  }, [api, projectId, projectIdNumber]);
+  }, [api, projectId, projectId]);
 
   const renderContent = () => {
     if (!isValidId) {
@@ -299,7 +298,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         renderContent()
       }
       {isValidProject && <ModelConfigList
-        projectId={projectIdNumber}
+        projectId={projectId}
         canModify={canModify}
         modelConfigs={modelConfigs}
         modelConfigsLoading={modelConfigsLoading}

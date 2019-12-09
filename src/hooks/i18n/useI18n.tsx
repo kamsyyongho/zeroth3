@@ -1,4 +1,4 @@
-import { Locale } from 'date-fns';
+import { Locale, format } from 'date-fns';
 import { enUS, ko } from 'date-fns/locale';
 import { TOptions } from 'i18next';
 import { useState } from 'react';
@@ -91,5 +91,11 @@ export const useI18n = (): ParsedI18n => {
     i18n.changeLanguage(i18n.language === LANGUAGES.en ? LANGUAGES.ko : LANGUAGES.en);
   };
 
-  return { translate, i18n, toggleLanguage, language: i18n.language, pickerLocale, dateTimeFormat };
+  /**
+   * Supplies a date-time string for the current locale
+   * @param date 
+   */
+  const formatDate = (date: number | Date) => format(date, dateTimeFormat);
+
+  return { translate, i18n, toggleLanguage, language: i18n.language, pickerLocale, dateTimeFormat, formatDate };
 };
