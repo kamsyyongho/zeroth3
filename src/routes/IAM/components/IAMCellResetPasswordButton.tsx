@@ -67,12 +67,12 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
         disabled={isLoading}
         onClick={confirmReset}
         variant="outlined"
-        color="primary"
+        color="secondary"
         startIcon={isLoading ?
           <MoonLoader
             sizeUnit={"px"}
             size={15}
-            color={theme.palette.primary.main}
+            color={theme.palette.secondary.main}
             loading={true}
           /> : <VpnKeyIcon />}
       >{translate("profile.resetPassword")}</Button>

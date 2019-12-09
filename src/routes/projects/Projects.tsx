@@ -27,7 +27,7 @@ export interface CheckedProjectsById {
   [id: string]: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,
@@ -172,7 +172,7 @@ export function Projects() {
       <Button
         disabled={!projectsToDelete.length}
         variant="contained"
-        color="secondary"
+        color="primary"
         onClick={confirmDelete}
         startIcon={deleteLoading ? <MoonLoader
           sizeUnit={"px"}
@@ -187,7 +187,7 @@ export function Projects() {
     <Grid item >
       <Button
         variant="contained"
-        color="primary"
+        color="secondary"
         onClick={handleCreateOpen}
         startIcon={<AddIcon />}
       >

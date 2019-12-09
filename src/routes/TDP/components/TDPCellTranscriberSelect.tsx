@@ -5,7 +5,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -17,7 +17,7 @@ import { CONTENT_STATUS, Transcriber, VoiceData } from '../../../types';
 import { SnackbarError } from '../../../types/snackbar.types';
 import log from '../../../util/log/logger';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     formControl: {
       minWidth: 130,

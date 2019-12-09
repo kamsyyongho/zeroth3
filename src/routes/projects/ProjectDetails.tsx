@@ -20,7 +20,7 @@ interface ProjectDetailsProps {
   projectId: string;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,

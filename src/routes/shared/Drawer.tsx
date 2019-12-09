@@ -1,114 +1,103 @@
-import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import MailIcon from '@material-ui/icons/Mail';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import clsx from 'clsx';
-import React, { useState } from 'react';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
+import React from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { PERMISSIONS } from '../../constants';
+import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { PATHS } from '../../types';
 
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
-    hide: {
-      display: 'none',
-    },
-    drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-      whiteSpace: 'nowrap',
-    },
-    drawerOpen: {
-      width: drawerWidth,
-      transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-    },
-    drawerClose: {
-      transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      overflowX: 'hidden',
-      width: theme.spacing(7) + 1,
-      [theme.breakpoints.up('sm')]: {
-        width: theme.spacing(9) + 1,
-      },
-    },
-    toolbar: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      padding: theme.spacing(0, 1),
-      ...theme.mixins.toolbar,
-    },
-    content: {
-      flexGrow: 1,
-      padding: theme.spacing(3),
+    fullList: {
+      width: 'auto',
     },
   }),
 );
 
+interface AppDrawerProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
 
-const Header: React.FunctionComponent<{}> = (props) => {
+export const AppDrawer = (props: AppDrawerProps) => {
+  const { open, setOpen } = props;
+  const { hasPermission } = React.useContext(KeycloakContext);
+  const { translate } = React.useContext(I18nContext);
+  const location = useLocation();
+  const history = useHistory();
   const classes = useStyles();
-  const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const handleDrawerOpen = () => {
-    setOpen(true);
+
+  const navigateToPage = (to: string, isCurrentPath: boolean) => {
+    if (!isCurrentPath && to) {
+      history.push(to);
+      setOpen(false);
+    }
   };
 
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+
+  const drawerItems: JSX.Element[] = [];
+  Object.keys(PATHS).forEach((key, index) => {
+    // to only display links for pages we are allowed to go to
+    let shouldRender = true;
+    if ((key === 'models' && !canSeeModels) || (key === 'transcribers' && !canSeeTranscribers)) {
+      shouldRender = false;
+    }
+
+    if (shouldRender) {
+      const path = PATHS[key];
+      const { to, title, Icon } = path;
+      if (title && to) {
+        let isCurrentPath = false;
+        if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
+          isCurrentPath = true;
+        } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
+          isCurrentPath = true;
+        }
+        drawerItems.push(<ListItem button key={index} onClick={() => navigateToPage(to, isCurrentPath)} >
+          {Icon && <ListItemIcon >
+            <Icon color={isCurrentPath ? 'primary' : undefined} />
+          </ListItemIcon>}
+          <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
+        </ListItem>);
+      }
+    }
+  });
+
+  const toggleDrawer = (open: boolean) => (
+    event: React.KeyboardEvent | React.MouseEvent,
+  ) => {
+    if (
+      event.type === 'keydown' &&
+      ((event as React.KeyboardEvent).key === 'Tab' ||
+        (event as React.KeyboardEvent).key === 'Shift')
+    ) {
+      return;
+    }
+    setOpen(open);
   };
+
   return (
     <Drawer
-      variant="permanent"
-      className={clsx(classes.drawer, {
-        [classes.drawerOpen]: open,
-        [classes.drawerClose]: !open,
-      })}
-      classes={{
-        paper: clsx({
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open,
-        }),
-      }}
       open={open}
+      onClose={toggleDrawer(false)}
     >
-      <div className={classes.toolbar}>
-        <IconButton onClick={handleDrawerClose}>
-          {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-        </IconButton>
+      <div
+        className={classes.fullList}
+        role="presentation"
+        onClick={toggleDrawer(false)}
+        onKeyDown={toggleDrawer(false)}
+      >
+        <List>
+          {drawerItems}
+        </List>
       </div>
-      <Divider />
-      <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
     </Drawer>
   );
 };
-
-export default Header;

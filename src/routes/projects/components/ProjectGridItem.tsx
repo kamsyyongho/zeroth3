@@ -14,7 +14,7 @@ import { CheckedProjectsById } from '../Projects';
 import { ProjectDialog } from './ProjectDialog';
 import { EditOpenByProjectId } from './ProjectGridList';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     card: {
       minWidth: 275,

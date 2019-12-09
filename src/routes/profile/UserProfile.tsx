@@ -110,7 +110,7 @@ export function UserProfile() {
         <CardActions>
           <Button
             variant='contained'
-            color='primary'
+            color='secondary'
             size="small"
             onClick={confirmReset}
             disabled={passwordResetLoading}
@@ -118,7 +118,7 @@ export function UserProfile() {
               <MoonLoader
                 sizeUnit={"px"}
                 size={15}
-                color={theme.palette.primary.main}
+                color={theme.palette.secondary.main}
                 loading={true}
               /> : <VpnKeyIcon />}
           >

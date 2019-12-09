@@ -3,7 +3,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
@@ -12,7 +12,7 @@ import { ChipList } from '../../../shared/ChipList';
 import { LanguageModelDialog } from './LanguageModelDialog';
 import { CheckedModelById, EditOpenByModelId } from './LanguageModelGridList';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     card: {
       minWidth: 275,
@@ -81,7 +81,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
         <Typography component="p">
           {model.topGraph.name}
         </Typography>
-        <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} />
+        <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} light />
         <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
           {model.description}
         </Typography>

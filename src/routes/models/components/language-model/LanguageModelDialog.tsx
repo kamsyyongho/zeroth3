@@ -160,6 +160,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                   options={subGraphFormSelectOptions}
                   label={translate("forms.sub")}
                   errorOverride={isError}
+                  light
                 />
                 <Button
                   fullWidth

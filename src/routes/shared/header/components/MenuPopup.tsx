@@ -3,9 +3,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import MenuIcon from '@material-ui/icons/Menu';
-import React, { useContext, useState } from 'react';
+import PersonIcon from '@material-ui/icons/Person';
+import React from 'react';
 import { FiLogOut } from 'react-icons/fi';
 import { MdTranslate } from 'react-icons/md';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -14,12 +15,22 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { PATHS } from '../../../../types/path.types';
 import { SvgIconWrapper } from '../../SvgIconWrapper';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    menuButton: {
+      marginRight: theme.spacing(2),
+    },
+  }),
+);
+
 function MenuPopup() {
-  const api = useContext(ApiContext);
-  const { translate, toggleLanguage } = useContext(I18nContext);
+  const api = React.useContext(ApiContext);
+  const { translate } = React.useContext(I18nContext);
   const history = useHistory();
   const location = useLocation();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const classes = useStyles();
 
   const isCurrentPath = location.pathname === PATHS.profile.to;
 
@@ -40,7 +51,7 @@ function MenuPopup() {
 
   return (
     <>
-      <IconButton onClick={handleClick} color={"inherit"}><MenuIcon /></IconButton>
+      <IconButton onClick={handleClick} color={"inherit"} edge='start' className={classes.menuButton} ><AccountCircleIcon /></IconButton>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
@@ -51,15 +62,9 @@ function MenuPopup() {
       >
         <MenuItem onClick={navigateToProfile} >
           <ListItemIcon >
-            <SvgIconWrapper color={isCurrentPath ? 'secondary' : undefined}><AccountCircleIcon /></SvgIconWrapper>
+            <PersonIcon color={isCurrentPath ? 'primary' : undefined} />
           </ListItemIcon>
-          <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'secondary' : undefined }} primary={translate('menu.profile')} />
-        </MenuItem>
-        <MenuItem onClick={toggleLanguage}>
-          <ListItemIcon>
-            <SvgIconWrapper ><MdTranslate /></SvgIconWrapper>
-          </ListItemIcon>
-          <ListItemText primary={translate('menu.changeLanguage')} />
+          <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={translate('menu.profile')} />
         </MenuItem>
         <MenuItem onClick={api.logout}>
           <ListItemIcon>

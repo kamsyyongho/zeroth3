@@ -1,7 +1,6 @@
 import { Card, CardHeader, Container } from '@material-ui/core';
 import CardContent from '@material-ui/core/CardContent';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
-import { useSnackbar } from 'notistack';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { PERMISSIONS } from '../../constants/permission.constants';
@@ -15,7 +14,7 @@ import log from '../../util/log/logger';
 import { Forbidden } from '../shared/Forbidden';
 import { TranscribersTable } from './components/TranscribersTable';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,

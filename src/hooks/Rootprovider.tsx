@@ -7,6 +7,7 @@ import React from 'react';
 import 'react-virtualized/styles.css'; // for the editor's lists
 import { SNACKBAR } from '../constants';
 import { Api } from '../services/api/api';
+import { theme } from '../theme/index';
 import { ApiContext } from './api/ApiContext';
 import { I18nContext, ParsedI18n } from './i18n/I18nContext';
 import { KeycloakContext, ParsedKeycloak } from "./keycloak/KeycloakContext";
@@ -28,7 +29,7 @@ export default function RootProvider(props: RootProviderProps) {
   return (
     <I18nContext.Provider value={props.i18n}>
       <MuiPickersUtilsProvider utils={DateFnsUtils} locale={props.i18n.pickerLocale}>
-        <ThemeProvider theme={undefined} >
+        <ThemeProvider theme={theme} >
           <CssBaseline />
           <KeycloakContext.Provider value={props.keycloak}>
             <ApiContext.Provider value={props.api}>
