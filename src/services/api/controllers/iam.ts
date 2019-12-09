@@ -85,7 +85,7 @@ export class IAM extends ParentApi {
    * Deletes a user from an organization
    * @param userId
    */
-  async deleteUser(userId: number): Promise<deleteUserResult> {
+  async deleteUser(userId: string): Promise<deleteUserResult> {
     // make the api call
     const response: ApiResponse<
       undefined,
@@ -110,8 +110,8 @@ export class IAM extends ParentApi {
    * @param roleIds
    */
   async assignRolesToUser(
-    userId: number,
-    roleIds: number[]
+    userId: string,
+    roleIds: string[]
   ): Promise<assignRolesToUserResult> {
     // compile data
     const request = {
@@ -146,7 +146,7 @@ export class IAM extends ParentApi {
    * @param userId
    * @param roleId
    */
-  async deleteRole(userId: number, roleId: number): Promise<deleteRoleResult> {
+  async deleteRole(userId: string, roleId: string): Promise<deleteRoleResult> {
     // make the api call
     const response: ApiResponse<
       undefined,
@@ -197,7 +197,7 @@ export class IAM extends ParentApi {
    * @param userId
    */
   async resetPasswordOfUser(
-    userId: number
+    userId: string
   ): Promise<resetPasswordOfUserResult> {
     // make the api call
     const response: ApiResponse<

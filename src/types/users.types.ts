@@ -1,11 +1,11 @@
 export interface User {
-  id: number;
+  id: string;
   email: string;
   roles: Role[];
 }
 
 export interface Role {
-  id: number;
+  id: string;
   name: ROLES;
 }
 

@@ -1,7 +1,7 @@
 export interface Project {
   apiKey: string;
   apiSecret: string;
-  id: number;
+  id: string;
   name: string;
   thresholdHc: Threshold;
   thresholdLc: Threshold;

@@ -1,16 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Project } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  deleteProjectResult,
-  getProjectResult,
-  getProjectsResult,
-  postProjectResult,
-  ProblemKind,
-  ProjectRequest,
-  ServerError,
-  updateProjectResult,
-} from '../types';
+import { deleteProjectResult, getProjectResult, getProjectsResult, postProjectResult, ProblemKind, ProjectRequest, ServerError, updateProjectResult } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -30,7 +21,7 @@ export class Projects extends ParentApi {
    * Gets a single project project id
    * @param projectId
    */
-  async getProject(projectId: number): Promise<getProjectResult> {
+  async getProject(projectId: string): Promise<getProjectResult> {
     // make the api call
     const response: ApiResponse<Project, ServerError> = await this.apisauce.get(
       `/projects/${projectId}`
@@ -127,7 +118,7 @@ export class Projects extends ParentApi {
    * Deletes a project
    * @param projectId
    */
-  async deleteProject(projectId: number): Promise<deleteProjectResult> {
+  async deleteProject(projectId: string): Promise<deleteProjectResult> {
     // make the api call
     const response: ApiResponse<
       undefined,
@@ -157,7 +148,7 @@ export class Projects extends ParentApi {
     name: string,
     thresholdHc: number,
     thresholdLc: number,
-    projectId: number
+    projectId: string,
   ): Promise<updateProjectResult> {
     // compile data
     const request: ProjectRequest = {
@@ -193,7 +184,7 @@ export class Projects extends ParentApi {
    * Generate a new project secret
    * @param projectId
    */
-  async updateSecret(projectId: number): Promise<postProjectResult> {
+  async updateSecret(projectId: string): Promise<postProjectResult> {
     // make the api call
     const response: ApiResponse<
       Project,

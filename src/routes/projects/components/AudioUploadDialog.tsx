@@ -22,7 +22,7 @@ import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-field
 
 interface AudioUploadDialogProps {
   open: boolean;
-  projectId: number;
+  projectId: string;
   modelConfigs: ModelConfig[];
   onClose: () => void;
   onSuccess: () => void;
@@ -58,8 +58,6 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
-  const numberText = translate("forms.validation.number");
-  const integerText = translate("forms.validation.integer");
   const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
 
@@ -78,7 +76,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   };
 
   const formSchema = yup.object({
-    selectedModelConfigId: yup.number().integer(integerText).typeError(numberText).nullable().required(requiredTranslationText),
+    selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
     files: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
   });
   type FormValues = yup.InferType<typeof formSchema>;

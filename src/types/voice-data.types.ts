@@ -1,9 +1,14 @@
 import { PaginatedResults } from './pagination.types';
 export interface VoiceData {
-  id: number;
-  createdAt: Date;
+  audioUrl: string;
+  id: string;
+  startAt: Date;
+  endAt: Date;
+  ip: string;
+  memo: string;
   sessionId: string;
-  modelConfigId: number;
+  modelConfigId: string;
+  /** seconds */
   length: number;
   status: CONTENT_STATUS;
   /**
@@ -12,7 +17,8 @@ export interface VoiceData {
   transcriber: string;
   transcript: string;
   transcriptionRating: number;
-  audioUrl: string;
+  webSocketCloseReason: string;
+  webSocketCloseStatus: number;
 }
 
 export interface VoiceDataResults extends PaginatedResults {
@@ -35,7 +41,7 @@ export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
 );
 
 export interface Segment {
-  id: number;
+  id: string;
   length: number;
   number: number;
   start: number;

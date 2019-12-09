@@ -24,7 +24,7 @@ import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 interface ProjectDialogProps {
   open: boolean;
-  onClose: (projectId?: number) => void;
+  onClose: (projectId?: string) => void;
   onSuccess: (project: Project, isEdit?: boolean) => void;
   projectToEdit?: Project;
 }
@@ -77,7 +77,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
 
   const handleSubmit = async (values: FormValues) => {
     const { thresholdHc, thresholdLc } = values;
-    if(thresholdHc === null || thresholdLc === null) return;
+    if (thresholdHc === null || thresholdLc === null) return;
     if (api && api.projects && !loading) {
       setLoading(true);
       setIsError(false);

@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface ModelConfigListProps {
-  projectId: number;
+  projectId: string;
   canModify: boolean;
   modelConfigsLoading: boolean;
   modelConfigs: ModelConfig[];
@@ -60,7 +60,7 @@ export interface ModelConfigListProps {
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
-  handleModelConfigDelete: (modelConfigId: number) => void;
+  handleModelConfigDelete: (modelConfigId: string) => void;
 }
 
 

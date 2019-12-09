@@ -13,6 +13,7 @@ export interface ParsedI18n {
   toggleLanguage: () => void;
   language: string;
   dateTimeFormat: string;
+  formatDate: (date: number | Date) => string;
   pickerLocale: PickerLocale;
 }
 
@@ -23,6 +24,7 @@ const defaultContext: ParsedI18n = {
   toggleLanguage: noop,
   language: "en",
   dateTimeFormat: "",
+  formatDate: noop,
   pickerLocale: extendLocaleType(enUSLocale),
 };
 

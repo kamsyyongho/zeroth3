@@ -24,7 +24,7 @@ import { ProjectGridList } from './components/ProjectGridList';
 
 
 export interface CheckedProjectsById {
-  [index: number]: boolean;
+  [id: string]: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -80,11 +80,11 @@ export function Projects() {
   }, [api]);
 
 
-  let projectsToDelete: number[] = [];
+  let projectsToDelete: string[] = [];
   Object.keys(checkedProjects).forEach(projectId => {
-    const checked = checkedProjects[Number(projectId)];
+    const checked = checkedProjects[projectId];
     if (checked) {
-      projectsToDelete.push(Number(projectId));
+      projectsToDelete.push(projectId);
     }
   });
 
@@ -94,7 +94,7 @@ export function Projects() {
   /**
    * remove the deleted projects from all lists
    */
-  const handleDeleteSuccess = (idsToDelete: number[]) => {
+  const handleDeleteSuccess = (idsToDelete: string[]) => {
     const projectsCopy = projects.slice();
     // count down to account for removing indexes
     for (let i = projects.length - 1; i >= 0; i--) {
@@ -132,7 +132,7 @@ export function Projects() {
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteProjectResult>[] = [];
-    const successIds: number[] = [];
+    const successIds: string[] = [];
     projectsToDelete.forEach(projectId => {
       if (api && api.projects) {
         deleteProjectPromises.push(api.projects.deleteProject(projectId));

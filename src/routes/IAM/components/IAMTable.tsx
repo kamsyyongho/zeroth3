@@ -10,9 +10,9 @@ import { Role, User } from "../../../types";
 import { CheckedUsersByUserId } from '../IAM';
 import { IAMCellCheckbox } from './IAMCellCheckbox';
 import { IAMCellMultiSelect } from './IAMCellMultiSelect';
+import { IAMCellResetPasswordButton } from './IAMCellResetPasswordButton';
 import { IAMCellSubmitButton } from './IAMCellSubmitButton';
 import { IAMHeaderCheckbox } from './IAMHeaderCheckbox';
-import { IAMCellResetPasswordButton } from './IAMCellResetPasswordButton';
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IAMTableProps {
@@ -23,11 +23,11 @@ export interface IAMTableProps {
 }
 
 export interface ParsedRolesById {
-  [id: number]: Role;
+  [id: string]: Role;
 }
 
 export interface SelectedRoleIdsByIndex {
-  [index: number]: number[];
+  [index: number]: string[];
 }
 
 
@@ -42,13 +42,13 @@ export function IAMTable(props: IAMTableProps) {
   const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
 
-  const handleUserCheck = (userId: number, value: boolean): void => {
+  const handleUserCheck = (userId: string, value: boolean): void => {
     setCheckedUsers((prevCheckedUsers) => {
       return { ...prevCheckedUsers, [userId]: value };
     });
   };
 
-  const handleRoleCheck = (userIndex: number, value: number[]): void => {
+  const handleRoleCheck = (userIndex: number, value: string[]): void => {
     setSelectedRoles((prevSelectedRoles) => {
       return { ...prevSelectedRoles, [userIndex]: value };
     });

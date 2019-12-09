@@ -1,6 +1,6 @@
 import { PaginatedResults } from '../services/api/types';
 export interface Transcriber {
-  id: number;
+  id: string;
   email: string;
 }
 

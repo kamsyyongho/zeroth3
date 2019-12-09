@@ -27,10 +27,10 @@ interface AcousticModelGridItemProps {
   canModify: boolean;
   editOpen: EditOpenByModelId;
   checkedModels: CheckedModelById;
-  handleEditOpen: (modelId: number) => void;
-  handleEditClose: (modelId: number) => void;
+  handleEditOpen: (modelId: string) => void;
+  handleEditClose: (modelId: string) => void;
   handleEditSuccess: (updatedModel: AcousticModel, isEdit?: boolean) => void;
-  handleModelCheck: (modelId: number, value: boolean) => void;
+  handleModelCheck: (modelId: string, value: boolean) => void;
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {

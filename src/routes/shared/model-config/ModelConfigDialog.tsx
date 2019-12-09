@@ -24,10 +24,10 @@ import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-field
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 interface ModelConfigDialogProps {
-  projectId: number;
+  projectId: string;
   open: boolean;
   configToEdit?: ModelConfig;
-  onClose: (modelConfigId?: number) => void;
+  onClose: (modelConfigId?: string) => void;
   onSuccess: (updatedConfig: ModelConfig, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
@@ -36,10 +36,6 @@ interface ModelConfigDialogProps {
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
-}
-
-interface SubGraphsById {
-  [x: number]: string;
 }
 
 export function ModelConfigDialog(props: ModelConfigDialogProps) {
@@ -75,16 +71,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
-  const numberText = translate("forms.validation.number");
-  const integerText = translate("forms.validation.integer");
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedAcousticModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).nullable().required(requiredTranslationText),
-    selectedLanguageModelId: yup.number().integer(integerText).typeError(numberText).positive(requiredTranslationText).nullable().required(requiredTranslationText),
+    selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
+    selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
@@ -111,7 +105,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
 
   const handleSubmit = async (values: FormValues) => {
     const { selectedAcousticModelId, selectedLanguageModelId } = values;
-    if(selectedAcousticModelId === null || selectedLanguageModelId === null) return;
+    if (selectedAcousticModelId === null || selectedLanguageModelId === null) return;
     if (api && api.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);

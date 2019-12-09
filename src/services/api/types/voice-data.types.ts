@@ -43,7 +43,7 @@ export interface SearchDataRequest {
 }
 
 export interface FetchUnconfirmedQuery {
-  'model-config': number;
+  'model-config': string;
 }
 
 export interface SplitSegmentQuery {
@@ -55,20 +55,20 @@ export interface UpdateStatusRequest {
 }
 
 export interface AssignUnconfirmedQuery {
-  'model-config': number;
+  'model-config': string;
 }
 
 export interface AssignUnconfirmedRequest {
-  transcriberId: number;
-  voiceDataIds: number[];
+  transcriberId: string;
+  voiceDataIds: string[];
 }
 export interface RateTranscriptRequest {
   rating: number;
 }
 
 export interface MergeTwoSegmentsRequest {
-  segmentIdA: number;
-  segmentIdB: number;
+  segmentIdA: string;
+  segmentIdB: string;
 }
 
 export interface UpdateSegmentRequest {

@@ -69,7 +69,7 @@ export class VoiceData extends ParentApi {
    *```
    */
   async searchData(
-    projectId: number,
+    projectId: string,
     requestOptions: SearchDataRequest = {}
   ): Promise<searchDataResult> {
     // set default values
@@ -115,7 +115,7 @@ export class VoiceData extends ParentApi {
    *```
    */
   async getAssignedData(
-    projectId: number,
+    projectId: string,
     requestOptions: SearchDataRequest = {}
   ): Promise<getAssignedDataResult> {
     // set default values
@@ -153,8 +153,8 @@ export class VoiceData extends ParentApi {
    * @param dataId
    */
   async confirmData(
-    projectId: number,
-    dataId: number
+    projectId: string,
+    dataId: string
   ): Promise<confirmDataResult> {
     const response = await this.apisauce.put<undefined, ServerError>(
       `/projects/${projectId}/data/${dataId}/confirm`
@@ -179,8 +179,8 @@ export class VoiceData extends ParentApi {
    * @param modelConfigId
    */
   async fetchUnconfirmedData(
-    projectId: number,
-    modelConfigId: number
+    projectId: string,
+    modelConfigId: string
   ): Promise<fetchUnconfirmedDataResult> {
     const params: FetchUnconfirmedQuery = {
       'model-config': modelConfigId,
@@ -210,8 +210,8 @@ export class VoiceData extends ParentApi {
    * @param dataId
    */
   async getSegments(
-    projectId: number,
-    dataId: number
+    projectId: string,
+    dataId: string
   ): Promise<getSegmentsDataResult> {
     const response = await this.apisauce.get<Segment[], ServerError>(
       `/projects/${projectId}/data/${dataId}/segments`
@@ -243,9 +243,9 @@ export class VoiceData extends ParentApi {
    * @param wordAlignments
    */
   async updateSegment(
-    projectId: number,
-    dataId: number,
-    segmentId: number,
+    projectId: string,
+    dataId: string,
+    segmentId: string,
     wordAlignments: WordAlignment[]
   ): Promise<updateSegmentResult> {
     // compile data
@@ -277,8 +277,8 @@ export class VoiceData extends ParentApi {
    * @param segments
    */
   async updateSegments(
-    projectId: number,
-    dataId: number,
+    projectId: string,
+    dataId: string,
     segments: Segment[]
   ): Promise<updateSegmentsResult> {
     // compile data
@@ -309,9 +309,9 @@ export class VoiceData extends ParentApi {
    * @param splitIndex
    */
   async splitSegment(
-    projectId: number,
-    dataId: number,
-    segmentId: number,
+    projectId: string,
+    dataId: string,
+    segmentId: string,
     splitIndex: number
   ): Promise<splitSegmentResult> {
     const params: SplitSegmentQuery = {
@@ -351,10 +351,10 @@ export class VoiceData extends ParentApi {
    * @returns the new segment to replace the two merged ones
    */
   async mergeTwoSegments(
-    projectId: number,
-    dataId: number,
-    firstSegmentId: number,
-    secondSegmentId: number
+    projectId: string,
+    dataId: string,
+    firstSegmentId: string,
+    secondSegmentId: string
   ): Promise<mergeTwoSegmentsResult> {
     // compile data
     const request: MergeTwoSegmentsRequest = {
@@ -391,8 +391,8 @@ export class VoiceData extends ParentApi {
    * @param status
    */
   async updateStatus(
-    projectId: number,
-    dataId: number,
+    projectId: string,
+    dataId: string,
     status: CONTENT_STATUS
   ): Promise<updateStatusResult> {
     // compile data
@@ -433,10 +433,10 @@ export class VoiceData extends ParentApi {
    * @param voiceDataIds
    */
   async assignUnconfirmedDataToTranscriber(
-    projectId: number,
-    userId: number,
-    modelConfigId: number,
-    voiceDataIds: number[]
+    projectId: string,
+    userId: string,
+    modelConfigId: string,
+    voiceDataIds: string[]
   ): Promise<assignUnconfirmedResult> {
     // compile data
     const request: AssignUnconfirmedRequest = {
@@ -472,8 +472,8 @@ export class VoiceData extends ParentApi {
    * @param rating - <= 1 || >= 5
    */
   async rateTranscript(
-    projectId: number,
-    dataId: number,
+    projectId: string,
+    dataId: string,
     rating: number
   ): Promise<confirmDataResult> {
     // compile data

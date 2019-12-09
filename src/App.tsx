@@ -37,7 +37,6 @@ function App() {
   useEffect(() => {
     if (keycloakInitialized) {
       initApi(keycloak.keycloak, keycloak.logout);
-
       //////////////////////////////////////////
       // TEST CODE - DELETE BEFORE PRODUCTION //
       //////////////////////////////////////////
@@ -45,7 +44,9 @@ function App() {
       //TODO
       //* TO DEAL WITH A RACE CONDITION WITH ACCOUNT CREATION AND ORGANIZATION ID CREATION
       //!
-      if (keycloak.user.organizationId === undefined) keycloak.logout();
+      console.log('keycloak', keycloak);
+      console.log('keycloak.user', keycloak.user);
+      // if (keycloak.user.organizationId === undefined) keycloak.logout();
       //!
       //////////////////////////////////////////
       // TEST CODE - DELETE BEFORE PRODUCTION //

@@ -40,7 +40,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
   const index = cellData.cell.row.index;
   const key = `${index}-submit`;
 
-  const initialSelectedRoleIds: number[] = React.useMemo(
+  const initialSelectedRoleIds: string[] = React.useMemo(
     () => {
       if (!userRoles.length) {
         return [];
@@ -48,7 +48,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
       return userRoles.map(role => role.id);
     }, [userRoles]);
 
-  let currentSelectedRoleIds: number[] | undefined;
+  let currentSelectedRoleIds: string[] | undefined;
   if (selectedRoles[index] && selectedRoles[index] instanceof Array) {
     currentSelectedRoleIds = selectedRoles[index];
   }
@@ -61,7 +61,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
     // when the user hasn't made any selections yet
     if (currentSelectedRoleIds === undefined) return false;
     const setDifferences = differencesBetweenSets(initialSet, currentSet);
-    return !isEqualSet<number>(initialSet, currentSet);
+    return !isEqualSet<string>(initialSet, currentSet);
   };
 
   const classes = useStyles();
@@ -71,7 +71,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
   const [isAddLoading, setIsAddLoading] = React.useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
 
-  const addRoles = async (rolesToAdd: number[]) => {
+  const addRoles = async (rolesToAdd: string[]) => {
     if (api && api.IAM) {
       setIsAddLoading(true);
       const response = await api.IAM.assignRolesToUser(user.id, rolesToAdd);
@@ -105,7 +105,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
    * - addRoles receives a user response, so that will be the most up to date
    * - so there is no need to update the parent from our build data
    */
-  const deleteRoles = async (rolesToDelete: number[], willAddRoles: boolean) => {
+  const deleteRoles = async (rolesToDelete: string[], willAddRoles: boolean) => {
     setIsDeleteLoading(true);
     const deleteRolePromises: Promise<deleteRoleResult>[] = [];
     rolesToDelete.forEach(roleId => {
@@ -115,7 +115,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
         return;
       }
     });
-    const successfullyDeletedRoleIds: number[] = [];
+    const successfullyDeletedRoleIds: string[] = [];
     let roleIdIndexCounter = 0;
 
     const responseArray = await Promise.all(deleteRolePromises);

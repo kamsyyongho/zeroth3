@@ -4,6 +4,6 @@ export interface ModelConfig {
   acousticModel: AcousticModel;
   name: string;
   description: string;
-  id: number;
+  id: string;
   languageModel: LanguageModel;
 }

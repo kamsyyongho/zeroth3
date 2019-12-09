@@ -17,7 +17,7 @@ import log from '../../../util/log/logger';
 
 
 interface StarRatingProps {
-  projectId: number;
+  projectId: string;
   voiceData: VoiceData;
 }
 
@@ -59,7 +59,7 @@ export const StarRating = (props: StarRatingProps) => {
       } else {
         log({
           file: `StarRating.tsx`,
-          caller: `updateRating - failed to update status`,
+          caller: `updateRating - failed to update rating`,
           value: response,
           important: true,
         });

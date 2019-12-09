@@ -49,3 +49,21 @@ export function differencesBetweenSets<T>(aSet: Set<T>, bSet: Set<T>) {
 export function roundHalf(num: number) {
   return (Math.round(num * 2) / 2).toFixed(1);
 }
+
+/**
+ * Convert seconds to a readable format
+ * @param seconds coming from the api
+ * @returns `MM:SS` or `HH:MM:SS`
+ */
+export function formatSecondsDuration(seconds: number): string {
+  const milliseconds = 1000 * seconds;
+  const tempDateString = new Date(milliseconds).toISOString();
+  let timeStartIndex = 14; // MM:SS
+  const HH = tempDateString.substr(timeStartIndex, 2); // HH
+  let timeStringLength = 5; //MM:SS
+  if (Number(HH) > 0) {
+    timeStringLength = 8; // HH:MM:SS
+    timeStartIndex = 11; // HH:MM:SS
+  }
+  return tempDateString.substr(timeStartIndex, timeStringLength);
+}

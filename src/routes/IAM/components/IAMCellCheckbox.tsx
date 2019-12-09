@@ -7,7 +7,7 @@ import { User } from '../../../types';
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IAMCellCheckboxProps {
   cellData: CellProps<User>
-  onUserCheck: (index: number, value: boolean) => void
+  onUserCheck: (userId: string, value: boolean) => void
   allChecked: boolean
 }
 
@@ -15,7 +15,7 @@ export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
   const { cellData, onUserCheck, allChecked } = props;
   const [isChecked, setIsChecked] = React.useState(false);
 
-  const handleCheck = (userId: number, value: boolean) => {
+  const handleCheck = (userId: string, value: boolean) => {
     onUserCheck(userId, value);
     setIsChecked(value);
   }

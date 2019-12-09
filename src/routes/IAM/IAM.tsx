@@ -25,7 +25,7 @@ import { InviteFormDialog } from './components/InviteFormDialog';
 
 
 export interface CheckedUsersByUserId {
-  [index: number]: boolean;
+  [index: string]: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -134,11 +134,11 @@ export function IAM() {
     };
   };
 
-  let usersToDelete: number[] = [];
+  let usersToDelete: string[] = [];
   Object.keys(checkedUsers).forEach(userId => {
-    const checked = checkedUsers[Number(userId)];
+    const checked = checkedUsers[userId];
     if (checked) {
-      usersToDelete.push(Number(userId));
+      usersToDelete.push(userId);
     }
   });
 
@@ -148,7 +148,7 @@ export function IAM() {
   /**
    * remove the deleted users from all lists
    */
-  const handleDeleteSuccess = (idsToDelete: number[]) => {
+  const handleDeleteSuccess = (idsToDelete: string[]) => {
     const usersCopy = users.slice();
     // count down to account for removing indexes
     for (let i = users.length - 1; i >= 0; i--) {
@@ -166,7 +166,7 @@ export function IAM() {
     setDeleteLoading(true);
     closeConfirmation();
     const deleteUserPromises: Promise<deleteUserResult>[] = [];
-    const successIds: number[] = [];
+    const successIds: string[] = [];
     usersToDelete.forEach(userId => {
       if (api && api.IAM) {
         deleteUserPromises.push(api.IAM.deleteUser(userId));

@@ -26,7 +26,7 @@ import { SubgraphFormDialog } from '../SubgraphFormDialog';
 interface LanguageModelDialogProps {
   open: boolean;
   modelToEdit?: LanguageModel;
-  onClose: (modelId?: number) => void;
+  onClose: (modelId?: string) => void;
   onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
@@ -34,7 +34,7 @@ interface LanguageModelDialogProps {
 }
 
 interface SubGraphsById {
-  [x: number]: string;
+  [x: string]: string;
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
@@ -65,15 +65,14 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
   const numberText = translate("forms.validation.number");
-  const integerText = translate("forms.validation.integer");
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedTopGraphId: yup.number().integer(integerText).typeError(numberText).nullable().required(requiredTranslationText),
-    selectedSubGraphIds: yup.array().of(yup.number().integer(integerText).typeError(numberText)),
+    selectedTopGraphId: yup.string().typeError(numberText).nullable().required(requiredTranslationText),
+    selectedSubGraphIds: yup.array().of(yup.string().typeError(numberText)),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;

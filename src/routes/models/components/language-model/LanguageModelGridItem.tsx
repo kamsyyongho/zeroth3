@@ -31,10 +31,10 @@ interface LanguageModelGridItemProps {
   editOpen: EditOpenByModelId;
   checkedModels: CheckedModelById;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleEditOpen: (modelId: number) => void;
-  handleEditClose: (modelId: number) => void;
+  handleEditOpen: (modelId: string) => void;
+  handleEditClose: (modelId: string) => void;
   handleEditSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
-  handleModelCheck: (modelId: number, value: boolean) => void;
+  handleModelCheck: (modelId: string, value: boolean) => void;
 }
 
 export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
@@ -74,18 +74,18 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
         <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
           <EditIcon />
         </IconButton></>)} />
-        <CardContent>
-          <Typography gutterBottom color="textSecondary" className={classes.text}>
-            {model.version}
-          </Typography>
-          <Typography component="p">
-            {model.topGraph.name}
-          </Typography>
-          <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} />
-          <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
-            {model.description}
-          </Typography>
-        </CardContent>
+      <CardContent>
+        <Typography gutterBottom color="textSecondary" className={classes.text}>
+          {model.version}
+        </Typography>
+        <Typography component="p">
+          {model.topGraph.name}
+        </Typography>
+        <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} />
+        <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
+          {model.description}
+        </Typography>
+      </CardContent>
     </Card>
   </Grid>);
 };
