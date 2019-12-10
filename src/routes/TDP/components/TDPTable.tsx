@@ -1,4 +1,5 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -18,17 +19,17 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { CONTENT_STATUS, PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
+import { PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
 import { BooleanById } from '../../../types/misc.types';
 import { formatSecondsDuration } from '../../../util/misc';
 import { Pagination } from '../../shared/Pagination';
-import { RatingDisplay } from '../../shared/RatingDisplay';
 import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
-import { TDPCellTranscriberSelect } from './TDPCellTranscriberSelect';
 import { TDPFilters } from './TDPFilters';
+import { TDPRowDetails } from './TDPRowDetails';
 
 const TRANSCRIPT_ACCESSOR = 'transcript';
+const DOUBLE_HEIGHT_ROW = 2;
 
 interface TDPTableProps {
   projectId: string;
@@ -47,17 +48,12 @@ const useStyles = makeStyles(theme =>
     clickableTableBody: {
       cursor: 'pointer',
     },
-    ratingStar: {
-      heght: 5,
-      width: 5,
-    },
   }));
 
 export function TDPTable(props: TDPTableProps) {
   const {
     projectId,
     projectName,
-    transcribers,
     voiceDataResults,
     modelConfigsById,
     onlyAssignedData,
@@ -99,20 +95,58 @@ export function TDPTable(props: TDPTableProps) {
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
     const lines = expanded ? 6 : 1;
     const testTranscript = Array(50).fill(transcript).join(' ');
-    return <TruncateMarkup lines={lines}>
-      //!
-      //!
-      //!
-      //TODO
-      //* 
-      <Typography style={{ maxWidth: 250 }}>{testTranscript}</Typography>
-    </TruncateMarkup>;
+    return <Grid
+      container
+      wrap='nowrap'
+      direction='row'
+      alignContent='center'
+      alignItems='center'
+      justify='flex-start'>
+      {canModify && !onlyAssignedData && <IconButton
+        color='primary'
+        size='medium'
+        aria-label="open"
+        onClick={() => handleRowClick(cellData.cell.row.original)}
+      >
+        <LaunchIcon />
+      </IconButton>}
+      <TruncateMarkup lines={lines}>
+        <Typography style={{ minWidth: 250, maxWidth: 350 }}>{testTranscript}</Typography>
+      </TruncateMarkup>
+    </Grid>;
   };
 
-  const renderRating = (cellData: CellProps<VoiceData>) => {
-    const rating: VoiceData['transcriptionRating'] = cellData.cell.value;
-    if (!rating) return '';
-    return <RatingDisplay rating={rating} small />;
+  /**
+   * The expand button should be rendered on the last item in the row
+   * @param cellData 
+   */
+  const renderHighRiskSegmentsAndExpandButton = (cellData: CellProps<VoiceData>) => {
+    const highRiskSegments: VoiceData['highRiskSegments'] = cellData.cell.value || 0;
+    const rowIndex = cellData.row.index;
+    const expanded = !!expandedRowsByIndex[rowIndex];
+    return (<Grid
+      container
+      wrap='nowrap'
+      direction='row'
+      alignContent='center'
+      alignItems='center'
+      justify='flex-start'>
+      <Typography>{highRiskSegments}</Typography>
+      <IconButton
+        color='primary'
+        size='medium'
+        aria-label="open"
+        onClick={() => {
+          setExpandedRowsByIndex(prevState => {
+            const updatedState = { ...prevState };
+            updatedState[rowIndex] = !expanded;
+            return updatedState;
+          });
+        }}
+      >
+        <ExpandMoreIcon />
+      </IconButton>
+    </Grid>);
   };
 
   const renderStatus = (cellData: CellProps<VoiceData>) => {
@@ -121,15 +155,6 @@ export function TDPTable(props: TDPTableProps) {
       return cellData.cell.value;
     }
     return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
-  };
-
-  const renderTranscriber = (cellData: CellProps<VoiceData>) => {
-    // to only make editable when showing all and has permissions
-    const canAssign = cellData.cell.row.original.status === CONTENT_STATUS.UNCONFIRMED_LC;
-    if (canModify && canAssign && !(loading || onlyAssignedData)) {
-      return TDPCellTranscriberSelect({ cellData, projectId, transcribers, onSuccess: handleVoiceDataUpdate });
-    }
-    return cellData.cell.value || '';
   };
 
   const renderDateTime = (cellData: CellProps<VoiceData>) => {
@@ -147,7 +172,7 @@ export function TDPTable(props: TDPTableProps) {
         Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
       },
       {
-        Header: translate('common.startAt'),
+        Header: translate('common.date'),
         accessor: 'startAt',
         Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
@@ -155,11 +180,6 @@ export function TDPTable(props: TDPTableProps) {
         Header: translate('common.length'),
         accessor: 'length',
         Cell: (cellData: CellProps<VoiceData>) => formatSecondsDuration(cellData.cell.value),
-      },
-      {
-        Header: translate('common.score'),
-        accessor: 'transcriptionRating',
-        Cell: (cellData: CellProps<VoiceData>) => renderRating(cellData),
       },
       {
         Header: translate('modelConfig.header'),
@@ -171,11 +191,16 @@ export function TDPTable(props: TDPTableProps) {
         accessor: 'status',
         Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
+      // {
+      //   Header: translate('forms.transcriber'),
+      //   // to only display if it has a value
+      //   accessor: (row: VoiceData) => row.transcriber || '',
+      //   Cell: (cellData: CellProps<VoiceData>) => renderTranscriber(cellData),
+      // },
       {
-        Header: translate('forms.transcriber'),
-        // to only display if it has a value
-        accessor: (row: VoiceData) => row.transcriber || '',
-        Cell: (cellData: CellProps<VoiceData>) => renderTranscriber(cellData),
+        Header: translate('TDP.highRiskSegments'),
+        accessor: 'highRiskSegments',
+        Cell: (cellData: CellProps<VoiceData>) => renderHighRiskSegmentsAndExpandButton(cellData),
       },
     ],
     [voiceData, renderModelName, translate]
@@ -246,15 +271,9 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
-      {canModify && !onlyAssignedData && <TableCell key={`column-view`}>
-        {translate('common.view')}
-      </TableCell>}
       {headerGroup.headers.map((column, idx) => (
         renderHeaderCell(column, idx)
       ))}
-      <TableCell key={`column-expand`}>
-        {translate('common.view')}
-      </TableCell>
     </TableRow>);
 
   const renderHeader = () => (
@@ -264,8 +283,8 @@ export function TDPTable(props: TDPTableProps) {
     </TableHead>);
 
   // adding one for the expand button column
-  const fullRowColSpan = flatColumns.length + 1 + (canModify ? 1 : 0);
-  const detailsRowColSpan = fullRowColSpan - 2;
+  const fullRowColSpan = flatColumns.length + 1;
+  const detailsRowColSpan = fullRowColSpan - DOUBLE_HEIGHT_ROW;
 
   const renderRows = () => rows.map(
     (row: Row<VoiceData>, rowIndex: number) => {
@@ -279,50 +298,28 @@ export function TDPTable(props: TDPTableProps) {
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
           >
-            {canModify && !onlyAssignedData && (
-              <TableCell
-                key={`cell-view`}
-                rowSpan={expanded ? 2 : undefined}
-              >
-                <IconButton
-                  color='primary'
-                  size='medium'
-                  aria-label="open"
-                  onClick={() => handleRowClick(row.original)}
-                >
-                  <LaunchIcon />
-                </IconButton>
-              </TableCell>)}
             {row.cells.map((cell, cellIndex) => {
+              const isExpandedTranscript = expanded && cell.column.id === TRANSCRIPT_ACCESSOR;
               return (
                 <TableCell
                   key={`cell-${cellIndex}`}
                   {...cell.getCellProps()}
-                  rowSpan={(expanded && cell.column.id === TRANSCRIPT_ACCESSOR) ? 2 : undefined}
+                  rowSpan={isExpandedTranscript ? DOUBLE_HEIGHT_ROW : undefined}
                 >
                   {cell.render('Cell')}
                 </TableCell>
               );
             })}
-            <TableCell key={`cell-expand`}>
-              <IconButton
-                color='primary'
-                size='medium'
-                aria-label="open"
-                onClick={() => {
-                  setExpandedRowsByIndex(prevState => {
-                    const updatedState = { ...prevState };
-                    updatedState[rowIndex] = !expanded;
-                    return updatedState;
-                  });
-                }}
-              >
-                <ExpandMoreIcon />
-              </IconButton>
-            </TableCell>
           </TableRow>
-          {expanded && <TableRow><TableCell colSpan={detailsRowColSpan}>TEST CONTENT</TableCell></TableRow>}
-        </React.Fragment>
+          {expanded &&
+            <TDPRowDetails
+            row={row}
+            detailsRowColSpan={detailsRowColSpan}
+            projectId={projectId}
+            onSuccess={handleVoiceDataUpdate}
+            />
+          }
+        </React.Fragment >
       );
     });
 

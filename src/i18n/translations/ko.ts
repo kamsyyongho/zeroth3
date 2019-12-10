@@ -25,6 +25,7 @@ export const ko: ResourceLanguage = {
       upload: 'Upload',
       forbidden: 'Forbidden',
       view: 'View',
+      date: '날짜',
     },
     table: {
       page: 'Page',
@@ -148,6 +149,13 @@ export const ko: ResourceLanguage = {
     TDP: {
       TDP: 'TDP',
       uploadData: 'Upload data',
+      highRiskSegments: 'High Risk Segments',
+      memo: 'Memo',
+      sessionId: 'Session ID',
+      ip: 'IP',
+      websocketCloseStatus: 'Websocket close status',
+      websocketCloseReason: 'Websocket close reason',
+      transferredBytes: 'Transferred bytes',
     },
     editor: {
       editor: 'Editor',

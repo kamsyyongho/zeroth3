@@ -104,7 +104,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
                     loading={true}
                   /> : <EditIcon />}
               >
-                {translate("common.submit")}
+                {translate("organization.rename")}
               </Button>
             </DialogActions>
           </>

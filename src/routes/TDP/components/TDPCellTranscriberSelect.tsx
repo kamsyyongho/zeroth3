@@ -10,7 +10,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
-import { CellProps } from 'react-table';
+import { Row } from 'react-table';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CONTENT_STATUS, Transcriber, VoiceData } from '../../../types';
@@ -30,21 +30,21 @@ const useStyles = makeStyles((theme) =>
 );
 
 interface TDPCellTranscriberSelectProps {
-  cellData: CellProps<VoiceData>;
+  row: Row<VoiceData>;
   projectId: string;
   transcribers: Transcriber[];
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
-  const { cellData, projectId, transcribers, onSuccess } = props;
+  const { row, projectId, transcribers, onSuccess } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const voiceData = cellData.cell.row.original;
+  const voiceData = row.original;
 
-  const index = cellData.cell.row.index;
+  const index = row.index;
   const key = `${index}-transcriber`;
 
   const [transcriberId, setTranscriberId] = React.useState<string>('');
