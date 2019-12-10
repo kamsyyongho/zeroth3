@@ -20,6 +20,7 @@ import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { TDP } from './routes/TDP/TDP';
 import { TranscribersSummary } from './routes/transcribers/TranscribersSummary';
 import { PATHS } from './types';
+import { useGlobalState } from './hooks/global-state/useGlobalState';
 
 const history = createBrowserHistory();
 
@@ -28,6 +29,7 @@ function App() {
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
   const navigationProps = useNavigationProps();
+  const globalState = useGlobalState();
 
   React.useEffect(() => {
     initKeycloak();
@@ -45,7 +47,7 @@ function App() {
   }
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} globalState={globalState} >
       <Router history={history}>
         <Header />
         <Route exact path={PATHS.home.to} component={Home} />
