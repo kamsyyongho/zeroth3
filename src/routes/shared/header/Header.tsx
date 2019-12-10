@@ -13,10 +13,11 @@ import { MdTranslate } from 'react-icons/md';
 import { Link } from "react-router-dom";
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
+import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import logo from '../../../static/images/logo.png';
-import { Organization, PATHS } from '../../../types';
+import { PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
@@ -47,7 +48,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
-  const [organization, setOrganization] = React.useState<Organization>({} as Organization);
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const { organization } = globalState;
   const [organizationLoading, setOrganizationLoading] = React.useState(true);
   const [isOpen, setIsOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -62,7 +64,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       setOrganizationLoading(true);
       const response = await api.organizations.getOrganization();
       if (response.kind === 'ok') {
-        setOrganization(response.organization);
+        setGlobalState({ organization: response.organization });
       } else {
         log({
           file: `Header.tsx`,
@@ -76,11 +78,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
-  const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
+  const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
-    if (user.organizationId && canRename) {
+    if (user.organizationId && !organization) {
       getOrganization();
     } else {
       setOrganizationLoading(false);
@@ -173,7 +175,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         </Grid>
       </Toolbar>
       <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen} />
-      <RenameOrganizationDialog name={organization.name} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <RenameOrganizationDialog name={organization?.name ?? ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
     </AppBar>
   );
 };
