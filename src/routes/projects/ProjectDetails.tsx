@@ -20,7 +20,7 @@ interface ProjectDetailsProps {
   projectId: string;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,
@@ -113,7 +113,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
 
   React.useEffect(() => {
     const getProject = async () => {
-      if (api && api.projects) {
+      if (api?.projects) {
         const response = await api.projects.getProject(projectId);
         if (response.kind === 'ok') {
           setProject(response.project);
@@ -137,7 +137,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
     };
     const getModelConfigs = async () => {
-      if (api && api.modelConfig) {
+      if (api?.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {
           setModelConfigs(response.modelConfigs);
@@ -153,7 +153,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
     };
     const getTopGraphs = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getTopGraphs();
         if (response.kind === 'ok') {
           setTopGraphs(response.topGraphs);
@@ -169,7 +169,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
     };
     const getSubGraphs = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getSubGraphs();
         if (response.kind === 'ok') {
           setSubGraphs(response.subGraphs);
@@ -185,7 +185,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
     };
     const getLanguageModels = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getLanguageModels();
         if (response.kind === 'ok') {
           setLanguageModels(response.languageModels);
@@ -201,7 +201,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
     };
     const getAcousticModels = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getAcousticModels();
         if (response.kind === 'ok') {
           setAcousticModels(response.acousticModels);
@@ -216,7 +216,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setAcousticModelsLoading(false);
       }
     };
-    if (projectId) {
+    if (!projectId) {
       setIsValidId(false);
       setProjectLoading(false);
       log({

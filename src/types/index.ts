@@ -1,4 +1,5 @@
 export * from './misc.types';
+export * from './model-config.types';
 export * from './models.types';
 export * from './organizations.types';
 export * from './pagination.types';

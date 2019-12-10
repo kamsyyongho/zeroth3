@@ -1,7 +1,14 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { deleteModelConfigResult, getModelConfigsResult, ModelConfigRequest, postModelConfigResult, ProblemKind, ServerError } from '../types';
+import {
+  deleteModelConfigResult,
+  getModelConfigsResult,
+  ModelConfigRequest,
+  postModelConfigResult,
+  ProblemKind,
+  ServerError,
+} from '../types';
 import { updateModelConfigResult } from '../types/model-config.types';
 import { ParentApi } from './parent-api';
 
@@ -51,6 +58,8 @@ export class ModelConfig extends ParentApi {
    * Create a new model config
    * @param projectId
    * @param name
+   * @param thresholdHc
+   * @param thresholdLc
    * @param description
    * @param acousticModelId
    * @param languageModelId
@@ -58,6 +67,8 @@ export class ModelConfig extends ParentApi {
   async postModelConfig(
     projectId: string,
     name: string,
+    thresholdHc: number,
+    thresholdLc: number,
     description: string,
     acousticModelId: string,
     languageModelId: string
@@ -65,6 +76,8 @@ export class ModelConfig extends ParentApi {
     // compile data
     const request: ModelConfigRequest = {
       name,
+      thresholdHc,
+      thresholdLc,
       description,
       acousticModelId,
       languageModelId,
@@ -101,6 +114,8 @@ export class ModelConfig extends ParentApi {
    * @param modelConfigId
    * @param projectId
    * @param name
+   * @param thresholdHc
+   * @param thresholdLc
    * @param description
    * @param acousticModelId
    * @param languageModelId
@@ -110,6 +125,8 @@ export class ModelConfig extends ParentApi {
     modelConfigId: string,
     projectId: string,
     name: string,
+    thresholdHc: number,
+    thresholdLc: number,
     description: string,
     acousticModelId: string,
     languageModelId: string
@@ -117,6 +134,8 @@ export class ModelConfig extends ParentApi {
     // compile data
     const request: ModelConfigRequest = {
       name,
+      thresholdHc,
+      thresholdLc,
       description,
       acousticModelId,
       languageModelId,

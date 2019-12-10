@@ -86,7 +86,7 @@ export function ModelTabs() {
     const deleteProjectPromises: Promise<deleteSubGraphResult>[] = [];
     const successIds: string[] = [];
     subGraphsToDelete.forEach(subGraphId => {
-      if (api && api.models) {
+      if (api?.models) {
         deleteProjectPromises.push(api.models.deleteSubGraph(subGraphId));
       } else {
         return;
@@ -104,7 +104,7 @@ export function ModelTabs() {
         });
         serverError = response.serverError;
         let errorMessageText = translate('common.error');
-        if (serverError && serverError.message) {
+        if (serverError?.message) {
           errorMessageText = serverError.message;
         }
         enqueueSnackbar(errorMessageText, { variant: 'error' });
@@ -120,7 +120,7 @@ export function ModelTabs() {
 
   React.useEffect(() => {
     const getTopGraphs = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getTopGraphs();
         if (response.kind === 'ok') {
           setTopGraphs(response.topGraphs);
@@ -140,7 +140,7 @@ export function ModelTabs() {
 
   React.useEffect(() => {
     const getSubGraphs = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getSubGraphs();
         if (response.kind === 'ok') {
           setSubGraphs(response.subGraphs);

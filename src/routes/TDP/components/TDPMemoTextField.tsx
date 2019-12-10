@@ -1,74 +1,72 @@
-import FormControl from '@material-ui/core/FormControl';
+import { TextField } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import ListItemText from '@material-ui/core/ListItemText';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
-import { CellProps } from 'react-table';
+import { Row } from 'react-table';
+import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { CONTENT_STATUS, CONTENT_STATUS_VALUES, VoiceData } from '../../../types';
-import { SnackbarError } from '../../../types/snackbar.types';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import { SnackbarError, VoiceData } from '../../../types';
 import log from '../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    formControl: {
-      minWidth: 80,
-      maxWidth: 300,
-    },
     hidden: {
       visibility: 'hidden',
     },
   }),
 );
 
-interface TDPCellStatusSelectProps {
-  cellData: CellProps<VoiceData>;
+interface TDPMemoTextFieldProps {
+  row: Row<VoiceData>;
   projectId: string;
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
-export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
-  const { cellData, projectId, onSuccess } = props;
+export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
+  const { row, projectId, onSuccess } = props;
   const api = React.useContext(ApiContext);
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const initialStatus: VoiceData['status'] = cellData.cell.value;
-  const voiceData = cellData.cell.row.original;
+  const voiceData = row.original;
 
-  const index = cellData.cell.row.index;
-  const key = `${index}-status`;
+  const index = row.index;
+  const key = `${index}-memo`;
 
-  const [status, setStatus] = React.useState<CONTENT_STATUS>(initialStatus);
+
+  const rawMemo = voiceData.memo || '';
+
+  const [memo, setMemo] = React.useState<string>(rawMemo);
   const [loading, setLoading] = React.useState(false);
 
   const classes = useStyles();
   const theme = useTheme();
 
-  // we cannot update the status to `RAW`
-  const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.RAW;
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
-  const updateStatus = async () => {
-    if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.RAW) {
+  const updateMemo = async () => {
+    if (api?.voiceData && canModify && !loading) {
       setLoading(true);
-      const response = await api.voiceData.updateStatus(projectId, voiceData.id, status);
+      const response = await api.voiceData.updateMemo(projectId, voiceData.id, memo);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         setLoading(false);
-        onSuccess(response.data, index);
+        // to build the updated voice data
+        const updatedVoiceData = { ...voiceData, memo };
+        onSuccess(updatedVoiceData, index);
       } else {
         log({
-          file: `TDPCellStatusSelect.tsx`,
-          caller: `updateStatus - failed to update status`,
+          file: `TDPMemoTextField.tsx`,
+          caller: `updateMemo - failed to update memo`,
           value: response,
           important: true,
         });
@@ -84,19 +82,12 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
   };
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown; }>) => {
-    const value = event.target.value as CONTENT_STATUS;
-    setStatus(value);
+    const value = event.target.value as string;
+    setMemo(value);
   };
 
-  const renderMenuItems = () => {
-    return CONTENT_STATUS_VALUES.map((status, index) => {
-      return (
-        <MenuItem disabled={status === CONTENT_STATUS.RAW} key={index} value={status as CONTENT_STATUS}>
-          <ListItemText primary={status} />
-        </MenuItem>
-      );
-    });
-  };
+
+  const disabled = !canModify && !memo?.length;
 
 
   return (
@@ -106,24 +97,27 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
       wrap='nowrap'
       direction='row'
       alignContent='center'
-      alignItems='center'
+      alignItems='flex-end'
       justify='flex-start'
     >
-      <FormControl className={classes.formControl} >
-        <Select
-          value={status}
-          onChange={handleChange}
-        >
-          {renderMenuItems()}
-        </Select>
-      </FormControl>
+      <TextField
+        id={key}
+        label={`${translate('TDP.memo')}:`}
+        fullWidth
+        disabled={disabled}
+        InputProps={{
+          readOnly: !canModify,
+        }}
+        value={memo}
+        onChange={handleChange}
+      />
       <IconButton
-        className={!statusChanged ? classes.hidden : undefined}
+        className={memo !== rawMemo ? undefined : classes.hidden}
         disabled={loading}
         color='primary'
         size='small'
         aria-label="submit"
-        onClick={updateStatus}
+        onClick={updateMemo}
       >
         {loading ? <MoonLoader
           sizeUnit={"px"}

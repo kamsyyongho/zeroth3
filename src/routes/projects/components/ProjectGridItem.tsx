@@ -14,7 +14,7 @@ import { CheckedProjectsById } from '../Projects';
 import { ProjectDialog } from './ProjectDialog';
 import { EditOpenByProjectId } from './ProjectGridList';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     card: {
       minWidth: 275,
@@ -66,12 +66,6 @@ export function ProjectGridItem(props: ProjectGridItemProps) {
           </Typography>
           <Typography gutterBottom color="textSecondary" className={classes.text}>
             {project.apiSecret}
-          </Typography>
-          <Typography variant="body1" component="p" className={classes.text}>
-            {project.thresholdHc}
-          </Typography>
-          <Typography variant="body1" component="p" className={classes.text}>
-            {project.thresholdLc}
           </Typography>
           <Typography variant="body2" gutterBottom component="p" className={classes.text}>
             {new Date(project.validFrom).toDateString()}

@@ -76,19 +76,13 @@ export class Projects extends ParentApi {
   /**
    * Create a new project
    * @param name
-   * @param thresholdHc
-   * @param thresholdLc
    */
   async postProject(
     name: string,
-    thresholdHc: number,
-    thresholdLc: number
   ): Promise<postProjectResult> {
     // compile data
     const request: ProjectRequest = {
       name,
-      thresholdHc,
-      thresholdLc,
     };
     // make the api call
     const response: ApiResponse<
@@ -140,21 +134,15 @@ export class Projects extends ParentApi {
   /**
    * Update an existing project
    * @param name
-   * @param thresholdHc
-   * @param thresholdLc
    * @param projectId
    */
   async updateProject(
     name: string,
-    thresholdHc: number,
-    thresholdLc: number,
     projectId: string,
   ): Promise<updateProjectResult> {
     // compile data
     const request: ProjectRequest = {
       name,
-      thresholdHc,
-      thresholdLc,
     };
     // make the api call
     const response: ApiResponse<Project, ServerError> = await this.apisauce.put(

@@ -4,14 +4,14 @@ import InputLabel from '@material-ui/core/InputLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { CellProps } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Role, User } from '../../../types';
 import { ParsedRolesById, SelectedRoleIdsByIndex } from './IAMTable';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     formControl: {
       margin: theme.spacing(1),
@@ -75,7 +75,7 @@ export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
       const { id, name } = role;
       return (
         <MenuItem key={id} value={id}>
-          <Checkbox checked={userselectedRoles.includes(id)} />
+          <Checkbox color='primary' checked={userselectedRoles.includes(id)} />
           <ListItemText primary={name} />
         </MenuItem>
       );

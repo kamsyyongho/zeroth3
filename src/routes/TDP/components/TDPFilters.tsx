@@ -50,7 +50,7 @@ export function TDPFilters(props: TDPFiltersProps) {
   }, [translate]);
 
   const modelConfigFormSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({ label: modelConfigsById[Number(id)].name, value: modelConfigsById[Number(id)].id }));
+    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({ label: modelConfigsById[id].name, value: modelConfigsById[id].id }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
     return tempFormSelectOptions;

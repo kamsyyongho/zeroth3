@@ -79,10 +79,10 @@ export const useKeycloak = () => {
   let roles: string[] = [];
   let user: KeycloakUser = {};
   try {
-    if (keycloak && keycloak.tokenParsed && keycloak.tokenParsed.realm_access) {
+    if (keycloak?.tokenParsed?.realm_access) {
       roles = keycloak.tokenParsed.realm_access.roles;
     }
-    if (keycloak && keycloak.tokenParsed) {
+    if (keycloak?.tokenParsed) {
       user = {
         organizationId: keycloak.tokenParsed.organization_id,
         familyName: keycloak.tokenParsed.family_name,

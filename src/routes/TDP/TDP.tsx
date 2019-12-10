@@ -3,7 +3,7 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import BackupIcon from '@material-ui/icons/Backup';
 import { useSnackbar } from 'notistack';
 import React from "react";
@@ -31,7 +31,7 @@ export interface ModelConfigsById {
 }
 
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,
@@ -73,7 +73,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
-    if (api && api.voiceData) {
+    if (api?.voiceData) {
       setVoiceDataLoading(true);
       let response: getAssignedDataResult | searchDataResult | undefined;
       if (onlyAssignedData) {
@@ -98,7 +98,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
 
   React.useEffect(() => {
     const getProject = async () => {
-      if (api && api.projects) {
+      if (api?.projects) {
         const response = await api.projects.getProject(projectId);
         if (response.kind === 'ok') {
           setProject(response.project);
@@ -122,7 +122,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       }
     };
     const getModelConfigs = async () => {
-      if (api && api.modelConfig) {
+      if (api?.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {
           setModelConfigs(response.modelConfigs);
@@ -138,7 +138,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
       }
     };
     const getTranscribers = async () => {
-      if (api && api.transcriber) {
+      if (api?.transcriber) {
         const response = await api.transcriber.getTranscribers();
         if (response.kind === 'ok') {
           setTranscribers(response.transcribers);
@@ -175,7 +175,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
 
   const handleAssignSubmit = async () => {
     if (!selectedModelConfigId) return;
-    if (api && api.voiceData) {
+    if (api?.voiceData) {
       setAssignDataLoading(true);
       const response = await api.voiceData.fetchUnconfirmedData(projectId, selectedModelConfigId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -198,7 +198,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setAssignDataLoading(false);
     }
   };

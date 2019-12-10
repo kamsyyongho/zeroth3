@@ -11,7 +11,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -27,7 +27,7 @@ import log from '../../../util/log/logger';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { ModelConfigDialog } from './ModelConfigDialog';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       padding: 0,
@@ -122,7 +122,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   };
 
   const handleDelete = async () => {
-    if (api && api.modelConfig && modelConfigToEdit) {
+    if (api?.modelConfig && modelConfigToEdit) {
       setDeleteLoading(true);
       const modelConfigId = modelConfigToEdit.id;
       closeConfirmation();
@@ -145,7 +145,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setDeleteLoading(false);
     }
   };
@@ -174,13 +174,17 @@ export function ModelConfigList(props: ModelConfigListProps) {
   </Menu>);
 
   const renderListItems = () => modelConfigs.map(modelConfig => {
-    const { acousticModel, languageModel, name, id, description } = modelConfig;
+    const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
     return (
       <Card key={id}>
         <ListItem>
           <ListItemText
             primary={name}
             secondary={description}
+          />
+          <ListItemText
+            primary={thresholdLc}
+            secondary={thresholdHc}
           />
           <ListSubheader component='div' >{acousticModel.name}</ListSubheader>
           <ListSubheader component='div' >{languageModel.name}</ListSubheader>

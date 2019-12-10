@@ -25,6 +25,8 @@ import {
   ServerError,
   SplitSegmentQuery,
   splitSegmentResult,
+  UpdateMemoRequest,
+  updateMemoResult,
   UpdateSegmentRequest,
   updateSegmentResult,
   UpdateSegmentsRequest,
@@ -420,6 +422,38 @@ export class VoiceData extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Manually updates a voice data's memo
+   * @param projectId
+   * @param dataId
+   * @param memo
+   */
+  async updateMemo(
+    projectId: string,
+    dataId: string,
+    memo: string
+  ): Promise<updateMemoResult> {
+    // compile data
+    const request: UpdateMemoRequest = {
+      memo,
+    };
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/memo`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 
   /**

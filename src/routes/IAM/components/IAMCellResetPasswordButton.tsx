@@ -35,7 +35,7 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
   const closeConfirmation = () => setConfirmationOpen(false);
 
   const resetPassword = async () => {
-    if (api && api.IAM) {
+    if (api?.IAM) {
       closeConfirmation();
       setIsLoading(true);
       const response = await api.IAM.resetPasswordOfUser(user.id);
@@ -56,7 +56,7 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setIsLoading(false);
     }
   };
@@ -67,12 +67,12 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
         disabled={isLoading}
         onClick={confirmReset}
         variant="outlined"
-        color="primary"
+        color="secondary"
         startIcon={isLoading ?
           <MoonLoader
             sizeUnit={"px"}
             size={15}
-            color={theme.palette.primary.main}
+            color={theme.palette.secondary.main}
             loading={true}
           /> : <VpnKeyIcon />}
       >{translate("profile.resetPassword")}</Button>

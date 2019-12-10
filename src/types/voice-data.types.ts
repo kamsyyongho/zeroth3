@@ -5,20 +5,22 @@ export interface VoiceData {
   startAt: Date;
   endAt: Date;
   ip: string;
-  memo: string;
+  memo: string | null;
   sessionId: string;
   modelConfigId: string;
   /** seconds */
   length: number;
   status: CONTENT_STATUS;
   /**
-   * name of the user assigned to transcribed
+   * name of the user assigned to transcribe
    */
-  transcriber: string;
+  transcriber: string | null;
   transcript: string;
-  transcriptionRating: number;
+  transcriptionRating: number | null;
   webSocketCloseReason: string;
   webSocketCloseStatus: number;
+  transferedBytes: number;
+  highRiskSegments: number;
 }
 
 export interface VoiceDataResults extends PaginatedResults {

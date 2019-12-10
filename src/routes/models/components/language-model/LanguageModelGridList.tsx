@@ -87,7 +87,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
 
   React.useEffect(() => {
     const getModels = async () => {
-      if (api && api.models) {
+      if (api?.models) {
         const response = await api.models.getLanguageModels();
         if (response.kind === 'ok') {
           setModels(response.languageModels);
@@ -131,7 +131,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     const deleteProjectPromises: Promise<deleteLanguageModelResult>[] = [];
     const successIds: string[] = [];
     modelsToDelete.forEach(modelId => {
-      if (api && api.models) {
+      if (api?.models) {
         deleteProjectPromises.push(api.models.deleteLanguageModel(modelId));
       } else {
         return;
@@ -149,7 +149,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         });
         serverError = response.serverError;
         let errorMessageText = translate('common.error');
-        if (serverError && serverError.message) {
+        if (serverError?.message) {
           errorMessageText = serverError.message;
         }
         enqueueSnackbar(errorMessageText, { variant: 'error' });

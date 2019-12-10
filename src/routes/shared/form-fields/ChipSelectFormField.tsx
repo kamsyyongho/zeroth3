@@ -2,7 +2,21 @@ import { Chip, FormControl, FormHelperText, InputLabel, MenuItem, Select } from 
 import { FieldProps, getIn } from "formik";
 import React from "react";
 import { SelectFormFieldOption, SelectFormFieldOptions } from './SelectFormField';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    default: {
+      margin: 2,
+    },
+    light: {
+      backgroundColor: theme.palette.primary.light,
+      color: theme.palette.primary.contrastText,
+      margin: 2,
+    },
+  }),
+);
 
 interface LabelsByValue {
   [x: string]: string
@@ -12,14 +26,18 @@ interface ChipSelectFormFieldProps extends FieldProps {
   errorOverride?: boolean
   fullWidth?: boolean
   label?: string
+  /** if we need to use the lighter primary text */
+  light?: boolean;
   labelsByValue: LabelsByValue
   options: SelectFormFieldOptions
 }
 
-export const ChipSelectFormField = ({ field, form, label, options, labelsByValue, errorOverride, fullWidth, ...props }: ChipSelectFormFieldProps) => {
+export const ChipSelectFormField = ({ field, form, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
+
+  const classes = useStyles();
   return (
     <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
       {label && <InputLabel>{label}</InputLabel>}
@@ -29,7 +47,11 @@ export const ChipSelectFormField = ({ field, form, label, options, labelsByValue
         renderValue={selected => (
           <>
             {(selected as string[]).map(value => (
-              <Chip key={value} label={labelsByValue[value]} style={{ margin: 2 }} />
+              <Chip
+              key={value}
+              label={labelsByValue[value]} 
+              className={light ? classes.light : classes.default}
+              />
             ))}
           </>
         )}

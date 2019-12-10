@@ -90,7 +90,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
     if (!validFilesCheck(files) || selectedModelConfigId === null) {
       return;
     }
-    if (api && api.rawData && !loading) {
+    if (api?.rawData && !loading) {
       setLoading(true);
       setIsError(false);
       const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
@@ -123,7 +123,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

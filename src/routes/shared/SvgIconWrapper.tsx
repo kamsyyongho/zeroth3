@@ -4,16 +4,17 @@ import { IconType } from 'react-icons';
 
 
 interface IconWrapperProps extends SvgIconProps {
-  children: IconType | React.ReactNode
+  children: IconType | React.ReactNode;
 }
 /**
  * Wraps svg icons from `react-icons` in a `SvgIcon` component from `material-ui`
  * @param props the props that `material-ui` provides for their icons
  */
 export const SvgIconWrapper = (props: IconWrapperProps) => {
+  const { children } = props;
   return (
     <SvgIcon {...props}>
-      {props.children}
+      {typeof children === 'function' ? children({}) : children}
     </SvgIcon>
   );
-}
+};

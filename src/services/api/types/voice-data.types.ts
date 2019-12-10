@@ -54,6 +54,10 @@ export interface UpdateStatusRequest {
   status: CONTENT_STATUS;
 }
 
+export interface UpdateMemoRequest {
+  memo: string;
+}
+
 export interface AssignUnconfirmedQuery {
   'model-config': string;
 }
@@ -114,3 +118,5 @@ export type mergeTwoSegmentsResult =
 export type updateStatusResult =
   | { kind: 'ok'; data: VoiceData }
   | GeneralApiProblem;
+
+export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;

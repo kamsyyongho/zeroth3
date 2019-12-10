@@ -5,19 +5,19 @@ import InputLabel from '@material-ui/core/InputLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
-import { CellProps } from 'react-table';
+import { Row } from 'react-table';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CONTENT_STATUS, Transcriber, VoiceData } from '../../../types';
 import { SnackbarError } from '../../../types/snackbar.types';
 import log from '../../../util/log/logger';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     formControl: {
       minWidth: 130,
@@ -30,21 +30,21 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface TDPCellTranscriberSelectProps {
-  cellData: CellProps<VoiceData>;
+  row: Row<VoiceData>;
   projectId: string;
   transcribers: Transcriber[];
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
-  const { cellData, projectId, transcribers, onSuccess } = props;
+  const { row, projectId, transcribers, onSuccess } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const voiceData = cellData.cell.row.original;
+  const voiceData = row.original;
 
-  const index = cellData.cell.row.index;
+  const index = row.index;
   const key = `${index}-transcriber`;
 
   const [transcriberId, setTranscriberId] = React.useState<string>('');
@@ -61,7 +61,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   }
 
   const assignTranscriber = async () => {
-    if (api && api.voiceData && canAssign && !loading) {
+    if (api?.voiceData && canAssign && !loading) {
       setLoading(true);
       const response = await api.voiceData.assignUnconfirmedDataToTranscriber(projectId, transcriberId, voiceData.modelConfigId, [voiceData.id]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -92,7 +92,7 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
         setLoading(false);
       }
     }

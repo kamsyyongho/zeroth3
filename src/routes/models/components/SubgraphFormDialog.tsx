@@ -89,7 +89,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     if (shouldUploadFile && !validFilesCheck(files)) {
       return;
     }
-    if (api && api.models && !loading) {
+    if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
       const { name, text, isPublic } = values;
@@ -124,7 +124,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError && snackbarError.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       setLoading(false);
     }
   };

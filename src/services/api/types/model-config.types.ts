@@ -1,4 +1,4 @@
-import { ModelConfig } from '../../../types';
+import { ModelConfig, Threshold } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -9,6 +9,8 @@ export interface ModelConfigRequest {
   acousticModelId: string;
   languageModelId: string;
   name: string;
+  thresholdHc: Threshold;
+  thresholdLc: Threshold;
   description: string;
 }
 

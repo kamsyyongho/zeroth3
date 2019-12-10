@@ -1,23 +1,31 @@
 import { Button, Toolbar } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
+import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import MenuIcon from '@material-ui/icons/Menu';
 import { useSnackbar } from 'notistack';
 import React from 'react';
-import { Link, useLocation } from "react-router-dom";
+import { FaProjectDiagram } from 'react-icons/fa';
+import { MdTranslate } from 'react-icons/md';
+import { Link } from "react-router-dom";
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
+import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { Organization, PATHS } from '../../../types';
+import logo from '../../../static/images/logo.png';
+import { PATHS } from '../../../types';
 import log from '../../../util/log/logger';
+import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
+import { SvgIconWrapper } from '../SvgIconWrapper';
 import MenuPopup from './components/MenuPopup';
 
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       display: 'flex',
@@ -25,18 +33,26 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    menuButton: {
+      marginRight: theme.spacing(2),
+    },
+    projectButton: {
+      margin: theme.spacing(2),
+    },
+    toolbar: theme.mixins.toolbar,
   }),
 );
 
-const Header: React.FunctionComponent<{}> = (props) => {
+export const Header: React.FunctionComponent<{}> = (props) => {
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
-  const location = useLocation();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { translate } = React.useContext(I18nContext);
-  const [organization, setOrganization] = React.useState<Organization>({} as Organization);
+  const { translate, toggleLanguage } = React.useContext(I18nContext);
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const { organization } = globalState;
   const [organizationLoading, setOrganizationLoading] = React.useState(true);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   const classes = useStyles();
 
@@ -44,11 +60,11 @@ const Header: React.FunctionComponent<{}> = (props) => {
   const hideDialog = () => setIsOpen(false);
 
   const getOrganization = async () => {
-    if (api && api.organizations) {
+    if (api?.organizations) {
       setOrganizationLoading(true);
       const response = await api.organizations.getOrganization();
       if (response.kind === 'ok') {
-        setOrganization(response.organization);
+        setGlobalState({ organization: response.organization });
       } else {
         log({
           file: `Header.tsx`,
@@ -62,11 +78,11 @@ const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
-  const shouldRenameOrganization = !organizationLoading && (organization.name === user.preferredUsername);
+  const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
-    if (user.organizationId && canRename) {
+    if (user.organizationId && !organization) {
       getOrganization();
     } else {
       setOrganizationLoading(false);
@@ -79,7 +95,7 @@ const Header: React.FunctionComponent<{}> = (props) => {
     if (canRename && shouldRenameOrganization) {
       const action = (key: number) => (
         <>
-          <Button color='secondary' onClick={() => {
+          <Button color='primary' onClick={() => {
             showDialog();
             closeSnackbar(key);
           }} >
@@ -98,46 +114,68 @@ const Header: React.FunctionComponent<{}> = (props) => {
   }, [canRename, shouldRenameOrganization]);
 
 
-  const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
-  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
-
-  const pathButtons: JSX.Element[] = [];
-  Object.keys(PATHS).forEach((key, index) => {
-    // to only display links for pages we are allowed to go to
-    let shouldRender = true;
-    if ((key === 'models' && !canSeeModels) || (key === 'transcribers' && !canSeeTranscribers)) {
-      shouldRender = false;
-    }
-
-    if (shouldRender) {
-      const path = PATHS[key];
-      const { to, title } = path;
-      if (title && to) {
-        let isCurrentPath = false;
-        if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
-          isCurrentPath = true;
-        } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
-          isCurrentPath = true;
-        }
-        pathButtons.push(<Button key={index} component={Link} to={to} color={isCurrentPath ? "secondary" : "inherit"}>{(translate(`path.${title}`))}</Button>);
-      }
-    }
-  });
-
   return (
     <AppBar
       position="static"
+      color='secondary'
     >
       <Toolbar>
-        <Typography variant="h6" noWrap className={classes.title}>
-          Zeroth EE
-        </Typography>
-        {pathButtons}
-        <MenuPopup />
+        <Grid
+          justify='space-between'
+          container
+        >
+          <Grid
+            item
+            container
+            justify='flex-start'
+            alignContent='center'
+            alignItems='center'
+            xs={6}
+          >
+            <IconButton
+              onClick={() => setIsDrawerOpen(true)}
+              color={"inherit"}
+              edge='start'
+              className={classes.menuButton}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Button component={Link} to={PATHS.home.to as string}>
+              <img src={logo} alt='Zeroth EE' />
+            </Button>
+            <Button
+              startIcon={<SvgIconWrapper ><FaProjectDiagram /></SvgIconWrapper>}
+              endIcon={<ExpandMoreIcon />}
+              color={"inherit"}
+              className={classes.projectButton}
+              onClick={() => { }}
+            >TEST PROJECTS</Button>
+          </Grid>
+          <Grid
+            item
+            container
+            justify='flex-end'
+            alignContent='center'
+            alignItems='center'
+            xs={6}
+          >
+            <IconButton
+              onClick={toggleLanguage}
+              color={"inherit"}
+              edge='start'
+              className={classes.menuButton}
+            >
+              <SvgIconWrapper ><MdTranslate /></SvgIconWrapper>
+            </IconButton>
+            <MenuPopup
+              user={user}
+              organization={organization}
+            />
+          </Grid>
+        </Grid>
       </Toolbar>
-      <RenameOrganizationDialog name={organization.name} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen} />
+      <RenameOrganizationDialog name={organization?.name ?? ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
     </AppBar>
   );
 };
-
-export default Header;
