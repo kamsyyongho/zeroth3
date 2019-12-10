@@ -22,6 +22,9 @@ const useStyles = makeStyles((theme) =>
     menuButton: {
       marginRight: theme.spacing(2),
     },
+    userInfo: {
+      outline: 'none', // removes the focus outline,
+    },
   }),
 );
 
@@ -68,7 +71,8 @@ function MenuPopup(props: MenuPopupProps) {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {(user?.email || organization?.name) && (<div>
+        {(user?.email || organization?.name) && (<div
+          className={classes.userInfo}>
           <ListItem >
             <ListItemText
               primary={user?.email ? user.email : undefined}
