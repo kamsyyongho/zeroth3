@@ -19,7 +19,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { PATHS, Transcriber, VoiceData, VoiceDataResults } from '../../../types';
+import { PATHS, VoiceData, VoiceDataResults } from '../../../types';
 import { BooleanById } from '../../../types/misc.types';
 import { formatSecondsDuration } from '../../../util/misc';
 import { Pagination } from '../../shared/Pagination';
@@ -34,7 +34,6 @@ const DOUBLE_HEIGHT_ROW = 2;
 interface TDPTableProps {
   projectId: string;
   projectName: string;
-  transcribers: Transcriber[];
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
   onlyAssignedData: boolean;
@@ -94,7 +93,6 @@ export function TDPTable(props: TDPTableProps) {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
     const lines = expanded ? 6 : 1;
-    const testTranscript = Array(50).fill(transcript).join(' ');
     return <Grid
       container
       wrap='nowrap'
@@ -111,7 +109,7 @@ export function TDPTable(props: TDPTableProps) {
         <LaunchIcon />
       </IconButton>}
       <TruncateMarkup lines={lines}>
-        <Typography style={{ minWidth: 250, maxWidth: 350 }}>{testTranscript}</Typography>
+        <Typography style={{ minWidth: 250, maxWidth: 350 }}>{transcript}</Typography>
       </TruncateMarkup>
     </Grid>;
   };
@@ -313,10 +311,10 @@ export function TDPTable(props: TDPTableProps) {
           </TableRow>
           {expanded &&
             <TDPRowDetails
-            row={row}
-            detailsRowColSpan={detailsRowColSpan}
-            projectId={projectId}
-            onSuccess={handleVoiceDataUpdate}
+              row={row}
+              detailsRowColSpan={detailsRowColSpan}
+              projectId={projectId}
+              onSuccess={handleVoiceDataUpdate}
             />
           }
         </React.Fragment >
