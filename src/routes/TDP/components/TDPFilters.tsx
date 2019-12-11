@@ -81,8 +81,6 @@ export function TDPFilters(props: TDPFiltersProps) {
   };
 
 
-  // FORCE CONTROLLED COMPONENT - while empty field;
-
   const handleSubmit = (values: FormValues) => {
     const {
       startDate,
@@ -123,7 +121,7 @@ export function TDPFilters(props: TDPFiltersProps) {
             id="filter-header"
           >
             <FilterListIcon />
-            <Typography variant='h5' className={classes.heading} >{translate('table.filterResults')}</Typography>
+            <Typography variant='h5' className={classes.heading} >{translate('table.filter')}</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <Card elevation={0} className={classes.card}>

@@ -33,7 +33,7 @@ export const ko: ResourceLanguage = {
       labelDisplayedRows: '{{from}}-{{to}} of {{count}}',
       labelRowsPerPage: 'Rows per page',
       noResults: 'No results',
-      filterResults: 'Filter results',
+      filter: 'Filter',
     },
     path: {
       home: '홈',
@@ -184,6 +184,7 @@ export const ko: ResourceLanguage = {
           delete_plural: 'Delete {{count}} language models',
         },
       },
+      subGraphHeader: 'Sub Graph Management',
       createSubGraph: 'Create sub graph',
       editSubGraph: 'Edit sub graph',
       deleteSubGraph: 'Delete sub graph',
