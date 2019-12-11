@@ -5,7 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import React from 'react';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Project } from '../../../types';
-import { CheckedProjectsById } from '../Projects';
+import { CheckedProjectsById } from '../ProjectsDialog';
 import { ProjectListItem } from './ProjectListItem';
 
 interface ProjectListProps {
