@@ -19,12 +19,14 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { AcousticModel, LanguageModel, ModelConfig, SubGraph, TopGraph } from '../../../types';
-import { SnackbarError } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { ConfirmationDialog } from '../ConfirmationDialog';
+import { ApiContext } from '../../hooks/api/ApiContext';
+import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
+import { SnackbarError } from '../../types/';
+import { PATHS } from '../../types/path.types';
+import log from '../../util/log/logger';
+import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
 
 const useStyles = makeStyles((theme) =>
@@ -48,7 +50,7 @@ const useStyles = makeStyles((theme) =>
 );
 
 export interface ModelConfigListProps {
-  projectId: string;
+  project: Project;
   canModify: boolean;
   modelConfigsLoading: boolean;
   modelConfigs: ModelConfig[];
@@ -66,7 +68,7 @@ export interface ModelConfigListProps {
 
 export function ModelConfigList(props: ModelConfigListProps) {
   const {
-    projectId,
+    project,
     canModify,
     modelConfigsLoading,
     modelConfigs,
@@ -126,7 +128,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
       setDeleteLoading(true);
       const modelConfigId = modelConfigToEdit.id;
       closeConfirmation();
-      const response = await api.modelConfig.deleteModelConfig(projectId, modelConfigId);
+      const response = await api.modelConfig.deleteModelConfig(project.id, modelConfigId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -199,11 +201,21 @@ export function ModelConfigList(props: ModelConfigListProps) {
     );
   });
 
+  const breadcrumbs: Breadcrumb[] = [
+    {
+      to: PATHS.project.function && PATHS.project.function(project.id),
+      rawTitle: project.name,
+    },
+    {
+      rawTitle: translate("modelConfig.header", { count: modelConfigs.length }),
+    },
+  ];
+
   return (
     <Container maxWidth={false} className={classes.container} >
       <Card>
         <CardHeader
-          title={translate("modelConfig.header", { count: modelConfigs.length })}
+          title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
         />
         {modelConfigsLoading ? <BulletList /> : (
           <>
@@ -225,7 +237,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           </>)}
       </Card>
       <ModelConfigDialog
-        projectId={projectId}
+        projectId={project.id}
         open={configOpen}
         configToEdit={modelConfigToEdit}
         onClose={closeDialog}

@@ -1,8 +1,5 @@
-import { Card, CardContent, CardHeader, Container, MenuItem, Typography } from '@material-ui/core';
+import { Card, CardContent, CardHeader, Container } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import BackupIcon from '@material-ui/icons/Backup';
 import { useSnackbar } from 'notistack';
@@ -13,11 +10,9 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../types';
+import { ModelConfig, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../types';
 import log from '../../util/log/logger';
 import { AudioUploadDialog } from '../projects/components/AudioUploadDialog';
-import { DualLabelSwitch } from '../shared/DualLabelSwitch';
-import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
@@ -146,62 +141,17 @@ export function TDP(props: TDPProps) {
   const closeDialog = () => setIsUploadOpen(false);
 
   const renderContent = () => {
-    const breadcrumbs: Breadcrumb[] = [
-      PATHS.projects,
-      {
-        to: PATHS.project.function && PATHS.project.function(projectId),
-        rawTitle: project?.name,
-      },
-      {
-        rawTitle: `${translate('TDP.TDP')}`,
-      },
-    ];
-    return (<Card>
+    return (<Card elevation={0} >
       <CardHeader
-        action={<>
-          {!!modelConfigs.length && <><FormControl fullWidth>
-            <InputLabel id="model-config-select-label">TEST MODEL CONFIG TO ASSIGN</InputLabel>
-            <Select
-              id="model-config-select"
-              value={selectedModelConfigId || ''}
-              onChange={(event) => setSelectedModelConfigId(event.target.value as string)}
-              autoWidth
-            >
-              {modelConfigs.map(modelConfig => (<MenuItem key={modelConfig.id} value={modelConfig.id}>{modelConfig.name}</MenuItem>))}
-            </Select>
-          </FormControl>
-            <Button
-              disabled={!selectedModelConfigId || assignDataLoading}
-              variant='outlined'
-              color="primary"
-              onClick={handleAssignSubmit}
-            >
-              {'TEST ASSIGN DATA'}
-            </Button>
-          </>}
-          <DualLabelSwitch
-            startLabel={'TEST ALL'}
-            endLabel={'TEST ASSIGNED'}
-            switchProps={{
-              checked: onlyAssignedData,
-              value: onlyAssignedData,
-              onChange: () => setOnlyAssignedData((prevValue) => !prevValue),
-            }}
-            labelProps={{
-              label: 'TEST SHOWING',
-              labelPlacement: 'top',
-            }}
-          />
-          {canModify && <Button
-            variant='outlined'
-            color="secondary"
-            onClick={openDialog}
-            startIcon={<BackupIcon />}
-          >
-            {'TEST UPLOAD DATA'}
-          </Button>}
-        </>}
-        title={<><HeaderBreadcrumbs breadcrumbs={breadcrumbs} /><Typography variant='h4'>{onlyAssignedData ? 'TEST ASSIGNED' : 'TEST ALL'}</Typography></>}
+        action={canModify && <Button
+          variant='outlined'
+          color="primary"
+          onClick={openDialog}
+          startIcon={<BackupIcon />}
+        >
+          {translate('TDP.uploadData')}
+        </Button>}
+        title={translate('TDP.TDP')}
       />
       <CardContent className={classes.cardContent} >
         {(!project || !modelConfigs.length || initialVoiceDataLoading) ? <BulletList /> :

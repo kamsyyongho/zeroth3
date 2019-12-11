@@ -12,13 +12,12 @@ import "./i18n"; // to immediately initialize i18n
 import { Editor } from './routes/editor/Editor';
 import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
+import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
 import { Models } from './routes/models/Models';
 import { UserProfile } from './routes/profile/UserProfile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
-import { Projects } from './routes/projects/Projects';
 import { Header } from './routes/shared/header/Header';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
-import { TDP } from './routes/TDP/TDP';
 import { TranscribersSummary } from './routes/transcribers/TranscribersSummary';
 import { PATHS } from './types';
 
@@ -52,9 +51,8 @@ function App() {
         <Header />
         <Route exact path={PATHS.home.to} component={Home} />
         <Route path={PATHS.IAM.to} component={IAM} />
-        <Route exact path={PATHS.projects.to} component={Projects} />
         <Route exact path={PATHS.project.to} component={ProjectDetails} />
-        <Route exact path={PATHS.TDP.to} component={TDP} />
+        <Route exact path={PATHS.modelConfig.to} component={ModelConfigPage} />
         <Route exact path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
         <Route path={PATHS.profile.to} component={UserProfile} />

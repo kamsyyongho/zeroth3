@@ -10,9 +10,9 @@ import React from 'react';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme/index';
 import { Project } from '../../../types';
-import { CheckedProjectsById } from '../Projects';
+import { CheckedProjectsById } from '../ProjectsDialog';
 import { ProjectDialog } from './ProjectDialog';
-import { EditOpenByProjectId } from './ProjectGridList';
+import { EditOpenByProjectId } from './ProjectList';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({

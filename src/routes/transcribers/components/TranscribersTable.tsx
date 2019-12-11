@@ -147,7 +147,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
       <TableBody >
         {transcribersStats.length ? renderRows() : (
           <TableRow>
-            <TableCell>
+            <TableCell colSpan={columns.length} >
               <Typography component='span' >{translate('table.noResults')}</Typography>
             </TableCell>
           </TableRow>
