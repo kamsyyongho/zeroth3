@@ -82,8 +82,6 @@ export function ProjectList(props: ProjectListProps) {
     <ListItemText primary={translate('table.noResults')} />
   </ListItem>;
 
-  console.log(searching, projects);
-
   return (
     <List dense>
       {(searching && !projects.length) ? renderNoResults() : renderProjects()}
