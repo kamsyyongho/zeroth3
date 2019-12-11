@@ -90,7 +90,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
-    return modelConfigsById[id].name;
+    return modelConfigsById[id] && modelConfigsById[id].name;
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {

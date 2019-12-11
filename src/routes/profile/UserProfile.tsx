@@ -136,7 +136,7 @@ export function UserProfile() {
           </Button>
         </CardActions>
       </Card>
-      {(organizationLoading || !organization?.name) ? <List /> :
+      {(organizationLoading || !organization || !organization.name) ? <List /> :
         (<Card elevation={0} >
           <CardHeader title={translate('profile.organization')} />
           <CardContent>
@@ -156,7 +156,7 @@ export function UserProfile() {
             >{translate('organization.rename')}</Button>
           </CardActions>)}
         </Card>)}
-      <RenameOrganizationDialog name={organization?.name ?? ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <RenameOrganizationDialog name={(organization && organization.name) ? organization.name : ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
       <ConfirmationDialog
         destructive
         titleText={`${translate('profile.resetPassword')}?`}
