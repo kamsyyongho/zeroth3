@@ -7,6 +7,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { LanguageModel, SubGraph, TopGraph } from '../../../../types';
 import { ChipList } from '../../../shared/ChipList';
 import { LanguageModelDialog } from './LanguageModelDialog';
@@ -16,6 +17,9 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     card: {
       minWidth: 275,
+    },
+    category: {
+      marginRight: theme.spacing(1),
     },
     text: {
       overflowWrap: 'break-word'
@@ -51,6 +55,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
     handleSubGraphListUpdate,
     handleModelCheck,
   } = props;
+  const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
   const isOpen = !!editOpen[model.id];
   let isChecked = false;
@@ -69,22 +74,68 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
       modelToEdit={model}
     />
     <Card className={classes.card}>
-      <CardHeader title={model.name} className={classes.text} action={(canModify && <>
-        <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
-        <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
-          <EditIcon />
-        </IconButton></>)} />
+      <CardHeader
+        className={classes.text}
+        title={model.name}
+        subheader={model.description}
+        action={(canModify && <>
+          <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
+          <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
+            <EditIcon />
+          </IconButton></>)} />
       <CardContent>
-        <Typography gutterBottom color="textSecondary" className={classes.text}>
-          {model.version}
-        </Typography>
-        <Typography component="p">
-          {model.topGraph.name}
-        </Typography>
-        <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} light />
-        <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
-          {model.description}
-        </Typography>
+        <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <Typography
+            className={classes.category}
+            variant='subtitle2'
+          >
+            {`${translate('common.version')}:`}
+          </Typography>
+          <Typography gutterBottom color="textSecondary" className={classes.text}>
+            {model.version}
+          </Typography>
+        </Grid>
+        <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <Typography
+            className={classes.category}
+            variant='subtitle2'
+          >
+            {`${translate('forms.top')}:`}
+          </Typography>
+          <Typography gutterBottom component="p" className={classes.text}>
+            {model.topGraph.name}
+          </Typography>
+        </Grid>
+        <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <Typography
+            className={classes.category}
+            variant='subtitle2'
+          >
+            {`${translate('forms.sub')}:`}
+          </Typography>
+          <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} light />
+        </Grid>
       </CardContent>
     </Card>
   </Grid>);

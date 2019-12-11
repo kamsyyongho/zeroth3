@@ -1,7 +1,7 @@
 export const VALIDATION = {
   PROJECT: {
     threshold: {
-      min: 1,
+      moreThan: 0,
     },
     name: {
       min: 3,

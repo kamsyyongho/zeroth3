@@ -190,7 +190,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   }
 
   return (
-    <Card>
+    <Card elevation={0}>
       <LanguageModelDialog
         open={createOpen}
         onClose={handleCreateClose}

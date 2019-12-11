@@ -185,7 +185,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   }
 
   return (
-    <Card>
+    <Card elevation={0}>
       <AcousticModelDialog
         open={createOpen}
         onClose={handleCreateClose}

@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core';
+import { Button, Card, CardActions, CardContent } from '@material-ui/core';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
   },
   heading: {
     marginLeft: 15,
+  },
+  card: {
+    width: '100%',
   },
 }));
 
@@ -78,8 +81,6 @@ export function TDPFilters(props: TDPFiltersProps) {
   };
 
 
-  // FORCE CONTROLLED COMPONENT - while empty field;
-
   const handleSubmit = (values: FormValues) => {
     const {
       startDate,
@@ -115,125 +116,186 @@ export function TDPFilters(props: TDPFiltersProps) {
       {(formikProps) => (
         <ExpansionPanel className={classes.root}>
           <ExpansionPanelSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
+            expandIcon={<ExpandMoreIcon color='primary' />}
+            aria-controls="filter"
             id="filter-header"
           >
             <FilterListIcon />
-            <Typography variant='h5' className={classes.heading} >{translate('table.filterResults')}</Typography>
+            <Typography variant='h5' className={classes.heading} >{translate('table.filter')}</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            <Grid
-              container
-              direction="row"
-              justify="flex-start"
-              alignItems="flex-start"
-            >
-              <Grid container item xs={12} spacing={1}>
-                <Grid item sm={4}>
-                  <Field
-                    fullWidth
-                    name='startDate'
-                    component={DateTimePickerFormField}
-                    autoOk
-                    label={translate('forms.startDate')}
-                    clearable
-                    clearLabel={translate('common.clear')}
-                    showTodayButton
-                    todayLabel={translate('forms.today')}
-                    okLabel={translate('common.okay')}
-                    cancelLabel={translate('common.cancel')}
-                    inputVariant='outlined'
-                    margin="normal"
-                  />
-                  <Field
-                    fullWidth
-                    name='endDate'
-                    component={DateTimePickerFormField}
-                    autoOk
-                    label={translate('forms.startDate')}
-                    clearable
-                    clearLabel={translate('common.clear')}
-                    showTodayButton
-                    todayLabel={translate('forms.today')}
-                    okLabel={translate('common.okay')}
-                    cancelLabel={translate('common.cancel')}
-                    inputVariant='outlined'
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <Field
-                    name='minLength'
-                    component={TextFormField}
-                    label={translate('forms.lengthMin')}
-                    placeholder={`${VALIDATION.TDP.length.min}`}
-                    type='number'
-                    variant="outlined"
-                    margin="normal"
-                  />
-                  <Field
-                    name='maxLength'
-                    component={TextFormField}
-                    label={translate('forms.lengthMax')}
-                    type='number'
-                    variant="outlined"
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid container item xs={12} spacing={1}>
-                  <Grid item sm={4}>
+            <Card elevation={0} className={classes.card}>
+              <CardContent>
+                <Grid
+                  container
+                  direction="row"
+                  justify="flex-start"
+                  alignItems="flex-start"
+                  spacing={3}
+                >
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    spacing={3}
+                    direction="row"
+                    wrap='nowrap'
+                  >
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        fullWidth
+                        name='startDate'
+                        component={DateTimePickerFormField}
+                        autoOk
+                        label={translate('forms.startDate')}
+                        clearable
+                        clearLabel={translate('common.clear')}
+                        showTodayButton
+                        todayLabel={translate('forms.today')}
+                        okLabel={translate('common.okay')}
+                        cancelLabel={translate('common.cancel')}
+                        inputVariant='outlined'
+                        margin="normal"
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        fullWidth
+                        name='endDate'
+                        component={DateTimePickerFormField}
+                        autoOk
+                        label={translate('forms.endDate')}
+                        clearable
+                        clearLabel={translate('common.clear')}
+                        showTodayButton
+                        todayLabel={translate('forms.today')}
+                        okLabel={translate('common.okay')}
+                        cancelLabel={translate('common.cancel')}
+                        inputVariant='outlined'
+                        margin="normal"
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    spacing={3}
+                    direction="row"
+                    wrap='nowrap'
+                  >
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        name='minLength'
+                        component={TextFormField}
+                        label={translate('forms.lengthMin')}
+                        placeholder={`${VALIDATION.TDP.length.min}`}
+                        type='number'
+                        variant="outlined"
+                        margin="normal"
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        name='maxLength'
+                        component={TextFormField}
+                        label={translate('forms.lengthMax')}
+                        type='number'
+                        variant="outlined"
+                        margin="normal"
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    spacing={5}
+                    direction="row"
+                    wrap='nowrap'
+                    justify='flex-start'
+                  >
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        fullWidth
+                        name='status'
+                        component={SelectFormField}
+                        options={statusFormSelectOptions}
+                        label={translate("forms.status")}
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={6}
+                      md={4}
+                    >
+                      <Field
+                        fullWidth
+                        name='modelConfigId'
+                        component={SelectFormField}
+                        options={modelConfigFormSelectOptions}
+                        label={translate("modelConfig.header")}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container item xs={12} spacing={1}>
                     <Field
+                      multiline
                       fullWidth
-                      name='status'
-                      component={SelectFormField}
-                      options={statusFormSelectOptions}
-                      label={translate("forms.status")}
-                    />
-                    <Field
-                      fullWidth
-                      name='modelConfigId'
-                      component={SelectFormField}
-                      options={modelConfigFormSelectOptions}
-                      label={translate("modelConfig.header")}
+                      name='transcript'
+                      component={TextFormField}
+                      label={translate('forms.transcript')}
+                      variant="outlined"
+                      margin="normal"
                     />
                   </Grid>
                 </Grid>
-              </Grid>
-              <Grid container item xs={12} spacing={1}>
-                <Grid item sm={4}>
-                  <Field
-                    multiline
-                    fullWidth
-                    name='transcript'
-                    component={TextFormField}
-                    label={translate('forms.transcript')}
-                    variant="outlined"
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <Button
-                    disabled={!formikProps.isValid || loading}
-                    onClick={formikProps.submitForm}
-                    color="primary"
-                    variant="contained"
-                  >{loading &&
-                    <MoonLoader
-                      sizeUnit={"px"}
-                      size={15}
-                      color={theme.palette.common.white}
-                      loading={true}
-                    />}{translate('common.submit')}</Button>
-                  <Button
-                    disabled={loading}
-                    onClick={() => formikProps.resetForm()}
-                    color="primary"
-                    variant="contained"
-                  >{translate('common.clear')}</Button>
-                </Grid>
-              </Grid>
-            </Grid>
+              </CardContent>
+              <CardActions>
+                <Button
+                  disabled={loading}
+                  onClick={() => formikProps.resetForm()}
+                  color="secondary"
+                  variant="outlined"
+                >
+                  {translate('common.clear')}
+                </Button>
+                <Button
+                  disabled={!formikProps.isValid || loading}
+                  onClick={formikProps.submitForm}
+                  color="primary"
+                  variant="contained"
+                >{loading &&
+                  <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.common.white}
+                    loading={true}
+                  />}
+                  {translate('common.submit')}
+                </Button>
+              </CardActions>
+            </Card>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       )}

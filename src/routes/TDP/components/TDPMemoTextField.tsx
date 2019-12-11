@@ -102,7 +102,7 @@ export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
     >
       <TextField
         id={key}
-        label={`${translate('TDP.memo')}:`}
+        label={translate('TDP.memo')}
         fullWidth
         disabled={disabled}
         InputProps={{

@@ -82,8 +82,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).nullable().required(requiredTranslationText),
-    thresholdHc: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.min).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).nullable().required(requiredTranslationText),
+    thresholdLc: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).nullable().required(requiredTranslationText),
+    thresholdHc: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).nullable().required(requiredTranslationText),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
@@ -199,7 +199,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   name='thresholdLc'
                   component={TextFormField}
                   label={thresholdLcText}
-                  placeholder={`${VALIDATION.PROJECT.threshold.min}`}
                   type='number'
                   margin="normal"
                   errorOverride={isError}

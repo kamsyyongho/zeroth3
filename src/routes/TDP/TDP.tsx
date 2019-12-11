@@ -8,13 +8,12 @@ import BackupIcon from '@material-ui/icons/Backup';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
-import { RouteComponentProps } from "react-router";
 import { PERMISSIONS } from '../../constants/permission.constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { getAssignedDataResult, ProblemKind, SearchDataRequest, searchDataResult } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SnackbarError, Transcriber, VoiceData, VoiceDataResults } from '../../types';
+import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../services/api/types';
+import { ModelConfig, PATHS, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../types';
 import log from '../../util/log/logger';
 import { AudioUploadDialog } from '../projects/components/AudioUploadDialog';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
@@ -23,13 +22,14 @@ import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
   projectId: string;
+  project?: Project;
+  modelConfigs: ModelConfig[];
 }
 
 
 export interface ModelConfigsById {
   [x: string]: ModelConfig;
 }
-
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -46,26 +46,18 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-export function TDP({ match }: RouteComponentProps<TDPProps>) {
-  const { projectId } = match.params;
+export function TDP(props: TDPProps) {
+  const { projectId, project, modelConfigs = [] as ModelConfig[] } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
-  const [isValidId, setIsValidId] = React.useState(true);
-  const [isValidProject, setIsValidProject] = React.useState(true);
-  const [projectLoading, setProjectLoading] = React.useState(true);
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
   const [assignDataLoading, setAssignDataLoading] = React.useState(false);
   const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<string | undefined>(undefined);
-  const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
-  const [transcribersLoading, setTranscribersLoading] = React.useState(true);
-  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
-  const [transcribers, setTranscribers] = React.useState<Transcriber[]>([]);
-  const [project, setProject] = React.useState<Project | undefined>(undefined);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
   const classes = useStyles();
@@ -73,7 +65,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
-    if (api?.voiceData) {
+    if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
       let response: getAssignedDataResult | searchDataResult | undefined;
       if (onlyAssignedData) {
@@ -97,80 +89,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   }, [api, onlyAssignedData, projectId]);
 
   React.useEffect(() => {
-    const getProject = async () => {
-      if (api?.projects) {
-        const response = await api.projects.getProject(projectId);
-        if (response.kind === 'ok') {
-          setProject(response.project);
-        } else if (response.kind === ProblemKind["not-found"]) {
-          log({
-            file: `TDP.tsx`,
-            caller: `getProject - project does not exist`,
-            value: response,
-            important: true,
-          });
-          setIsValidProject(false);
-        } else {
-          log({
-            file: `TDP.tsx`,
-            caller: `getProject - failed to get project`,
-            value: response,
-            important: true,
-          });
-        }
-        setProjectLoading(false);
-      }
-    };
-    const getModelConfigs = async () => {
-      if (api?.modelConfig) {
-        const response = await api.modelConfig.getModelConfigs(projectId);
-        if (response.kind === 'ok') {
-          setModelConfigs(response.modelConfigs);
-        } else {
-          log({
-            file: `TDP.tsx`,
-            caller: `getModelConfigs - failed to get model configs`,
-            value: response,
-            important: true,
-          });
-        }
-        setModelConfigsLoading(false);
-      }
-    };
-    const getTranscribers = async () => {
-      if (api?.transcriber) {
-        const response = await api.transcriber.getTranscribers();
-        if (response.kind === 'ok') {
-          setTranscribers(response.transcribers);
-        } else {
-          log({
-            file: `TDP.tsx`,
-            caller: `getTranscribers - failed to get transcribers`,
-            value: response,
-            important: true,
-          });
-        }
-        setTranscribersLoading(false);
-      }
-    };
-    if (!projectId) {
-      setIsValidId(false);
-      setProjectLoading(false);
-      log({
-        file: `TDP.tsx`,
-        caller: `project id not valid`,
-        value: projectId,
-        important: true,
-      });
-    } else {
-      // don't need transcribers if we can't modify
-      if (canModify) {
-        getTranscribers();
-      }
-      getProject();
-      getVoiceData();
-      getModelConfigs();
-    }
+    getVoiceData();
   }, []);
 
   const handleAssignSubmit = async () => {
@@ -227,17 +146,11 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
   const closeDialog = () => setIsUploadOpen(false);
 
   const renderContent = () => {
-    if (!isValidId) {
-      return <Typography>{'TEST INVALID PROJECT ID'}</Typography>;
-    }
-    if (!project || !isValidProject) {
-      return <Typography>{'TEST PROJECT NOT FOUND'}</Typography>;
-    }
     const breadcrumbs: Breadcrumb[] = [
       PATHS.projects,
       {
         to: PATHS.project.function && PATHS.project.function(projectId),
-        rawTitle: project.name,
+        rawTitle: project?.name,
       },
       {
         rawTitle: `${translate('TDP.TDP')}`,
@@ -291,17 +204,16 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
         title={<><HeaderBreadcrumbs breadcrumbs={breadcrumbs} /><Typography variant='h4'>{onlyAssignedData ? 'TEST ASSIGNED' : 'TEST ALL'}</Typography></>}
       />
       <CardContent className={classes.cardContent} >
-        {(initialVoiceDataLoading || modelConfigsLoading) ? <BulletList /> :
+        {(!project || !modelConfigs.length || initialVoiceDataLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectId}
-            projectName={project.name}
+            projectName={project?.name}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             onlyAssignedData={onlyAssignedData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
             loading={voiceDataLoading}
-            transcribers={transcribers}
           />
         }
       </CardContent>
@@ -310,7 +222,7 @@ export function TDP({ match }: RouteComponentProps<TDPProps>) {
 
   return (
     <Container maxWidth={false} className={classes.container} >
-      {projectLoading ? <BulletList /> :
+      {!project ? <BulletList /> :
         renderContent()
       }
       <AudioUploadDialog
