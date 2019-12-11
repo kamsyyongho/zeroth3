@@ -146,8 +146,6 @@ export const ko: ResourceLanguage = {
       header: 'Project Management',
       apiKey: 'API Key',
       apiSecret: 'API Secret',
-      thresholdHc: 'High confidence threshold',
-      thresholdLc: 'Low confidence threshold',
     },
     TDP: {
       TDP: 'TDP',
@@ -165,10 +163,12 @@ export const ko: ResourceLanguage = {
     },
     modelConfig: {
       header: 'Model configuration',
-      header_plural: 'Model configuration',
+      header_plural: 'Model configurations',
       create: 'Create configuration',
       edit: 'Edit configuration',
       delete: 'Delete model configuration',
+      thresholdHc: 'High confidence threshold',
+      thresholdLc: 'Low confidence threshold',
     },
     models: {
       header: 'Model Management',

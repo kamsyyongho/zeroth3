@@ -144,8 +144,6 @@ export const en: ResourceLanguage = {
       header: 'Project Management',
       apiKey: 'API Key',
       apiSecret: 'API Secret',
-      thresholdHc: 'High confidence threshold',
-      thresholdLc: 'Low confidence threshold',
     },
     TDP: {
       TDP: 'TDP',
@@ -167,6 +165,8 @@ export const en: ResourceLanguage = {
       create: 'Create configuration',
       edit: 'Edit configuration',
       delete: 'Delete model configuration',
+      thresholdHc: 'High confidence threshold',
+      thresholdLc: 'Low confidence threshold',
     },
     models: {
       header: 'Model Management',
