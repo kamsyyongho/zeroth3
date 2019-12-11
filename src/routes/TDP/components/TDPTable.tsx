@@ -7,6 +7,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LaunchIcon from '@material-ui/icons/Launch';
 import React from 'react';
@@ -148,7 +149,7 @@ export function TDPTable(props: TDPTableProps) {
           });
         }}
       >
-        <ExpandMoreIcon />
+        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </IconButton>
     </Grid>);
   };
