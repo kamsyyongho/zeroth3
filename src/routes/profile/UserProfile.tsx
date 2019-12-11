@@ -2,7 +2,7 @@ import { Button, CardHeader, Container } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
@@ -20,6 +20,14 @@ import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    container: {
+      padding: 0,
+    },
+  }),
+);
+
 export function UserProfile() {
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
@@ -33,6 +41,7 @@ export function UserProfile() {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const showDialog = () => setIsOpen(true);
   const hideDialog = () => setIsOpen(false);
@@ -94,8 +103,8 @@ export function UserProfile() {
   }, []);
 
   return (
-    <Container>
-      <Card >
+    <Container className={classes.container} >
+      <Card elevation={0} >
         <CardHeader title={translate('profile.user')} />
         <CardContent>
           <Typography color="textPrimary" gutterBottom >
@@ -128,7 +137,7 @@ export function UserProfile() {
         </CardActions>
       </Card>
       {(organizationLoading || !organization?.name) ? <List /> :
-        (<Card >
+        (<Card elevation={0} >
           <CardHeader title={translate('profile.organization')} />
           <CardContent>
             <Typography color="textPrimary" gutterBottom >
