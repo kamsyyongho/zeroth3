@@ -186,8 +186,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
             primary={thresholdLc}
             secondary={thresholdHc}
           />
-          <ListSubheader component='div' >{acousticModel.name}</ListSubheader>
-          <ListSubheader component='div' >{languageModel.name}</ListSubheader>
+          <ListSubheader component='p' >{acousticModel.name}</ListSubheader>
+          <ListSubheader component='p' >{languageModel.name}</ListSubheader>
           {canModify && <ListItemSecondaryAction>
             <IconButton edge="end" aria-label="edit" onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleActionClick(event, modelConfig)} >
               <MoreVertIcon />

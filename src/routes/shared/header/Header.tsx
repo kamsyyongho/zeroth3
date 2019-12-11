@@ -19,6 +19,7 @@ import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import logo from '../../../static/images/logo.png';
 import { PATHS } from '../../../types';
 import log from '../../../util/log/logger';
+import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
 import { SvgIconWrapper } from '../SvgIconWrapper';
@@ -51,13 +52,17 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const { organization } = globalState;
   const [organizationLoading, setOrganizationLoading] = React.useState(true);
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
 
   const classes = useStyles();
 
-  const showDialog = () => setIsOpen(true);
-  const hideDialog = () => setIsOpen(false);
+  const showRenameDialog = () => setIsRenameOpen(true);
+  const hideRenameDialog = () => setIsRenameOpen(false);
+
+  const showProjectsDialog = () => setIsProjectsOpen(true);
+  const hideProjectsDialog = () => setIsProjectsOpen(false);
 
   const getOrganization = async () => {
     if (api?.organizations) {
@@ -96,7 +101,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       const action = (key: number) => (
         <>
           <Button color='primary' onClick={() => {
-            showDialog();
+            showRenameDialog();
             closeSnackbar(key);
           }} >
             {translate('organization.rename')}
@@ -148,8 +153,10 @@ export const Header: React.FunctionComponent<{}> = (props) => {
               endIcon={<ExpandMoreIcon />}
               color={"inherit"}
               className={classes.projectButton}
-              onClick={() => { }}
-            >TEST PROJECTS</Button>
+              onClick={showProjectsDialog}
+            >
+              {translate('path.projects')}
+            </Button>
           </Grid>
           <Grid
             item
@@ -174,8 +181,20 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           </Grid>
         </Grid>
       </Toolbar>
-      <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen} />
-      <RenameOrganizationDialog name={organization?.name ?? ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <Drawer
+        open={isDrawerOpen}
+        setOpen={setIsDrawerOpen}
+      />
+      <RenameOrganizationDialog
+        name={organization?.name ?? ''}
+        open={isRenameOpen}
+        onSuccess={getOrganization}
+        onClose={hideRenameDialog}
+      />
+      <ProjectsDialog
+        open={isProjectsOpen}
+        onClose={hideProjectsDialog}
+      />
     </AppBar>
   );
 };

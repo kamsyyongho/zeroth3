@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, Container, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
@@ -15,6 +15,7 @@ import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigList } from '../shared/model-config/ModelConfigList';
+import { TDP } from '../TDP/TDP';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -48,7 +49,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
-  const [project, setProject] = React.useState<Project | undefined>(undefined);
+  const [project, setProject] = React.useState<Project | undefined>();
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
@@ -297,6 +298,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {projectLoading ? <BulletList /> :
         renderContent()
       }
+      <TDP projectId={projectId} project={project} modelConfigs={modelConfigs} />
       {isValidProject && <ModelConfigList
         projectId={projectId}
         canModify={canModify}

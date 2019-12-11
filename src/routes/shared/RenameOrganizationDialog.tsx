@@ -4,6 +4,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import EditIcon from '@material-ui/icons/Edit';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
@@ -33,6 +34,8 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
   const [isError, setIsError] = React.useState(false);
 
   const theme = useTheme();
+  // to expand to fullscreen on small displays
+  const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
   // validation translated text
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.ORGANIZATION.name.min, second: VALIDATION.ORGANIZATION.name.max, context: 'characters' });
@@ -77,8 +80,15 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-dialog-title">{translate('organization.renameOrg')}</DialogTitle>
+    <Dialog
+      fullScreen={fullScreen}
+      disableBackdropClick={loading}
+      disableEscapeKeyDown={loading}
+      open={open}
+      onClose={onClose}
+      aria-labelledby="rename-organization-dialog"
+    >
+      <DialogTitle id="rename-organization-dialog">{translate('organization.renameOrg')}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>

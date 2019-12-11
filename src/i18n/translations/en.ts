@@ -27,6 +27,7 @@ export const en: ResourceLanguage = {
       view: 'View',
       date: 'Date',
       version: 'Version',
+      open: 'Open',
     },
     table: {
       page: 'Page',

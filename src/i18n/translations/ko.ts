@@ -27,6 +27,7 @@ export const ko: ResourceLanguage = {
       view: 'View',
       date: '날짜',
       version: 'Version',
+      open: 'Open',
     },
     table: {
       page: 'Page',
