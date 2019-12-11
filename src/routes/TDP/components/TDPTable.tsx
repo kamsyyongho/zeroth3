@@ -18,6 +18,7 @@ import { PERMISSIONS } from '../../../constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
+import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../services/api/types';
 import { PATHS, VoiceData, VoiceDataResults } from '../../../types';
 import { BooleanById } from '../../../types/misc.types';
@@ -30,6 +31,7 @@ import { TDPRowDetails } from './TDPRowDetails';
 
 const TRANSCRIPT_ACCESSOR = 'transcript';
 const DOUBLE_HEIGHT_ROW = 2;
+const SINGLE_WIDTH_COLUMN = 1;
 
 interface TDPTableProps {
   projectId: string;
@@ -63,6 +65,7 @@ export function TDPTable(props: TDPTableProps) {
   const voiceData = voiceDataResults.content;
   const { translate, formatDate } = React.useContext(I18nContext);
   const { hasPermission } = React.useContext(KeycloakContext);
+  const { width } = useWindowSize();
   const history = useHistory();
   const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
@@ -92,7 +95,9 @@ export function TDPTable(props: TDPTableProps) {
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
-    const lines = expanded ? 6 : 1;
+    const numberOfLines = expanded ? 6 : 1;
+    // to keep a dynamic width of 33% based on the window
+    const transcriptStyle = width ? { width: (width * 0.333) } : { minWidth: 250, maxWidth: 350 };
     return <Grid
       container
       wrap='nowrap'
@@ -108,14 +113,15 @@ export function TDPTable(props: TDPTableProps) {
       >
         <LaunchIcon />
       </IconButton>}
-      <TruncateMarkup lines={lines}>
-        <Typography style={{ minWidth: 250, maxWidth: 350 }}>{transcript}</Typography>
+      <TruncateMarkup lines={numberOfLines}>
+        <Typography style={transcriptStyle}>{transcript}</Typography>
       </TruncateMarkup>
     </Grid>;
   };
 
   /**
    * The expand button should be rendered on the last item in the row
+   * - `highRiskSegments` is the last item in the row
    * @param cellData 
    */
   const renderHighRiskSegmentsAndExpandButton = (cellData: CellProps<VoiceData>) => {
@@ -189,12 +195,6 @@ export function TDPTable(props: TDPTableProps) {
         accessor: 'status',
         Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
-      // {
-      //   Header: translate('forms.transcriber'),
-      //   // to only display if it has a value
-      //   accessor: (row: VoiceData) => row.transcriber || '',
-      //   Cell: (cellData: CellProps<VoiceData>) => renderTranscriber(cellData),
-      // },
       {
         Header: translate('TDP.highRiskSegments'),
         accessor: 'highRiskSegments',
@@ -280,9 +280,9 @@ export function TDPTable(props: TDPTableProps) {
         renderHeaderRow(headerGroup, index)))}
     </TableHead>);
 
-  // adding one for the expand button column
-  const fullRowColSpan = flatColumns.length + 1;
-  const detailsRowColSpan = fullRowColSpan - DOUBLE_HEIGHT_ROW;
+  const fullRowColSpan = flatColumns.length;
+  // subtracting the transcript column
+  const detailsRowColSpan = fullRowColSpan - SINGLE_WIDTH_COLUMN;
 
   const renderRows = () => rows.map(
     (row: Row<VoiceData>, rowIndex: number) => {
