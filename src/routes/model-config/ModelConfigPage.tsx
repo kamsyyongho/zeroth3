@@ -258,10 +258,10 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{'TEST INVALID PROJECT ID'}</Typography>;
+      return <Typography>{translate('common.invalidId')}</Typography>;
     }
     if (!project || !isValidProject) {
-      return <Typography>{'TEST PROJECT NOT FOUND'}</Typography>;
+      return <Typography>{translate('common.notFound')}</Typography>;
     }
     return (
       <ModelConfigList

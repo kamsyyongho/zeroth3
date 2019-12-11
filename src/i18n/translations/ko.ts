@@ -28,6 +28,8 @@ export const ko: ResourceLanguage = {
       date: '날짜',
       version: 'Version',
       open: 'Open',
+      invalidId: 'Invalid ID',
+      notFound: 'Not found',
     },
     table: {
       page: 'Page',

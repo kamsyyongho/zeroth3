@@ -28,6 +28,8 @@ export const en: ResourceLanguage = {
       date: 'Date',
       version: 'Version',
       open: 'Open',
+      invalidId: 'Invalid ID',
+      notFound: 'Not found',
     },
     table: {
       page: 'Page',
