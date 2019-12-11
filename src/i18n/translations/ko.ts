@@ -26,6 +26,7 @@ export const ko: ResourceLanguage = {
       forbidden: 'Forbidden',
       view: 'View',
       date: '날짜',
+      version: 'Version',
     },
     table: {
       page: 'Page',
@@ -101,7 +102,8 @@ export const ko: ResourceLanguage = {
       thresholdLc: 'Low confidence threshold',
       description: 'Description',
       location: 'Location',
-      sampleRate: 'Sample rate (kHz)',
+      sampleRate_khz: 'Sample rate (kHz)',
+      sampleRate: 'Sample rate',
       top: 'Top',
       sub: 'Sub',
       modelConfig: 'Model configuration',

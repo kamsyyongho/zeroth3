@@ -10,6 +10,7 @@ import React from 'react';
 import { AcousticModel } from '../../../../types';
 import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -18,7 +19,10 @@ const useStyles = makeStyles((theme) =>
     },
     text: {
       overflowWrap: 'break-word'
-    }
+    },
+    category: {
+      marginRight: theme.spacing(1),
+    },
   }),
 );
 
@@ -34,7 +38,17 @@ interface AcousticModelGridItemProps {
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
-  const { model, canModify, editOpen, checkedModels, handleEditOpen, handleEditClose, handleEditSuccess, handleModelCheck } = props;
+  const {
+    model,
+    canModify,
+    editOpen,
+    checkedModels,
+    handleEditOpen,
+    handleEditClose,
+    handleEditSuccess,
+    handleModelCheck,
+  } = props;
+  const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
   const isOpen = !!editOpen[model.id];
   let isChecked = false;
@@ -51,21 +65,52 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
       modelToEdit={model}
     />
     <Card className={classes.card}>
-      <CardHeader title={model.name} className={classes.text} action={canModify && (<>
-        <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
-        <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
-          <EditIcon />
-        </IconButton></>)} />
+      <CardHeader
+        className={classes.text}
+        title={model.name}
+        subheader={model.description}
+        action={canModify && (<>
+          <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
+          <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
+            <EditIcon />
+          </IconButton></>)} />
       <CardContent>
+      <Grid
+        container
+        wrap='nowrap'
+        direction='row'
+        alignContent='center'
+        alignItems='center'
+        justify='flex-start'
+      >
+        <Typography
+          className={classes.category}
+          variant='subtitle2'
+        >
+          {`${translate('common.version')}:`}
+        </Typography>
         <Typography gutterBottom color="textSecondary" className={classes.text}>
           {model.version}
         </Typography>
-        <Typography component="p">
-          {model.sampleRate}{' Hz'}
-        </Typography>
-        <Typography gutterBottom variant="body1" color="textPrimary" className={classes.text} >
-          {model.description}
-        </Typography>
+      </Grid>
+      <Grid
+      container
+      wrap='nowrap'
+      direction='row'
+      alignContent='center'
+      alignItems='center'
+      justify='flex-start'
+    >
+      <Typography
+        className={classes.category}
+        variant='subtitle2'
+      >
+        {`${translate('forms.sampleRate')}:`}
+      </Typography>
+      <Typography gutterBottom component="p" className={classes.text}>
+      {model.sampleRate}{' Hz'}
+      </Typography>
+    </Grid>
       </CardContent>
     </Card>
   </Grid>);

@@ -26,6 +26,7 @@ export const en: ResourceLanguage = {
       forbidden: 'Forbidden',
       view: 'View',
       date: 'Date',
+      version: 'Version',
     },
     table: {
       page: 'Page',
@@ -99,7 +100,8 @@ export const en: ResourceLanguage = {
       thresholdLc: 'Low confidence threshold',
       description: 'Description',
       location: 'Location',
-      sampleRate: 'Sample rate (kHz)',
+      sampleRate_khz: 'Sample rate (kHz)',
+      sampleRate: 'Sample rate',
       top: 'Top',
       sub: 'Sub',
       modelConfig: 'Model configuration',

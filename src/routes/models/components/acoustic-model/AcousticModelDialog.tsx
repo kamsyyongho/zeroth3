@@ -141,7 +141,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                 <Field name='location' component={TextFormField} label={translate("forms.location")} errorOverride={isError} />
                 <Field name='sampleRate' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.sampleRate")} errorOverride={isError} />
+                  options={formSelectOptions} label={translate("forms.sampleRate_khz")} errorOverride={isError} />
                 <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
               </Form>
             </DialogContent>

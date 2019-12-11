@@ -52,6 +52,10 @@ export const PATHS: { [x: string]: Path } = {
     to: '/projects/:projectId/tdp',
     function: (projectId: string | number) => `/projects/${projectId}/tdp`,
   },
+  modelConfig: {
+    to: '/projects/:projectId/model-config',
+    function: (projectId: string | number) => `/projects/${projectId}/model-config`,
+  },
   editor: {
     to: '/projects/:projectId/tdp/:dataId/editor',
     function: (projectId: string | number, dataId: string | number) =>

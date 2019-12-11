@@ -3,6 +3,7 @@ import { createBrowserHistory } from 'history';
 import React from "react";
 import { Route, Router } from "react-router-dom";
 import { useApi } from './hooks/api/useApi';
+import { useGlobalState } from './hooks/global-state/useGlobalState';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
@@ -20,7 +21,6 @@ import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { TDP } from './routes/TDP/TDP';
 import { TranscribersSummary } from './routes/transcribers/TranscribersSummary';
 import { PATHS } from './types';
-import { useGlobalState } from './hooks/global-state/useGlobalState';
 
 const history = createBrowserHistory();
 
