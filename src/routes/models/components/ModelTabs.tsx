@@ -183,7 +183,7 @@ export function ModelTabs() {
   };
 
   return (
-    <Paper square>
+    <Paper square elevation={0}>
       <Tabs
         centered={false}
         value={activeTab}

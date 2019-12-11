@@ -40,7 +40,7 @@ export function Models() {
 
   return (
     <Container maxWidth={false} className={classes.container} >
-      <Card>
+      <Card elevation={0}>
         <CardHeader
           title={translate("models.header")}
         />

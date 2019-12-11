@@ -109,9 +109,9 @@ export function SubGraphList(props: SubGraphListProps) {
         onClose={closeDialog}
         onSuccess={handleSubGraphListUpdate}
       />
-      <Card>
+      <Card elevation={0}>
         <CardHeader
-          title={translate("models.header")}
+          title={translate("models.subGraphHeader")}
         />
         {subGraphsLoading ? <BulletList /> : (
           <>
