@@ -5,14 +5,11 @@ import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
-import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { ProblemKind } from '../../services/api/types';
-import { ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
-import { AcousticModel, LanguageModel } from '../../types/models.types';
+import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
 import { TDP } from '../TDP/TDP';
 
@@ -22,9 +19,6 @@ interface ProjectDetailsProps {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
-    },
     cardContent: {
       padding: 0,
     },
@@ -125,7 +119,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       return <Typography>{translate('common.notFound')}</Typography>;
     }
 
-    return (<Card>
+    return (<Card elevation={0} >
       <CardHeader
         action={<Button
           onClick={() => handleModelConfigClick(project)}
@@ -167,7 +161,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   };
 
   return (
-    <Container maxWidth={false} className={classes.container} >
+    <Container >
       {projectLoading ? <BulletList /> :
         renderContent()
       }

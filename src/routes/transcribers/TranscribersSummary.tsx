@@ -16,9 +16,6 @@ import { TranscribersTable } from './components/TranscribersTable';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
-    },
     cardContent: {
       padding: 0,
     },
@@ -76,8 +73,8 @@ export function TranscribersSummary() {
   }
 
   return (
-    <Container maxWidth={false} className={classes.container} >
-      <Card >
+    <Container >
+      <Card elevation={0} >
         <CardHeader
           title={translate("path.transcribers")}
         />

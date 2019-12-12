@@ -22,9 +22,6 @@ import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
-    },
   }),
 );
 
@@ -103,7 +100,7 @@ export function UserProfile() {
   }, []);
 
   return (
-    <Container className={classes.container} >
+    <Container >
       <Card elevation={0} >
         <CardHeader title={translate('profile.user')} />
         <CardContent>

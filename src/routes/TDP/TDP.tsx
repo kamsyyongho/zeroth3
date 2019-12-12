@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Container } from '@material-ui/core';
+import { Card, CardContent, CardHeader } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import BackupIcon from '@material-ui/icons/Backup';
@@ -154,7 +154,7 @@ export function TDP(props: TDPProps) {
         title={translate('TDP.TDP')}
       />
       <CardContent className={classes.cardContent} >
-        {(!project || !modelConfigs.length || initialVoiceDataLoading) ? <BulletList /> :
+        {(!project || initialVoiceDataLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectId}
             projectName={project?.name}
@@ -171,7 +171,7 @@ export function TDP(props: TDPProps) {
   };
 
   return (
-    <Container maxWidth={false} className={classes.container} >
+    <>
       {!project ? <BulletList /> :
         renderContent()
       }
@@ -182,6 +182,6 @@ export function TDP(props: TDPProps) {
         projectId={projectId}
         modelConfigs={modelConfigs}
       />
-    </Container >
+    </>
   );
 }
