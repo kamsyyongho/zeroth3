@@ -203,7 +203,7 @@ export function IAM() {
   };
 
   const renderCardHeaderAction = () => (<Grid container spacing={1} >
-    <Grid item >
+    {users.length > 1 && <Grid item >
       <Button
         disabled={!usersToDelete.length}
         variant="contained"
@@ -218,7 +218,7 @@ export function IAM() {
       >
         {translate('common.delete')}
       </Button>
-    </Grid>
+    </Grid>}
     <Grid item >
       <Button
         variant="contained"
