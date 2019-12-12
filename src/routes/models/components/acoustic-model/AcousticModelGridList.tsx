@@ -1,5 +1,5 @@
 import { Button, Card, CardContent, Grid } from '@material-ui/core';
-import CardActions from '@material-ui/core/CardActions';
+import CardHeader from '@material-ui/core/CardHeader';
 import { useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -191,36 +191,41 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
         onClose={handleCreateClose}
         onSuccess={handleModelListUpdate}
       />
+      {canModify && <CardHeader
+        action={(<Grid container spacing={1}>
+          <Grid item>
+            {!!models.length && <Button
+              disabled={!modelsToDelete.length}
+              variant="contained"
+              color="secondary"
+              onClick={confirmDelete}
+              startIcon={deleteLoading ? <MoonLoader
+                sizeUnit={"px"}
+                size={15}
+                color={theme.palette.common.white}
+                loading={true}
+              /> : <DeleteIcon />}
+            >
+              {translate('common.delete')}
+            </Button>}
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateOpen}
+              startIcon={<AddIcon />}
+            >
+              {translate('models.tabs.acousticModel.create')}
+            </Button>
+          </Grid>
+        </Grid>)} />}
       {!!models.length &&
         (<CardContent>
           <Grid container spacing={2} >
             {renderModels()}
           </Grid>
         </CardContent>)}
-      {canModify && <CardActions>
-        {!!models.length && <Button
-          disabled={!modelsToDelete.length}
-          variant="contained"
-          color="secondary"
-          onClick={confirmDelete}
-          startIcon={deleteLoading ? <MoonLoader
-            sizeUnit={"px"}
-            size={15}
-            color={theme.palette.common.white}
-            loading={true}
-          /> : <DeleteIcon />}
-        >
-          {translate('common.delete')}
-        </Button>}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreateOpen}
-          startIcon={<AddIcon />}
-        >
-          {translate('models.tabs.acousticModel.create')}
-        </Button>
-      </CardActions>}
       <ConfirmationDialog
         destructive
         titleText={`${translate('models.tabs.acousticModel.delete', { count: modelsToDelete.length })}?`}

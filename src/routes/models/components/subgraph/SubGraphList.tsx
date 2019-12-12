@@ -1,7 +1,6 @@
-import { Container } from '@material-ui/core';
+import { Container, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -111,16 +110,8 @@ export function SubGraphList(props: SubGraphListProps) {
       />
       <Card elevation={0}>
         <CardHeader
-          title={translate("models.subGraphHeader")}
-        />
-        {subGraphsLoading ? <BulletList /> : (
-          <>
-            <CardContent className={classes.cardContent} >
-              <List >
-                {renderListItems()}
-              </List>
-            </CardContent>
-            {canModify && <CardActions>
+          title={translate("models.subGraphHeader")} action={(canModify && <Grid container spacing={1}>
+            <Grid item>
               {!!subGraphs.length && <Button
                 disabled={!canDelete}
                 variant="contained"
@@ -135,6 +126,8 @@ export function SubGraphList(props: SubGraphListProps) {
               >
                 {translate('common.delete')}
               </Button>}
+            </Grid>
+            <Grid item>
               <Button
                 color="primary"
                 variant='contained'
@@ -143,7 +136,16 @@ export function SubGraphList(props: SubGraphListProps) {
               >
                 {translate('models.createSubGraph')}
               </Button>
-            </CardActions>}
+            </Grid>
+          </Grid>)}
+        />
+        {subGraphsLoading ? <BulletList /> : (
+          <>
+            <CardContent className={classes.cardContent} >
+              <List >
+                {renderListItems()}
+              </List>
+            </CardContent>
           </>)}
       </Card>
     </Container>
