@@ -1,14 +1,13 @@
-import { Container, ListItemSecondaryAction, ListSubheader, Typography } from '@material-ui/core';
+import { Chip, Container, Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
@@ -21,6 +20,7 @@ import React from 'react';
 import { BulletList } from 'react-content-loader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../theme';
 import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { SnackbarError } from '../../types/';
 import { PATHS } from '../../types/path.types';
@@ -29,23 +29,31 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
-    container: {
-      padding: 0,
-      marginHorizontal: 0,
-      marginBottom: 0,
-      marginTop: 20,
-    },
     cardContent: {
       padding: 0,
     },
-    card: {
-      minWidth: 275,
-    },
     text: {
       overflowWrap: 'break-word'
-    }
+    },
+    category: {
+      marginRight: theme.spacing(1),
+    },
+    chip: {
+      marginRight: theme.spacing(0.5),
+      backgroundColor: theme.palette.primary.light,
+      color: theme.palette.primary.contrastText,
+    },
+    listItem: {
+      width: '100%',
+      paddingLeft: 24,
+    },
+    expandContent: {
+      marginBottom: 10,
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
   }),
 );
 
@@ -93,6 +101,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>, modelConfig: ModelConfig) => {
+    event.stopPropagation();
     setModelConfigToEdit(modelConfig);
     setAnchorEl(event.currentTarget);
   };
@@ -178,26 +187,158 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const renderListItems = () => modelConfigs.map(modelConfig => {
     const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
     return (
-      <Card key={id}>
-        <ListItem>
-          <ListItemText
-            primary={name}
-            secondary={description}
+      <ExpansionPanel
+        key={id}
+        elevation={2}
+      >
+        <ExpansionPanelSummary
+          aria-controls="model-config-expand"
+          id="model-config-expand"
+          expandIcon={<IconButton aria-label="edit" onClick={(event) => handleActionClick(event, modelConfig)} >
+            <MoreVertIcon />
+          </IconButton>}
+        >
+          <CardHeader
+            title={name}
+            subheader={description}
           />
-          <ListItemText
-            primary={thresholdLc}
-            secondary={thresholdHc}
-          />
-          <ListSubheader component='p' >{acousticModel.name}</ListSubheader>
-          <ListSubheader component='p' >{languageModel.name}</ListSubheader>
-          {canModify && <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="edit" onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleActionClick(event, modelConfig)} >
-              <MoreVertIcon />
-            </IconButton>
-          </ListItemSecondaryAction>}
-        </ListItem>
-        {renderItemMenu()}
-      </Card>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails
+          className={classes.expandContent}
+        >
+          <Grid
+            container
+            wrap='nowrap'
+            direction='column'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          ><Card
+            elevation={0}
+            className={classes.listItem}
+          >
+              <CardContent>
+                <Grid
+                  container
+                  wrap='nowrap'
+                  direction='row'
+                  alignContent='center'
+                  alignItems='center'
+                  justify='flex-start'
+                >
+                  <Typography
+                    className={classes.category}
+                    variant='subtitle2'
+                  >
+                    {`${translate('forms.thresholdLc')}:`}
+                  </Typography>
+                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                    {thresholdLc}
+                  </Typography>
+                </Grid>
+                <Grid
+                  container
+                  wrap='nowrap'
+                  direction='row'
+                  alignContent='center'
+                  alignItems='center'
+                  justify='flex-start'
+                >
+                  <Typography
+                    className={classes.category}
+                    variant='subtitle2'
+                  >
+                    {`${translate('forms.thresholdHc')}:`}
+                  </Typography>
+                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                    {thresholdHc}
+                  </Typography>
+                </Grid>
+              </CardContent>
+            </Card>
+            <Card
+              elevation={0}
+              className={classes.listItem}
+            >
+              <CardHeader
+                title={translate('forms.languageModel')}
+                titleTypographyProps={{ variant: 'h6' }}
+                subheader={languageModel.name}
+              />
+              <CardContent>
+                <Grid
+                  container
+                  wrap='nowrap'
+                  direction='row'
+                  alignContent='center'
+                  alignItems='center'
+                  justify='flex-start'
+                >
+                  <Typography
+                    className={classes.category}
+                    variant='subtitle2'
+                  >
+                    {`${translate('forms.top')}:`}
+                  </Typography>
+                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                    {languageModel.topGraph.name}
+                  </Typography>
+                </Grid>
+                <Grid
+                  container
+                  wrap='nowrap'
+                  direction='row'
+                  alignContent='center'
+                  alignItems='center'
+                  justify='flex-start'
+                >
+                  <Typography
+                    className={classes.category}
+                    variant='subtitle2'
+                  >
+                    {`${translate('forms.sub')}:`}
+                  </Typography>
+                  {languageModel.subGraphs.map((subGraph, index) => <Chip key={index}
+                    label={subGraph.name}
+                    className={classes.chip}
+                  />)}
+                </Grid>
+              </CardContent>
+            </Card>
+            <Card
+              elevation={0}
+              className={classes.listItem}
+            >
+              <CardHeader
+                title={translate('forms.acousticModel')}
+                titleTypographyProps={{ variant: 'h6' }}
+                subheader={acousticModel.name}
+              />
+              <CardContent>
+                <Grid
+                  container
+                  wrap='nowrap'
+                  direction='row'
+                  alignContent='center'
+                  alignItems='center'
+                  justify='flex-start'
+                >
+                  <Typography
+                    className={classes.category}
+                    variant='subtitle2'
+                  >
+                    {`${translate('forms.sampleRate')}:`}
+                  </Typography>
+                  <Typography gutterBottom component="p" className={classes.text}>
+                    {acousticModel.sampleRate}{' kHz'}
+                  </Typography>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+          {renderItemMenu()}
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
     );
   });
 
@@ -212,29 +353,25 @@ export function ModelConfigList(props: ModelConfigListProps) {
   ];
 
   return (
-    <Container maxWidth={false} className={classes.container} >
-      <Card>
+    <Container >
+      <Card elevation={0} >
         <CardHeader
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
+          action={canModify && <Button
+            color="primary"
+            variant='contained'
+            onClick={openCreateDialog}
+            startIcon={<AddIcon />}
+          >
+            {translate('modelConfig.create')}
+          </Button>}
         />
         {modelConfigsLoading ? <BulletList /> : (
-          <>
-            <CardContent className={classes.cardContent} >
-              <List >
-                {renderListItems()}
-              </List>
-            </CardContent>
-            {canModify && <CardActions>
-              <Button
-                color="primary"
-                variant='contained'
-                onClick={openCreateDialog}
-                startIcon={<AddIcon />}
-              >
-                {translate('modelConfig.create')}
-              </Button>
-            </CardActions>}
-          </>)}
+          <CardContent className={classes.cardContent} >
+            <Container >
+              {renderListItems()}
+            </Container>
+          </CardContent>)}
       </Card>
       <ModelConfigDialog
         projectId={project.id}
