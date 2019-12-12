@@ -31,7 +31,7 @@ export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
     handleCheck(cellUser.id, allChecked);
   }, [allChecked]);
 
-  if (cellUser.email === email) {
+  if (user.email === email) {
     return <Typography>{email}</Typography>;
   }
 
