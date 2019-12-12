@@ -6,13 +6,23 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import { Row } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../../theme';
 import { VoiceData } from '../../../types';
 import { TDPMemoTextField } from './TDPMemoTextField';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
-    base: {
+    row: {
+      borderWidth: 0,
+      borderRightWidth: 2,
+      borderColor: theme.table.border,
+      border: 'solid',
+      borderCollapse: undefined,
+    },
+    cell: {
       backgroundColor: theme.palette.background.default,
+      borderColor: theme.table.border,
+      borderRightWidth: 2,
     },
     category: {
       marginRight: theme.spacing(1),
@@ -49,10 +59,12 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
   } = row.original;
   const startDate = new Date(startAt);
   const endDate = new Date(endAt);
-  return (<TableRow>
+  return (<TableRow
+    className={classes.row}
+  >
     <TableCell
       colSpan={detailsRowColSpan}
-      className={classes.base}
+      className={classes.cell}
     >
       <Grid container spacing={3}>
         <Grid

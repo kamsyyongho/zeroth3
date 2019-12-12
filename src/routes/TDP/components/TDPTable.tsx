@@ -21,6 +21,7 @@ import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../services/api/types';
+import { CustomTheme } from '../../../theme';
 import { PATHS, VoiceData, VoiceDataResults } from '../../../types';
 import { BooleanById } from '../../../types/misc.types';
 import { formatSecondsDuration } from '../../../util/misc';
@@ -45,11 +46,31 @@ interface TDPTableProps {
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
-const useStyles = makeStyles(theme =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     clickableTableBody: {
       cursor: 'pointer',
     },
+    tableBorder: {
+      borderColor: theme.table.border,
+    },
+    tableNoBorder: {
+      borderWidth: 0,
+    },
+    tableFiller: {
+      padding: 3,
+      backgroundColor: theme.palette.background.default,
+      borderWidth: 0,
+    },
+    tableRow: {
+      borderLeftWidth: 5,
+      borderRightWidth: 2,
+      borderTopWidth: 1,
+      borderBottomWidth: 0,
+      borderColor: theme.table.border,
+      border: 'solid',
+      borderCollapse: undefined,
+    }
   }));
 
 export function TDPTable(props: TDPTableProps) {
@@ -74,7 +95,7 @@ export function TDPTable(props: TDPTableProps) {
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
 
   const classes = useStyles();
-  const theme = useTheme();
+  const theme: CustomTheme = useTheme();
 
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
@@ -90,7 +111,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
-    return modelConfigsById[id] && modelConfigsById[id].name;
+    return modelConfigsById[id] && modelConfigsById[id].name || '';
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
@@ -291,19 +312,35 @@ export function TDPTable(props: TDPTableProps) {
       prepareRow(row);
       return (
         <React.Fragment key={`row-${rowIndex}`}>
+          <TableRow >
+            <TableCell colSpan={fullRowColSpan} className={classes.tableFiller} />
+          </TableRow>
           <TableRow
             hover={(onlyAssignedData || !canModify)}
             onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
+            className={classes.tableRow}
+          // style={{ border: '5px solid red', borderCollapse: undefined }}
           >
             {row.cells.map((cell, cellIndex) => {
-              const isExpandedTranscript = expanded && cell.column.id === TRANSCRIPT_ACCESSOR;
+              const isTranscript = cell.column.id === TRANSCRIPT_ACCESSOR;
+              const isExpandedTranscript = expanded && isTranscript;
+              let className = classes.tableBorder;
+              let style: React.CSSProperties = {};
+              if (isTranscript) {
+                style = { borderRightWidth: 2, borderRightColor: theme.status.selected };
+              }
+              if (!isTranscript && expanded) {
+                className = classes.tableNoBorder;
+              }
               return (
                 <TableCell
                   key={`cell-${cellIndex}`}
                   {...cell.getCellProps()}
                   rowSpan={isExpandedTranscript ? DOUBLE_HEIGHT_ROW : undefined}
+                  className={className}
+                  style={style}
                 >
                   {cell.render('Cell')}
                 </TableCell>
@@ -333,12 +370,12 @@ export function TDPTable(props: TDPTableProps) {
         />
       </div>
     }
-    <Table stickyHeader {...getTableProps()}>
+    <Table {...getTableProps()}>
       {renderHeader()}
       <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
         {voiceData.length ? renderRows() : (
           <TableRow>
-            <TableCell colSpan={fullRowColSpan}>
+            <TableCell align='center' colSpan={fullRowColSpan} >
               <Typography component='span' >{translate('table.noResults')}</Typography>
             </TableCell>
           </TableRow>
