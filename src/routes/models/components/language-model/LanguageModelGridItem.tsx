@@ -73,7 +73,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
       handleSubGraphListUpdate={handleSubGraphListUpdate}
       modelToEdit={model}
     />
-    <Card className={classes.card}>
+    <Card className={classes.card} elevation={2}>
       <CardHeader
         className={classes.text}
         title={model.name}

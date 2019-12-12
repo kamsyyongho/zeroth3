@@ -89,7 +89,7 @@ export function SubGraphList(props: SubGraphListProps) {
     }
     return (
       <ListItem key={subGraph.id}>
-        <Card className={classes.card}>
+        <Card className={classes.card} elevation={2}>
           <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
             <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
             <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>

@@ -7,10 +7,10 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'react';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { AcousticModel } from '../../../../types';
 import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
-import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -64,7 +64,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
       onSuccess={handleEditSuccess}
       modelToEdit={model}
     />
-    <Card className={classes.card}>
+    <Card className={classes.card} elevation={2}>
       <CardHeader
         className={classes.text}
         title={model.name}
@@ -75,42 +75,42 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
             <EditIcon />
           </IconButton></>)} />
       <CardContent>
-      <Grid
-        container
-        wrap='nowrap'
-        direction='row'
-        alignContent='center'
-        alignItems='center'
-        justify='flex-start'
-      >
-        <Typography
-          className={classes.category}
-          variant='subtitle2'
+        <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
         >
-          {`${translate('common.version')}:`}
-        </Typography>
-        <Typography gutterBottom color="textSecondary" className={classes.text}>
-          {model.version}
-        </Typography>
-      </Grid>
-      <Grid
-      container
-      wrap='nowrap'
-      direction='row'
-      alignContent='center'
-      alignItems='center'
-      justify='flex-start'
-    >
-      <Typography
-        className={classes.category}
-        variant='subtitle2'
-      >
-        {`${translate('forms.sampleRate')}:`}
-      </Typography>
-      <Typography gutterBottom component="p" className={classes.text}>
-      {model.sampleRate}{' Hz'}
-      </Typography>
-    </Grid>
+          <Typography
+            className={classes.category}
+            variant='subtitle2'
+          >
+            {`${translate('common.version')}:`}
+          </Typography>
+          <Typography gutterBottom color="textSecondary" className={classes.text}>
+            {model.version}
+          </Typography>
+        </Grid>
+        <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <Typography
+            className={classes.category}
+            variant='subtitle2'
+          >
+            {`${translate('forms.sampleRate')}:`}
+          </Typography>
+          <Typography gutterBottom component="p" className={classes.text}>
+            {model.sampleRate}{' kHz'}
+          </Typography>
+        </Grid>
       </CardContent>
     </Card>
   </Grid>);
