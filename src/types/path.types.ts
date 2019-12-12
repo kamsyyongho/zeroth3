@@ -37,17 +37,17 @@ export const PATHS: { [x: string]: Path } = {
     Icon: props => SvgIconWrapper({ ...props, children: FaUsers }),
   },
   project: {
-    to: '/projects/:projectId',
-    function: (projectId: string) => `/projects/${projectId}`,
+    to: '/project/:projectId',
+    function: (projectId: string) => `/project/${projectId}`,
   },
   modelConfig: {
-    to: '/projects/:projectId/model-config',
-    function: (projectId: string) => `/projects/${projectId}/model-config`,
+    to: '/project/:projectId/model-config',
+    function: (projectId: string) => `/project/${projectId}/model-config`,
   },
   editor: {
-    to: '/projects/:projectId/tdp/:dataId/editor',
+    to: '/project/:projectId/tdp/:dataId/editor',
     function: (projectId: string, dataId: string) =>
-      `/projects/${projectId}/tdp/${dataId}/editor`,
+      `/project/${projectId}/tdp/${dataId}/editor`,
   },
   models: {
     to: '/models',
