@@ -66,7 +66,7 @@ export function IAMTable(props: IAMTableProps) {
   const columns = React.useMemo(
     () => [
       {
-        Header: <IAMHeaderCheckbox onCheck={setAllChecked} />,
+        Header: <IAMHeaderCheckbox onCheck={setAllChecked} disabled={users.length < 2} />,
         accessor: 'email',
         Cell: (data: CellProps<User>) => IAMCellCheckbox({ cellData: data, onUserCheck: handleUserCheck, allChecked }),
       },

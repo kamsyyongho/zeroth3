@@ -51,6 +51,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     clickableTableBody: {
       cursor: 'pointer',
     },
+    filterContainer: {
+      marginBottom: 1,
+    },
+    tableHeader: {
+      backgroundColor: theme.palette.background.default,
+    },
     tableBorder: {
       borderColor: theme.table.border,
     },
@@ -117,9 +123,9 @@ export function TDPTable(props: TDPTableProps) {
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
-    const numberOfLines = expanded ? 6 : 1;
-    // to keep a dynamic width of 33% based on the window
-    const transcriptStyle = width ? { width: (width * 0.333) } : { minWidth: 250, maxWidth: 350 };
+    const numberOfLines = expanded ? 8 : 1;
+    // to keep a dynamic width of 25% based on the window
+    const transcriptStyle = width ? { width: (width * 0.25) } : { minWidth: 250, maxWidth: 350 };
     return <Grid
       container
       wrap='nowrap'
@@ -198,9 +204,9 @@ export function TDPTable(props: TDPTableProps) {
         Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
       },
       {
-        Header: translate('common.date'),
-        accessor: 'startAt',
-        Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
+        Header: translate('modelConfig.header'),
+        accessor: 'modelConfigId',
+        Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
       },
       {
         Header: translate('common.length'),
@@ -208,9 +214,9 @@ export function TDPTable(props: TDPTableProps) {
         Cell: (cellData: CellProps<VoiceData>) => formatSecondsDuration(cellData.cell.value),
       },
       {
-        Header: translate('modelConfig.header'),
-        accessor: 'modelConfigId',
-        Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
+        Header: translate('common.date'),
+        accessor: 'startAt',
+        Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
       {
         Header: translate('forms.status'),
@@ -297,7 +303,7 @@ export function TDPTable(props: TDPTableProps) {
     </TableRow>);
 
   const renderHeader = () => (
-    <TableHead>
+    <TableHead className={classes.tableHeader} >
       {headerGroups.map((headerGroup: HeaderGroup<VoiceData>, index: number) => (
         renderHeaderRow(headerGroup, index)))}
     </TableHead>);
@@ -310,11 +316,12 @@ export function TDPTable(props: TDPTableProps) {
     (row: Row<VoiceData>, rowIndex: number) => {
       const expanded = !!expandedRowsByIndex[rowIndex];
       prepareRow(row);
+      const rowSpacing = (<TableRow >
+        <TableCell colSpan={fullRowColSpan} className={classes.tableFiller} />
+      </TableRow>);
       return (
         <React.Fragment key={`row-${rowIndex}`}>
-          <TableRow >
-            <TableCell colSpan={fullRowColSpan} className={classes.tableFiller} />
-          </TableRow>
+          {rowIndex > 0 && rowSpacing}
           <TableRow
             hover={(onlyAssignedData || !canModify)}
             onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
@@ -362,7 +369,7 @@ export function TDPTable(props: TDPTableProps) {
 
   return (<>
     {!onlyAssignedData &&
-      <div style={{ marginBottom: 1 }}>
+      <div className={classes.filterContainer} >
         <TDPFilters
           updateVoiceData={handleFilterUpdate}
           loading={loading}
@@ -393,6 +400,7 @@ export function TDPTable(props: TDPTableProps) {
       )}
     </TableFooter>
     {!!voiceData.length && <TablePagination
+      className={classes.tableHeader}
       rowsPerPageOptions={[5, 10, 25, 50, 100]}
       component="div"
       count={voiceDataResults.totalElements}
