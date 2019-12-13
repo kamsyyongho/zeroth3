@@ -47,12 +47,7 @@ export function ModelTabs() {
   const classes = useStyles();
 
   /** used to prevent tabs from rendering before they should be displayed */
-  const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set(), []);
-
-  React.useEffect(() => {
-    tabsThatShouldRender.add(activeTab);
-  }, []);
-
+  const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
 
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
