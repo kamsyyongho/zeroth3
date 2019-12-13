@@ -30,6 +30,9 @@ export interface CheckedUsersByUserId {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
     cardContent: {
       padding: 0,
     },
@@ -232,7 +235,7 @@ export function IAM() {
 
   return (
     <Container >
-      <Card elevation={0} >
+      <Card elevation={0} className={classes.card} >
         <CardHeader
           action={!(usersLoading || rolesLoading) && renderCardHeaderAction()}
           title={translate("IAM.header")}

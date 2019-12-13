@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
 import CardHeader from '@material-ui/core/CardHeader';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
@@ -16,6 +16,14 @@ import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 import { AcousticModelGridItem } from './AcousticModelGridItem';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+  }),
+);
 
 interface AcousticModelGridListProps {
   canModify: boolean;
@@ -35,6 +43,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   const [checkedModels, setCheckedModels] = React.useState<CheckedModelById>({});
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleEditOpen = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: true };
@@ -190,7 +199,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   }
 
   return (
-    <Card elevation={0}>
+    <Card elevation={0} className={classes.root} >
       <AcousticModelDialog
         open={createOpen}
         onClose={handleCreateClose}

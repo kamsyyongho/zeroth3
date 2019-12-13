@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
 import CardHeader from '@material-ui/core/CardHeader';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
@@ -15,6 +15,14 @@ import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { LanguageModelDialog } from './LanguageModelDialog';
 import { LanguageModelGridItem } from './LanguageModelGridItem';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+  }),
+);
 
 interface LanguageModelGridListProps {
   canModify: boolean;
@@ -41,6 +49,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   const [checkedModels, setCheckedModels] = React.useState<CheckedModelById>({});
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleEditOpen = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: true };
@@ -196,7 +205,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   }
 
   return (
-    <Card elevation={0}>
+    <Card elevation={0} className={classes.root} >
       <LanguageModelDialog
         open={createOpen}
         onClose={handleCreateClose}

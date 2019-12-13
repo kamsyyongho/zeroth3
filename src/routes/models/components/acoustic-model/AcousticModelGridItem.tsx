@@ -23,6 +23,7 @@ const useStyles = makeStyles((theme) =>
       minWidth: MIN_CARD_WIDTH,
       maxWidth: MAX_CARD_WIDTH,
       margin: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
     },
     text: {
       overflowWrap: 'break-word'

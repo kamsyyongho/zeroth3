@@ -1,4 +1,5 @@
 import Paper from '@material-ui/core/Paper';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import { useSnackbar } from 'notistack';
@@ -19,6 +20,14 @@ import { SubGraphList } from './subgraph/SubGraphList';
 
 const STARTING_TAB_INDEX = 1;
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+  }),
+);
+
 export type CheckedSubGraphById = BooleanById;
 
 export function ModelTabs() {
@@ -34,6 +43,8 @@ export function ModelTabs() {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [checkedSubGraphs, setCheckedSubGraphs] = React.useState<CheckedSubGraphById>({});
+
+  const classes = useStyles();
 
   /** used to prevent tabs from rendering before they should be displayed */
   const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set(), []);
@@ -183,7 +194,7 @@ export function ModelTabs() {
   };
 
   return (
-    <Paper square elevation={0}>
+    <Paper square elevation={0} className={classes.root} >
       <Tabs
         centered={false}
         value={activeTab}

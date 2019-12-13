@@ -26,6 +26,9 @@ const useStyles = makeStyles((theme) =>
       marginBottom: 0,
       marginTop: 20,
     },
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
     subGraphRoot: {
       minWidth: 300,
       margin: theme.spacing(1),
@@ -110,7 +113,7 @@ export function SubGraphList(props: SubGraphListProps) {
         onClose={closeDialog}
         onSuccess={handleSubGraphListUpdate}
       />
-      <Card elevation={0}>
+      <Card elevation={0} className={classes.card} >
         <CardHeader
           title={translate("models.subGraphHeader")} action={(canModify && <Grid container spacing={1}>
             <Grid item>

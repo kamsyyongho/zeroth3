@@ -1,5 +1,5 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme, makeStyles, createStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -12,6 +12,13 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { PaginatedResults, TranscriberStats, VoiceData } from '../../../types';
 import { Pagination } from '../../shared/Pagination';
 import { RatingDisplay } from '../../shared/RatingDisplay';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    table: {
+      backgroundColor: theme.palette.background.paper,
+    },
+  }));
 
 interface TranscribersTableProps {
   transcribersStats: TranscriberStats[];
@@ -31,8 +38,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
   const [initialLoad, setInitialLoad] = React.useState(true);
 
   const theme = useTheme();
-
-
+  const classes = useStyles();
 
   // define the logic and what the columns should render
   const columns = React.useMemo(
@@ -142,7 +148,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
     });
 
   return (<>
-    <Table stickyHeader {...getTableProps()}>
+    <Table stickyHeader {...getTableProps()} className={classes.table} >
       {renderHeader()}
       <TableBody >
         {transcribersStats.length ? renderRows() : (

@@ -13,6 +13,14 @@ import { IAMCellMultiSelect } from './IAMCellMultiSelect';
 import { IAMCellResetPasswordButton } from './IAMCellResetPasswordButton';
 import { IAMCellSubmitButton } from './IAMCellSubmitButton';
 import { IAMHeaderCheckbox } from './IAMHeaderCheckbox';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    table: {
+      backgroundColor: theme.palette.background.paper,
+    },
+  }));
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IAMTableProps {
@@ -33,6 +41,8 @@ export interface SelectedRoleIdsByIndex {
 
 export function IAMTable(props: IAMTableProps) {
   const { users, roles, setCheckedUsers, handleUpdateSuccess } = props;
+
+  const classes = useStyles();
 
   // used in the multi-select to quicly access the role by id 
   const parsedRolesById: ParsedRolesById = {};
@@ -128,7 +138,7 @@ export function IAMTable(props: IAMTableProps) {
     });
 
   return (
-    <Table stickyHeader {...getTableProps()}>
+    <Table stickyHeader {...getTableProps()} className={classes.table} >
       <TableHead>
         {renderHeader()}
       </TableHead>
