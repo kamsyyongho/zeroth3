@@ -16,7 +16,8 @@ const useStyles = makeStyles((theme) =>
       padding: theme.spacing(1, 2),
     },
     button: {
-      textTransform: 'none'
+      textTransform: 'none',
+      fontSize: '1.25rem',
     }
   }),
 );
