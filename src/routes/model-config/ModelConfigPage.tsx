@@ -21,6 +21,7 @@ interface ModelConfigPageProps {
 const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
+      backgroundColor: theme.palette.background.default,
       padding: 0,
     },
     cardContent: {

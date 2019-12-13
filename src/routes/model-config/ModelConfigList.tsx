@@ -32,11 +32,15 @@ import { ModelConfigDialog } from './ModelConfigDialog';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
     cardContent: {
       padding: 0,
     },
     modelConfigRoot: {
       margin: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
     },
     modelConfigExpandedDetails: {
       paddingTop: 0,
@@ -392,7 +396,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   return (
     <Container >
-      <Card elevation={0} >
+      <Card elevation={0} className={classes.card} >
         <CardHeader
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
           action={canModify && <Button
