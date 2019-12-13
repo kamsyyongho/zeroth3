@@ -132,10 +132,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           <Grid
             item
             container
+            wrap='nowrap'
             justify='flex-start'
             alignContent='center'
             alignItems='center'
-            xs={6}
+            sm={6}
           >
             <IconButton
               onClick={() => setIsDrawerOpen(true)}
@@ -161,10 +162,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           <Grid
             item
             container
+            wrap='nowrap'
             justify='flex-end'
             alignContent='center'
             alignItems='center'
-            xs={6}
+            sm={3}
           >
             <IconButton
               onClick={toggleLanguage}
