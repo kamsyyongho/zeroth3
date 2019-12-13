@@ -1,5 +1,5 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
-import { useTheme, makeStyles, createStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,10 +8,10 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { PaginatedResults, TranscriberStats, VoiceData } from '../../../types';
-import { Pagination } from '../../shared/Pagination';
-import { RatingDisplay } from '../../shared/RatingDisplay';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
+import { Pagination } from '../../../shared/Pagination';
+import { RatingDisplay } from '../../../shared/RatingDisplay';
 
 const useStyles = makeStyles((theme) =>
   createStyles({

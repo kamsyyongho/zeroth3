@@ -18,7 +18,6 @@ import { UserProfile } from './routes/profile/UserProfile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Header } from './routes/shared/header/Header';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
-import { TranscribersSummary } from './routes/transcribers/TranscribersSummary';
 import { PATHS } from './types';
 
 const history = createBrowserHistory();
@@ -56,7 +55,6 @@ function App() {
         <Route exact path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
         <Route path={PATHS.profile.to} component={UserProfile} />
-        <Route path={PATHS.transcribers.to} component={TranscribersSummary} />
       </Router>
     </RootProvider>
   );

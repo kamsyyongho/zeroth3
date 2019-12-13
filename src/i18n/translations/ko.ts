@@ -63,6 +63,7 @@ export const ko: ResourceLanguage = {
       renameOrg: 'Rename organization',
     },
     transcribers: {
+      header: 'Transcribers management',
       count: 'Count',
       rating: 'Rating',
     },
@@ -131,7 +132,10 @@ export const ko: ResourceLanguage = {
       assign: 'Assign',
     },
     IAM: {
+      users: '사용자',
       user: '사용자',
+      usersHeader: 'User Management',
+      transcribers: 'Transcribers',
       roles: '역할',
       invite: '초대',
       header: 'Identity and Access Management',

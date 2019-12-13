@@ -5,19 +5,18 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { CellProps } from 'react-table';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { User } from '../../../types';
-import { SnackbarError } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { User } from '../../../../types';
+import { SnackbarError } from '../../../../types/snackbar.types';
+import log from '../../../../util/log/logger';
+import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-interface IAMCellResetPasswordButtonProps {
+interface UsersCellResetPasswordButtonProps {
   cellData: CellProps<User>;
 }
 
-export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProps) {
+export function UsersCellResetPasswordButton(props: UsersCellResetPasswordButtonProps) {
   const { cellData } = props;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -45,7 +44,7 @@ export function IAMCellResetPasswordButton(props: IAMCellResetPasswordButtonProp
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
       } else {
         log({
-          file: `IAMCellResetPasswordButton.tsx`,
+          file: `UsersCellResetPasswordButton.tsx`,
           caller: `resetPassword - failed to reset password`,
           value: response,
           error: true,

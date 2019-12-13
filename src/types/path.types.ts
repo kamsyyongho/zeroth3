@@ -1,6 +1,6 @@
 import { SvgIconProps } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
-import { FaUsers, FaUserShield } from 'react-icons/fa';
+import { FaUserShield } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { SvgIconWrapper } from '../routes/shared/SvgIconWrapper';
 
@@ -30,11 +30,6 @@ export const PATHS: { [x: string]: Path } = {
     to: '/iam',
     title: 'IAM',
     Icon: props => SvgIconWrapper({ ...props, children: FaUserShield }),
-  },
-  transcribers: {
-    to: '/transcribers',
-    title: 'transcribers',
-    Icon: props => SvgIconWrapper({ ...props, children: FaUsers }),
   },
   project: {
     to: '/project/:projectId',

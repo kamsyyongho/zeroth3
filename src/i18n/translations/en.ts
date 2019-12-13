@@ -44,7 +44,6 @@ export const en: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
-      transcribers: 'Transcribers',
     },
     menu: {
       login: 'Login',
@@ -63,6 +62,7 @@ export const en: ResourceLanguage = {
       renameOrg: 'Rename organization',
     },
     transcribers: {
+      header: 'Transcribers management',
       count: 'Count',
       rating: 'Rating',
     },
@@ -129,7 +129,10 @@ export const en: ResourceLanguage = {
       assign: 'Assign',
     },
     IAM: {
+      users: 'Users',
       user: 'User',
+      usersHeader: 'User Management',
+      transcribers: 'Transcribers',
       roles: 'Roles',
       invite: 'Invite',
       header: 'Identity and Access Management',

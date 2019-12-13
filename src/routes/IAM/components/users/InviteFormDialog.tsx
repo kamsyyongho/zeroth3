@@ -11,11 +11,11 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { SnackbarError } from '../../../types';
-import log from '../../../util/log/logger';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { SnackbarError } from '../../../../types';
+import log from '../../../../util/log/logger';
+import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
 interface InviteFormDialogProps {
   open: boolean;

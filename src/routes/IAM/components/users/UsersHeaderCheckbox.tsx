@@ -1,19 +1,18 @@
 import { FormControlLabel, Typography } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
 import React from 'react';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-interface IAMHeaderCheckboxProps {
-  onCheck: (value: boolean) => void
+interface UsersHeaderCheckboxProps {
+  onCheck: (value: boolean) => void;
   disabled?: boolean;
 }
-export function IAMHeaderCheckbox(props: IAMHeaderCheckboxProps) {
+export function UsersHeaderCheckbox(props: UsersHeaderCheckboxProps) {
   const { onCheck, disabled } = props;
   const { translate } = React.useContext(I18nContext);
   const [isChecked, setIsChecked] = React.useState(false);
-  if(disabled) {
-    return <Typography>{translate("IAM.user")}</Typography>
+  if (disabled) {
+    return <Typography>{translate("IAM.user")}</Typography>;
   }
 
   return <FormControlLabel
@@ -29,6 +28,6 @@ export function IAMHeaderCheckbox(props: IAMHeaderCheckboxProps) {
       />
     }
     label={translate("IAM.user")}
-  />
+  />;
 }
 

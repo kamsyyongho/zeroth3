@@ -2,17 +2,16 @@ import { FormControlLabel, Typography } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
 import React from 'react';
 import { CellProps } from 'react-table';
-import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { User } from '../../../types';
+import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
+import { User } from '../../../../types';
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-interface IAMCellCheckboxProps {
+interface UsersCellCheckboxProps {
   cellData: CellProps<User>;
   onUserCheck: (userId: string, value: boolean) => void;
   allChecked: boolean;
 }
 
-export function IAMCellCheckbox(props: IAMCellCheckboxProps) {
+export function UsersCellCheckbox(props: UsersCellCheckboxProps) {
   const { cellData, onUserCheck, allChecked } = props;
   const { user } = React.useContext(KeycloakContext);
   const [isChecked, setIsChecked] = React.useState(false);
