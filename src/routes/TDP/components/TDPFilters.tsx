@@ -115,7 +115,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       validationSchema={formSchema}
     >
       {(formikProps) => (
-        <ExpansionPanel className={classes.root}>
+        <ExpansionPanel className={classes.root} elevation={0} >
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon color='primary' />}
             aria-controls="filter"

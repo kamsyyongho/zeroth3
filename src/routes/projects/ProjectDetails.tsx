@@ -19,6 +19,9 @@ interface ProjectDetailsProps {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
     cardContent: {
       padding: 0,
     },
@@ -119,7 +122,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       return <Typography>{translate('common.notFound')}</Typography>;
     }
 
-    return (<Card elevation={0} >
+    return (<Card elevation={0} className={classes.card} >
       <CardHeader
         action={<Button
           onClick={() => handleModelConfigClick(project)}

@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme) =>
     container: {
       padding: 0,
     },
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
     cardContent: {
       padding: 0,
     },
@@ -141,7 +144,7 @@ export function TDP(props: TDPProps) {
   const closeDialog = () => setIsUploadOpen(false);
 
   const renderContent = () => {
-    return (<Card elevation={0} >
+    return (<Card elevation={0} className={classes.card} >
       <CardHeader
         action={canModify && <Button
           variant='outlined'

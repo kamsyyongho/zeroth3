@@ -54,6 +54,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     filterContainer: {
       marginBottom: 1,
     },
+    table: {
+      backgroundColor: theme.palette.background.paper,
+    },
     tableHeader: {
       backgroundColor: theme.palette.background.default,
     },
@@ -377,7 +380,7 @@ export function TDPTable(props: TDPTableProps) {
         />
       </div>
     }
-    <Table {...getTableProps()}>
+    <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
       <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
         {voiceData.length ? renderRows() : (
