@@ -169,6 +169,7 @@ export const en: ResourceLanguage = {
       delete: 'Delete model configuration',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+      noResults: 'No model configurations',
     },
     models: {
       header: 'Model Management',
@@ -179,6 +180,7 @@ export const en: ResourceLanguage = {
           edit: 'Edit acoustic model',
           delete: 'Delete acoustic model',
           delete_plural: 'Delete {{count}} acoustic models',
+          noResults: 'No acoustic models',
         },
         languageModel: {
           header: 'Language Model',
@@ -186,9 +188,11 @@ export const en: ResourceLanguage = {
           edit: 'Edit language model',
           delete: 'Delete language model',
           delete_plural: 'Delete {{count}} language models',
+          noResults: 'No language models',
         },
       },
       subGraphHeader: 'Sub Graph Management',
+      subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',
       editSubGraph: 'Edit sub graph',
       deleteSubGraph: 'Delete sub graph',

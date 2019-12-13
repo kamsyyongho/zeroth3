@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Grid } from '@material-ui/core';
+import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
 import CardHeader from '@material-ui/core/CardHeader';
 import { useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
@@ -169,7 +169,11 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     handleEditClose(updatedModel.id);
   };
 
-  const renderModels = () => models.map((model, index) => (
+  const renderModels = () => {
+    if (!models.length) {
+      return <Typography align='center' variant='h6' >{translate('models.tabs.languageModel.noResults')}</Typography>;
+    }
+    return models.map((model, index) => (
     <LanguageModelGridItem
       key={index}
       model={model}
@@ -185,6 +189,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
       handleModelCheck={handleModelCheck}
     />
   ));
+}
 
   if (modelsLoading) {
     return <BulletList />;

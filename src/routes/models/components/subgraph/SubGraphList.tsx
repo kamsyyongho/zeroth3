@@ -1,4 +1,4 @@
-import { Container, Grid } from '@material-ui/core';
+import { Container, Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -82,23 +82,28 @@ export function SubGraphList(props: SubGraphListProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-  const renderListItems = () => subGraphs.map(subGraph => {
-    let isChecked = false;
-    if (checkedSubGraphs && typeof checkedSubGraphs[subGraph.id] === 'boolean') {
-      isChecked = checkedSubGraphs[subGraph.id];
+  const renderListItems = () => {
+    if (!subGraphs.length) {
+      return <Typography align='center' variant='h6' >{translate('models.subGraphNoResults')}</Typography>;
     }
-    return (
-      <ListItem key={subGraph.id}>
-        <Card className={classes.card} elevation={2}>
-          <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
-            <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
-            <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
-              <EditIcon />
-            </IconButton></>)} />
-        </Card>
-      </ListItem>
-    );
-  });
+    return subGraphs.map(subGraph => {
+      let isChecked = false;
+      if (checkedSubGraphs && typeof checkedSubGraphs[subGraph.id] === 'boolean') {
+        isChecked = checkedSubGraphs[subGraph.id];
+      }
+      return (
+        <ListItem key={subGraph.id}>
+          <Card className={classes.card} elevation={2}>
+            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
+              <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
+              <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
+                <EditIcon />
+              </IconButton></>)} />
+          </Card>
+        </ListItem>
+      );
+    });
+  };
 
   return (
     <Container maxWidth={false} className={classes.container} >

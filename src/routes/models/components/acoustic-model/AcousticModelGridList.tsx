@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Grid } from '@material-ui/core';
+import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
 import CardHeader from '@material-ui/core/CardHeader';
 import { useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
@@ -166,19 +166,24 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
 
 
 
-  const renderModels = () => models.map((model, index) => (
-    <AcousticModelGridItem
-      key={index}
-      model={model}
-      canModify={canModify}
-      editOpen={editOpen}
-      checkedModels={checkedModels}
-      handleEditOpen={handleEditOpen}
-      handleEditClose={handleEditClose}
-      handleEditSuccess={handleEditSuccess}
-      handleModelCheck={handleModelCheck}
-    />
-  ));
+  const renderModels = () => {
+    if (!models.length) {
+      return <Typography align='center' variant='h6' >{translate('models.tabs.acousticModel.noResults')}</Typography>;
+    }
+    return models.map((model, index) => (
+      <AcousticModelGridItem
+        key={index}
+        model={model}
+        canModify={canModify}
+        editOpen={editOpen}
+        checkedModels={checkedModels}
+        handleEditOpen={handleEditOpen}
+        handleEditClose={handleEditClose}
+        handleEditSuccess={handleEditSuccess}
+        handleModelCheck={handleModelCheck}
+      />
+    ));
+  };
 
   if (modelsLoading) {
     return <BulletList />;

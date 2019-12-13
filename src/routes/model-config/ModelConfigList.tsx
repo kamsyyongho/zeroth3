@@ -184,163 +184,168 @@ export function ModelConfigList(props: ModelConfigListProps) {
     </MenuItem>
   </Menu>);
 
-  const renderListItems = () => modelConfigs.map(modelConfig => {
-    const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
-    return (
-      <ExpansionPanel
-        key={id}
-        elevation={2}
-      >
-        <ExpansionPanelSummary
-          aria-controls="model-config-expand"
-          id="model-config-expand"
-          expandIcon={<IconButton aria-label="edit" onClick={(event) => handleActionClick(event, modelConfig)} >
-            <MoreVertIcon />
-          </IconButton>}
+  const renderListItems = () => {
+    if (!modelConfigs.length) {
+      return <Typography align='center' >{translate('modelConfig.noResults')}</Typography>;
+    }
+    return modelConfigs.map(modelConfig => {
+      const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
+      return (
+        <ExpansionPanel
+          key={id}
+          elevation={2}
         >
-          <CardHeader
-            title={name}
-            subheader={description}
-          />
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails
-          className={classes.expandContent}
-        >
-          <Grid
-            container
-            wrap='nowrap'
-            direction='column'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          ><Card
-            elevation={0}
-            className={classes.listItem}
+          <ExpansionPanelSummary
+            aria-controls="model-config-expand"
+            id="model-config-expand"
+            expandIcon={<IconButton aria-label="edit" onClick={(event) => handleActionClick(event, modelConfig)} >
+              <MoreVertIcon />
+            </IconButton>}
           >
-              <CardContent>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.thresholdLc')}:`}
-                  </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
-                    {thresholdLc}
-                  </Typography>
-                </Grid>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.thresholdHc')}:`}
-                  </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
-                    {thresholdHc}
-                  </Typography>
-                </Grid>
-              </CardContent>
-            </Card>
-            <Card
+            <CardHeader
+              title={name}
+              subheader={description}
+            />
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails
+            className={classes.expandContent}
+          >
+            <Grid
+              container
+              wrap='nowrap'
+              direction='column'
+              alignContent='center'
+              alignItems='center'
+              justify='flex-start'
+            ><Card
               elevation={0}
               className={classes.listItem}
             >
-              <CardHeader
-                title={translate('forms.languageModel')}
-                titleTypographyProps={{ variant: 'h6' }}
-                subheader={languageModel.name}
-              />
-              <CardContent>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
+                <CardContent>
+                  <Grid
+                    container
+                    wrap='nowrap'
+                    direction='row'
+                    alignContent='center'
+                    alignItems='center'
+                    justify='flex-start'
                   >
-                    {`${translate('forms.top')}:`}
-                  </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
-                    {languageModel.topGraph.name}
-                  </Typography>
-                </Grid>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
+                    <Typography
+                      className={classes.category}
+                      variant='subtitle2'
+                    >
+                      {`${translate('forms.thresholdLc')}:`}
+                    </Typography>
+                    <Typography gutterBottom color="textSecondary" className={classes.text}>
+                      {thresholdLc}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    container
+                    wrap='nowrap'
+                    direction='row'
+                    alignContent='center'
+                    alignItems='center'
+                    justify='flex-start'
                   >
-                    {`${translate('forms.sub')}:`}
-                  </Typography>
-                  {languageModel.subGraphs.map((subGraph, index) => <Chip key={index}
-                    label={subGraph.name}
-                    className={classes.chip}
-                  />)}
-                </Grid>
-              </CardContent>
-            </Card>
-            <Card
-              elevation={0}
-              className={classes.listItem}
-            >
-              <CardHeader
-                title={translate('forms.acousticModel')}
-                titleTypographyProps={{ variant: 'h6' }}
-                subheader={acousticModel.name}
-              />
-              <CardContent>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
+                    <Typography
+                      className={classes.category}
+                      variant='subtitle2'
+                    >
+                      {`${translate('forms.thresholdHc')}:`}
+                    </Typography>
+                    <Typography gutterBottom color="textSecondary" className={classes.text}>
+                      {thresholdHc}
+                    </Typography>
+                  </Grid>
+                </CardContent>
+              </Card>
+              <Card
+                elevation={0}
+                className={classes.listItem}
+              >
+                <CardHeader
+                  title={translate('forms.languageModel')}
+                  titleTypographyProps={{ variant: 'h6' }}
+                  subheader={languageModel.name}
+                />
+                <CardContent>
+                  <Grid
+                    container
+                    wrap='nowrap'
+                    direction='row'
+                    alignContent='center'
+                    alignItems='center'
+                    justify='flex-start'
                   >
-                    {`${translate('forms.sampleRate')}:`}
-                  </Typography>
-                  <Typography gutterBottom component="p" className={classes.text}>
-                    {acousticModel.sampleRate}{' kHz'}
-                  </Typography>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-          {renderItemMenu()}
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
-  });
+                    <Typography
+                      className={classes.category}
+                      variant='subtitle2'
+                    >
+                      {`${translate('forms.top')}:`}
+                    </Typography>
+                    <Typography gutterBottom color="textSecondary" className={classes.text}>
+                      {languageModel.topGraph.name}
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    container
+                    wrap='nowrap'
+                    direction='row'
+                    alignContent='center'
+                    alignItems='center'
+                    justify='flex-start'
+                  >
+                    <Typography
+                      className={classes.category}
+                      variant='subtitle2'
+                    >
+                      {`${translate('forms.sub')}:`}
+                    </Typography>
+                    {languageModel.subGraphs.map((subGraph, index) => <Chip key={index}
+                      label={subGraph.name}
+                      className={classes.chip}
+                    />)}
+                  </Grid>
+                </CardContent>
+              </Card>
+              <Card
+                elevation={0}
+                className={classes.listItem}
+              >
+                <CardHeader
+                  title={translate('forms.acousticModel')}
+                  titleTypographyProps={{ variant: 'h6' }}
+                  subheader={acousticModel.name}
+                />
+                <CardContent>
+                  <Grid
+                    container
+                    wrap='nowrap'
+                    direction='row'
+                    alignContent='center'
+                    alignItems='center'
+                    justify='flex-start'
+                  >
+                    <Typography
+                      className={classes.category}
+                      variant='subtitle2'
+                    >
+                      {`${translate('forms.sampleRate')}:`}
+                    </Typography>
+                    <Typography gutterBottom component="p" className={classes.text}>
+                      {acousticModel.sampleRate}{' kHz'}
+                    </Typography>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+            {renderItemMenu()}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      );
+    });
+  };
 
   const breadcrumbs: Breadcrumb[] = [
     {
