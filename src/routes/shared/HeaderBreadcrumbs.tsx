@@ -13,10 +13,12 @@ import { Path } from '../../types';
 const useStyles = makeStyles((theme) =>
   createStyles({
     paper: {
+      backgroundColor: theme.palette.background.default,
       padding: theme.spacing(1, 2),
     },
     button: {
-      textTransform: 'none'
+      textTransform: 'none',
+      fontSize: '1.25rem',
     }
   }),
 );

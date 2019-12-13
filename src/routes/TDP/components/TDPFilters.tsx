@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent } from '@material-ui/core';
+import { Box, Button, Card, CardActions, CardContent } from '@material-ui/core';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -14,6 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../constants/validation.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../services/api/types';
+import { CustomTheme } from '../../../theme/index';
 import { CONTENT_STATUS_VALUES } from '../../../types/voice-data.types';
 import { DateTimePickerFormField } from '../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
@@ -43,7 +44,7 @@ export function TDPFilters(props: TDPFiltersProps) {
   const { updateVoiceData, modelConfigsById, loading } = props;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
-  const theme = useTheme();
+  const theme: CustomTheme = useTheme();
 
   const statusFormSelectOptions = React.useMemo(() => {
     const tempFormSelectOptions: SelectFormFieldOptions = CONTENT_STATUS_VALUES.map((status) => ({ label: status, value: status }));
@@ -114,7 +115,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       validationSchema={formSchema}
     >
       {(formikProps) => (
-        <ExpansionPanel className={classes.root}>
+        <ExpansionPanel className={classes.root} elevation={0} >
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon color='primary' />}
             aria-controls="filter"
@@ -124,6 +125,7 @@ export function TDPFilters(props: TDPFiltersProps) {
             <Typography variant='h5' className={classes.heading} >{translate('table.filter')}</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
+          <Box border={1} borderColor={theme.table.border} >
             <Card elevation={0} className={classes.card}>
               <CardContent>
                 <Grid
@@ -296,6 +298,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                 </Button>
               </CardActions>
             </Card>
+            </Box>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       )}

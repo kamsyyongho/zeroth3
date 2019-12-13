@@ -5,14 +5,14 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { CellProps } from 'react-table';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { deleteRoleResult } from '../../../services/api/types/iam.types';
-import { User } from '../../../types';
-import { SnackbarError } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { differencesBetweenSets, isEqualSet } from '../../../util/misc';
-import { SelectedRoleIdsByIndex } from './IAMTable';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { deleteRoleResult } from '../../../../services/api/types/iam.types';
+import { User } from '../../../../types';
+import { SnackbarError } from '../../../../types/snackbar.types';
+import log from '../../../../util/log/logger';
+import { differencesBetweenSets, isEqualSet } from '../../../../util/misc';
+import { SelectedRoleIdsByIndex } from './UsersTable';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,14 +22,13 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-interface IAMCellSubmitButtonProps {
+interface UsersCellSubmitButtonProps {
   cellData: CellProps<User>;
   selectedRoles: SelectedRoleIdsByIndex;
   onUpdateRoleSuccess: (updatedUser: User, userIndex: number) => void;
 }
 
-export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
+export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
   const { cellData, selectedRoles, onUpdateRoleSuccess } = props;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -82,7 +81,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
         onUpdateRoleSuccess(response.user, index);
       } else {
         log({
-          file: `IAMCellSubmitButton.tsx`,
+          file: `UsersCellSubmitButton.tsx`,
           caller: `addRoles - failed to add roles`,
           value: response,
           error: true,
@@ -131,7 +130,7 @@ export function IAMCellSubmitButton(props: IAMCellSubmitButtonProps) {
         // ORGANIZATIONS MUST HAVE AT LEAST ONE MEMBER WITH A ROOT / ADMIN ROLE
         // DISPLAY ANY CAUGHT EXCEPTIONS AND REVERT THE STATE
         log({
-          file: `IAMCellSubmitButton.tsx`,
+          file: `UsersCellSubmitButton.tsx`,
           caller: `deleteRoles - failed to delete role`,
           value: response,
           error: true,

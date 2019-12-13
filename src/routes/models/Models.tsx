@@ -17,8 +17,8 @@ export interface CheckedProjectsById {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
+    card: {
+      backgroundColor: theme.palette.background.default,
     },
     cardContent: {
       padding: 0,
@@ -39,8 +39,8 @@ export function Models() {
   }
 
   return (
-    <Container maxWidth={false} className={classes.container} >
-      <Card elevation={0}>
+    <Container >
+      <Card elevation={0} className={classes.card} >
         <CardHeader
           title={translate("models.header")}
         />

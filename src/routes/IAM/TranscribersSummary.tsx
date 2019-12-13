@@ -3,21 +3,19 @@ import CardContent from '@material-ui/core/CardContent';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import { BulletList } from 'react-content-loader';
-import { PERMISSIONS } from '../../constants/permission.constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types/api-problem.types';
 import { PaginatedResults } from '../../types/pagination.types';
 import { TranscriberStats } from '../../types/transcriber.types';
 import log from '../../util/log/logger';
 import { Forbidden } from '../shared/Forbidden';
-import { TranscribersTable } from './components/TranscribersTable';
+import { TranscribersTable } from './components/transcribers/TranscribersTable';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
+    card: {
+      backgroundColor: theme.palette.background.default,
     },
     cardContent: {
       padding: 0,
@@ -25,9 +23,13 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-export function TranscribersSummary() {
+interface TranscribersSummaryProps {
+  hasAccess: boolean;
+}
+
+export function TranscribersSummary(props: TranscribersSummaryProps) {
+  const { hasAccess } = props;
   const api = React.useContext(ApiContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const [isForbidden, setIsForbidden] = React.useState(false);
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
@@ -62,7 +64,6 @@ export function TranscribersSummary() {
   };
 
   React.useEffect(() => {
-    const hasAccess = hasPermission(PERMISSIONS.crud);
     if (hasAccess) {
       getTranscribersWithStats();
     } else {
@@ -76,11 +77,10 @@ export function TranscribersSummary() {
   }
 
   return (
-    <Container maxWidth={false} className={classes.container} >
-      <Card >
-        <CardHeader
-          title={translate("path.transcribers")}
-        />
+      <Card elevation={0} className={classes.card} >
+      <CardHeader
+        title={translate("transcribers.header")}
+      />
         <CardContent className={classes.cardContent} >
           {initialDataLoading ? <BulletList /> :
             <TranscribersTable
@@ -91,6 +91,5 @@ export function TranscribersSummary() {
             />}
         </CardContent>
       </Card>
-    </Container >
   );
-};;;
+};

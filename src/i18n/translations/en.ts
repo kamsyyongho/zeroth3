@@ -44,7 +44,6 @@ export const en: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
-      transcribers: 'Transcribers',
     },
     menu: {
       login: 'Login',
@@ -63,6 +62,7 @@ export const en: ResourceLanguage = {
       renameOrg: 'Rename organization',
     },
     transcribers: {
+      header: 'Transcribers management',
       count: 'Count',
       rating: 'Rating',
     },
@@ -129,7 +129,10 @@ export const en: ResourceLanguage = {
       assign: 'Assign',
     },
     IAM: {
+      users: 'Users',
       user: 'User',
+      usersHeader: 'User Management',
+      transcribers: 'Transcribers',
       roles: 'Roles',
       invite: 'Invite',
       header: 'Identity and Access Management',
@@ -169,6 +172,7 @@ export const en: ResourceLanguage = {
       delete: 'Delete model configuration',
       thresholdHc: 'High confidence threshold',
       thresholdLc: 'Low confidence threshold',
+      noResults: 'No model configurations',
     },
     models: {
       header: 'Model Management',
@@ -179,6 +183,7 @@ export const en: ResourceLanguage = {
           edit: 'Edit acoustic model',
           delete: 'Delete acoustic model',
           delete_plural: 'Delete {{count}} acoustic models',
+          noResults: 'No acoustic models',
         },
         languageModel: {
           header: 'Language Model',
@@ -186,9 +191,11 @@ export const en: ResourceLanguage = {
           edit: 'Edit language model',
           delete: 'Delete language model',
           delete_plural: 'Delete {{count}} language models',
+          noResults: 'No language models',
         },
       },
       subGraphHeader: 'Sub Graph Management',
+      subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',
       editSubGraph: 'Edit sub graph',
       deleteSubGraph: 'Delete sub graph',

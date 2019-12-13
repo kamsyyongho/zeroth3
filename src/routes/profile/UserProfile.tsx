@@ -1,4 +1,4 @@
-import { Button, CardHeader, Container } from '@material-ui/core';
+import { Box, Button, CardHeader, Container } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -15,6 +15,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { CustomTheme } from '../../theme';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -22,8 +23,9 @@ import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    container: {
-      padding: 0,
+    userCard: {
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
     },
   }),
 );
@@ -40,7 +42,7 @@ export function UserProfile() {
   const [passwordResetLoading, setPasswordResetLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const theme = useTheme();
+  const theme: CustomTheme = useTheme();
   const classes = useStyles();
 
   const showDialog = () => setIsOpen(true);
@@ -103,59 +105,63 @@ export function UserProfile() {
   }, []);
 
   return (
-    <Container className={classes.container} >
-      <Card elevation={0} >
-        <CardHeader title={translate('profile.user')} />
-        <CardContent>
-          <Typography color="textPrimary" gutterBottom >
-            {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
-          </Typography>
-          <Typography color="textSecondary" >
-            {preferredUsername}
-          </Typography>
-          <Typography color="textSecondary" gutterBottom >
-            {email}
-          </Typography>
-        </CardContent>
-        <CardActions>
-          <Button
-            variant='contained'
-            color='secondary'
-            size="small"
-            onClick={confirmReset}
-            disabled={passwordResetLoading}
-            startIcon={passwordResetLoading ?
-              <MoonLoader
-                sizeUnit={"px"}
-                size={15}
-                color={theme.palette.secondary.main}
-                loading={true}
-              /> : <VpnKeyIcon />}
-          >
-            {translate('profile.resetPassword')}
-          </Button>
-        </CardActions>
-      </Card>
-      {(organizationLoading || !organization || !organization.name) ? <List /> :
-        (<Card elevation={0} >
-          <CardHeader title={translate('profile.organization')} />
+    <Container >
+      <Box border={1} borderColor={theme.table.border} className={classes.userCard} >
+        <Card elevation={0}>
+          <CardHeader title={translate('profile.user')} />
           <CardContent>
             <Typography color="textPrimary" gutterBottom >
-              {organization.name}
+              {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
             </Typography>
             <Typography color="textSecondary" >
-              {organization.id}
+              {preferredUsername}
+            </Typography>
+            <Typography color="textSecondary" gutterBottom >
+              {email}
             </Typography>
           </CardContent>
-          {hasRenamePermissions && (<CardActions onClick={showDialog}>
+          <CardActions>
             <Button
               variant='contained'
-              color='primary'
+              color='secondary'
               size="small"
-              startIcon={<EditIcon />}
-            >{translate('organization.rename')}</Button>
-          </CardActions>)}
-        </Card>)}
+              onClick={confirmReset}
+              disabled={passwordResetLoading}
+              startIcon={passwordResetLoading ?
+                <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.secondary.main}
+                  loading={true}
+                /> : <VpnKeyIcon />}
+            >
+              {translate('profile.resetPassword')}
+            </Button>
+          </CardActions>
+        </Card>
+      </Box>
+      {(organizationLoading || !organization || !organization.name) ? <List /> :
+        (<Box border={1} borderColor={theme.table.border} >
+          <Card elevation={0} >
+            <CardHeader title={translate('profile.organization')} />
+            <CardContent>
+              <Typography color="textPrimary" gutterBottom >
+                {organization.name}
+              </Typography>
+              <Typography color="textSecondary" >
+                {organization.id}
+              </Typography>
+            </CardContent>
+            {hasRenamePermissions && (<CardActions onClick={showDialog}>
+              <Button
+                variant='contained'
+                color='primary'
+                size="small"
+                startIcon={<EditIcon />}
+              >{translate('organization.rename')}</Button>
+            </CardActions>)}
+          </Card>
+        </Box>)}
       <RenameOrganizationDialog name={(organization && organization.name) ? organization.name : ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
       <ConfirmationDialog
         destructive

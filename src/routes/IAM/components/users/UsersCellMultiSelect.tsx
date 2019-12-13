@@ -7,9 +7,9 @@ import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { CellProps } from 'react-table';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Role, User } from '../../../types';
-import { ParsedRolesById, SelectedRoleIdsByIndex } from './IAMTable';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { Role, User } from '../../../../types';
+import { ParsedRolesById, SelectedRoleIdsByIndex } from './UsersTable';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -22,8 +22,7 @@ const useStyles = makeStyles((theme) =>
 );
 
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-interface IAMCellMultiSelectProps {
+interface UsersCellMultiSelectProps {
   cellData: CellProps<User>;
   availableRoles: Role[];
   parsedRolesById: ParsedRolesById;
@@ -31,7 +30,7 @@ interface IAMCellMultiSelectProps {
   onRoleCheck: (userIndex: number, value: string[]) => void;
 }
 
-export function IAMCellMultiSelect(props: IAMCellMultiSelectProps) {
+export function UsersCellMultiSelect(props: UsersCellMultiSelectProps) {
   const { cellData, availableRoles, selectedRoles, parsedRolesById, onRoleCheck } = props;
   const { translate } = React.useContext(I18nContext);
 

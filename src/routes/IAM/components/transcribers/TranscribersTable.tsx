@@ -1,5 +1,5 @@
 import { TableFooter, TablePagination, Typography } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,10 +8,17 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { PaginatedResults, TranscriberStats, VoiceData } from '../../../types';
-import { Pagination } from '../../shared/Pagination';
-import { RatingDisplay } from '../../shared/RatingDisplay';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
+import { Pagination } from '../../../shared/Pagination';
+import { RatingDisplay } from '../../../shared/RatingDisplay';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    table: {
+      backgroundColor: theme.palette.background.paper,
+    },
+  }));
 
 interface TranscribersTableProps {
   transcribersStats: TranscriberStats[];
@@ -31,8 +38,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
   const [initialLoad, setInitialLoad] = React.useState(true);
 
   const theme = useTheme();
-
-
+  const classes = useStyles();
 
   // define the logic and what the columns should render
   const columns = React.useMemo(
@@ -142,12 +148,12 @@ export function TranscribersTable(props: TranscribersTableProps) {
     });
 
   return (<>
-    <Table stickyHeader {...getTableProps()}>
+    <Table stickyHeader {...getTableProps()} className={classes.table} >
       {renderHeader()}
       <TableBody >
         {transcribersStats.length ? renderRows() : (
           <TableRow>
-            <TableCell colSpan={columns.length} >
+            <TableCell align='center' colSpan={columns.length} >
               <Typography component='span' >{translate('table.noResults')}</Typography>
             </TableCell>
           </TableRow>

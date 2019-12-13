@@ -1,3 +1,4 @@
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -7,15 +8,21 @@ import React from 'react';
 import { CellProps, useTable } from 'react-table';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Role, User } from "../../../types";
-import { CheckedUsersByUserId } from '../IAM';
-import { IAMCellCheckbox } from './IAMCellCheckbox';
-import { IAMCellMultiSelect } from './IAMCellMultiSelect';
-import { IAMCellResetPasswordButton } from './IAMCellResetPasswordButton';
-import { IAMCellSubmitButton } from './IAMCellSubmitButton';
-import { IAMHeaderCheckbox } from './IAMHeaderCheckbox';
+import { CheckedUsersByUserId } from '../UsersSummary';
+import { UsersCellCheckbox } from './users/UsersCellCheckbox';
+import { UsersCellMultiSelect } from './users/UsersCellMultiSelect';
+import { UsersCellResetPasswordButton } from './users/UsersCellResetPasswordButton';
+import { UsersCellSubmitButton } from './users/UsersCellSubmitButton';
+import { UsersHeaderCheckbox } from './users/UsersHeaderCheckbox';
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-export interface IAMTableProps {
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    table: {
+      backgroundColor: theme.palette.background.paper,
+    },
+  }));
+
+export interface UsersTableProps {
   users: User[];
   roles: Role[];
   setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>;
@@ -31,8 +38,10 @@ export interface SelectedRoleIdsByIndex {
 }
 
 
-export function IAMTable(props: IAMTableProps) {
+export function UsersTable(props: UsersTableProps) {
   const { users, roles, setCheckedUsers, handleUpdateSuccess } = props;
+
+  const classes = useStyles();
 
   // used in the multi-select to quicly access the role by id 
   const parsedRolesById: ParsedRolesById = {};
@@ -66,24 +75,24 @@ export function IAMTable(props: IAMTableProps) {
   const columns = React.useMemo(
     () => [
       {
-        Header: <IAMHeaderCheckbox onCheck={setAllChecked} />,
+        Header: <UsersHeaderCheckbox onCheck={setAllChecked} disabled={users.length < 2} />,
         accessor: 'email',
-        Cell: (data: CellProps<User>) => IAMCellCheckbox({ cellData: data, onUserCheck: handleUserCheck, allChecked }),
+        Cell: (data: CellProps<User>) => UsersCellCheckbox({ cellData: data, onUserCheck: handleUserCheck, allChecked }),
       },
       {
         Header: `${translate("IAM.roles")}`,
         accessor: 'roles',
-        Cell: (data: CellProps<User>) => IAMCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
+        Cell: (data: CellProps<User>) => UsersCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
       },
       {
         Header: ' ',
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => IAMCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess }),
+        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess }),
       },
       {
         Header: '  ',
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => IAMCellResetPasswordButton({ cellData: data }),
+        Cell: (data: CellProps<User>) => UsersCellResetPasswordButton({ cellData: data }),
       },
     ],
     [users, roles, language, allChecked, selectedRoles]
@@ -128,7 +137,7 @@ export function IAMTable(props: IAMTableProps) {
     });
 
   return (
-    <Table stickyHeader {...getTableProps()}>
+    <Table stickyHeader {...getTableProps()} className={classes.table} >
       <TableHead>
         {renderHeader()}
       </TableHead>

@@ -1,5 +1,6 @@
-import { Button, Card, CardActions, CardContent, Grid } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
+import CardHeader from '@material-ui/core/CardHeader';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
@@ -14,6 +15,14 @@ import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { LanguageModelDialog } from './LanguageModelDialog';
 import { LanguageModelGridItem } from './LanguageModelGridItem';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+  }),
+);
 
 interface LanguageModelGridListProps {
   canModify: boolean;
@@ -40,6 +49,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   const [checkedModels, setCheckedModels] = React.useState<CheckedModelById>({});
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleEditOpen = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: true };
@@ -168,7 +178,11 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
     handleEditClose(updatedModel.id);
   };
 
-  const renderModels = () => models.map((model, index) => (
+  const renderModels = () => {
+    if (!models.length) {
+      return <Typography align='center' variant='h6' >{translate('models.tabs.languageModel.noResults')}</Typography>;
+    }
+    return models.map((model, index) => (
     <LanguageModelGridItem
       key={index}
       model={model}
@@ -184,13 +198,14 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
       handleModelCheck={handleModelCheck}
     />
   ));
+}
 
   if (modelsLoading) {
     return <BulletList />;
   }
 
   return (
-    <Card elevation={0}>
+    <Card elevation={0} className={classes.root} >
       <LanguageModelDialog
         open={createOpen}
         onClose={handleCreateClose}
@@ -199,36 +214,41 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         subGraphs={subGraphs}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
       />
+      {canModify && <CardHeader
+        action={(<Grid container spacing={1}>
+          <Grid item>
+            {!!models.length && <Button
+              disabled={!modelsToDelete.length}
+              variant="contained"
+              color="secondary"
+              onClick={confirmDelete}
+              startIcon={deleteLoading ? <MoonLoader
+                sizeUnit={"px"}
+                size={15}
+                color={theme.palette.common.white}
+                loading={true}
+              /> : <DeleteIcon />}
+            >
+              {translate('common.delete')}
+            </Button>}
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateOpen}
+              startIcon={<AddIcon />}
+            >
+              {translate('models.tabs.languageModel.create')}
+            </Button>
+          </Grid>
+        </Grid>)} />}
       {!!models.length &&
         (<CardContent>
           <Grid container spacing={2} >
             {renderModels()}
           </Grid>
         </CardContent>)}
-      {canModify && <CardActions>
-        {!!models.length && <Button
-          disabled={!modelsToDelete.length}
-          variant="contained"
-          color="secondary"
-          onClick={confirmDelete}
-          startIcon={deleteLoading ? <MoonLoader
-            sizeUnit={"px"}
-            size={15}
-            color={theme.palette.common.white}
-            loading={true}
-          /> : <DeleteIcon />}
-        >
-          {translate('common.delete')}
-        </Button>}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreateOpen}
-          startIcon={<AddIcon />}
-        >
-          {translate('models.tabs.languageModel.create')}
-        </Button>
-      </CardActions>}
       <ConfirmationDialog
         destructive
         titleText={`${translate('models.tabs.languageModel.delete', { count: modelsToDelete.length })}?`}

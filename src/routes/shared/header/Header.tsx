@@ -16,7 +16,7 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import logo from '../../../static/images/logo.png';
+import logo from '../../../static/images/logo@2x.png';
 import { PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
@@ -132,10 +132,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           <Grid
             item
             container
+            wrap='nowrap'
             justify='flex-start'
             alignContent='center'
             alignItems='center'
-            xs={6}
+            sm={6}
           >
             <IconButton
               onClick={() => setIsDrawerOpen(true)}
@@ -146,7 +147,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
               <MenuIcon />
             </IconButton>
             <Button component={Link} to={PATHS.home.to as string}>
-              <img src={logo} alt='Zeroth EE' />
+              <img src={logo} alt='Zeroth EE' height={25} />
             </Button>
             <Button
               startIcon={<SvgIconWrapper ><FaProjectDiagram /></SvgIconWrapper>}
@@ -161,10 +162,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           <Grid
             item
             container
+            wrap='nowrap'
             justify='flex-end'
             alignContent='center'
             alignItems='center'
-            xs={6}
+            sm={3}
           >
             <IconButton
               onClick={toggleLanguage}

@@ -1,6 +1,6 @@
-import { Button, Card, CardContent, Grid } from '@material-ui/core';
-import CardActions from '@material-ui/core/CardActions';
-import { useTheme } from '@material-ui/core/styles';
+import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
+import CardHeader from '@material-ui/core/CardHeader';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
@@ -16,6 +16,14 @@ import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { CheckedModelById, EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 import { AcousticModelGridItem } from './AcousticModelGridItem';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+  }),
+);
 
 interface AcousticModelGridListProps {
   canModify: boolean;
@@ -35,6 +43,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   const [checkedModels, setCheckedModels] = React.useState<CheckedModelById>({});
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleEditOpen = (modelId: string) => setEditOpen(prevOpen => {
     return { ...prevOpen, [modelId]: true };
@@ -166,61 +175,71 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
 
 
 
-  const renderModels = () => models.map((model, index) => (
-    <AcousticModelGridItem
-      key={index}
-      model={model}
-      canModify={canModify}
-      editOpen={editOpen}
-      checkedModels={checkedModels}
-      handleEditOpen={handleEditOpen}
-      handleEditClose={handleEditClose}
-      handleEditSuccess={handleEditSuccess}
-      handleModelCheck={handleModelCheck}
-    />
-  ));
+  const renderModels = () => {
+    if (!models.length) {
+      return <Typography align='center' variant='h6' >{translate('models.tabs.acousticModel.noResults')}</Typography>;
+    }
+    return models.map((model, index) => (
+      <AcousticModelGridItem
+        key={index}
+        model={model}
+        canModify={canModify}
+        editOpen={editOpen}
+        checkedModels={checkedModels}
+        handleEditOpen={handleEditOpen}
+        handleEditClose={handleEditClose}
+        handleEditSuccess={handleEditSuccess}
+        handleModelCheck={handleModelCheck}
+      />
+    ));
+  };
 
   if (modelsLoading) {
     return <BulletList />;
   }
 
   return (
-    <Card elevation={0}>
+    <Card elevation={0} className={classes.root} >
       <AcousticModelDialog
         open={createOpen}
         onClose={handleCreateClose}
         onSuccess={handleModelListUpdate}
       />
+      {canModify && <CardHeader
+        action={(<Grid container spacing={1}>
+          <Grid item>
+            {!!models.length && <Button
+              disabled={!modelsToDelete.length}
+              variant="contained"
+              color="secondary"
+              onClick={confirmDelete}
+              startIcon={deleteLoading ? <MoonLoader
+                sizeUnit={"px"}
+                size={15}
+                color={theme.palette.common.white}
+                loading={true}
+              /> : <DeleteIcon />}
+            >
+              {translate('common.delete')}
+            </Button>}
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateOpen}
+              startIcon={<AddIcon />}
+            >
+              {translate('models.tabs.acousticModel.create')}
+            </Button>
+          </Grid>
+        </Grid>)} />}
       {!!models.length &&
         (<CardContent>
           <Grid container spacing={2} >
             {renderModels()}
           </Grid>
         </CardContent>)}
-      {canModify && <CardActions>
-        {!!models.length && <Button
-          disabled={!modelsToDelete.length}
-          variant="contained"
-          color="secondary"
-          onClick={confirmDelete}
-          startIcon={deleteLoading ? <MoonLoader
-            sizeUnit={"px"}
-            size={15}
-            color={theme.palette.common.white}
-            loading={true}
-          /> : <DeleteIcon />}
-        >
-          {translate('common.delete')}
-        </Button>}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreateOpen}
-          startIcon={<AddIcon />}
-        >
-          {translate('models.tabs.acousticModel.create')}
-        </Button>
-      </CardActions>}
       <ConfirmationDialog
         destructive
         titleText={`${translate('models.tabs.acousticModel.delete', { count: modelsToDelete.length })}?`}

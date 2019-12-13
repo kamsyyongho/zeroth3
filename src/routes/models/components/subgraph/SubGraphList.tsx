@@ -1,13 +1,10 @@
-import { Container } from '@material-ui/core';
+import { Box, Container, Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -16,6 +13,7 @@ import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../../../theme';
 import { SubGraph } from '../../../../types';
 import { CheckedSubGraphById } from '../ModelTabs';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
@@ -28,11 +26,12 @@ const useStyles = makeStyles((theme) =>
       marginBottom: 0,
       marginTop: 20,
     },
-    cardContent: {
-      padding: 0,
-    },
     card: {
-      minWidth: 275,
+      backgroundColor: theme.palette.background.default,
+    },
+    subGraphRoot: {
+      minWidth: 300,
+      margin: theme.spacing(1),
     },
     text: {
       overflowWrap: 'break-word'
@@ -81,25 +80,30 @@ export function SubGraphList(props: SubGraphListProps) {
   const openCreateDialog = () => setSubOpen(true);
 
   const classes = useStyles();
-  const theme = useTheme();
+  const theme: CustomTheme = useTheme();
 
-  const renderListItems = () => subGraphs.map(subGraph => {
-    let isChecked = false;
-    if (checkedSubGraphs && typeof checkedSubGraphs[subGraph.id] === 'boolean') {
-      isChecked = checkedSubGraphs[subGraph.id];
+  const renderSubGraphs = () => {
+    if (!subGraphs.length) {
+      return <Typography align='center' variant='h6' >{translate('models.subGraphNoResults')}</Typography>;
     }
-    return (
-      <ListItem key={subGraph.id}>
-        <Card className={classes.card}>
-          <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
-            <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
-            <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
-              <EditIcon />
-            </IconButton></>)} />
-        </Card>
-      </ListItem>
-    );
-  });
+    return subGraphs.map(subGraph => {
+      let isChecked = false;
+      if (checkedSubGraphs && typeof checkedSubGraphs[subGraph.id] === 'boolean') {
+        isChecked = checkedSubGraphs[subGraph.id];
+      }
+      return (
+        <Box key={subGraph.id} border={1} borderColor={theme.table.border} className={classes.subGraphRoot}>
+          <Grid item xs component={Card} elevation={0} >
+            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
+              <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
+              <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
+                <EditIcon />
+              </IconButton></>)} />
+          </Grid>
+        </Box>
+      );
+    });
+  };
 
   return (
     <Container maxWidth={false} className={classes.container} >
@@ -109,18 +113,10 @@ export function SubGraphList(props: SubGraphListProps) {
         onClose={closeDialog}
         onSuccess={handleSubGraphListUpdate}
       />
-      <Card elevation={0}>
+      <Card elevation={0} className={classes.card} >
         <CardHeader
-          title={translate("models.subGraphHeader")}
-        />
-        {subGraphsLoading ? <BulletList /> : (
-          <>
-            <CardContent className={classes.cardContent} >
-              <List >
-                {renderListItems()}
-              </List>
-            </CardContent>
-            {canModify && <CardActions>
+          title={translate("models.subGraphHeader")} action={(canModify && <Grid container spacing={1}>
+            <Grid item>
               {!!subGraphs.length && <Button
                 disabled={!canDelete}
                 variant="contained"
@@ -135,6 +131,8 @@ export function SubGraphList(props: SubGraphListProps) {
               >
                 {translate('common.delete')}
               </Button>}
+            </Grid>
+            <Grid item>
               <Button
                 color="primary"
                 variant='contained'
@@ -143,7 +141,16 @@ export function SubGraphList(props: SubGraphListProps) {
               >
                 {translate('models.createSubGraph')}
               </Button>
-            </CardActions>}
+            </Grid>
+          </Grid>)}
+        />
+        {subGraphsLoading ? <BulletList /> : (
+          <>
+            <CardContent >
+              <Grid container spacing={2} >
+                {renderSubGraphs()}
+              </Grid>
+            </CardContent>
           </>)}
       </Card>
     </Container>
