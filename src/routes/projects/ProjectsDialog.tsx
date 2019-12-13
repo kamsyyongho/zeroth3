@@ -271,7 +271,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         />
         <CardHeader
           style={{ padding: 0, margin: 0 }}
-          title={projects.length > 1 && <SearchBar
+          title={projects.length > 1 && !projectsLoading && <SearchBar
             list={projects}
             keys={['name']}
             onSearch={handleProjectSearch}
