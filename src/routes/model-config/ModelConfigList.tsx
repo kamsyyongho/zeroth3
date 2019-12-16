@@ -183,7 +183,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const maxTitleWidth = width ? (width * 0.7) : 500;
+  const maxTitleWidth = width ? (width * 0.6) : 500;
 
   const renderItemMenu = () => (<Menu
     id="list-item-menu"
