@@ -13,6 +13,7 @@ import { RawData } from './controllers/raw-data';
 import { Transcriber } from './controllers/transcriber';
 import { User } from './controllers/user';
 import { VoiceData } from './controllers/voice-data';
+import { DataSet } from './controllers/data-set';
 
 /**
  * Main class that manages all requests to the API.
@@ -85,6 +86,11 @@ export class Api {
   transcriber: Transcriber | undefined;
 
   /**
+   * Subclass that manages data set requests.
+   */
+  dataSet: DataSet | undefined;
+
+  /**
    * Creates the api.
    * - Be as quick as possible in here.
    * @param config The configuration to use.
@@ -124,6 +130,7 @@ export class Api {
     this.organizations = new Organizations(this.apisauce, this.logout);
     this.user = new User(this.apisauce, this.logout);
     this.transcriber = new Transcriber(this.apisauce, this.logout);
+    this.dataSet = new DataSet(this.apisauce, this.logout);
     return true;
   }
 

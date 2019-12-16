@@ -23,7 +23,7 @@ export interface SearchDataRequest {
    * - from `0`
    */
   'length-min'?: number;
-  'model-config'?: number;
+  'model-config'?: string;
   name?: string;
   /**
    * to `100`

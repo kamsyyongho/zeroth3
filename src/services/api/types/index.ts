@@ -1,6 +1,6 @@
-export * from '../../../types/pagination.types';
 export * from './api-problem.types';
 export * from './api.types';
+export * from './data-set.types';
 export * from './iam.types';
 export * from './model-config.types';
 export * from './models.types';

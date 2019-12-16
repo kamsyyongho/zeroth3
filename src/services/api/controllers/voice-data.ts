@@ -58,7 +58,7 @@ export class VoiceData extends ParentApi {
    *from?: string;
    *'length-max'?: number;
    *'length-min'?: number;
-   *'model-config'?: number;
+   *'model-config'?: string;
    *name?: string;
    *page?: number;
    *'score-max'?: number;
