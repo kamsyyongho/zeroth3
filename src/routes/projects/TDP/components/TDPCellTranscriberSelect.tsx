@@ -13,8 +13,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { Row } from 'react-table';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { CONTENT_STATUS, Transcriber, VoiceData } from '../../../../types';
-import { SnackbarError } from '../../../../types';
+import { CONTENT_STATUS, SnackbarError, Transcriber, VoiceData } from '../../../../types';
 import log from '../../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>

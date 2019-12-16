@@ -15,7 +15,7 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES } from '../../../../types/voice-data.types';
+import { CONTENT_STATUS, CONTENT_STATUS_VALUES } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
@@ -244,6 +244,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                           component={SelectFormField}
                           options={statusFormSelectOptions}
                           label={translate("forms.status")}
+                          disabledValues={[CONTENT_STATUS.RAW]}
                         />
                       </Grid>
                       <Grid

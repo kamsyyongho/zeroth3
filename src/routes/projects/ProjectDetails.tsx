@@ -11,7 +11,7 @@ import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationP
 import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
-import { TDP } from './TDP/TDP';
+import { ProjectTableTabs } from './ProjectTableTabs';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -168,7 +168,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {projectLoading ? <BulletList /> :
         renderContent()
       }
-      <TDP projectId={projectId} project={project} modelConfigs={modelConfigs} />
+      <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />
     </Container >
   );
 }

@@ -2,13 +2,13 @@ import { ApisauceInstance } from 'apisauce';
 import { DataSet as DataSetInterface, FilterParams } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  AssignTranscribersToDataSetRequest,
+  assignTranscribersToDataSetResult,
   getAllResult,
   PostDataSetRequest,
   postDataSetResult,
   ProblemKind,
   ServerError,
-  AssignTranscribersToDataSetRequest,
-  assignTranscribersToDataSetResult,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -94,7 +94,7 @@ export class DataSet extends ParentApi {
   async assignTranscribersToDataSet(
     dataSetId: string,
     projectId: string,
-    transcribers: string[],
+    transcribers: string[]
   ): Promise<assignTranscribersToDataSetResult> {
     // build the request
     const request: AssignTranscribersToDataSetRequest = {

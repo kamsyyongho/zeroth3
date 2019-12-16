@@ -22,7 +22,7 @@ import { NavigationPropsContext } from '../../../../hooks/navigation-props/Navig
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { PATHS, VoiceData, VoiceDataResults } from '../../../../types';
+import { FilterParams, PATHS, VoiceData, VoiceDataResults } from '../../../../types';
 import { BooleanById } from '../../../../types/misc.types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
@@ -44,6 +44,7 @@ interface TDPTableProps {
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  setFilterParams: (filterParams?: FilterParams) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -92,6 +93,7 @@ export function TDPTable(props: TDPTableProps) {
     loading,
     getVoiceData,
     handleVoiceDataUpdate,
+    setFilterParams,
   } = props;
   const voiceData = voiceDataResults.content;
   const { translate, formatDate } = React.useContext(I18nContext);
@@ -272,12 +274,29 @@ export function TDPTable(props: TDPTableProps) {
   );
 
 
+  const setCreateSetFilterParams = (options: SearchDataRequest) => {
+    const { till, from, status, transcript } = options;
+    const filterParams: FilterParams = {
+      till,
+      from,
+      status,
+      transcript,
+      lengthMax: options['length-max'],
+      lengthMin: options['length-min'],
+      modelConfig: options['model-config'],
+    };
+    const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
+    const isFiltering = Object.keys(filterParams).some((key) => isFilteringStringKeyType[key]);
+    setFilterParams(isFiltering ? filterParams : undefined);
+  };
+
   /**
    * update the stored options and get fresh data
    * - resetting the page will trigger `getVoiceData` in `useEffect`
    */
   const handleFilterUpdate = (options: SearchDataRequest = {}) => {
     setVoiceDataOptions(options);
+    setCreateSetFilterParams(options);
     gotoPage(0);
   };
 

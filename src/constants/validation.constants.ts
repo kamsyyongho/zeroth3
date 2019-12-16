@@ -30,6 +30,12 @@ export const VALIDATION = {
       min: 0,
     },
   },
+  SET: {
+    name: {
+      min: 3,
+      max: 50,
+    },
+  },
   ORGANIZATION: {
     name: {
       min: 2,

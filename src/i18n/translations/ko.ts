@@ -164,6 +164,11 @@ export const ko: ResourceLanguage = {
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: 'Transferred bytes',
     },
+    SET: {
+      SET: 'SET',
+      createSetFromFilter: 'Create SET from filter',
+      createSet: 'Create SET',
+    },
     editor: {
       editor: 'Editor',
     },

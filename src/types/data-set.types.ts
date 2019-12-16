@@ -1,5 +1,5 @@
-import { CONTENT_STATUS } from './voice-data.types';
 import { Transcriber } from './transcriber.types';
+import { CONTENT_STATUS } from './voice-data.types';
 
 export interface DataSet {
   createdAt: Date;
@@ -23,7 +23,7 @@ export interface FilterParams {
    * - from `0`
    */
   lengthMin?: number;
-  modelConfig?: number;
-  status: CONTENT_STATUS;
+  modelConfig?: string;
+  status?: CONTENT_STATUS;
   transcript?: string;
 }
