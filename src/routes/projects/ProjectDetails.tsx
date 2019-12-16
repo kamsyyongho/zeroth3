@@ -11,7 +11,7 @@ import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationP
 import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
-import { TDP } from '../TDP/TDP';
+import { TDP } from './TDP/TDP';
 
 interface ProjectDetailsProps {
   projectId: string;

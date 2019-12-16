@@ -1,18 +1,18 @@
-import { Card, CardContent, CardHeader } from '@material-ui/core';
+import { Card, CardContent, CardHeader, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import BackupIcon from '@material-ui/icons/Backup';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
-import { PERMISSIONS } from '../../constants/permission.constants';
-import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../services/api/types';
-import { ModelConfig, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../types';
-import log from '../../util/log/logger';
-import { AudioUploadDialog } from '../projects/components/AudioUploadDialog';
+import { PERMISSIONS } from '../../../constants/permission.constants';
+import { ApiContext } from '../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../../services/api/types';
+import { ModelConfig, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../../types';
+import log from '../../../util/log/logger';
+import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
@@ -146,14 +146,28 @@ export function TDP(props: TDPProps) {
   const renderContent = () => {
     return (<Card elevation={0} className={classes.card} >
       <CardHeader
-        action={canModify && <Button
-          variant='outlined'
-          color="primary"
-          onClick={openDialog}
-          startIcon={<BackupIcon />}
-        >
-          {translate('TDP.uploadData')}
-        </Button>}
+        action={canModify && <Grid container spacing={1}>
+          <Grid item>
+            <Button
+              variant='outlined'
+              color="primary"
+              onClick={openDialog}
+              startIcon={<BackupIcon />}
+            >
+              {translate('TDP.uploadData')}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant='contained'
+              color="primary"
+              onClick={openDialog}
+              startIcon={<BackupIcon />}
+            >
+              {translate('TDP.uploadData')}
+            </Button>
+          </Grid>
+        </Grid>}
         title={translate('TDP.TDP')}
       />
       <CardContent className={classes.cardContent} >
