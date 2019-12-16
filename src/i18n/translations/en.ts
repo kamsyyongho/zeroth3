@@ -62,7 +62,7 @@ export const en: ResourceLanguage = {
       renameOrg: 'Rename organization',
     },
     transcribers: {
-      header: 'Transcribers management',
+      header: 'Transcriber management',
       count: 'Count',
       rating: 'Rating',
     },
