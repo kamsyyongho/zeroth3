@@ -79,12 +79,12 @@ export function ProjectList(props: ProjectListProps) {
   );
 
   const renderNoResults = () => <ListItem >
-    <ListItemText primary={translate('table.noResults')} />
+    <ListItemText primary={translate(searching ? 'table.noResults' : 'projects.noProjects')} />
   </ListItem>;
 
   return (
     <List dense>
-      {(searching && !projects.length) ? renderNoResults() : renderProjects()}
+      {(!projects.length) ? renderNoResults() : renderProjects()}
     </List>
   );
 }

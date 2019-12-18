@@ -1,4 +1,4 @@
-import { Card, CardHeader, Container } from '@material-ui/core';
+import { Card, CardHeader } from '@material-ui/core';
 import CardContent from '@material-ui/core/CardContent';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
@@ -78,19 +78,19 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
   }
 
   return (
-      <Card elevation={0} className={classes.card} >
+    <Card elevation={0} className={classes.card} >
       <CardHeader
         title={translate("transcribers.header")}
       />
-        <CardContent className={classes.cardContent} >
-          {initialDataLoading ? <BulletList /> :
-            <TranscribersTable
-              loading={transcriberStatDataLoading}
-              pagination={pagination}
-              transcribersStats={transcribersStats}
-              handleUpdate={getTranscribersWithStats}
-            />}
-        </CardContent>
-      </Card>
+      <CardContent className={classes.cardContent} >
+        {initialDataLoading ? <BulletList /> :
+          <TranscribersTable
+            loading={transcriberStatDataLoading}
+            pagination={pagination}
+            transcribersStats={transcribersStats}
+            handleUpdate={getTranscribersWithStats}
+          />}
+      </CardContent>
+    </Card>
   );
 };

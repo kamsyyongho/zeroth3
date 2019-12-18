@@ -338,19 +338,18 @@ export function TDPTable(props: TDPTableProps) {
     (row: Row<VoiceData>, rowIndex: number) => {
       const expanded = !!expandedRowsByIndex[rowIndex];
       prepareRow(row);
-      const rowSpacing = (<TableRow >
+      const rowFiller = (<TableRow >
         <TableCell colSpan={fullRowColSpan} className={classes.tableFiller} />
       </TableRow>);
       return (
         <React.Fragment key={`row-${rowIndex}`}>
-          {rowIndex > 0 && rowSpacing}
+          {rowIndex > 0 && rowFiller}
           <TableRow
             hover={(onlyAssignedData || !canModify)}
             onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
             className={classes.tableRow}
-          // style={{ border: '5px solid red', borderCollapse: undefined }}
           >
             {row.cells.map((cell, cellIndex) => {
               const isTranscript = cell.column.id === TRANSCRIPT_ACCESSOR;

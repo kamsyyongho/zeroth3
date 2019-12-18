@@ -8,12 +8,8 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  AssignUnconfirmedQuery,
-  AssignUnconfirmedRequest,
-  assignUnconfirmedResult,
   confirmDataResult,
   fetchUnconfirmedDataResult,
-  FetchUnconfirmedQuery,
   getAssignedDataResult,
   getSegmentsDataResult,
   MergeTwoSegmentsRequest,
@@ -175,23 +171,11 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Assigns a group of unconfirmed data to the current user
-   * - the server returns a `202` on success
-   * @param projectId
-   * @param modelConfigId
+   * Gets one set of assigned data to transcribe
    */
-  async fetchUnconfirmedData(
-    projectId: string,
-    modelConfigId: string
-  ): Promise<fetchUnconfirmedDataResult> {
-    const params: FetchUnconfirmedQuery = {
-      'model-config': modelConfigId,
-    };
-    const response = await this.apisauce.post<undefined, ServerError>(
-      // query params on a post are the third (3) parameter
-      `/projects/${projectId}/data/unconfirmed`,
-      null,
-      { params }
+  async fetchUnconfirmedData(): Promise<fetchUnconfirmedDataResult> {
+    const response = await this.apisauce.post<IVoiceData, ServerError>(
+      `/data/unconfirmed`
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -203,7 +187,13 @@ export class VoiceData extends ParentApi {
         return problem;
       }
     }
-    return { kind: 'ok' };
+    // transform the data into the format we are expecting
+    try {
+      const voiceData = response.data as IVoiceData;
+      return { kind: 'ok', voiceData };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 
   /**
@@ -442,49 +432,6 @@ export class VoiceData extends ParentApi {
     const response = await this.apisauce.patch<undefined, ServerError>(
       `/projects/${projectId}/data/${dataId}/memo`,
       request
-    );
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response);
-      if (problem) {
-        if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
-        }
-        return problem;
-      }
-    }
-    return { kind: 'ok' };
-  }
-
-  /**
-   * Assigns data (one or multiple) to a specific user
-   * - can assign multiple voice data at once
-   * - only assignable when the status is `UNCONFIRMED_LC`
-   * - in the server: `status` will be set to `FETCHED` and the `transcriber` will be set to the email
-   * @param projectId
-   * @param userId
-   * @param modelConfigId
-   * @param voiceDataIds
-   */
-  async assignUnconfirmedDataToTranscriber(
-    projectId: string,
-    userId: string,
-    modelConfigId: string,
-    voiceDataIds: string[]
-  ): Promise<assignUnconfirmedResult> {
-    // compile data
-    const request: AssignUnconfirmedRequest = {
-      transcriberId: userId,
-      voiceDataIds,
-    };
-    const params: AssignUnconfirmedQuery = {
-      'model-config': modelConfigId,
-    };
-    const response = await this.apisauce.put<undefined, ServerError>(
-      // query params on a post are the third (3) parameter
-      `/projects/${projectId}/data/assign`,
-      request,
-      { params }
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

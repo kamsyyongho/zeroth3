@@ -3,7 +3,6 @@ import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
-import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { PERMISSIONS } from '../../../constants/permission.constants';
@@ -11,10 +10,10 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../../services/api/types';
-import { FilterParams, ModelConfig, Project, SnackbarError, VoiceData, VoiceDataResults } from '../../../types';
+import { FilterParams, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
-import { CreateSetFormDialog } from '../set/CreateSetFormDialog';
+import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
 import { TDPTable } from './components/TDPTable';
 
 interface TDPProps {
@@ -51,7 +50,6 @@ export function TDP(props: TDPProps) {
   const { projectId, project, modelConfigs = [] as ModelConfig[], onSetCreate } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission } = React.useContext(KeycloakContext);
-  const { enqueueSnackbar } = useSnackbar();
   const api = React.useContext(ApiContext);
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
@@ -59,8 +57,6 @@ export function TDP(props: TDPProps) {
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
-  const [assignDataLoading, setAssignDataLoading] = React.useState(false);
-  const [selectedModelConfigId, setSelectedModelConfigId] = React.useState<string | undefined>(undefined);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
   const classes = useStyles();
@@ -94,36 +90,6 @@ export function TDP(props: TDPProps) {
   React.useEffect(() => {
     getVoiceData();
   }, []);
-
-  const handleAssignSubmit = async () => {
-    if (!selectedModelConfigId) return;
-    if (api?.voiceData) {
-      setAssignDataLoading(true);
-      const response = await api.voiceData.fetchUnconfirmedData(projectId, selectedModelConfigId);
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === 'ok') {
-        snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        // to show the newly assigned data
-        setOnlyAssignedData(true);
-        getVoiceData();
-      } else {
-        log({
-          file: `TDP.tsx`,
-          caller: `handleAssignSubmit - failed assign data`,
-          value: response,
-          important: true,
-        });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
-      }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-      setAssignDataLoading(false);
-    }
-  };
 
   /**
    * Updates a single item after updating
