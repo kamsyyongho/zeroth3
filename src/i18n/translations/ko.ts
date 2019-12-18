@@ -30,6 +30,8 @@ export const ko: ResourceLanguage = {
       open: 'Open',
       invalidId: 'Invalid ID',
       notFound: 'Not found',
+      noData: 'No data',
+      progress: 'Progress',
     },
     table: {
       page: 'Page',
@@ -44,7 +46,6 @@ export const ko: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
-      transcribers: 'Transcribers',
     },
     menu: {
       login: '로그인',
@@ -66,6 +67,7 @@ export const ko: ResourceLanguage = {
       header: 'Transcriber management',
       count: 'Count',
       rating: 'Rating',
+      noTranscribers: 'No transcribers',
     },
     forms: {
       validation: {
@@ -145,6 +147,7 @@ export const ko: ResourceLanguage = {
       resetUserPassword: `({{email}}) - Reset password`,
     },
     projects: {
+      noProjects: 'No projects',
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',
@@ -168,6 +171,10 @@ export const ko: ResourceLanguage = {
       SET: 'SET',
       createSetFromFilter: 'Create SET from filter',
       createSet: 'Create SET',
+      numberTranscribers: '{{count}} transcriber',
+      numberTranscribers_plural: '{{count}} transcribers',
+      transcribersToAssign: 'Transcribers to assign: {{count}}',
+      addTranscriber: 'Add transcriber',
     },
     editor: {
       editor: 'Editor',

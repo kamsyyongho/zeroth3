@@ -11,12 +11,12 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
-import { VALIDATION } from '../../../constants';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { FilterParams, SnackbarError } from '../../../types';
-import log from '../../../util/log/logger';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
+import { VALIDATION } from '../../../../constants';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { FilterParams, SnackbarError } from '../../../../types';
+import log from '../../../../util/log/logger';
+import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
 interface CreateSetFormDialogProps {
   open: boolean;
@@ -39,8 +39,14 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const handleSuccess = () => {
+  const handleClose = () => {
+    setIsError(false);
+    setLoading(false);
     onClose();
+  }
+
+  const handleSuccess = () => {
+    handleClose();
     if (onSuccess && typeof onSuccess === 'function') {
       onSuccess();
     }
@@ -95,7 +101,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
     <Dialog
       fullScreen={fullScreen}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
       aria-labelledby="create-set-dialog"
@@ -110,7 +116,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button disabled={loading} onClick={onClose} color="primary">
+              <Button disabled={loading} onClick={handleClose} color="primary">
                 {translate("common.cancel")}
               </Button>
               <Button

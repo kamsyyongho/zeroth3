@@ -1,15 +1,7 @@
 import { ApisauceInstance } from 'apisauce';
 import { DataSet as DataSetInterface, FilterParams } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  AssignTranscribersToDataSetRequest,
-  assignTranscribersToDataSetResult,
-  getAllResult,
-  PostDataSetRequest,
-  postDataSetResult,
-  ProblemKind,
-  ServerError,
-} from '../types';
+import { AssignTranscribersToDataSetRequest, assignTranscribersToDataSetResult, getAllResult, PostDataSetRequest, postDataSetResult, ProblemKind, ServerError } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -87,18 +79,18 @@ export class DataSet extends ParentApi {
 
   /**
    * Assign transcribers to a data set
-   * @param dataSetId
    * @param projectId
-   * @param transcribers
+   * @param dataSetId
+   * @param transcriberIds
    */
   async assignTranscribersToDataSet(
-    dataSetId: string,
     projectId: string,
-    transcribers: string[]
+    dataSetId: string,
+    transcriberIds: string[]
   ): Promise<assignTranscribersToDataSetResult> {
     // build the request
     const request: AssignTranscribersToDataSetRequest = {
-      transcribers,
+      transcribers: transcriberIds,
     };
     const response = await this.apisauce.post<undefined, ServerError>(
       `/projects/${projectId}/data-sets/${dataSetId}`,

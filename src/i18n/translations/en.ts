@@ -30,6 +30,8 @@ export const en: ResourceLanguage = {
       open: 'Open',
       invalidId: 'Invalid ID',
       notFound: 'Not found',
+      noData: 'No data',
+      progress: 'Progress',
     },
     table: {
       page: 'Page',
@@ -65,6 +67,7 @@ export const en: ResourceLanguage = {
       header: 'Transcriber management',
       count: 'Count',
       rating: 'Rating',
+      noTranscribers: 'No transcribers',
     },
     forms: {
       validation: {
@@ -142,6 +145,7 @@ export const en: ResourceLanguage = {
       resetUserPassword: `({{email}}) - Reset password`,
     },
     projects: {
+      noProjects: 'No projects',
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',
@@ -165,6 +169,10 @@ export const en: ResourceLanguage = {
       SET: 'SET',
       createSetFromFilter: 'Create SET from filter',
       createSet: 'Create SET',
+      numberTranscribers: '{{count}} transcriber',
+      numberTranscribers_plural: '{{count}} transcribers',
+      transcribersToAssign: 'Transcribers to assign: {{count}}',
+      addTranscriber: 'Add transcriber',
     },
     editor: {
       editor: 'Editor',
