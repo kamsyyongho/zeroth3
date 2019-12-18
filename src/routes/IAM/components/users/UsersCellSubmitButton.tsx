@@ -25,11 +25,19 @@ const useStyles = makeStyles((theme: Theme) =>
 interface UsersCellSubmitButtonProps {
   cellData: CellProps<User>;
   selectedRoles: SelectedRoleIdsByIndex;
+  transcriberRoleId: string;
+  onTranscriberAssign: () => void;
   onUpdateRoleSuccess: (updatedUser: User, userIndex: number) => void;
 }
 
 export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
-  const { cellData, selectedRoles, onUpdateRoleSuccess } = props;
+  const {
+    cellData,
+    selectedRoles,
+    onUpdateRoleSuccess,
+    transcriberRoleId,
+    onTranscriberAssign,
+  } = props;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -59,7 +67,6 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
   const checkForRoleChange = () => {
     // when the user hasn't made any selections yet
     if (currentSelectedRoleIds === undefined) return false;
-    const setDifferences = differencesBetweenSets(initialSet, currentSet);
     return !isEqualSet<string>(initialSet, currentSet);
   };
 
@@ -78,6 +85,11 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
       if (response.kind === "ok") {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // to refresh the transcriber list
+        const transcriberRoleWasChanged = rolesToAdd.includes(transcriberRoleId);
+        if (transcriberRoleWasChanged) {
+          onTranscriberAssign();
+        }
         onUpdateRoleSuccess(response.user, index);
       } else {
         log({
@@ -99,15 +111,15 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
 
   /**
    * Delete all roles and update the user stored in the parent
-   * @param rolesToDelete 
+   * @param roleIdsToDelete 
    * @param willAddRoles determines if we will update the parent
    * - addRoles receives a user response, so that will be the most up to date
    * - so there is no need to update the parent from our build data
    */
-  const deleteRoles = async (rolesToDelete: string[], willAddRoles: boolean) => {
+  const deleteRoles = async (roleIdsToDelete: string[], willAddRoles: boolean) => {
     setIsDeleteLoading(true);
     const deleteRolePromises: Promise<deleteRoleResult>[] = [];
-    rolesToDelete.forEach(roleId => {
+    roleIdsToDelete.forEach(roleId => {
       if (api?.IAM) {
         deleteRolePromises.push(api.IAM.deleteRole(user.id, roleId));
       } else {
@@ -122,7 +134,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     responseArray.forEach(response => {
       if (response.kind === "ok") {
         // to build the array of deleted user role IDs
-        successfullyDeletedRoleIds.push(rolesToDelete[roleIdIndexCounter]);
+        successfullyDeletedRoleIds.push(roleIdsToDelete[roleIdIndexCounter]);
       } else {
         //!
         //TODO
@@ -160,6 +172,12 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
       onUpdateRoleSuccess(updatedUser, index);
     }
 
+    // to refresh the transcriber list
+    const transcriberRoleWasChanged = successfullyDeletedRoleIds.includes(transcriberRoleId);
+    if (transcriberRoleWasChanged) {
+      onTranscriberAssign();
+    }
+
     setIsDeleteLoading(false);
   };
 
@@ -167,8 +185,8 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (!currentSelectedRoleIds) return;
     const { extra, missing } = differencesBetweenSets(initialSet, currentSet);
     const rolesToAdd = Array.from(missing);
-    const rolesToDelete = Array.from(extra);
-    if (rolesToDelete.length) await deleteRoles(rolesToDelete, !!rolesToAdd.length);
+    const roleIdsToDelete = Array.from(extra);
+    if (roleIdsToDelete.length) await deleteRoles(roleIdsToDelete, !!rolesToAdd.length);
     // delete roles before we add anthing
     // so we can receive the most up-to-date user as a response from addRoles
     if (rolesToAdd.length) addRoles(rolesToAdd);

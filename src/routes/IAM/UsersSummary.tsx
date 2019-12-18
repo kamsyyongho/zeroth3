@@ -12,6 +12,7 @@ import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind, ServerError } from '../../services/api/types';
 import { deleteUserResult } from '../../services/api/types/iam.types';
 import { Role, User } from '../../types';
@@ -24,6 +25,10 @@ import { UsersTable } from './components/users/UsersTable';
 
 export interface CheckedUsersByUserId {
   [index: string]: boolean;
+}
+
+export interface UserEmailsByUserId {
+  [index: string]: string;
 }
 
 const useStyles = makeStyles((theme) =>
@@ -39,12 +44,14 @@ const useStyles = makeStyles((theme) =>
 
 interface UsersSummaryProps {
   hasAccess: boolean;
+  onTranscriberAssign: () => void;
 }
 
 export function UsersSummary(props: UsersSummaryProps) {
-  const { hasAccess } = props;
+  const { hasAccess, onTranscriberAssign } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
+  const { user } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = React.useState<User[]>([]);
   const [roles, setRoles] = React.useState<Role[]>([]);
@@ -55,15 +62,23 @@ export function UsersSummary(props: UsersSummaryProps) {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
+  const [userEmails, setUserEmails] = React.useState<UserEmailsByUserId>({});
 
   const classes = useStyles();
   const theme = useTheme();
+
+  const getUserEmailsById = (users: User[]) => {
+    const tempUserEmails: UserEmailsByUserId = {};
+    users.forEach(user => tempUserEmails[user.id] = user.email);
+    setUserEmails(tempUserEmails);
+  };
 
   const getUsers = async () => {
     if (api?.IAM) {
       const response = await api.IAM.getUsers();
       if (response.kind === 'ok') {
         setUsers(response.users);
+        getUserEmailsById(response.users);
       } else {
         if (response.kind === ProblemKind['forbidden']) {
           setIsForbidden(true);
@@ -138,7 +153,9 @@ export function UsersSummary(props: UsersSummaryProps) {
   let usersToDelete: string[] = [];
   Object.keys(checkedUsers).forEach(userId => {
     const checked = checkedUsers[userId];
-    if (checked) {
+    // to ensure that we don't add the current user to the list
+    const isCurrentUser = userEmails[userId] === user.email;
+    if (checked && !isCurrentUser) {
       usersToDelete.push(userId);
     }
   });
@@ -247,6 +264,7 @@ export function UsersSummary(props: UsersSummaryProps) {
             roles={roles}
             setCheckedUsers={setCheckedUsers}
             handleUpdateSuccess={handleUpdateSuccess}
+            onTranscriberAssign={onTranscriberAssign}
           />
         }
       </CardContent>

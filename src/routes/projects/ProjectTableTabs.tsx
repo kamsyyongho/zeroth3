@@ -10,6 +10,10 @@ import SET from './set/SET';
 import { TDP } from './TDP/TDP';
 
 const STARTING_TAB_INDEX = 0;
+enum TAB_INDEX {
+  TDP,
+  SET,
+}
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -48,7 +52,9 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
    * - the child component refetches all data everytime the counter changes
    */
   const handleSetCreate = () => {
-    setRefreshCounterForSet(refreshCounterForSet + 1);
+    if(tabsThatShouldRender.has(TAB_INDEX.SET)){
+      setRefreshCounterForSet(refreshCounterForSet + 1);
+    }
   };
 
   return (
@@ -63,12 +69,12 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
         <Tab label={translate('TDP.TDP')} />
         <Tab label={translate('SET.SET')} />
       </Tabs>
-      <TabPanel value={activeTab} index={0}>
-        {tabsThatShouldRender.has(0) &&
+      <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
+        {tabsThatShouldRender.has(TAB_INDEX.TDP) &&
           <TDP projectId={projectId} project={project} modelConfigs={modelConfigs} onSetCreate={handleSetCreate} />}
       </TabPanel>
-      <TabPanel value={activeTab} index={1}>
-        {tabsThatShouldRender.has(1) && <SET refreshCounter={refreshCounterForSet} projectId={projectId} />}
+      <TabPanel value={activeTab} index={TAB_INDEX.SET}>
+        {tabsThatShouldRender.has(TAB_INDEX.SET) && <SET refreshCounter={refreshCounterForSet} projectId={projectId} />}
       </TabPanel>
     </Paper>
   );

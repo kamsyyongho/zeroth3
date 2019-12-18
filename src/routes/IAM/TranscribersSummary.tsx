@@ -25,10 +25,11 @@ const useStyles = makeStyles((theme) =>
 
 interface TranscribersSummaryProps {
   hasAccess: boolean;
+  refreshCounter?: number;
 }
 
 export function TranscribersSummary(props: TranscribersSummaryProps) {
-  const { hasAccess } = props;
+  const { hasAccess, refreshCounter } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const [isForbidden, setIsForbidden] = React.useState(false);
@@ -69,7 +70,7 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
     } else {
       setIsForbidden(true);
     }
-  }, []);
+  }, [refreshCounter]);
 
 
   if (isForbidden) {
