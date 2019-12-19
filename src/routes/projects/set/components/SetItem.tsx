@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function SetItem(props: SetItemProps) {
   const { dataSet, openTranscriberDialog } = props;
-  const { id, transcribers, total, processed, name } = dataSet;
+  const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const { translate } = React.useContext(I18nContext);
 

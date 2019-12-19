@@ -15,10 +15,6 @@ interface TranscribersListProps {
   selectedTranscriberIds: string[];
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
-  }));
-
 export function TranscribersList(props: TranscribersListProps) {
   const {
     transcribers,
@@ -27,8 +23,6 @@ export function TranscribersList(props: TranscribersListProps) {
     selectedTranscriberIds,
   } = props;
   const { translate } = React.useContext(I18nContext);
-
-  const classes = useStyles();
 
   const renderTranscribers = () => transcribers.map((transcriber, index) => {
     const selected = selectedTranscriberIds.includes(transcriber.id);
