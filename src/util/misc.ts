@@ -19,7 +19,7 @@ export function isEqualSet<T>(aSet: Set<T>, bSet: Set<T>) {
  * @param aSet
  * @param bSet
  * @returns `extra` - any items that the first set has but the second doesn't
- * @returns `missing` - any items that the first doesn't set has but the second does
+ * @returns `missing` - any items that the first doesn't set have but the second does
  */
 export function differencesBetweenSets<T>(aSet: Set<T>, bSet: Set<T>) {
   const aSetArray = Array.from(aSet);

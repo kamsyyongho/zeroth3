@@ -5,9 +5,9 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import { Row } from 'react-table';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { CustomTheme } from '../../../theme';
-import { VoiceData } from '../../../types';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../../../theme';
+import { VoiceData } from '../../../../types';
 import { TDPMemoTextField } from './TDPMemoTextField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>

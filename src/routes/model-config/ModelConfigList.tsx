@@ -1,26 +1,15 @@
-import { Box, Chip, Container, Grid, Typography } from '@material-ui/core';
+import { Container, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import IconButton from '@material-ui/core/IconButton';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme';
 import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { SnackbarError } from '../../types/';
@@ -29,6 +18,7 @@ import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
+import { ModelConfigListItem } from './ModelConfigListItem';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -37,40 +27,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     cardContent: {
       padding: 0,
-    },
-    modelConfigRoot: {
-      margin: theme.spacing(1),
-      backgroundColor: theme.palette.background.paper,
-    },
-    modelConfigExpandedDetails: {
-      paddingTop: 0,
-      paddingBottom: theme.spacing(1),
-    },
-    text: {
-      overflowWrap: 'break-word'
-    },
-    category: {
-      marginRight: theme.spacing(1),
-    },
-    chip: {
-      marginRight: theme.spacing(0.5),
-      backgroundColor: theme.palette.primary.light,
-      color: theme.palette.primary.contrastText,
-    },
-    divider: {
-      width: '95%',
-      height: 1,
-      backgroundColor: theme.table.border,
-    },
-    listItem: {
-      width: '100%',
-      paddingLeft: 24,
-    },
-    expandContent: {
-      marginBottom: 10,
-      paddingLeft: 0,
-      paddingRight: 0,
-      paddingBottom: 0,
     },
   }),
 );
@@ -111,39 +67,25 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
-  const { width } = useWindowSize();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const [configOpen, setCreateOpen] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
   const [modelConfigToEdit, setModelConfigToEdit] = React.useState<ModelConfig | undefined>(undefined);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
-  const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>, modelConfig: ModelConfig) => {
-    event.stopPropagation();
-    setModelConfigToEdit(modelConfig);
-    setAnchorEl(event.currentTarget);
-  };
+  const openDialog = () => setDialogOpen(true);
 
-  const handleActionClose = () => {
-    setAnchorEl(null);
-  };
-
-  const openEditDialog = () => {
-    handleActionClose();
-    setCreateOpen(true);
-  };
+  const openConfirm = () => setConfirmationOpen(true);
 
   const closeDialog = () => {
+    setDialogOpen(false);
     setModelConfigToEdit(undefined);
-    setCreateOpen(false);
   };
 
-  const openCreateDialog = () => setCreateOpen(true);
-
-  const confirmDelete = () => {
-    handleActionClose();
-    setConfirmationOpen(true);
+  const openCreateDialog = () => {
+    // to ensure that the there is nothing passed to the dialog
+    setModelConfigToEdit(undefined);
+    openDialog();
   };
 
   const closeConfirmation = () => {
@@ -181,205 +123,21 @@ export function ModelConfigList(props: ModelConfigListProps) {
   };
 
   const classes = useStyles();
-  const theme: CustomTheme = useTheme();
-
-  const maxTitleWidth = width ? (width * 0.7) : 500;
-
-  const renderItemMenu = () => (<Menu
-    id="list-item-menu"
-    anchorEl={anchorEl}
-    keepMounted
-    open={Boolean(anchorEl)}
-    onClose={handleActionClose}
-  >
-    <MenuItem disabled={deleteLoading} onClick={openEditDialog}>
-      <ListItemIcon>
-        <EditIcon fontSize="small" />
-      </ListItemIcon>
-      <Typography variant="inherit">{translate('common.edit')}</Typography>
-    </MenuItem>
-    <MenuItem onClick={confirmDelete}>
-      <ListItemIcon>
-        <DeleteIcon fontSize="small" />
-      </ListItemIcon>
-      <Typography variant="inherit">{translate('common.delete')}</Typography>
-    </MenuItem>
-  </Menu>);
-
-  const divider = <div className={classes.divider} />;
 
   const renderListItems = () => {
     if (!modelConfigs.length) {
       return <Typography align='center' >{translate('modelConfig.noResults')}</Typography>;
     }
-    return modelConfigs.map(modelConfig => {
-      const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
-
+    return modelConfigs.map((modelConfig, index) => {
       return (
-        <Box
-          key={id}
-          border={1}
-          borderColor={theme.table.border}
-          className={classes.modelConfigRoot}
-        >
-          <ExpansionPanel elevation={0} >
-            <ExpansionPanelSummary
-              aria-controls="model-config-expand"
-              id="model-config-expand"
-              expandIcon={<IconButton
-                aria-label="options"
-                onFocus={event => event.stopPropagation()}
-                onClick={event => handleActionClick(event, modelConfig)} >
-                <MoreVertIcon />
-              </IconButton>}
-            >
-              <CardHeader
-                title={name}
-                titleTypographyProps={{ noWrap: true, style: { maxWidth: maxTitleWidth } }}
-                subheader={description}
-                subheaderTypographyProps={{ noWrap: true, style: { maxWidth: maxTitleWidth } }}
-              />
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails
-              className={classes.expandContent}
-            >
-              <Grid
-                container
-                wrap='nowrap'
-                direction='column'
-                alignContent='center'
-                alignItems='center'
-                justify='flex-start'
-              >
-                <Card
-                  elevation={0}
-                  className={classes.listItem}
-                >
-                  <CardContent className={classes.modelConfigExpandedDetails} >
-                    <Grid
-                      container
-                      wrap='nowrap'
-                      direction='row'
-                      alignContent='center'
-                      alignItems='center'
-                      justify='flex-start'
-                    >
-                      <Typography
-                        className={classes.category}
-                        variant='subtitle2'
-                      >
-                        {`${translate('forms.thresholdLc')}:`}
-                      </Typography>
-                      <Typography gutterBottom color="textSecondary" className={classes.text}>
-                        {thresholdLc}
-                      </Typography>
-                    </Grid>
-                    <Grid
-                      container
-                      wrap='nowrap'
-                      direction='row'
-                      alignContent='center'
-                      alignItems='center'
-                      justify='flex-start'
-                    >
-                      <Typography
-                        className={classes.category}
-                        variant='subtitle2'
-                      >
-                        {`${translate('forms.thresholdHc')}:`}
-                      </Typography>
-                      <Typography gutterBottom color="textSecondary" className={classes.text}>
-                        {thresholdHc}
-                      </Typography>
-                    </Grid>
-                  </CardContent>
-                </Card>
-                {divider}
-                <Card
-                  elevation={0}
-                  className={classes.listItem}
-                >
-                  <CardHeader
-                    title={translate('forms.languageModel')}
-                    titleTypographyProps={{ variant: 'h6' }}
-                    subheader={languageModel.name}
-                  />
-                  <CardContent>
-                    <Grid
-                      container
-                      wrap='nowrap'
-                      direction='row'
-                      alignContent='center'
-                      alignItems='center'
-                      justify='flex-start'
-                    >
-                      <Typography
-                        className={classes.category}
-                        variant='subtitle2'
-                      >
-                        {`${translate('forms.top')}:`}
-                      </Typography>
-                      <Typography gutterBottom color="textSecondary" className={classes.text}>
-                        {languageModel.topGraph.name}
-                      </Typography>
-                    </Grid>
-                    <Grid
-                      container
-                      wrap='nowrap'
-                      direction='row'
-                      alignContent='center'
-                      alignItems='center'
-                      justify='flex-start'
-                    >
-                      <Typography
-                        className={classes.category}
-                        variant='subtitle2'
-                      >
-                        {`${translate('forms.sub')}:`}
-                      </Typography>
-                      {languageModel.subGraphs.map((subGraph, index) => <Chip key={index}
-                        label={subGraph.name}
-                        className={classes.chip}
-                      />)}
-                    </Grid>
-                  </CardContent>
-                </Card>
-                {divider}
-                <Card
-                  elevation={0}
-                  className={classes.listItem}
-                >
-                  <CardHeader
-                    title={translate('forms.acousticModel')}
-                    titleTypographyProps={{ variant: 'h6' }}
-                    subheader={acousticModel.name}
-                  />
-                  <CardContent>
-                    <Grid
-                      container
-                      wrap='nowrap'
-                      direction='row'
-                      alignContent='center'
-                      alignItems='center'
-                      justify='flex-start'
-                    >
-                      <Typography
-                        className={classes.category}
-                        variant='subtitle2'
-                      >
-                        {`${translate('forms.sampleRate')}:`}
-                      </Typography>
-                      <Typography gutterBottom component="p" className={classes.text}>
-                        {acousticModel.sampleRate}{' kHz'}
-                      </Typography>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-              {renderItemMenu()}
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        </Box>
+        <ModelConfigListItem
+          key={index}
+          modelConfig={modelConfig}
+          setModelConfigToEdit={setModelConfigToEdit}
+          openDialog={openDialog}
+          openConfirm={openConfirm}
+          deleteLoading={deleteLoading}
+        />
       );
     });
   };
@@ -417,7 +175,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
       </Card>
       <ModelConfigDialog
         projectId={project.id}
-        open={configOpen}
+        open={dialogOpen}
         configToEdit={modelConfigToEdit}
         onClose={closeDialog}
         onSuccess={handleModelConfigUpdate}

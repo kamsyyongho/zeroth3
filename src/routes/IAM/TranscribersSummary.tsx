@@ -1,4 +1,4 @@
-import { Card, CardHeader, Container } from '@material-ui/core';
+import { Card, CardHeader } from '@material-ui/core';
 import CardContent from '@material-ui/core/CardContent';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
@@ -25,10 +25,11 @@ const useStyles = makeStyles((theme) =>
 
 interface TranscribersSummaryProps {
   hasAccess: boolean;
+  refreshCounter?: number;
 }
 
 export function TranscribersSummary(props: TranscribersSummaryProps) {
-  const { hasAccess } = props;
+  const { hasAccess, refreshCounter } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const [isForbidden, setIsForbidden] = React.useState(false);
@@ -69,7 +70,7 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
     } else {
       setIsForbidden(true);
     }
-  }, []);
+  }, [refreshCounter]);
 
 
   if (isForbidden) {
@@ -77,19 +78,19 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
   }
 
   return (
-      <Card elevation={0} className={classes.card} >
+    <Card elevation={0} className={classes.card} >
       <CardHeader
         title={translate("transcribers.header")}
       />
-        <CardContent className={classes.cardContent} >
-          {initialDataLoading ? <BulletList /> :
-            <TranscribersTable
-              loading={transcriberStatDataLoading}
-              pagination={pagination}
-              transcribersStats={transcribersStats}
-              handleUpdate={getTranscribersWithStats}
-            />}
-        </CardContent>
-      </Card>
+      <CardContent className={classes.cardContent} >
+        {initialDataLoading ? <BulletList /> :
+          <TranscribersTable
+            loading={transcriberStatDataLoading}
+            pagination={pagination}
+            transcribersStats={transcribersStats}
+            handleUpdate={getTranscribersWithStats}
+          />}
+      </CardContent>
+    </Card>
   );
 };

@@ -7,7 +7,7 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
 import { CellProps, useTable } from 'react-table';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { Role, User } from '../../../../types';
+import { Role, ROLES, User } from '../../../../types';
 import { CheckedUsersByUserId } from '../../UsersSummary';
 import { UsersCellCheckbox } from './UsersCellCheckbox';
 import { UsersCellMultiSelect } from './UsersCellMultiSelect';
@@ -27,6 +27,7 @@ export interface UsersTableProps {
   roles: Role[];
   setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>;
   handleUpdateSuccess: (updatedUser: User) => void;
+  onTranscriberAssign: () => void;
 }
 
 export interface ParsedRolesById {
@@ -39,13 +40,25 @@ export interface SelectedRoleIdsByIndex {
 
 
 export function UsersTable(props: UsersTableProps) {
-  const { users, roles, setCheckedUsers, handleUpdateSuccess } = props;
+  const { users, roles, setCheckedUsers, handleUpdateSuccess, onTranscriberAssign } = props;
 
   const classes = useStyles();
 
   // used in the multi-select to quicly access the role by id 
   const parsedRolesById: ParsedRolesById = {};
   roles.forEach(role => parsedRolesById[role.id] = role);
+
+  // used to determine if the transcriber role has
+  // changed so we can refetch the transcriber list
+  const transcriberRoleId = React.useMemo(() => {
+    for (let i = 0; i < roles.length; i++) {
+      const role = roles[i];
+      if (role.name === ROLES.transcriber) {
+        return role.id;
+      }
+    }
+    return '';
+  }, []);
 
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false);
@@ -87,7 +100,7 @@ export function UsersTable(props: UsersTableProps) {
       {
         Header: ' ',
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess }),
+        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess, transcriberRoleId, onTranscriberAssign }),
       },
       {
         Header: '  ',

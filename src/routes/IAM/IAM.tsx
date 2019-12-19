@@ -33,7 +33,7 @@ export function IAM() {
   const classes = useStyles();
 
 
-  const usersAccess = React.useMemo(() => hasPermission(PERMISSIONS.IAM), []);
+  const usersAccess = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
   const transcribersAccess = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   if (!transcribersAccess && !usersAccess) {

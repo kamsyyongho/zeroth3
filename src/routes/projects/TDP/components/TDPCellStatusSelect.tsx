@@ -1,7 +1,6 @@
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import InputLabel from '@material-ui/core/InputLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -10,17 +9,17 @@ import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
-import { Row } from 'react-table';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { CONTENT_STATUS, Transcriber, VoiceData } from '../../../types';
-import { SnackbarError } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
+import { CellProps } from 'react-table';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { CONTENT_STATUS, CONTENT_STATUS_VALUES, VoiceData } from '../../../../types';
+import { SnackbarError } from '../../../../types/snackbar.types';
+import log from '../../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
     formControl: {
-      minWidth: 130,
+      minWidth: 80,
       maxWidth: 300,
     },
     hidden: {
@@ -29,61 +28,47 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-interface TDPCellTranscriberSelectProps {
-  row: Row<VoiceData>;
+interface TDPCellStatusSelectProps {
+  cellData: CellProps<VoiceData>;
   projectId: string;
-  transcribers: Transcriber[];
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
-export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
-  const { row, projectId, transcribers, onSuccess } = props;
+export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
+  const { cellData, projectId, onSuccess } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const voiceData = row.original;
+  const initialStatus: VoiceData['status'] = cellData.cell.value;
+  const voiceData = cellData.cell.row.original;
 
-  const index = row.index;
-  const key = `${index}-transcriber`;
+  const index = cellData.cell.row.index;
+  const key = `${index}-status`;
 
-  const [transcriberId, setTranscriberId] = React.useState<string>('');
+  const [status, setStatus] = React.useState<CONTENT_STATUS>(initialStatus);
   const [loading, setLoading] = React.useState(false);
 
   const classes = useStyles();
   const theme = useTheme();
 
-  // we can only assign when the status is `UNCONFIRMED_LC`
-  const canAssign = voiceData.status === CONTENT_STATUS.UNCONFIRMED_LC;
+  // we cannot update the status to `RAW`
+  const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.RAW;
 
-  if (!canAssign) {
-    return null;
-  }
-
-  const assignTranscriber = async () => {
-    if (api?.voiceData && canAssign && !loading) {
+  const updateStatus = async () => {
+    if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.RAW) {
       setLoading(true);
-      const response = await api.voiceData.assignUnconfirmedDataToTranscriber(projectId, transcriberId, voiceData.modelConfigId, [voiceData.id]);
+      const response = await api.voiceData.updateStatus(projectId, voiceData.id, status);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
         setLoading(false);
-        // to build the updated voice data
-        let selectedTranscriberEmail = '';
-        for (let i = 0; i < transcribers.length; i++) {
-          if (transcribers[i].id === transcriberId) {
-            selectedTranscriberEmail = transcribers[i].email;
-            break;
-          }
-        }
-        // update the transcriber and status
-        const updatedVoiceData = { ...voiceData, transcriber: selectedTranscriberEmail, status: CONTENT_STATUS.FETCHED };
-        onSuccess(updatedVoiceData, index);
+        onSuccess(response.data, index);
       } else {
         log({
-          file: `TDPCellTranscriberSelect.tsx`,
-          caller: `assignTranscriber - failed to update transcriber`,
+          file: `TDPCellStatusSelect.tsx`,
+          caller: `updateStatus - failed to update status`,
           value: response,
           important: true,
         });
@@ -99,23 +84,18 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
   };
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown; }>) => {
-    const value = event.target.value as string;
-    setTranscriberId(value);
+    const value = event.target.value as CONTENT_STATUS;
+    setStatus(value);
   };
 
   const renderMenuItems = () => {
-    const menuItems = transcribers.map((transcriber, index) => {
+    return CONTENT_STATUS_VALUES.map((status, index) => {
       return (
-        <MenuItem key={index} value={transcriber.id}>
-          <ListItemText primary={transcriber.email} />
+        <MenuItem disabled={status === CONTENT_STATUS.RAW} key={index} value={status as CONTENT_STATUS}>
+          <ListItemText primary={status} />
         </MenuItem>
       );
     });
-    // to allow us to unselect transcribers
-    menuItems.unshift(<MenuItem key={-1} value=''>
-      <em>{translate('forms.none')}</em>
-    </MenuItem>);
-    return menuItems;
   };
 
 
@@ -130,21 +110,20 @@ export function TDPCellTranscriberSelect(props: TDPCellTranscriberSelectProps) {
       justify='flex-start'
     >
       <FormControl className={classes.formControl} >
-        <InputLabel id="transcriber-select-label">{translate('forms.assign')}</InputLabel>
         <Select
-          value={transcriberId}
+          value={status}
           onChange={handleChange}
         >
           {renderMenuItems()}
         </Select>
       </FormControl>
       <IconButton
-        className={transcriberId.length ? undefined : classes.hidden}
+        className={!statusChanged ? classes.hidden : undefined}
         disabled={loading}
         color='primary'
         size='small'
         aria-label="submit"
-        onClick={assignTranscriber}
+        onClick={updateStatus}
       >
         {loading ? <MoonLoader
           sizeUnit={"px"}

@@ -40,13 +40,14 @@ export const AppDrawer = (props: AppDrawerProps) => {
   };
 
   const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeUsers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
   const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const drawerItems: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
     // to only display links for pages we are allowed to go to
     let shouldRender = true;
-    if ((key === 'models' && !canSeeModels) || (key === 'transcribers' && !canSeeTranscribers)) {
+    if ((key === 'models' && !canSeeModels) || (key === 'IAM' && !canSeeTranscribers && !canSeeUsers)) {
       shouldRender = false;
     }
 

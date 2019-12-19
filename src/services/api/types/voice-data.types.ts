@@ -23,7 +23,7 @@ export interface SearchDataRequest {
    * - from `0`
    */
   'length-min'?: number;
-  'model-config'?: number;
+  'model-config'?: string;
   name?: string;
   /**
    * to `100`
@@ -42,10 +42,6 @@ export interface SearchDataRequest {
   transcript?: string;
 }
 
-export interface FetchUnconfirmedQuery {
-  'model-config': string;
-}
-
 export interface SplitSegmentQuery {
   'split-index': number;
 }
@@ -58,14 +54,6 @@ export interface UpdateMemoRequest {
   memo: string;
 }
 
-export interface AssignUnconfirmedQuery {
-  'model-config': string;
-}
-
-export interface AssignUnconfirmedRequest {
-  transcriberId: string;
-  voiceDataIds: string[];
-}
 export interface RateTranscriptRequest {
   rating: number;
 }
@@ -95,7 +83,7 @@ export type getAssignedDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
-export type fetchUnconfirmedDataResult = { kind: 'ok' } | GeneralApiProblem;
+export type fetchUnconfirmedDataResult = { kind: 'ok', voiceData: VoiceData } | GeneralApiProblem;
 
 export type getSegmentsDataResult =
   | { kind: 'ok'; segments: Segment[] }
@@ -104,8 +92,6 @@ export type getSegmentsDataResult =
 export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;
-
-export type assignUnconfirmedResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type splitSegmentResult =
   | { kind: 'ok'; segments: [Segment, Segment] }

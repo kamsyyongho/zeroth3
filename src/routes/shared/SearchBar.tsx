@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface SearchBarProps {
   list: unknown[];
+  /** the object keys to search */
   keys: string[];
   onSearch: (filteredList: any[], searching: boolean) => void;
 }

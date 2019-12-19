@@ -13,10 +13,11 @@ interface SelectFormFieldProps extends FieldProps {
   errorOverride?: boolean;
   fullWidth?: boolean;
   label?: string;
+  disabledValues?: unknown[];
   options: SelectFormFieldOptions;
 }
 
-export const SelectFormField = ({ field, form, label, options, errorOverride, fullWidth, ...props }: SelectFormFieldProps) => {
+export const SelectFormField = ({ field, form, label, options, errorOverride, disabledValues = [], fullWidth, ...props }: SelectFormFieldProps) => {
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
@@ -35,7 +36,7 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, fu
               <em>{op.label}</em>
             </MenuItem>);
           }
-          return (<MenuItem key={op.value} value={op.value}>
+          return (<MenuItem disabled={(disabledValues).includes(op.value)} key={op.value} value={op.value}>
             {op.label}
           </MenuItem>);
         })}

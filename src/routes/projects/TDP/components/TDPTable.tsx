@@ -15,17 +15,17 @@ import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import TruncateMarkup from 'react-truncate-markup';
-import { PERMISSIONS } from '../../../constants';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
-import { useWindowSize } from '../../../hooks/window/useWindowSize';
-import { SearchDataRequest } from '../../../services/api/types';
-import { CustomTheme } from '../../../theme';
-import { PATHS, VoiceData, VoiceDataResults } from '../../../types';
-import { BooleanById } from '../../../types/misc.types';
-import { formatSecondsDuration } from '../../../util/misc';
-import { Pagination } from '../../shared/Pagination';
+import { PERMISSIONS } from '../../../../constants';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
+import { NavigationPropsContext } from '../../../../hooks/navigation-props/NavigationPropsContext';
+import { useWindowSize } from '../../../../hooks/window/useWindowSize';
+import { SearchDataRequest } from '../../../../services/api/types';
+import { CustomTheme } from '../../../../theme';
+import { FilterParams, PATHS, VoiceData, VoiceDataResults } from '../../../../types';
+import { BooleanById } from '../../../../types/misc.types';
+import { formatSecondsDuration } from '../../../../util/misc';
+import { Pagination } from '../../../shared/Pagination';
 import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
@@ -44,6 +44,7 @@ interface TDPTableProps {
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  setFilterParams: (filterParams?: FilterParams) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -92,6 +93,7 @@ export function TDPTable(props: TDPTableProps) {
     loading,
     getVoiceData,
     handleVoiceDataUpdate,
+    setFilterParams,
   } = props;
   const voiceData = voiceDataResults.content;
   const { translate, formatDate } = React.useContext(I18nContext);
@@ -272,12 +274,29 @@ export function TDPTable(props: TDPTableProps) {
   );
 
 
+  const setCreateSetFilterParams = (options: SearchDataRequest) => {
+    const { till, from, status, transcript } = options;
+    const filterParams: FilterParams = {
+      till,
+      from,
+      status,
+      transcript,
+      lengthMax: options['length-max'],
+      lengthMin: options['length-min'],
+      modelConfig: options['model-config'],
+    };
+    const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
+    const isFiltering = Object.keys(filterParams).some((key) => isFilteringStringKeyType[key]);
+    setFilterParams(isFiltering ? filterParams : undefined);
+  };
+
   /**
    * update the stored options and get fresh data
    * - resetting the page will trigger `getVoiceData` in `useEffect`
    */
   const handleFilterUpdate = (options: SearchDataRequest = {}) => {
     setVoiceDataOptions(options);
+    setCreateSetFilterParams(options);
     gotoPage(0);
   };
 
@@ -319,19 +338,18 @@ export function TDPTable(props: TDPTableProps) {
     (row: Row<VoiceData>, rowIndex: number) => {
       const expanded = !!expandedRowsByIndex[rowIndex];
       prepareRow(row);
-      const rowSpacing = (<TableRow >
+      const rowFiller = (<TableRow >
         <TableCell colSpan={fullRowColSpan} className={classes.tableFiller} />
       </TableRow>);
       return (
         <React.Fragment key={`row-${rowIndex}`}>
-          {rowIndex > 0 && rowSpacing}
+          {rowIndex > 0 && rowFiller}
           <TableRow
             hover={(onlyAssignedData || !canModify)}
             onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
             className={classes.tableRow}
-          // style={{ border: '5px solid red', borderCollapse: undefined }}
           >
             {row.cells.map((cell, cellIndex) => {
               const isTranscript = cell.column.id === TRANSCRIPT_ACCESSOR;

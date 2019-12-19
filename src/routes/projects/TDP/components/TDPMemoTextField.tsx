@@ -7,12 +7,12 @@ import { useSnackbar } from 'notistack';
 import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { Row } from 'react-table';
-import { PERMISSIONS } from '../../../constants';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { SnackbarError, VoiceData } from '../../../types';
-import log from '../../../util/log/logger';
+import { PERMISSIONS } from '../../../../constants';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
+import { SnackbarError, VoiceData } from '../../../../types';
+import log from '../../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
   createStyles({

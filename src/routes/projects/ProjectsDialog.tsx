@@ -5,6 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -264,43 +265,45 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       onClose={handleClose}
       aria-labelledby="projects-dialog"
     >
-      <Card elevation={0} className={classes.card}>
-        <CardHeader
-          action={canModify && !projectsLoading && renderCardHeaderAction()}
-          title={translate("projects.header")}
-        />
-        <CardHeader
-          style={{ padding: 0, margin: 0 }}
-          title={projects.length > 1 && !projectsLoading && <SearchBar
-            list={projects}
-            keys={['name']}
-            onSearch={handleProjectSearch}
-          />}
-        />
-        <CardContent className={classes.cardContent} >
-          {projectsLoading ? <BulletList /> :
-            <ProjectList
-              projects={searching ? filteredProjects : projects}
-              searching={searching}
-              canModify={canModify}
-              checkedProjects={checkedProjects}
-              setCheckedProjects={setCheckedProjects}
-              onUpdate={handleProjectListUpdate}
-              selectedProjectId={selectedProjectId}
-              onItemClick={handleProjectClick}
-            />
-          }
-        </CardContent>
-        <ProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleProjectListUpdate} />
-        <ConfirmationDialog
-          destructive
-          titleText={`${translate('projects.deleteProject', { count: projectsToDelete.length })}?`}
-          submitText={translate('common.delete')}
-          open={confirmationOpen}
-          onSubmit={handleProjectDelete}
-          onCancel={closeConfirmation}
-        />
-      </Card>
+      <DialogContent>
+        <Card elevation={0} className={classes.card}>
+          <CardHeader
+            action={canModify && !projectsLoading && renderCardHeaderAction()}
+            title={translate("projects.header")}
+          />
+          <CardHeader
+            style={{ padding: 0, margin: 0 }}
+            title={projects.length > 1 && !projectsLoading && <SearchBar
+              list={projects}
+              keys={['name']}
+              onSearch={handleProjectSearch}
+            />}
+          />
+          <CardContent className={classes.cardContent} >
+            {projectsLoading ? <BulletList /> :
+              <ProjectList
+                projects={searching ? filteredProjects : projects}
+                searching={searching}
+                canModify={canModify}
+                checkedProjects={checkedProjects}
+                setCheckedProjects={setCheckedProjects}
+                onUpdate={handleProjectListUpdate}
+                selectedProjectId={selectedProjectId}
+                onItemClick={handleProjectClick}
+              />
+            }
+          </CardContent>
+          <ProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleProjectListUpdate} />
+          <ConfirmationDialog
+            destructive
+            titleText={`${translate('projects.deleteProject', { count: projectsToDelete.length })}?`}
+            submitText={translate('common.delete')}
+            open={confirmationOpen}
+            onSubmit={handleProjectDelete}
+            onCancel={closeConfirmation}
+          />
+        </Card>
+      </DialogContent>
       <DialogActions>
         <Button
           onClick={handleClose}

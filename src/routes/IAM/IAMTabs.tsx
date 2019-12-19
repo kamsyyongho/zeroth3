@@ -36,6 +36,7 @@ export function IAMTabs(props: IAMTabsProps) {
   const { usersAccess, transcribersAccess } = props;
   const { translate } = React.useContext(I18nContext);
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
+  const [transcriberRefreshCounter, setTranscriberRefreshCounter] = React.useState(0);
 
   const classes = useStyles();
 
@@ -48,8 +49,19 @@ export function IAMTabs(props: IAMTabsProps) {
   };
 
   // index will be `0` if there is only one item in the list
-  const transcribersTabIndex = usersAccess ? 1 : 0;
-  
+  const transcribersTabIndex = usersAccess ? TAB_INDEX.TRANSCRIBERS : 0;
+
+  /**
+   * Increments the counter that is passed to the `TranscribersSummary` component
+   * - the child component refetches all data everytime the counter changes
+   * - called whenever the transcriber role is changed for a user
+   */
+  const handleTranscriberRoleAssign = () => {
+    if (tabsThatShouldRender.has(transcribersTabIndex)) {
+      setTranscriberRefreshCounter(transcriberRefreshCounter + 1);
+    }
+  };
+
   return (
     <Paper square elevation={0} className={classes.root} >
       <Tabs
@@ -62,11 +74,11 @@ export function IAMTabs(props: IAMTabsProps) {
         {usersAccess && <Tab label={translate('IAM.users')} />}
         {transcribersAccess && <Tab label={translate('IAM.transcribers')} />}
       </Tabs>
-      {usersAccess && <TabPanel value={activeTab} index={0}>
-        {tabsThatShouldRender.has(0) && <UsersSummary hasAccess={usersAccess} />}
+      {usersAccess && <TabPanel value={activeTab} index={TAB_INDEX.USERS}>
+        {tabsThatShouldRender.has(TAB_INDEX.USERS) && <UsersSummary hasAccess={usersAccess} onTranscriberAssign={handleTranscriberRoleAssign} />}
       </TabPanel>}
       {transcribersAccess && <TabPanel value={activeTab} index={transcribersTabIndex}>
-        {tabsThatShouldRender.has(transcribersTabIndex) && <TranscribersSummary hasAccess={transcribersAccess} />}
+        {tabsThatShouldRender.has(transcribersTabIndex) && <TranscribersSummary hasAccess={transcribersAccess} refreshCounter={transcriberRefreshCounter} />}
       </TabPanel>}
     </Paper>
   );

@@ -1,3 +1,4 @@
+export * from './data-set.types';
 export * from './misc.types';
 export * from './model-config.types';
 export * from './models.types';
