@@ -14,31 +14,21 @@ import { BulletList } from 'react-content-loader';
 import { FaEdit, FaGripLinesVertical } from 'react-icons/fa';
 import { FiScissors } from 'react-icons/fi';
 import AutosizeInput from 'react-input-autosize';
-import { RouteComponentProps } from "react-router";
-import { useHistory } from 'react-router-dom';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from 'react-virtualized';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
-import { PATHS } from '../../types/path.types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { DualLabelSwitch } from '../shared/DualLabelSwitch';
-import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { SvgIconWrapper } from '../shared/SvgIconWrapper';
 import { StarRating } from './components/StarRating';
 
-
-interface EditorProps {
-  projectId: string;
-  dataId: string;
-}
 
 export interface ModelConfigsById {
   [x: number]: ModelConfig;
@@ -116,13 +106,10 @@ interface SegmentSplitLocation {
   splitIndex: number;
 }
 
-export function Editor({ match }: RouteComponentProps<EditorProps>) {
-  const { projectId, dataId } = match.params;
+export function Editor() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
-  const history = useHistory();
   const api = React.useContext(ApiContext);
-  const { getProps, clearProps } = React.useContext(NavigationPropsContext);
   const { enqueueSnackbar } = useSnackbar();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -134,22 +121,20 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   const [numberOfSegmentsSelected, setNumberOfSegmentsSelected] = React.useState(0);
   const [isSegmentSplitMode, setIsSegmentSplitMode] = React.useState(false);
   const [HCEditable, setHCEditable] = React.useState(false);
+  const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
+  const [initialFetchDone, setInitialFetchDone] = React.useState(false);
+  const [noRemainingContent, setNoRemainingContent] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
+  const [projectId, setProjectId] = React.useState<string | undefined>();
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>();
   const [segments, setSegments] = React.useState<Segment[]>([]);
   const [initialSegments, setInitialSegments] = React.useState<Segment[]>([]);
   const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
 
   const theme = useTheme();
   const classes = useStyles();
-
-  interface NavigationPropsToGet {
-    projectName: string;
-    voiceData: VoiceData;
-  }
-
-  const { projectName, voiceData } = getProps<NavigationPropsToGet>(['projectName', 'voiceData']);
 
   /**
    * used to keep track of which segments to send when updating
@@ -164,26 +149,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   /**
    * Only `CONFIRMED` data can be rated, so we won't show if not
    */
-  const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, []);
+  const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
 
-  /**
-   * navigates to the TDP page after confirming data
-   */
-  const handleNavigateAway = () => {
-    PATHS.TDP.function && history.push(PATHS.TDP.function(projectId));
-  };
-
-  // to navigate away if we didn't navigate here from the TDP page
-  if (!projectName || !voiceData) {
-    handleNavigateAway();
-  }
-
-  // to clear any stored navigation props on component dismount
-  React.useEffect(() => {
-    return () => {
-      clearProps();
-    };
-  }, []);
 
   // to keep track of word focus and to reset the loop while tabbing through
   let firstLCWordLocation: [number, number] = React.useMemo(() => [0, 0], []);
@@ -192,9 +159,6 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   let firstLCWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
   let lastLCWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
 
-  //!
-  //TODO
-  //* IMMEDIATELY REDIRECT IF USER DOESN'T HAVE THE CORRECT ROLES
 
   const openConfirmation = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -236,11 +200,65 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     setNumberOfSegmentsSelected(segmentMergeIndexes.size);
   };
 
+  const fetchMoreVoiceData = async () => {
+    if (api?.voiceData) {
+      setVoiceDataLoading(true);
+      const response = await api.voiceData.fetchUnconfirmedData();
+      if (response.kind === 'ok') {
+        setNoRemainingContent(response.noContent);
+        setVoiceData(response.voiceData);
+        if (response.voiceData?.projectId) {
+          setProjectId(response.voiceData.projectId);
+        }
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `fetchMoreVoiceData - failed to get voiceData`,
+          value: response,
+          important: true,
+        });
+      }
+      setVoiceDataLoading(false);
+      setInitialFetchDone(true);
+    };
+  };
+
+  React.useEffect(() => {
+    if (!voiceDataLoading && !voiceData && initialFetchDone) {
+      fetchMoreVoiceData();
+    }
+  }, [voiceData, initialFetchDone, voiceDataLoading]);
+
+  React.useEffect(() => {
+    const getAssignedData = async () => {
+      if (api?.voiceData) {
+        setVoiceDataLoading(true);
+        const response = await api.voiceData.getAssignedData();
+        if (response.kind === 'ok') {
+          setVoiceData(response.voiceData);
+          if (response.voiceData?.projectId) {
+            setProjectId(response.voiceData.projectId);
+          }
+        } else {
+          log({
+            file: `Editor.tsx`,
+            caller: `getAssignedData - failed to get assigned data`,
+            value: response,
+            important: true,
+          });
+        }
+        setVoiceDataLoading(false);
+        setInitialFetchDone(true);
+      }
+    };
+    getAssignedData();
+  }, []);
+
   React.useEffect(() => {
     const getSegments = async () => {
-      if (api?.voiceData) {
+      if (api?.voiceData && projectId && voiceData) {
         setSegmentsLoading(true);
-        const response = await api.voiceData.getSegments(projectId, dataId);
+        const response = await api.voiceData.getSegments(projectId, voiceData.id);
         if (response.kind === 'ok') {
           setInitialSegments(response.segments);
           setSegments(response.segments);
@@ -256,20 +274,33 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       }
     };
     getSegments();
-  }, [api, dataId, projectId]);
+  }, [voiceData, projectId]);
 
   const confirmData = async () => {
-    if (api?.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
-      const response = await api.voiceData.confirmData(projectId, dataId);
+      const response = await api.voiceData.confirmData(projectId, voiceData.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
+
+        setVoiceData(undefined);
+
         // to allow the message to be displayed shortly before navigating away
-        setTimeout(() => {
-          handleNavigateAway();
-        }, 1500);
+
+        // TODO
+        //!
+        //* DO SOMETHING
+
+        // setTimeout(() => {
+        //   handleNavigateAway();
+        // }, 1500);
+
+        // TODO
+        //!
+        //* DO SOMETHING
+
       } else {
         log({
           file: `Editor.tsx`,
@@ -289,14 +320,14 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
   const submitSegmentUpdates = async () => {
-    if (api?.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       // to build which segments to send
       const editedSegmentsToUpdate: Segment[] = [];
       editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
 
-      const response = await api.voiceData.updateSegments(projectId, dataId, editedSegmentsToUpdate);
+      const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -327,7 +358,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     if (numberOfSegmentsSelected !== 2) {
       return;
     }
-    if (api?.voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
 
       const segmentIndexesToMerge: number[] = Array.from(segmentMergeIndexes);
@@ -344,7 +375,7 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       const firstSegmentId = segments[firstSegmentIndex].id;
       const secondSegmentId = segments[secondSegmentIndex].id;
 
-      const response = await api.voiceData.mergeTwoSegments(projectId, dataId, firstSegmentId, secondSegmentId);
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -355,7 +386,8 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
         //cut out and replace the old segments
         const mergedSegments = [...segments];
-        mergedSegments.splice(firstSegmentIndex, 2, response.segment);
+        const NUMBER_OF_SEGMENTS_TO_REMOVE = 1;
+        mergedSegments.splice(firstSegmentIndex, NUMBER_OF_SEGMENTS_TO_REMOVE, response.segment);
 
         // reset our new default baseline
         setSegments(mergedSegments);
@@ -381,10 +413,10 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
 
   const submitSegmentSplit = async () => {
     if (!splitLocation) return;
-    if (api?.voiceData && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const { segmentId, segmentIndex, splitIndex } = splitLocation;
-      const response = await api.voiceData.splitSegment(projectId, dataId, segmentId, splitIndex);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segmentId, splitIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -538,8 +570,6 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
   };
 
 
-  // let maxTabIndex = React.useMemo(() => 0, []);
-
   /**
    * Determines if an input field can be accessed via tabbing
    * - Negative tab indexes are skipped when tabbing through fields
@@ -685,11 +715,12 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
       }
 
       return (<React.Fragment key={key}>
-        {isSegmentSplitMode && !!wordIndex && (
+        {!!wordIndex && (
           <IconButton
             aria-label="split-button"
             size="small"
-            color={isSplitSelected ? 'secondary' : 'primary'}
+            disabled={!isSegmentSplitMode}
+            color={isSplitSelected ? 'primary' : 'secondary'}
             onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
           >
             <SvgIconWrapper fontSize='inherit' >
@@ -756,35 +787,37 @@ export function Editor({ match }: RouteComponentProps<EditorProps>) {
     );
   }
 
-  const breadcrumbs: Breadcrumb[] = [
-    PATHS.projects,
-    {
-      to: PATHS.project.function && PATHS.project.function(projectId),
-      rawTitle: projectName,
-    },
-    {
-      to: PATHS.TDP.function && PATHS.TDP.function(projectId),
-      rawTitle: `${translate('TDP.TDP')}`,
-    },
-    {
-      rawTitle: `${translate('editor.editor')}`,
-    },
-  ];
-
   const handlePlaybackTimeChange = (time: number) => {
     setPlaybackTime(time);
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
   };
 
-  // to not display anything if we weren't passed props between pages
-  if (!projectName || !voiceData) {
-    return null;
+  console.log('voiceData', voiceData);
+
+  if (voiceDataLoading) {
+    return <div>TEST LOADING ...</div>;
+  }
+
+
+  if (noRemainingContent) {
+    return <div>TEST NOTHING TO FETCH!!</div>;
+  }
+
+  if (initialFetchDone && !voiceData) {
+    return <div><Button onClick={fetchMoreVoiceData} color='primary' variant='contained' >TEST FETCH DATA</Button></div>;
+  }
+
+  if (!voiceData) {
+    return <div>TEST NO DATA!!</div>;
+  }
+
+  if (!projectId) {
+    return <div>TEST INVALID PROJECT ID!!</div>;
   }
 
   return (
     <Container maxWidth={false} className={classes.container} >
-      <HeaderBreadcrumbs breadcrumbs={breadcrumbs} />
       {segmentsLoading ? <BulletList /> :
         <div style={{ height: windowSize.height && (windowSize.height * 0.5), minHeight: 250 }}>
           <Typography>{voiceData.status}</Typography>

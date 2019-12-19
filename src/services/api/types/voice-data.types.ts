@@ -1,10 +1,4 @@
-import {
-  CONTENT_STATUS,
-  Segment,
-  VoiceData,
-  WordAlignment,
-} from '../../../types';
-import { VoiceDataResults } from '../../../types/voice-data.types';
+import { CONTENT_STATUS, Segment, VoiceData, VoiceDataResults, WordAlignment } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -80,10 +74,12 @@ export type searchDataResult =
   | GeneralApiProblem;
 
 export type getAssignedDataResult =
-  | { kind: 'ok'; data: VoiceDataResults }
+  | { kind: 'ok'; voiceData: VoiceData ; noContent: boolean }
   | GeneralApiProblem;
 
-export type fetchUnconfirmedDataResult = { kind: 'ok', voiceData: VoiceData } | GeneralApiProblem;
+export type fetchUnconfirmedDataResult =
+  | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
+  | GeneralApiProblem;
 
 export type getSegmentsDataResult =
   | { kind: 'ok'; segments: Segment[] }

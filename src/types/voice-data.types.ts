@@ -8,6 +8,7 @@ export interface VoiceData {
   memo: string | null;
   sessionId: string;
   modelConfigId: string;
+  projectId: string | null;
   /** seconds */
   length: number;
   status: CONTENT_STATUS;

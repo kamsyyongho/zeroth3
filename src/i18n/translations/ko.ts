@@ -46,6 +46,7 @@ export const ko: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
+      editor: 'Editor',
     },
     menu: {
       login: '로그인',
