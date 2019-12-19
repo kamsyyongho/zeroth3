@@ -30,6 +30,7 @@ import {
   UpdateStatusRequest,
   updateStatusResult,
 } from '../types';
+import { ResponseCode } from '../types/api.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -101,30 +102,11 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Gets the voice data assigned to the current user
-   * - only `page` and `size` are valid options
-   * @param projectId
-   * @param requestOptions - both values are optional
-   *```
-   *requestOptions = {
-   *page?: number;
-   *size?: number;
-   *}
-   *```
+   * Gets the current voice data assigned to the current user
    */
-  async getAssignedData(
-    projectId: string,
-    requestOptions: SearchDataRequest = {}
-  ): Promise<getAssignedDataResult> {
-    // set default values
-    const { page = 0, size = 10 } = requestOptions;
-    const query: SearchDataRequest = {
-      page,
-      size,
-    };
-    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
-      `/projects/${projectId}/data/assigned`,
-      query
+  async getAssignedData(): Promise<getAssignedDataResult> {
+    const response = await this.apisauce.get<IVoiceData, ServerError>(
+      `/data/assigned`
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -138,8 +120,9 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const data = response.data as VoiceDataResults;
-      return { kind: 'ok', data };
+      const noContent = response.status === ResponseCode['no-content'];
+      const voiceData = response.data as IVoiceData;
+      return { kind: 'ok', voiceData, noContent };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -171,12 +154,16 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Gets one set of assigned data to transcribe
+   * Assigns one set of assigned data to transcribe
+   * - used in the editor
+   * @returns `voiceData` if there is data assigned data
+   * @returns `voiceData` if there is data assigned data
    */
   async fetchUnconfirmedData(): Promise<fetchUnconfirmedDataResult> {
-    const response = await this.apisauce.post<IVoiceData, ServerError>(
-      `/data/unconfirmed`
-    );
+    const response = await this.apisauce.post<
+      IVoiceData | undefined,
+      ServerError
+    >(`/data/unconfirmed`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -189,8 +176,9 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
+      const noContent = response.status === ResponseCode['no-content'];
       const voiceData = response.data as IVoiceData;
-      return { kind: 'ok', voiceData };
+      return { kind: 'ok', voiceData, noContent };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

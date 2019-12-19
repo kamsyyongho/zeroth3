@@ -52,7 +52,7 @@ function App() {
         <Route path={PATHS.IAM.to} component={IAM} />
         <Route exact path={PATHS.project.to} component={ProjectDetails} />
         <Route exact path={PATHS.modelConfig.to} component={ModelConfigPage} />
-        <Route exact path={PATHS.editor.to} component={Editor} />
+        <Route path={PATHS.editor.to} component={Editor} />
         <Route path={PATHS.models.to} component={Models} />
         <Route path={PATHS.profile.to} component={UserProfile} />
       </Router>

@@ -9,7 +9,7 @@ import { PERMISSIONS } from '../../../constants/permission.constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { getAssignedDataResult, SearchDataRequest, searchDataResult } from '../../../services/api/types';
+import { SearchDataRequest } from '../../../services/api/types';
 import { FilterParams, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
@@ -66,12 +66,24 @@ export function TDP(props: TDPProps) {
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
-      let response: getAssignedDataResult | searchDataResult | undefined;
-      if (onlyAssignedData) {
-        response = await api.voiceData.getAssignedData(projectId, { page: options.page, size: options.size });
-      } else {
-        response = await api.voiceData.searchData(projectId, options);
-      }
+      const response = await api.voiceData.searchData(projectId, options);
+      // TODO
+      //!
+      // TODO
+      //!
+      // TODO
+      //!
+      // TODO
+      //!
+      // TODO
+      //!
+      //* REMOVE THIS
+
+      // if (onlyAssignedData) {
+      //   response = await api.voiceData.getAssignedData();
+      // } else {
+      //   response = await api.voiceData.searchData(projectId, options);
+      // }
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
       } else {

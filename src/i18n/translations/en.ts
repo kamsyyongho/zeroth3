@@ -46,6 +46,7 @@ export const en: ResourceLanguage = {
       IAM: 'IAM',
       projects: 'Projects',
       models: 'Models',
+      editor: 'Editor',
     },
     menu: {
       login: 'Login',

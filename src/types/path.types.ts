@@ -1,6 +1,6 @@
 import { SvgIconProps } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
-import { FaUserShield } from 'react-icons/fa';
+import { FaRegEdit, FaUserShield } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { SvgIconWrapper } from '../routes/shared/SvgIconWrapper';
 
@@ -39,14 +39,14 @@ export const PATHS: { [x: string]: Path } = {
     to: '/project/:projectId/model-config',
     function: (projectId: string) => `/project/${projectId}/model-config`,
   },
-  editor: {
-    to: '/project/:projectId/tdp/:dataId/editor',
-    function: (projectId: string, dataId: string) =>
-      `/project/${projectId}/tdp/${dataId}/editor`,
-  },
   models: {
     to: '/models',
     title: 'models',
     Icon: props => SvgIconWrapper({ ...props, children: GiCube }),
+  },
+  editor: {
+    to: '/editor',
+    title: 'editor',
+    Icon: props => SvgIconWrapper({ ...props, children: FaRegEdit }),
   },
 };
