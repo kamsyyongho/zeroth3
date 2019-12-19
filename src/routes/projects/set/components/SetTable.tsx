@@ -13,7 +13,7 @@ const FULL_ROW_COL_SPAN = 3;
 
 interface SetTableProps {
   dataSets: DataSet[];
-  openTranscriberDialog: (dataSetToEdit: DataSet) => void;
+  openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -47,6 +47,7 @@ export function SetTable(props: SetTableProps) {
     {index > 0 && renderRowFiller}
     <SetItem
       dataSet={dataSet}
+      dataSetIndex={index}
       openTranscriberDialog={openTranscriberDialog}
     />
   </React.Fragment>));

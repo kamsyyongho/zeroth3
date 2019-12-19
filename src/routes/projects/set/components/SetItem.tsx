@@ -12,7 +12,8 @@ import { ProgressBar } from '../../../shared/ProgressBar';
 
 interface SetItemProps {
   dataSet: DataSet;
-  openTranscriberDialog: (dataSetToEdit: DataSet) => void;
+  dataSetIndex: number;
+  openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -29,31 +30,28 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { dataSet, openTranscriberDialog } = props;
+  const { dataSet, dataSetIndex, openTranscriberDialog } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const { translate } = React.useContext(I18nContext);
 
   const classes = useStyles();
 
-  const onClick = () => openTranscriberDialog(dataSet);
+  const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
 
-  let progress = total;
-  if (progress > 0) {
-    // must be a number from 0 to 100
-    progress = processed / total * 100;
-  }
+  // must be a number from 0 to 100
+  const progress = processed / total * 100;
 
   let processedText = (
     <Typography className={classes.processedText} >
       {processed}
       <Typography component='span' color='textPrimary' >
-        {`/ ${total}`}
+        {` / ${total}`}
       </Typography>
     </Typography>
   );
 
-  if (!progress || Number.isNaN(progress)) {
+  if (!total || Number.isNaN(progress)) {
     processedText = (<Typography color='textSecondary' >
       {translate('common.noData')}
     </Typography>);

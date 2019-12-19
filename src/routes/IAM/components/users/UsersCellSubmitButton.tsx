@@ -113,7 +113,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
    * Delete all roles and update the user stored in the parent
    * @param roleIdsToDelete 
    * @param willAddRoles determines if we will update the parent
-   * - addRoles receives a user response, so that will be the most up to date
+   * - `addRoles` receives a user response, so that will be the most up to date
    * - so there is no need to update the parent from our build data
    */
   const deleteRoles = async (roleIdsToDelete: string[], willAddRoles: boolean) => {

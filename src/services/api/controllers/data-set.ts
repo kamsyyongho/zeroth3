@@ -1,7 +1,16 @@
 import { ApisauceInstance } from 'apisauce';
-import { DataSet as DataSetInterface, FilterParams } from '../../../types';
+import { DataSet as IDataSet, FilterParams, Transcriber } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { AssignTranscribersToDataSetRequest, assignTranscribersToDataSetResult, getAllResult, PostDataSetRequest, postDataSetResult, ProblemKind, ServerError } from '../types';
+import {
+  AssignTranscribersToDataSetRequest,
+  assignTranscribersToDataSetResult,
+  getAllResult,
+  PostDataSetRequest,
+  postDataSetResult,
+  ProblemKind,
+  removeTranscriberFromDataSetResult,
+  ServerError,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -22,7 +31,7 @@ export class DataSet extends ParentApi {
    * @param projectId
    */
   async getAll(projectId: string): Promise<getAllResult> {
-    const response = await this.apisauce.get<DataSetInterface[], ServerError>(
+    const response = await this.apisauce.get<IDataSet[], ServerError>(
       `/projects/${projectId}/data-sets`
     );
     // the typical ways to die when calling an api
@@ -37,7 +46,7 @@ export class DataSet extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const dataSets = response.data as DataSetInterface[];
+      const dataSets = response.data as IDataSet[];
       return { kind: 'ok', dataSets };
     } catch {
       return { kind: ProblemKind['bad-data'] };
@@ -92,9 +101,42 @@ export class DataSet extends ParentApi {
     const request: AssignTranscribersToDataSetRequest = {
       transcribers: transcriberIds,
     };
-    const response = await this.apisauce.post<undefined, ServerError>(
+    const response = await this.apisauce.post<Transcriber, ServerError>(
       `/projects/${projectId}/data-sets/${dataSetId}`,
       request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const transcribers = response.data as Transcriber[];
+      return { kind: 'ok', transcribers };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Assign transcribers to a data set
+   * @param projectId
+   * @param dataSetId
+   * @param transcriberId
+   */
+  async removeTranscriberFromDataSet(
+    projectId: string,
+    dataSetId: string,
+    transcriberId: string
+  ): Promise<removeTranscriberFromDataSetResult> {
+    const response = await this.apisauce.delete<undefined, ServerError>(
+      `/projects/${projectId}/data-sets/${dataSetId}/transcribers/${transcriberId}`
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

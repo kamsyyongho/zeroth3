@@ -2,7 +2,6 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
 import { DataSet, PaginatedResults, TranscriberStats } from '../../../types';
 import log from '../../../util/log/logger';
@@ -15,26 +14,18 @@ interface SETProps {
   refreshCounter?: number;
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
-  }),
-);
-
 export default function SET(props: SETProps) {
   const { projectId, refreshCounter } = props;
-  const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [isForbidden, setIsForbidden] = React.useState(false);
   const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
   const [setsLoading, setSetsLoading] = React.useState(true);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [seletectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
+  const [seletectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
-  const [initialDataLoading, setInitialDataLoading] = React.useState(true);
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
-
-  const classes = useStyles();
 
   const getDataSets = React.useCallback(async () => {
     if (api?.dataSet && projectId) {
@@ -73,7 +64,6 @@ export default function SET(props: SETProps) {
         });
       }
       setTranscriberStatDataLoading(false);
-      setInitialDataLoading(false);
     }
   };
 
@@ -92,11 +82,21 @@ export default function SET(props: SETProps) {
   const closeTranscriberDialog = () => {
     setTranscribersDialogOpen(false);
     setSelectedDataSet(undefined);
+    setSelectedDataSetIndex(undefined);
   };
 
-  const handleTranscriberEditClick = (dataSetToEdit: DataSet) => {
+  const handleTranscriberEditClick = (dataSetToEdit: DataSet, dataSetIndex: number) => {
     setSelectedDataSet(dataSetToEdit);
+    setSelectedDataSetIndex(dataSetIndex);
     openTranscriberDialog();
+  };
+
+  const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
+    setDataSets((prevDataSets) => {
+      const updatedDataSets = [...prevDataSets];
+      updatedDataSets.splice(dataSetIndex, 1, updatedDataSet);
+      return updatedDataSets;
+    });
   };
 
   if (isForbidden) {
@@ -112,9 +112,14 @@ export default function SET(props: SETProps) {
         onClose={closeTranscriberDialog}
         projectId={projectId}
         dataSet={seletectedDataSet}
+        dataSetIndex={seletectedDataSetIndex}
+        onUpdateDataSetSuccess={onUpdateDataSetSuccess}
       />
       {setsLoading ? <BulletList /> :
-        <SetTable dataSets={dataSets} openTranscriberDialog={handleTranscriberEditClick} />
+        <SetTable
+          dataSets={dataSets}
+          openTranscriberDialog={handleTranscriberEditClick}
+        />
       }
     </>
   );

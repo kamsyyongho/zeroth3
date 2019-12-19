@@ -1,4 +1,4 @@
-import { FilterParams } from '../../../types';
+import { FilterParams, Transcriber } from '../../../types';
 import { DataSet } from '../../../types/';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -22,5 +22,13 @@ export interface AssignTranscribersToDataSetRequest {
 export type getAllResult =
   | { kind: 'ok'; dataSets: DataSet[] }
   | GeneralApiProblem;
+
 export type postDataSetResult = { kind: 'ok' } | GeneralApiProblem;
-export type assignTranscribersToDataSetResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type assignTranscribersToDataSetResult =
+  | { kind: 'ok'; transcribers: Transcriber[] }
+  | GeneralApiProblem;
+
+export type removeTranscriberFromDataSetResult =
+  | { kind: 'ok' }
+  | GeneralApiProblem;
