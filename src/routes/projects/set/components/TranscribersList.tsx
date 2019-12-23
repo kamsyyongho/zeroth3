@@ -1,5 +1,4 @@
 import { TableBody, TableCell, Typography } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
@@ -43,7 +42,7 @@ export function TranscribersList(props: TranscribersListProps) {
         <Typography>{translate('forms.email')}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{translate('transcribers.count')}</Typography>
+        <Typography align='center'>{translate('transcribers.count')}</Typography>
       </TableCell>
       <TableCell>
         <Typography align='center' >{translate('transcribers.rating')}</Typography>
