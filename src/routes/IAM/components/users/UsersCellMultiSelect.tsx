@@ -10,13 +10,20 @@ import { CellProps } from 'react-table';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { Role, User } from '../../../../types';
 import { ParsedRolesById, SelectedRoleIdsByIndex } from './UsersTable';
+import { CustomTheme } from '../../../../theme';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     formControl: {
       margin: theme.spacing(1),
       minWidth: 120,
       maxWidth: 300,
+    },
+    menuItem: {
+      backgroundColor: `${theme.palette.background.paper} !important`,
+      '&:hover': {
+        backgroundColor: `${theme.table.highlight} !important`,
+      },
     },
   }),
 );
@@ -73,10 +80,15 @@ export function UsersCellMultiSelect(props: UsersCellMultiSelectProps) {
     return availableRoles.map(role => {
       const { id, name } = role;
       return (
-        <MenuItem key={id} value={id}>
+        <MenuItem
+          key={id}
+          value={id}
+          selected={false}
+          className={classes.menuItem}
+        >
           <Checkbox color='primary' checked={userselectedRoles.includes(id)} />
           <ListItemText primary={name} />
-        </MenuItem>
+        </MenuItem >
       );
     });
   };
