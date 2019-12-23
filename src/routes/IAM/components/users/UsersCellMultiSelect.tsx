@@ -8,9 +8,9 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { CellProps } from 'react-table';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../../../theme';
 import { Role, User } from '../../../../types';
 import { ParsedRolesById, SelectedRoleIdsByIndex } from './UsersTable';
-import { CustomTheme } from '../../../../theme';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({

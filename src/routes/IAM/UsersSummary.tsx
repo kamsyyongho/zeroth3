@@ -223,45 +223,17 @@ export function UsersSummary(props: UsersSummaryProps) {
     setDeleteLoading(false);
   };
 
-  const renderCardHeaderAction = () => (<Grid container spacing={1} >
-    {users.length > 1 && <Grid item >
-      <Button
-        disabled={!usersToDelete.length}
-        variant="contained"
-        color="secondary"
-        onClick={confirmDelete}
-        startIcon={deleteLoading ? <MoonLoader
-          sizeUnit={"px"}
-          size={15}
-          color={theme.palette.common.white}
-          loading={true}
-        /> : <DeleteIcon />}
-      >
-        {translate('common.delete')}
-      </Button>
-    </Grid>}
-    <Grid item >
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleInviteOpen}
-        startIcon={<SendIcon />}
-      >{translate("IAM.invite")}
-      </Button>
-    </Grid>
-  </Grid>);
-
   return (
     <Card elevation={0} className={classes.card} >
-      <CardHeader
-        action={!(usersLoading || rolesLoading) && renderCardHeaderAction()}
-        title={translate('IAM.usersHeader')}
-      />
       <CardContent className={classes.cardContent} >
         {usersLoading || rolesLoading ? <BulletList /> :
           <UsersTable
             users={users}
             roles={roles}
+            usersToDelete={usersToDelete}
+            confirmDelete={confirmDelete}
+            handleInviteOpen={handleInviteOpen}
+            deleteLoading={deleteLoading}
             setCheckedUsers={setCheckedUsers}
             handleUpdateSuccess={handleUpdateSuccess}
             onTranscriberAssign={onTranscriberAssign}

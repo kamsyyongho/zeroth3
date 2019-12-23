@@ -14,6 +14,9 @@ import { UsersCellMultiSelect } from './UsersCellMultiSelect';
 import { UsersCellResetPasswordButton } from './UsersCellResetPasswordButton';
 import { UsersCellSubmitButton } from './UsersCellSubmitButton';
 import { UsersHeaderCheckbox } from './UsersHeaderCheckbox';
+import UsersTableHeaderActions from './UsersTableHeaderActions';
+
+const HEADER_ACTIONS = 'actions';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -28,6 +31,10 @@ export interface UsersTableProps {
   setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>;
   handleUpdateSuccess: (updatedUser: User) => void;
   onTranscriberAssign: () => void;
+  usersToDelete: string[];
+  confirmDelete: () => void;
+  handleInviteOpen: () => void;
+  deleteLoading: boolean;
 }
 
 export interface ParsedRolesById {
@@ -40,7 +47,17 @@ export interface SelectedRoleIdsByIndex {
 
 
 export function UsersTable(props: UsersTableProps) {
-  const { users, roles, setCheckedUsers, handleUpdateSuccess, onTranscriberAssign } = props;
+  const {
+    users,
+    roles,
+    setCheckedUsers,
+    handleUpdateSuccess,
+    onTranscriberAssign,
+    usersToDelete,
+    confirmDelete,
+    handleInviteOpen,
+    deleteLoading,
+  } = props;
 
   const classes = useStyles();
 
@@ -98,12 +115,14 @@ export function UsersTable(props: UsersTableProps) {
         Cell: (data: CellProps<User>) => UsersCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
       },
       {
-        Header: ' ',
+        id: 'submit',
+        Header: null,
         accessor: (row: User) => row,
         Cell: (data: CellProps<User>) => UsersCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess, transcriberRoleId, onTranscriberAssign }),
       },
       {
-        Header: '  ',
+        id: HEADER_ACTIONS,
+        Header: null,
         accessor: (row: User) => row,
         Cell: (data: CellProps<User>) => UsersCellResetPasswordButton({ cellData: data }),
       },
@@ -125,11 +144,23 @@ export function UsersTable(props: UsersTableProps) {
   // Render the UI for your table
   const renderHeader = () => headerGroups.map((headerGroup, index) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
-      {headerGroup.headers.map((column, idx) => (
-        <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-          {column.render('Header')}
-        </TableCell>
-      ))}
+      {headerGroup.headers.map((column, idx) => {
+        if (column.id === HEADER_ACTIONS) {
+          return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+            <UsersTableHeaderActions
+              users={users}
+              usersToDelete={usersToDelete}
+              confirmDelete={confirmDelete}
+              handleInviteOpen={handleInviteOpen}
+              deleteLoading={deleteLoading}
+            />
+          </TableCell>);
+        } else {
+          return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+            {column.render('Header')}
+          </TableCell>);
+        }
+      })}
     </TableRow>
   ));
 
