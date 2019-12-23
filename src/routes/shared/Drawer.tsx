@@ -3,7 +3,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PERMISSIONS } from '../../constants';
@@ -13,8 +13,14 @@ import { PATHS } from '../../types';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    fullList: {
+    contents: {
       width: 'auto',
+      minWidth: 275,
+      marginTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingTop: 75,
     },
   }),
 );
@@ -31,6 +37,7 @@ export const AppDrawer = (props: AppDrawerProps) => {
   const location = useLocation();
   const history = useHistory();
   const classes = useStyles();
+  const theme = useTheme();
 
   const navigateToPage = (to: string, isCurrentPath: boolean) => {
     if (!isCurrentPath && to) {
@@ -88,9 +95,10 @@ export const AppDrawer = (props: AppDrawerProps) => {
     <Drawer
       open={open}
       onClose={toggleDrawer(false)}
+      style={{ zIndex: theme.zIndex.drawer - 500 }}
     >
       <div
-        className={classes.fullList}
+        className={classes.contents}
         role="presentation"
         onClick={toggleDrawer(false)}
         onKeyDown={toggleDrawer(false)}

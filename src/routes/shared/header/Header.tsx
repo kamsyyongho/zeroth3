@@ -29,7 +29,8 @@ import MenuPopup from './components/MenuPopup';
 const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
-      display: 'flex',
+      position: 'relative',
+      zIndex: theme.zIndex.drawer + 100,
     },
     title: {
       flexGrow: 1,
@@ -123,6 +124,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     <AppBar
       position="static"
       color='secondary'
+      className={classes.root}
     >
       <Toolbar>
         <Grid
@@ -139,7 +141,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             sm={6}
           >
             <IconButton
-              onClick={() => setIsDrawerOpen(true)}
+              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               color={"inherit"}
               edge='start'
               className={classes.menuButton}
