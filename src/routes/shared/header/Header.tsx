@@ -59,10 +59,16 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   const classes = useStyles();
 
+  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
+  const closeDrawer = () => setIsDrawerOpen(false);
+
   const showRenameDialog = () => setIsRenameOpen(true);
   const hideRenameDialog = () => setIsRenameOpen(false);
 
-  const showProjectsDialog = () => setIsProjectsOpen(true);
+  const showProjectsDialog = () => {
+    closeDrawer();
+    setIsProjectsOpen(true);
+  }
   const hideProjectsDialog = () => setIsProjectsOpen(false);
 
   const getOrganization = async () => {
@@ -141,14 +147,14 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             sm={6}
           >
             <IconButton
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+              onClick={toggleDrawer}
               color={"inherit"}
               edge='start'
               className={classes.menuButton}
             >
               <MenuIcon />
             </IconButton>
-            <Button component={Link} to={PATHS.home.to as string}>
+            <Button onClick={closeDrawer} component={Link} to={PATHS.home.to as string}>
               <img src={logo} alt='Zeroth EE' height={25} />
             </Button>
             <Button
@@ -179,6 +185,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
               <SvgIconWrapper ><MdTranslate /></SvgIconWrapper>
             </IconButton>
             <MenuPopup
+              onClick={closeDrawer}
               user={user}
               organization={organization}
             />

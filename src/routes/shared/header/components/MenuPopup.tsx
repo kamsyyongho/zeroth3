@@ -31,10 +31,11 @@ const useStyles = makeStyles((theme) =>
 interface MenuPopupProps {
   user?: KeycloakUser;
   organization?: Organization;
+  onClick?: () => void;
 }
 
 function MenuPopup(props: MenuPopupProps) {
-  const { user, organization } = props;
+  const { user, organization, onClick } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const history = useHistory();
@@ -46,6 +47,9 @@ function MenuPopup(props: MenuPopupProps) {
   const isCurrentPath = location.pathname === PATHS.profile.to;
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if(onClick && typeof onClick === 'function'){
+      onClick();
+    }
     setAnchorEl(event.currentTarget);
   };
 
