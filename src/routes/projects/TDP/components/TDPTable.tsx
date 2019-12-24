@@ -122,15 +122,20 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
-    return modelConfigsById[id] && modelConfigsById[id].name || '';
+    return (modelConfigsById[id] && modelConfigsById[id].name) || '';
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
     const numberOfLines = expanded ? 8 : 1;
+    const TWENTY_FIVE_PERCENT = 0.25;
     // to keep a dynamic width of 25% based on the window
-    const transcriptStyle = width ? { width: (width * 0.25) } : { minWidth: 250, maxWidth: 350 };
+    const dynamicWidth = width && width * TWENTY_FIVE_PERCENT;
+    // to prevent the width from expanding greater than 25% of the container
+    const containerWidth = theme.breakpoints.width('lg');
+    const maxWidth = containerWidth * TWENTY_FIVE_PERCENT;
+    const transcriptStyle = dynamicWidth ? { width: dynamicWidth, maxWidth } : { minWidth: 250, maxWidth: 350 };
     return <Grid
       container
       wrap='nowrap'
@@ -357,7 +362,7 @@ export function TDPTable(props: TDPTableProps) {
               let className = classes.tableBorder;
               let style: React.CSSProperties = {};
               if (isTranscript) {
-                style = { borderRightWidth: 2, borderRightColor: theme.status.selected };
+                style = { borderRightWidth: 2, borderRightColor: theme.table.highlight };
               }
               if (!isTranscript && expanded) {
                 className = classes.tableNoBorder;

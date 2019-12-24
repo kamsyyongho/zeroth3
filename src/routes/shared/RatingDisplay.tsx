@@ -50,6 +50,6 @@ export function RatingDisplay(props: RatingDisplayProps) {
   }
 
   return (
-    <Grid container wrap='nowrap'>{stars}</Grid>
+    <Grid container wrap='nowrap' justify='center' >{stars}</Grid>
   );
 }

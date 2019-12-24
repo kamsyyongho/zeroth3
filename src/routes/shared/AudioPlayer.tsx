@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
+import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Forward5Icon from '@material-ui/icons/Forward5';
 import PauseIcon from '@material-ui/icons/Pause';
@@ -13,6 +11,7 @@ import StopIcon from '@material-ui/icons/Stop';
 import WarningIcon from '@material-ui/icons/Warning';
 import { useSnackbar } from 'notistack';
 import React from 'react';
+import { TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
 import WaveSurfer from 'wavesurfer.js';
 // //@ts-ignore
 // import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
@@ -21,6 +20,7 @@ import WaveSurfer from 'wavesurfer.js';
 //@ts-ignore
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { SvgIconWrapper } from './SvgIconWrapper';
 
 
 const useStyles = makeStyles((theme) =>
@@ -31,6 +31,14 @@ const useStyles = makeStyles((theme) =>
     hidden: {
       visibility: 'hidden',
       height: 0,
+    },
+    root: {
+      backgroundColor: theme.palette.background.default,
+      padding: 10,
+    },
+    controls: {
+      marginLeft: 10,
+      marginRight: 10,
     },
   }),
 );
@@ -43,28 +51,36 @@ interface AudioPlayerProps {
   onReady: () => void;
 }
 
+/** main `WaveSurfer` object */
+let waveSurfer: WaveSurfer | undefined = undefined;
+/** total duration of the file in seconds */
+let duration = 0;
+/** array of timeouts so we can cancel them on unsmount */
+let playTimeouts: NodeJS.Timeout[] = [];
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url, onTimeChange, timeToSeekTo, onReady } = props;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [waveSurfer, setWaveSurfer] = React.useState<WaveSurfer>();
   const [errorText, setErrorText] = React.useState('');
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
+  const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
-  const [duration, setDuration] = React.useState(0);
   const [durationDisplay, setDurationDisplay] = React.useState('0');
 
   const classes = useStyles();
 
-  // to clear the component on dismount
+  // to clear the component on unmount
   React.useEffect(() => {
     return () => {
       if (waveSurfer) {
         try {
+          playTimeouts.forEach(timeout => clearTimeout(timeout));
+          playTimeouts = [];
           waveSurfer.unAll();
           waveSurfer.destroy();
+          waveSurfer = undefined;
         } catch {
           // do nothing
         }
@@ -72,16 +88,47 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
   }, []);
 
+
+  const handleFinish = () => setIsPlay(false);
+  const handlePause = () => setIsPlay(false);
+  const handlePlay = () => setIsPlay(true);
+
+  const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => !prevValue);
+
   const displayError = (errorText: string) => {
     enqueueSnackbar(errorText, { variant: 'error' });
     setErrorText(errorText);
   };
 
-  const handleStop = () => {
+  /**
+   * used to play when after a pause
+   * - seeking while playing has performance issues
+   * - it will clone multiple instances of the object
+   * - pausing will prevent this, but only if the player has been paused
+   * for a certain amount of time
+   */
+  const playTimeout = () => {
+    if (waveSurfer) {
+      try {
+        const timeout = setTimeout(() => {
+          waveSurfer?.play();
+          playTimeouts.shift();
+        }, 100);
+        playTimeouts.push(timeout);
+      } catch (error) {
+        displayError(error.message);
+      }
+    }
+  };
+
+  const handleStop = (callback?: () => void) => {
     if (waveSurfer) {
       try {
         waveSurfer.stop();
         setIsPlay(false);
+        if (callback && typeof callback === 'function') {
+          callback();
+        }
       } catch (error) {
         displayError(error.message);
       }
@@ -101,27 +148,22 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (timeToSeekTo > 0) {
           progress = timeToSeekTo / duration;
         }
+        waveSurfer.pause();
         waveSurfer.seekTo(progress);
+        if (isPlay) {
+          playTimeout();
+        }
       } catch (error) {
         handleError(error.message);
       }
     }
   };
 
-  // set the seek location based on the parent
-  React.useEffect(() => {
-    if (typeof timeToSeekTo === 'number') {
-      seekToTime(timeToSeekTo);
-    }
-  }, [timeToSeekTo]);
-
-
-  const handleReady = (waveSurfer: WaveSurfer) => {
+  const handleReady = () => {
     if (waveSurfer) {
       try {
         setIsReady(true);
-        const duration = waveSurfer.getDuration();
-        setDuration(duration);
+        duration = waveSurfer.getDuration();
         setDurationDisplay(duration.toFixed(2));
         if (onReady && typeof onReady === 'function') {
           onReady();
@@ -132,13 +174,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
-  const handleSeek = (waveSurfer: WaveSurfer) => {
+  const handleAudioProcess = (currentTime: number) => {
     if (waveSurfer) {
       try {
-        const currentTime = Number(waveSurfer.getCurrentTime().toFixed(2));
-        setCurrentTime(currentTime);
+        const currentTimeFixed = Number(currentTime.toFixed(2));
+        setCurrentTime(currentTimeFixed);
         if (onTimeChange && typeof onTimeChange === 'function') {
-          onTimeChange(currentTime);
+          onTimeChange(currentTimeFixed);
+        }
+      } catch (error) {
+        handleError(error.message);
+      }
+    }
+  };
+
+  function handleSeek(progress: number) {
+    if (waveSurfer) {
+      try {
+        const currentTime = duration * progress;
+        const currentTimeFixed = Number(currentTime.toFixed(2));
+        setCurrentTime(currentTimeFixed);
+        if (onTimeChange && typeof onTimeChange === 'function') {
+          onTimeChange(currentTimeFixed);
         }
       } catch (error) {
         handleError(error.message);
@@ -150,7 +207,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (waveSurfer) {
       try {
         waveSurfer.playPause();
-        setIsPlay(prevValue => !prevValue);
       } catch (error) {
         handleError(error.message);
       }
@@ -158,18 +214,19 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleSkip = (rewind = false) => {
-    const interval = rewind ? -5 : 5;
-    let timeToSeekTo = currentTime + interval;
-    if (timeToSeekTo < 0) {
-      timeToSeekTo = 0;
-    } else if (timeToSeekTo > duration) {
-      timeToSeekTo = duration;
+    if (waveSurfer) {
+      try {
+        const interval = rewind ? -5 : 5;
+        waveSurfer.pause();
+        waveSurfer.skip(interval);
+        if (isPlay) {
+          playTimeout();
+        }
+      } catch (error) {
+        handleError(error.message);
+      }
     }
-    seekToTime(timeToSeekTo);
   };
-
-  const handleFinish = () => setIsPlay(false);
-
 
   React.useEffect(() => {
     const initPlayer = () => {
@@ -208,8 +265,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
       //   //   'font-size': '10px'
       //   // },
       // });
-      const initialWaveSurfer = WaveSurfer.create({
+      // const initialWaveSurfer = WaveSurfer.create({
+      waveSurfer = WaveSurfer.create({
         container: '#waveform',
+        height: 64, // default is 128
         backend: 'MediaElement', // tell it to use pre-recorded peaks
         scrollParent: true,
         plugins: [
@@ -218,6 +277,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
           // regions,
         ]
       });
+
+      // add listeners after waveSurver is initialized
+      waveSurfer.on('ready', handleReady);
+      waveSurfer.on('play', handlePlay);
+      waveSurfer.on('pause', handlePause);
+      waveSurfer.on('audioprocess', handleAudioProcess);
+      waveSurfer.on('seek', handleSeek);
+      waveSurfer.on('finish', handleFinish);
+      waveSurfer.on('error', handleError);
 
       const peaksUrl = 'https://tidesquare-data.s3.ap-northeast-2.amazonaws.com/form.json';
       // initialWaveSurfer.load(url);
@@ -230,37 +298,42 @@ export function AudioPlayer(props: AudioPlayerProps) {
           return response.json();
         })
         .then(peaks => {
+          if (!waveSurfer) {
+            throw new Error('waveSurfer undefined while fetching peaks');
+          }
           console.log(
             'loaded peaks! sample_rate: ' + peaks.sample_rate
           );
 
           // load peaks into wavesurfer.js
-          initialWaveSurfer.load(url, peaks.data);
+          waveSurfer.load(url, peaks.data);
           document.body.scrollTop = 0;
         })
         .catch((error) => {
           handleError(`PEAKS ERROR: ${error.message}`);
-          console.error('error', error);
+          console.warn('AudioPlayer error:', error);
         });
 
-      // set listeners
-      initialWaveSurfer.on('ready', () => handleReady(initialWaveSurfer));
-      initialWaveSurfer.on('seek', () => handleSeek(initialWaveSurfer));
-      initialWaveSurfer.on('audioprocess', () => handleSeek(initialWaveSurfer));
-      initialWaveSurfer.on('finish', handleFinish);
-      initialWaveSurfer.on('error', handleError);
-      setWaveSurfer(initialWaveSurfer);
     };
     if (url) {
       initPlayer();
     }
   }, []);
 
+
+  // set the seek location based on the parent
+  React.useEffect(() => {
+    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
+      seekToTime(timeToSeekTo);
+    }
+  }, [timeToSeekTo]);
+
+
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
     <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
       <Replay5Icon />
     </Button>
-    <Button aria-label="stop" onClick={handleStop} >
+    <Button aria-label="stop" onClick={() => handleStop()} >
       <StopIcon />
     </Button>
     <Button aria-label="play/pause" onClick={handlePlayPause} >
@@ -271,14 +344,52 @@ export function AudioPlayer(props: AudioPlayerProps) {
     </Button>
   </ButtonGroup>);
 
+  const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
+    <Button aria-label="seek-lock" onClick={toggleLockSeek} >
+      {autoSeekDisabled ?
+        (<SvgIconWrapper><TiLockClosedOutline /></SvgIconWrapper>)
+        :
+        (<SvgIconWrapper><TiLockOpenOutline /></SvgIconWrapper>)
+      }
+    </Button>
+  </ButtonGroup>);
+
   return (
-    <Card >
-      {(isReady && !errorText) && <CardHeader
-        title={playerControls}
-        subheader={`${currentTime} / ${durationDisplay}`}
-      />}
+    <Paper
+      elevation={5}
+      className={classes.root}
+    >
+      {(isReady && !errorText) && (
+        <Grid
+          container
+          direction='row'
+          justify='space-between'
+        >
+          <Grid
+            container
+            item
+            direction='row'
+            spacing={3}
+            xs={9}
+            justify='flex-start'
+            alignItems='center'
+            alignContent='center'
+            className={classes.controls}
+          >
+            <Grid item>
+              {playerControls}
+            </Grid>
+            <Grid item>
+              <Typography>{`${currentTime} / ${durationDisplay}`}</Typography>
+            </Grid>
+          </Grid>
+          <Grid container item xs={2} >
+            {secondaryControls}
+          </Grid>
+        </Grid>
+      )}
       {(!url || !!errorText) && (
-        <CardContent>
+        <>
           <Grid
             container
             direction='row'
@@ -294,11 +405,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
               <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
             </Grid>
           </Grid>
-        </CardContent>)}
-      <CardContent className={errorText ? classes.hidden : classes.content}>
+        </>)}
+      <div className={errorText ? classes.hidden : classes.content}>
         <div id="waveform" />
         <div id="wave-timeline" />
-      </CardContent>
-    </Card>
+      </div>
+    </Paper>
   );
 }

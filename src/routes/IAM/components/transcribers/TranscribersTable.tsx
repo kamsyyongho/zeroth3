@@ -13,6 +13,8 @@ import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types
 import { Pagination } from '../../../shared/Pagination';
 import { RatingDisplay } from '../../../shared/RatingDisplay';
 
+const EMAIL_COLUMN_ID = 'email';
+
 const useStyles = makeStyles((theme) =>
   createStyles({
     table: {
@@ -45,7 +47,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
     () => [
       {
         Header: translate('forms.email'),
-        accessor: 'email',
+        accessor: EMAIL_COLUMN_ID,
       },
       {
         Header: translate('transcribers.count'),
@@ -108,7 +110,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
-    <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+    <TableCell key={`column-${idx}`} align={column.id !== EMAIL_COLUMN_ID ? 'center' : undefined} {...column.getHeaderProps()}>
       {column.render('Header')}
     </TableCell>);
 
@@ -137,6 +139,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
             return (
               <TableCell
                 key={`cell-${cellIndex}`}
+                align={cell.column.id !== EMAIL_COLUMN_ID ? 'center' : undefined}
                 {...cell.getCellProps()}
               >
                 {cell.render('Cell')}

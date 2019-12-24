@@ -1,4 +1,5 @@
-import { TableCell, Typography } from '@material-ui/core';
+import { FormControlLabel, FormGroup, TableCell, Typography } from '@material-ui/core';
+import Checkbox from '@material-ui/core/Checkbox';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import React from 'react';
@@ -13,13 +14,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     default: {
       "&:hover": { // default hover color
-        backgroundColor: theme.palette.grey[100],
+        backgroundColor: theme.table.highlight,
       }
     },
     selected: {
-      backgroundColor: theme.status.selected,
       "&:hover": { // to keep the color consistant when selected
-        backgroundColor: theme.status.selected,
+        backgroundColor: theme.table.highlight,
       }
     },
   }),
@@ -47,13 +47,31 @@ export function TranscribersListItem(props: TranscribersListItemProps) {
       className={`${classes.clickableTableBody} ${selected ? classes.selected : classes.default}`}
       onClick={onClick}
     >
-      <TableCell>
-        <Typography>{transcriber.email}</Typography>
+      <TableCell
+        onClick={onClick}
+      >
+        <FormGroup
+          row
+          onClick={onClick}
+        >
+          <FormControlLabel
+            onClick={onClick}
+            control={
+              <Checkbox
+                checked={selected}
+                onClick={onClick}
+                value={transcriber.id}
+                color="primary"
+              />
+            }
+            label={transcriber.email}
+          />
+        </FormGroup>
       </TableCell>
       <TableCell>
         <Typography align='center'>{transcriber.count}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell align='center'>
         <RatingDisplay rating={transcriber.rating} />
       </TableCell>
     </TableRow>

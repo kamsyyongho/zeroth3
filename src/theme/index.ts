@@ -1,7 +1,9 @@
+import { grey, pink } from '@material-ui/core/colors';
 import { createMuiTheme, Theme } from '@material-ui/core/styles';
 import { ThemeOptions } from '@material-ui/core/styles/createMuiTheme';
 import { PaletteOptions } from '@material-ui/core/styles/createPalette';
 import { TypographyOptions } from '@material-ui/core/styles/createTypography';
+import { Overrides } from '@material-ui/core/styles/overrides';
 
 const palette: PaletteOptions = {
   primary: { main: '#2f99cb' },
@@ -14,6 +16,7 @@ const typography: TypographyOptions = {
     'BlinkMacSystemFont',
     '"Segoe UI"',
     'Lato',
+    'Muli',
     'Roboto',
     '"Helvetica Neue"',
     'Arial',
@@ -28,11 +31,18 @@ const typography: TypographyOptions = {
  * a custom category that we are including in our theme
  */
 const customTheme = {
-  status: {
-    selected: 'rgba(47, 153, 203, 0.1)',
-  },
   table: {
     border: '#aec2cb',
+    highlight: 'rgba(47, 153, 203, 0.1)',
+  },
+  header: {
+    lightBlue: '#a8d0e3',
+  },
+  editor: {
+    playing: '#077db5',
+    highlight: pink.A200,
+    LC: '#ffe190',
+    focussed: grey[400],
   },
 };
 
@@ -40,26 +50,59 @@ const customTheme = {
  * Custom interface that must be used when using custom theme values
  */
 export interface CustomTheme extends Theme {
-  status: {
-    selected: string;
-  };
   table: {
     border: string;
+    highlight: string;
+  };
+  header: {
+    lightBlue: string;
+  };
+  editor: {
+    playing: string;
+    highlight: string;
+    LC: string;
+    focussed: string;
   };
 }
 
 interface CustomThemeOptions extends ThemeOptions {
-  status?: {
-    selected?: string;
-  };
   table?: {
     border?: string;
+    highlight?: string;
+  };
+  header?: {
+    lightBlue?: string;
+  };
+  editor?: {
+    playing?: string;
+    highlight?: string;
+    LC?: string;
+    focussed?: string;
   };
 }
+
+const overrides: Overrides = {
+  MuiListItem: {
+    button: {
+      '&:hover': {
+        backgroundColor: customTheme.table.highlight,
+      },
+    },
+    root: {
+      '&$selected': {
+        backgroundColor: customTheme.table.highlight,
+        '&:hover': {
+          backgroundColor: customTheme.table.highlight,
+        },
+      },
+    },
+  },
+};
 
 const options: CustomThemeOptions = {
   palette,
   typography,
+  overrides,
   ...customTheme,
 };
 

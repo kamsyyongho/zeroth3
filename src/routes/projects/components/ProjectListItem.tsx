@@ -17,10 +17,7 @@ import { EditOpenByProjectId } from './ProjectList';
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     selected: {
-      backgroundColor: theme.status.selected,
-      "&:hover": { // to keep the color consistant when selected
-        backgroundColor: theme.status.selected,
-      }
+      backgroundColor: theme.table.highlight,
     }
   }),
 );

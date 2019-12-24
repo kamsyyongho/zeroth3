@@ -52,11 +52,11 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-  // we cannot update the status to `RAW`
-  const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.RAW;
+  // we cannot update the status to `FETCHED`
+  const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.FETCHED;
 
   const updateStatus = async () => {
-    if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.RAW) {
+    if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.FETCHED) {
       setLoading(true);
       const response = await api.voiceData.updateStatus(projectId, voiceData.id, status);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -91,7 +91,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
   const renderMenuItems = () => {
     return CONTENT_STATUS_VALUES.map((status, index) => {
       return (
-        <MenuItem disabled={status === CONTENT_STATUS.RAW} key={index} value={status as CONTENT_STATUS}>
+        <MenuItem disabled={status === CONTENT_STATUS.FETCHED} key={index} value={status as CONTENT_STATUS}>
           <ListItemText primary={status} />
         </MenuItem>
       );

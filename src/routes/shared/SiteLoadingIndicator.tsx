@@ -1,7 +1,7 @@
 import { Grid } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import React from 'react';
-import SyncLoader from 'react-spinners/SyncLoader';
+import ScaleLoader from 'react-spinners/ScaleLoader';
 
 export function SiteLoadingIndicator() {
   const theme = useTheme();
@@ -14,12 +14,13 @@ export function SiteLoadingIndicator() {
     style={{ minHeight: '100vh' }}
   >
     <Grid item xs={3}>
-      <SyncLoader
-        sizeUnit={"px"}
-        size={25}
+      <ScaleLoader
+        height={50}
+        width={10}
+        radius={20}
         color={theme.palette.primary.main}
         loading={true}
       />
     </Grid>
-  </Grid>)
+  </Grid>);
 }

@@ -21,12 +21,23 @@ import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
+    card: {
+      backgroundColor: theme.palette.background.default,
+    },
+    cardContent: {
+      padding: 0,
+    },
     userCard: {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
+    font: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.header.lightBlue,
+    }
   }),
 );
 
@@ -106,9 +117,16 @@ export function UserProfile() {
 
   return (
     <Container >
+    <Card elevation={0} className={classes.card} >
+    <CardHeader title={translate('menu.profile')}
+    titleTypographyProps={{
+      className: classes.font,
+    }} />
+    <CardContent className={classes.cardContent} >
       <Box border={1} borderColor={theme.table.border} className={classes.userCard} >
         <Card elevation={0}>
-          <CardHeader title={translate('profile.user')} />
+          <CardHeader title={translate('profile.user')}
+          />
           <CardContent>
             <Typography color="textPrimary" gutterBottom >
               {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
@@ -162,6 +180,8 @@ export function UserProfile() {
             </CardActions>)}
           </Card>
         </Box>)}
+        </CardContent>
+        </Card>
       <RenameOrganizationDialog name={(organization && organization.name) ? organization.name : ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
       <ConfirmationDialog
         destructive
