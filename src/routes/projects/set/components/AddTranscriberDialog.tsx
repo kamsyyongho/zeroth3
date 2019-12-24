@@ -26,7 +26,7 @@ import { TranscribersList } from './TranscribersList';
 const useStyles = makeStyles((theme) =>
   createStyles({
     card: {
-      minWidth: 450,
+      minWidth: 550,
     },
     cardContent: {
       padding: 0,

@@ -18,7 +18,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       }
     },
     selected: {
-      backgroundColor: theme.palette.background.default,
       "&:hover": { // to keep the color consistant when selected
         backgroundColor: theme.table.highlight,
       }
