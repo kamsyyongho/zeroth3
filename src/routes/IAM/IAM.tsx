@@ -9,13 +9,14 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { Forbidden } from '../shared/Forbidden';
 import { IAMTabs } from './IAMTabs';
+import { CustomTheme } from '../../theme';
 
 
 export interface CheckedProjectsById {
   [index: number]: boolean;
 }
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     card: {
       backgroundColor: theme.palette.background.default,
@@ -23,6 +24,11 @@ const useStyles = makeStyles((theme) =>
     cardContent: {
       padding: 0,
     },
+    font: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.header.lightBlue,
+    }
   }),
 );
 
@@ -45,6 +51,9 @@ export function IAM() {
       <Card elevation={0} className={classes.card} >
         <CardHeader
           title={translate("IAM.header")}
+          titleTypographyProps={{
+            className: classes.font,
+          }}
         />
         <CardContent className={classes.cardContent} >
           <IAMTabs transcribersAccess={transcribersAccess} usersAccess={usersAccess} />

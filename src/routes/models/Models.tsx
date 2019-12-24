@@ -7,6 +7,7 @@ import React from 'react';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { CustomTheme } from '../../theme';
 import { Forbidden } from '../shared/Forbidden';
 import { ModelTabs } from './components/ModelTabs';
 
@@ -15,7 +16,7 @@ export interface CheckedProjectsById {
   [index: number]: boolean;
 }
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     card: {
       backgroundColor: theme.palette.background.default,
@@ -23,6 +24,11 @@ const useStyles = makeStyles((theme) =>
     cardContent: {
       padding: 0,
     },
+    font: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.header.lightBlue,
+    }
   }),
 );
 
@@ -43,6 +49,9 @@ export function Models() {
       <Card elevation={0} className={classes.card} >
         <CardHeader
           title={translate("models.header")}
+          titleTypographyProps={{
+            className: classes.font,
+          }}
         />
         <CardContent className={classes.cardContent} >
           <ModelTabs />

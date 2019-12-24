@@ -78,7 +78,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
-    selectedTopGraphId: topGraphs[0] && topGraphs[0].id || null,
+    selectedTopGraphId: (topGraphs[0] && topGraphs[0].id) || null,
     selectedSubGraphIds: [],
     description: "",
   };

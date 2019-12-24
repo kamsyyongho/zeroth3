@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     row: {
       borderWidth: 0,
       borderRightWidth: 2,
+      borderLeftWidth: 5,
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,

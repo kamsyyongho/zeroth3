@@ -7,10 +7,11 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { CustomTheme } from '../../theme';
 import { Path } from '../../types';
 
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     paper: {
       backgroundColor: theme.palette.background.default,
@@ -19,6 +20,13 @@ const useStyles = makeStyles((theme) =>
     button: {
       textTransform: 'none',
       fontSize: '1.25rem',
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+    },
+    font: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.header.lightBlue,
     }
   }),
 );
@@ -44,7 +52,7 @@ export const HeaderBreadcrumbs = (props: HeaderBreadcrumbsProps) => {
     const { to, title, rawTitle } = breadcrumb;
     const text = rawTitle || translate(`path.${title}`);
     if (!to) {
-      return <Typography key={index} color="textPrimary" variant='h6' >{text}</Typography>;
+      return <Typography key={index} variant='h6' className={classes.font} >{text}</Typography>;
     }
     return (
       <Button
