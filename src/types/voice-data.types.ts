@@ -29,7 +29,6 @@ export interface VoiceDataResults extends PaginatedResults {
 }
 
 export enum CONTENT_STATUS {
-  RAW = 'RAW',
   DECODED = 'DECODED',
   UNCONFIRMED_LC = 'UNCONFIRMED_LC',
   UNCONFIRMED_HC = 'UNCONFIRMED_HC',

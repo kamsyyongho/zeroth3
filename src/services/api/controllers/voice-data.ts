@@ -103,6 +103,8 @@ export class VoiceData extends ParentApi {
 
   /**
    * Gets the current voice data assigned to the current user
+   * @returns `voiceData` if there is data assigned data
+   * @returns `noContent` if status code is 204
    */
   async getAssignedData(): Promise<getAssignedDataResult> {
     const response = await this.apisauce.get<IVoiceData, ServerError>(
@@ -157,7 +159,7 @@ export class VoiceData extends ParentApi {
    * Assigns one set of assigned data to transcribe
    * - used in the editor
    * @returns `voiceData` if there is data assigned data
-   * @returns `voiceData` if there is data assigned data
+   * @returns `noContent` if status code is 204
    */
   async fetchUnconfirmedData(): Promise<fetchUnconfirmedDataResult> {
     const response = await this.apisauce.post<
