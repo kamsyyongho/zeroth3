@@ -177,6 +177,13 @@ export const en: ResourceLanguage = {
     },
     editor: {
       editor: 'Editor',
+      confirm: 'Confirm',
+      merge: 'Merge',
+      split: 'Split',
+      edit: 'Edit',
+      redo: 'Redo',
+      undo: 'Undo',
+      fetch: 'Fetch',
     },
     modelConfig: {
       header: 'Model configuration',
