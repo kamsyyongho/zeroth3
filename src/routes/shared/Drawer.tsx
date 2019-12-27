@@ -69,8 +69,8 @@ export const AppDrawer = (props: AppDrawerProps) => {
           isCurrentPath = true;
         }
         drawerItems.push(<ListItem button key={index} onClick={() => navigateToPage(to, isCurrentPath)} >
-          {Icon && <ListItemIcon >
-            <Icon color={isCurrentPath ? 'primary' : undefined} />
+        {Icon && <ListItemIcon >
+          <Icon color={isCurrentPath ? 'primary' : undefined} />
           </ListItemIcon>}
           <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
         </ListItem>);

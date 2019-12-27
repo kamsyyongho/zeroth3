@@ -17,6 +17,7 @@ const useStyles = makeStyles((theme) =>
       backgroundColor: theme.palette.primary.light,
       color: theme.palette.primary.contrastText,
       margin: 2,
+      fontWeight: 'bold',
     },
   }),
 );

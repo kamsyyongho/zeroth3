@@ -9,6 +9,7 @@ import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from '
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
+import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
 import { SnackbarError } from '../../types/snackbar.types';
@@ -646,7 +647,7 @@ export function Editor() {
       if (lastWordTabIndex === undefined || lastWordTabIndex < wordTabIndex) {
         lastWordTabIndex = wordTabIndex;
       }
-    } 
+    }
     // in the same segment but a new later word
     if (segmentIndex === maxSegmentIndex && wordIndex > maxWordIndex) {
       lastWordLocation = [segmentIndex, wordIndex];
@@ -770,7 +771,7 @@ export function Editor() {
 
       const isFirst = firstWordTabIndex === tabIndex;
       const isLast = lastWordTabIndex === tabIndex;
-      
+
       let isSplitSelected = false;
       if (splitLocation &&
         splitLocation.segmentId === segment.id &&
@@ -819,148 +820,148 @@ export function Editor() {
             onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
             className={classes.splitButton}
           >
-            {'|∙|'}
+          <ICONS.InlineSplit />
           </Button>
-        )}
+              )}
         {content}
       </React.Fragment>);
-    });
-    return words;
-  };
-
-  function rowRenderer({ key, index, style, parent }: ListRowProps) {
+          });
+          return words;
+        };
+      
+  function rowRenderer({key, index, style, parent}: ListRowProps) {
     const isRowSelected = segmentMergeIndexes.has(index);
-    const isMergeMode = editorMode === EDITOR_MODES.merge;
-
-    return (
+            const isMergeMode = editorMode === EDITOR_MODES.merge;
+        
+            return (
       segments[index] && <CellMeasurer
-        key={key}
-        style={style}
-        parent={parent}
-        cache={virtualListCache}
-        columnIndex={0}
-        rowIndex={index}
-      >
-        <Grid container spacing={2} >
-          <Grid item>
-            <Button
-              className={!isMergeMode ? classes.segmentTimeButton : undefined}
-              color='primary'
-              disabled={!isMergeMode}
-              variant={isRowSelected ? 'contained' : 'outlined'}
-              onClick={() => handleSegmentToMergeClick(index)}
+              key={key}
+              style={style}
+              parent={parent}
+              cache={virtualListCache}
+              columnIndex={0}
+              rowIndex={index}
             >
-              {formatSecondsDuration(segments[index].start)}
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm container>
-            {renderWords(segments[index], index)}
-          </Grid>
-        </Grid>
-      </CellMeasurer>
-    );
-  }
-
-  /**
-   * keeps track of where the timer is
-   * - used to keep track of which word is currently playing
-   * @params time
-   */
+              <Grid container spacing={2} >
+                <Grid item>
+                  <Button
+                    className={!isMergeMode ? classes.segmentTimeButton : undefined}
+                    color='primary'
+                    disabled={!isMergeMode}
+                    variant={isRowSelected ? 'contained' : 'outlined'}
+                    onClick={() => handleSegmentToMergeClick(index)}
+                  >
+                    {formatSecondsDuration(segments[index].start)}
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm container>
+                  {renderWords(segments[index], index)}
+                </Grid>
+              </Grid>
+            </CellMeasurer>
+            );
+          }
+        
+          /**
+           * keeps track of where the timer is
+           * - used to keep track of which word is currently playing
+           * @params time
+           */
   const handlePlaybackTimeChange = (time: number) => {
-    setPlaybackTime(time);
-    // to allow us to continue to force seeking the same word during playback
-    setTimeToSeekTo(undefined);
-  };
-
+              setPlaybackTime(time);
+            // to allow us to continue to force seeking the same word during playback
+            setTimeToSeekTo(undefined);
+          };
+        
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />
-  }
-
-
+            }
+          
+          
   if (noRemainingContent) {
     return <div>TEST NOTHING TO FETCH!!</div>;
-  }
-
+          }
+        
   if (initialFetchDone && noAssignedData) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} />;
-  }
-
+          }
+        
   if (!voiceData) {
     return <div>TEST NO DATA!!</div>;
-  }
-
+          }
+        
   if (!projectId) {
     return <div>TEST INVALID PROJECT ID!!</div>;
-  }
-
-  const disabledControls = getDisabledControls();
-
-  return (
-    <>
-      <EditorControls
-        onModeChange={handleModeChange}
-        onAction={handleActionClick}
-        editorMode={editorMode}
-        disabledControls={disabledControls}
-        loading={saveSegmentsLoading || confirmSegmentsLoading}
-      />
-      {alreadyConfirmed && (<StarRating
-        voiceData={voiceData}
-        projectId={projectId}
-      />)}
-      <Container
-        className={classes.container}
-      >
-        <Paper
-          style={{ marginTop: 25 }}
-          elevation={5}
-        >
-          {segmentsLoading ? <BulletList /> :
-            <div style={{
-              padding: 15,
-              height: windowSize.height && (windowSize.height - 320),
-              minHeight: 250,
-            }}>
-              <AutoSizer>
-                {({ height, width }) => {
-                  return (
-                    <List
-                      className={classes.list}
-                      height={height}
-                      rowCount={segments.length}
-                      rowHeight={virtualListCache.rowHeight}
-                      rowRenderer={rowRenderer}
-                      width={width}
-                      deferredMeasurementCache={virtualListCache}
-                    />
-                  );
-                }}
-              </AutoSizer>
-            </div>
           }
-          <AudioPlayer
-            url={voiceData.audioUrl}
-            timeToSeekTo={timeToSeekTo}
-            onTimeChange={handlePlaybackTimeChange}
-            onReady={handlePlayerRendered}
-          />
-        </Paper>
-      </Container >
-      <ConfirmationDialog
-        destructive
-        titleText={`TEST DISCARD CHANGES?`}
-        submitText={translate('common.discard')}
-        open={discardDialogOpen}
-        onSubmit={discardWordChanges}
-        onCancel={closeDiscardDialog}
-      />
-      <ConfirmationDialog
-        titleText={`TEST CONFIRM TRANSCRIPT?`}
-        submitText={translate('editor.confirm')}
-        open={confirmDialogOpen}
-        onSubmit={confirmData}
-        onCancel={closeConfirmDialog}
-      />
-    </>
-  );
-}
+        
+          const disabledControls = getDisabledControls();
+        
+          return (
+    <>
+              <EditorControls
+                onModeChange={handleModeChange}
+                onAction={handleActionClick}
+                editorMode={editorMode}
+                disabledControls={disabledControls}
+                loading={saveSegmentsLoading || confirmSegmentsLoading}
+              />
+              {alreadyConfirmed && (<StarRating
+                voiceData={voiceData}
+                projectId={projectId}
+              />)}
+              <Container
+                className={classes.container}
+              >
+                <Paper
+                  style={{ marginTop: 25 }}
+                  elevation={5}
+                >
+                  {segmentsLoading ? <BulletList /> :
+                    <div style={{
+                      padding: 15,
+                      height: windowSize.height && (windowSize.height - 320),
+                      minHeight: 250,
+                    }}>
+                      <AutoSizer>
+                        {({ height, width }) => {
+                          return (
+                            <List
+                              className={classes.list}
+                              height={height}
+                              rowCount={segments.length}
+                              rowHeight={virtualListCache.rowHeight}
+                              rowRenderer={rowRenderer}
+                              width={width}
+                              deferredMeasurementCache={virtualListCache}
+                            />
+                          );
+                        }}
+                      </AutoSizer>
+                    </div>
+                  }
+                  <AudioPlayer
+                    url={voiceData.audioUrl}
+                    timeToSeekTo={timeToSeekTo}
+                    onTimeChange={handlePlaybackTimeChange}
+                    onReady={handlePlayerRendered}
+                  />
+                </Paper>
+              </Container >
+              <ConfirmationDialog
+                destructive
+                titleText={`TEST DISCARD CHANGES?`}
+                submitText={translate('common.discard')}
+                open={discardDialogOpen}
+                onSubmit={discardWordChanges}
+                onCancel={closeDiscardDialog}
+              />
+              <ConfirmationDialog
+                titleText={`TEST CONFIRM TRANSCRIPT?`}
+                submitText={translate('editor.confirm')}
+                open={confirmDialogOpen}
+                onSubmit={confirmData}
+                onCancel={closeConfirmDialog}
+              />
+            </>
+            );
+          };

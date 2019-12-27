@@ -1,8 +1,11 @@
+/* eslint-disable react/display-name */
 import { SvgIconProps } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import { FaRegEdit, FaUserShield } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
-import { SvgIconWrapper } from '../routes/shared/SvgIconWrapper';
+import SvgIcon from '@material-ui/core/SvgIcon';
+import React from 'react';
+import { ICONS } from '../theme/icons';
 
 /**
  * - `to` - used as the router path
@@ -21,7 +24,7 @@ export const PATHS: { [x: string]: Path } = {
   home: {
     to: '/',
     title: 'home',
-    Icon: HomeIcon,
+    Icon: props => <ICONS.Home {...props} />,
   },
   profile: {
     to: '/profile',
@@ -29,7 +32,7 @@ export const PATHS: { [x: string]: Path } = {
   IAM: {
     to: '/iam',
     title: 'IAM',
-    Icon: props => SvgIconWrapper({ ...props, children: FaUserShield }),
+    Icon: props => <ICONS.IAM {...props} />,
   },
   project: {
     to: '/project/:projectId',
@@ -42,11 +45,11 @@ export const PATHS: { [x: string]: Path } = {
   models: {
     to: '/models',
     title: 'models',
-    Icon: props => SvgIconWrapper({ ...props, children: GiCube }),
+    Icon: props => <ICONS.Models {...props} />,
   },
   editor: {
     to: '/editor',
     title: 'editor',
-    Icon: props => SvgIconWrapper({ ...props, children: FaRegEdit }),
+    Icon: props => <ICONS.Editor {...props} />,
   },
 };

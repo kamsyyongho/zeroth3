@@ -20,7 +20,7 @@ import WaveSurfer from 'wavesurfer.js';
 //@ts-ignore
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { SvgIconWrapper } from './SvgIconWrapper';
+import SvgIcon from '@material-ui/core/SvgIcon';
 
 
 const useStyles = makeStyles((theme) =>
@@ -347,9 +347,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
     <Button aria-label="seek-lock" onClick={toggleLockSeek} >
       {autoSeekDisabled ?
-        (<SvgIconWrapper><TiLockClosedOutline /></SvgIconWrapper>)
+        (<SvgIcon component={TiLockClosedOutline} />)
         :
-        (<SvgIconWrapper><TiLockOpenOutline /></SvgIconWrapper>)
+        (<SvgIcon component={TiLockOpenOutline} />)
       }
     </Button>
   </ButtonGroup>);

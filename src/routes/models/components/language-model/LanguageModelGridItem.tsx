@@ -104,11 +104,10 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
         >
           <Typography
             className={classes.category}
-            variant='subtitle2'
           >
             {`${translate('common.version')}:`}
           </Typography>
-          <Typography gutterBottom color="textSecondary" className={classes.text}>
+          <Typography color="textSecondary" className={classes.text}>
             {model.version}
           </Typography>
         </Grid>
@@ -122,11 +121,10 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
         >
           <Typography
             className={classes.category}
-            variant='subtitle2'
           >
             {`${translate('forms.top')}:`}
           </Typography>
-          <Typography gutterBottom component="p" className={classes.text}>
+          <Typography component="p" className={classes.text}>
             {model.topGraph.name}
           </Typography>
         </Grid>
@@ -140,7 +138,6 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
         >
           <Typography
             className={classes.category}
-            variant='subtitle2'
           >
             {`${translate('forms.sub')}:`}
           </Typography>
