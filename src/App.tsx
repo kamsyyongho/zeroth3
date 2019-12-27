@@ -1,6 +1,7 @@
 
 import { createBrowserHistory } from 'history';
 import React from "react";
+import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router } from "react-router-dom";
 import { useApi } from './hooks/api/useApi';
 import { useGlobalState } from './hooks/global-state/useGlobalState';
@@ -17,6 +18,7 @@ import { Models } from './routes/models/Models';
 import { UserProfile } from './routes/profile/UserProfile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Header } from './routes/shared/header/Header';
+import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { PATHS } from './types';
 
@@ -47,14 +49,16 @@ function App() {
   return (
     <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} globalState={globalState} >
       <Router history={history}>
-        <Header />
-        <Route exact path={PATHS.home.to} component={Home} />
-        <Route path={PATHS.IAM.to} component={IAM} />
-        <Route exact path={PATHS.project.to} component={ProjectDetails} />
-        <Route exact path={PATHS.modelConfig.to} component={ModelConfigPage} />
-        <Route path={PATHS.editor.to} component={Editor} />
-        <Route path={PATHS.models.to} component={Models} />
-        <Route path={PATHS.profile.to} component={UserProfile} />
+        <ErrorBoundary FallbackComponent={PageErrorFallback}>
+          <Header />
+        </ErrorBoundary>
+        <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
+        <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
+        <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
+        <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
+        <Route path={PATHS.editor.to} component={withErrorBoundary(Editor, PageErrorFallback)} />
+        <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
+        <Route path={PATHS.profile.to} component={withErrorBoundary(UserProfile, PageErrorFallback)} />
       </Router>
     </RootProvider>
   );

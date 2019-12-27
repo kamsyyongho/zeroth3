@@ -14,6 +14,7 @@ export const en: ResourceLanguage = {
       discard: 'Discard',
       dismiss: 'Dismiss',
       error: 'Error',
+      pageError: 'Something went wrong',
       reset: 'Reset',
       success: 'Success',
       failure: 'Failure',

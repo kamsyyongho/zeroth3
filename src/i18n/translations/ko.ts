@@ -14,6 +14,7 @@ export const ko: ResourceLanguage = {
       discard: 'Discard',
       dismiss: 'Dismiss',
       error: '오류',
+      pageError: 'Something went wrong',
       reset: 'Reset',
       success: 'Success',
       failure: 'Failure',

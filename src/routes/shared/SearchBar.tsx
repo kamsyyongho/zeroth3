@@ -3,10 +3,9 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import SearchIcon from '@material-ui/icons/Search';
 import matchSorter from 'match-sorter';
-import { ICONS } from '../../theme/icons';
 import React from 'react';
+import { ICONS } from '../../theme/icons';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

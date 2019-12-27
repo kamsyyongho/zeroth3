@@ -3,6 +3,7 @@ import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
+import SvgIcon from '@material-ui/core/SvgIcon';
 import Forward5Icon from '@material-ui/icons/Forward5';
 import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -20,10 +21,10 @@ import WaveSurfer from 'wavesurfer.js';
 //@ts-ignore
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import SvgIcon from '@material-ui/core/SvgIcon';
+import { CustomTheme } from '../../theme';
 
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     content: {
       padding: 0,
@@ -39,6 +40,9 @@ const useStyles = makeStyles((theme) =>
     controls: {
       marginLeft: 10,
       marginRight: 10,
+    },
+    error: {
+      color: theme.error,
     },
   }),
 );
@@ -388,9 +392,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           </Grid>
         </Grid>
       )}
-      {(!url || !!errorText) && (
-        <>
-          <Grid
+      {(!url || !!errorText) && (<Grid
             container
             direction='row'
             spacing={1}
@@ -399,13 +401,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
             alignContent='center'
           >
             <Grid item>
-              <WarningIcon color='secondary' />
+              <WarningIcon className={classes.error} />
             </Grid>
             <Grid item>
               <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
             </Grid>
-          </Grid>
-        </>)}
+          </Grid>)}
       <div className={errorText ? classes.hidden : classes.content}>
         <div id="waveform" />
         <div id="wave-timeline" />
