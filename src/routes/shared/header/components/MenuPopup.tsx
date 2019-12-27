@@ -6,22 +6,16 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import PersonIcon from '@material-ui/icons/Person';
 import React from 'react';
-import { FiLogOut } from 'react-icons/fi';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakUser } from '../../../../hooks/keycloak/useKeycloak';
+import { ICONS } from '../../../../theme/icons';
 import { Organization, PATHS } from '../../../../types';
-import { SvgIconWrapper } from '../../SvgIconWrapper';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
     userInfo: {
       outline: 'none', // removes the focus outline,
     },
@@ -47,7 +41,7 @@ function MenuPopup(props: MenuPopupProps) {
   const isCurrentPath = location.pathname === PATHS.profile.to;
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if(onClick && typeof onClick === 'function'){
+    if (onClick && typeof onClick === 'function') {
       onClick();
     }
     setAnchorEl(event.currentTarget);
@@ -66,7 +60,9 @@ function MenuPopup(props: MenuPopupProps) {
 
   return (
     <>
-      <IconButton onClick={handleClick} color={"inherit"} edge='start' className={classes.menuButton} ><AccountCircleIcon /></IconButton>
+      <IconButton onClick={handleClick} color={"inherit"} edge='start' >
+        <ICONS.Profile />
+      </IconButton>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
@@ -87,13 +83,13 @@ function MenuPopup(props: MenuPopupProps) {
         </div>)}
         <MenuItem onClick={navigateToProfile} >
           <ListItemIcon >
-            <PersonIcon color={isCurrentPath ? 'primary' : undefined} />
+            <ICONS.Account color={isCurrentPath ? 'primary' : undefined} />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={translate('menu.profile')} />
         </MenuItem>
         <MenuItem onClick={api.logout}>
           <ListItemIcon>
-            <SvgIconWrapper ><FiLogOut /></SvgIconWrapper>
+            <ICONS.Logout />
           </ListItemIcon>
           <ListItemText primary={translate('menu.logout')} />
         </MenuItem>

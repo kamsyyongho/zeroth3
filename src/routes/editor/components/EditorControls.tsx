@@ -2,16 +2,11 @@ import Button, { ButtonProps } from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import CallSplitIcon from '@material-ui/icons/CallSplit';
-import EditIcon from '@material-ui/icons/Edit';
-import MergeTypeIcon from '@material-ui/icons/MergeType';
 import PublishIcon from '@material-ui/icons/Publish';
-import RedoIcon from '@material-ui/icons/Redo';
-import SaveIcon from '@material-ui/icons/Save';
-import UndoIcon from '@material-ui/icons/Undo';
 import React from 'react';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { ICONS } from '../../../theme/icons';
 import { EDITOR_MODES } from '../Editor';
 
 const useStyles = makeStyles((theme) =>
@@ -108,7 +103,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     </Button>);
 
   const renderButtons = (controlOrder: EDITOR_CONTROLS[]) => {
-    return controlOrder.map((control, index) => {
+    return controlOrder.map((control) => {
       let label = '';
       let icon: JSX.Element | null = null;
       let props: ButtonProps = {};
@@ -116,7 +111,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       switch (control) {
         case EDITOR_CONTROLS.save:
           label = translate('common.save');
-          icon = <SaveIcon />;
+          icon = <ICONS.Save />;
           props = {
             onClick: () => onAction(),
             disabled: disabledControls.includes(EDITOR_CONTROLS.save)
@@ -132,7 +127,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           break;
         case EDITOR_CONTROLS.undo:
           label = translate('editor.undo');
-          icon = <UndoIcon />;
+          icon = <ICONS.Undo />;
           props = {
             onClick: () => { },
             disabled: true,
@@ -140,7 +135,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           break;
         case EDITOR_CONTROLS.redo:
           label = translate('editor.redo');
-          icon = <RedoIcon />;
+          icon = <ICONS.Redo />;
           props = {
             onClick: () => { },
             disabled: true,
@@ -148,7 +143,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           break;
         case EDITOR_CONTROLS.edit:
           label = translate('editor.edit');
-          icon = <EditIcon />;
+          icon = <ICONS.Edit />;
           selected = editorMode === EDITOR_MODES.edit;
           props = {
             onClick: () => onModeChange(EDITOR_MODES.edit),
@@ -156,7 +151,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           break;
         case EDITOR_CONTROLS.merge:
           label = translate('editor.merge');
-          icon = <MergeTypeIcon />;
+          icon = <ICONS.Merge />;
           selected = editorMode === EDITOR_MODES.merge;
           props = {
             onClick: () => onModeChange(EDITOR_MODES.merge),
@@ -165,7 +160,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           break;
         case EDITOR_CONTROLS.split:
           label = translate('editor.split');
-          icon = <CallSplitIcon />;
+          icon = <ICONS.Split />;
           selected = editorMode === EDITOR_MODES.split;
           props = {
             onClick: () => onModeChange(EDITOR_MODES.split),

@@ -185,7 +185,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                   >
                     {`${translate('forms.thresholdLc')}:`}
                   </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                  <Typography color="textSecondary" className={classes.text}>
                     {thresholdLc}
                   </Typography>
                 </Grid>
@@ -203,7 +203,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                   >
                     {`${translate('forms.thresholdHc')}:`}
                   </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                  <Typography color="textSecondary" className={classes.text}>
                     {thresholdHc}
                   </Typography>
                 </Grid>
@@ -234,7 +234,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                   >
                     {`${translate('forms.top')}:`}
                   </Typography>
-                  <Typography gutterBottom color="textSecondary" className={classes.text}>
+                  <Typography color="textSecondary" className={classes.text}>
                     {languageModel.topGraph.name}
                   </Typography>
                 </Grid>
@@ -284,7 +284,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                   >
                     {`${translate('forms.sampleRate')}:`}
                   </Typography>
-                  <Typography gutterBottom component="p" className={classes.text}>
+                  <Typography component="p" className={classes.text}>
                     {acousticModel.sampleRate}{' kHz'}
                   </Typography>
                 </Grid>

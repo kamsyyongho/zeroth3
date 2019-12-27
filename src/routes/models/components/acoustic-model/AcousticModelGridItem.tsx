@@ -100,7 +100,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
           >
             {`${translate('common.version')}:`}
           </Typography>
-          <Typography gutterBottom color="textSecondary" className={classes.text}>
+          <Typography color="textSecondary" className={classes.text}>
             {model.version}
           </Typography>
         </Grid>
@@ -118,7 +118,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
           >
             {`${translate('forms.sampleRate')}:`}
           </Typography>
-          <Typography gutterBottom component="p" className={classes.text}>
+          <Typography component="p" className={classes.text}>
             {model.sampleRate}{' kHz'}
           </Typography>
         </Grid>

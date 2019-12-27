@@ -4,25 +4,21 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MenuIcon from '@material-ui/icons/Menu';
 import { useSnackbar } from 'notistack';
 import React from 'react';
-import { FaProjectDiagram } from 'react-icons/fa';
-import { MdTranslate } from 'react-icons/md';
 import { Link } from "react-router-dom";
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import logo from '../../../static/images/logo@2x.png';
+import { ICONS } from '../../../theme/icons';
+import { IMAGES } from '../../../theme/images';
 import { PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
-import { SvgIconWrapper } from '../SvgIconWrapper';
 import MenuPopup from './components/MenuPopup';
 
 
@@ -42,6 +38,13 @@ const useStyles = makeStyles((theme) =>
       margin: theme.spacing(2),
     },
     toolbar: theme.mixins.toolbar,
+    logoButton: {
+      height: 24,
+    },
+    logo: {
+      fontSize: 120,
+      color: theme.palette.primary.contrastText,
+    }
   }),
 );
 
@@ -68,7 +71,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const showProjectsDialog = () => {
     closeDrawer();
     setIsProjectsOpen(true);
-  }
+  };
   const hideProjectsDialog = () => setIsProjectsOpen(false);
 
   const getOrganization = async () => {
@@ -152,14 +155,14 @@ export const Header: React.FunctionComponent<{}> = (props) => {
               edge='start'
               className={classes.menuButton}
             >
-              <MenuIcon />
+              <ICONS.Menu fontSize='large' />
             </IconButton>
-            <Button onClick={closeDrawer} component={Link} to={PATHS.home.to as string}>
-              <img src={logo} alt='Zeroth EE' height={25} />
+            <Button onClick={closeDrawer} component={Link} to={PATHS.home.to as string} className={classes.logoButton} >
+              {IMAGES.Logo.svg && IMAGES.Logo.svg({ className: classes.logo })}
             </Button>
             <Button
-              startIcon={<SvgIconWrapper ><FaProjectDiagram /></SvgIconWrapper>}
-              endIcon={<ExpandMoreIcon />}
+              startIcon={<ICONS.Projects />}
+              endIcon={<ICONS.ArrowDown />}
               color={"inherit"}
               className={classes.projectButton}
               onClick={showProjectsDialog}
@@ -182,7 +185,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
               edge='start'
               className={classes.menuButton}
             >
-              <SvgIconWrapper ><MdTranslate /></SvgIconWrapper>
+              <ICONS.Translate />
             </IconButton>
             <MenuPopup
               onClick={closeDrawer}
