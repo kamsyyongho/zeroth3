@@ -9,6 +9,8 @@ import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import Replay5Icon from '@material-ui/icons/Replay5';
 import StopIcon from '@material-ui/icons/Stop';
+import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import WarningIcon from '@material-ui/icons/Warning';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -69,6 +71,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [errorText, setErrorText] = React.useState('');
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
+  const [isMute, setIsMute] = React.useState(false);
   const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [durationDisplay, setDurationDisplay] = React.useState('0');
@@ -232,6 +235,31 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  /**
+   * Toggle volume to `0` or `1`
+   * - setting volume because `setMute` / `toggleMute`
+   * methods are not working properly. They are not unmuting.
+   * @param currentMute 
+   */
+  const toggleMute = (currentMute: boolean) => {
+    if (waveSurfer) {
+      try {
+        const volume = currentMute ? 0 : 1;
+        waveSurfer.setVolume(volume);
+      } catch (error) {
+        handleError(error.message);
+      }
+    }
+  };
+
+  /**
+   * mute when the value has changed
+   */
+  React.useEffect(() => {
+    toggleMute(isMute);
+  }, [isMute]);
+
+
   React.useEffect(() => {
     const initPlayer = () => {
       const timeline = TimelinePlugin.create({
@@ -272,8 +300,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // const initialWaveSurfer = WaveSurfer.create({
       waveSurfer = WaveSurfer.create({
         container: '#waveform',
-        height: 64, // default is 128
         backend: 'MediaElement', // tell it to use pre-recorded peaks
+        height: 64, // default is 128
+        progressColor: '#2f99cb',
+        cursorColor: '#ff4d59',
+        waveColor: '#d4d3d3',
+        barWidth: 2,
+        barRadius: 2,
         scrollParent: true,
         plugins: [
           timeline,
@@ -349,6 +382,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
+    <Button aria-label="seek-lock" onClick={() => setIsMute(!isMute)} >
+      {isMute ?
+        (<VolumeOffIcon />)
+        :
+        (<VolumeUpIcon />)
+      }
+    </Button>
     <Button aria-label="seek-lock" onClick={toggleLockSeek} >
       {autoSeekDisabled ?
         (<SvgIcon component={TiLockClosedOutline} />)
@@ -393,20 +433,20 @@ export function AudioPlayer(props: AudioPlayerProps) {
         </Grid>
       )}
       {(!url || !!errorText) && (<Grid
-            container
-            direction='row'
-            spacing={1}
-            justify='center'
-            alignItems='center'
-            alignContent='center'
-          >
-            <Grid item>
-              <WarningIcon className={classes.error} />
-            </Grid>
-            <Grid item>
-              <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
-            </Grid>
-          </Grid>)}
+        container
+        direction='row'
+        spacing={1}
+        justify='center'
+        alignItems='center'
+        alignContent='center'
+      >
+        <Grid item>
+          <WarningIcon className={classes.error} />
+        </Grid>
+        <Grid item>
+          <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
+        </Grid>
+      </Grid>)}
       <div className={errorText ? classes.hidden : classes.content}>
         <div id="waveform" />
         <div id="wave-timeline" />
