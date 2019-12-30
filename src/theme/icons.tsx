@@ -1,4 +1,5 @@
 /* eslint-disable react/display-name */
+import { useTheme } from '@material-ui/core/styles';
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon';
 import React from "react";
 import { ReactComponent as Account } from './icons/account.svg';
@@ -24,8 +25,8 @@ import { ReactComponent as Menu } from './icons/menu.svg';
 import { ReactComponent as Merge } from './icons/merge.svg';
 import { ReactComponent as Models } from './icons/models.svg';
 import { ReactComponent as More } from './icons/more.svg';
-import { ReactComponent as Organization } from './icons/organization.svg';
-import { ReactComponent as Profile } from './icons/profile.svg';
+import { OrganizationSvgIcon as Organization } from './icons/OrganizationSvgIcon';
+import { ProfileSvgIcon as Profile } from './icons/ProfileSvgIcon';
 import { ReactComponent as Projects } from './icons/projects.svg';
 import { ReactComponent as Redo } from './icons/redo.svg';
 import { ReactComponent as Remove } from './icons/remove.svg';
@@ -37,6 +38,32 @@ import { ReactComponent as Training } from './icons/training.svg';
 import { ReactComponent as Translate } from './icons/translate.svg';
 import { ReactComponent as Trash } from './icons/trash.svg';
 import { ReactComponent as Undo } from './icons/undo.svg';
+
+/**
+ * used to get the color from the icon component and pass it to the custom svg
+ * @param props 
+ */
+const getColor = (props: SvgIconProps) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const theme = useTheme();
+  let color = '#000';
+  if (props.style?.color) {
+    color = props.style.color;
+  } else {
+    switch (props.color) {
+      case 'primary':
+        color = theme.palette.primary.main;
+        break;
+      case 'secondary':
+        color = theme.palette.secondary.main;
+        break;
+      case 'disabled':
+        color = theme.palette.action.disabled;
+        break;
+    }
+  }
+  return color;
+};
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface ICONS {
@@ -145,12 +172,14 @@ export const ICONS = {
   More: (props: SvgIconProps) => <SvgIcon {...props}><More /></SvgIcon>,
   /**
    * An icon of a multi-story office building
+   * - color must be provided in the `color` prop or the `style` props as `color={{color}}`
    */
-  Organization: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Organization /></SvgIcon>,
+  Organization: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Organization color={getColor(props)} /></SvgIcon>,
   /**
    * An outline of a person in a circle
+   * - color must be provided in the `color` prop or the `style` props as `color={{color}}`
    */
-  Profile: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Profile /></SvgIcon>,
+  Profile: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Profile color={getColor(props)} /></SvgIcon>,
   /**
    * Three hexagons / cube outlines arranged next to each other.
    */
