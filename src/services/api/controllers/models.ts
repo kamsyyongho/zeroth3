@@ -7,6 +7,7 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  AcousticModelEditRequest,
   AcousticModelRequest,
   deleteAcousticModelResult,
   deleteLanguageModelResult,
@@ -113,26 +114,17 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Update an existing acoustic model
+   * Update an existing acoustic model's description
    * @param modelId
-   * @param name
-   * @param sampleRate - in kHz
-   * @param location
    * @param description
    * @returns a `conflict` kind if the model cannot be updated
    */
   async updateAcousticModel(
     modelId: string,
-    name: string,
-    sampleRate: number,
-    location: string,
     description = ''
   ): Promise<updateAcousticModelResult> {
     // compile data
-    const request: AcousticModelRequest = {
-      name,
-      sampleRate,
-      location,
+    const request: AcousticModelEditRequest = {
       description,
     };
     // make the api call

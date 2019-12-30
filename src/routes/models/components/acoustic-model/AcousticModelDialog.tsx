@@ -58,27 +58,31 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
   const sampleRateText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.sampleRate.min, second: VALIDATION.MODELS.ACOUSTIC.sampleRate.max });
 
-  const formSchema = yup.object({
+  const yupSchemaObject = {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     location: yup.string().required(requiredTranslationText).trim(),
     sampleRate: yup.number().integer(integerText).typeError(numberText).min(VALIDATION.MODELS.ACOUSTIC.sampleRate.min, sampleRateText).max(VALIDATION.MODELS.ACOUSTIC.sampleRate.max, sampleRateText).required(requiredTranslationText),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-  });
-  type FormValues = yup.InferType<typeof formSchema>;
+  };
+
+  const formSchema = yup.object(yupSchemaObject);
+  type FormValues = {
+    name: string;
+    location: string;
+    sampleRate: number;
+    description: string;
+  };
   let initialValues: FormValues = {
     name: "",
     location: "",
     sampleRate: 8,
     description: "",
   };
-  if (modelToEdit) {
+
+  if (isEdit && modelToEdit) {
     initialValues = {
       ...initialValues,
-      name: modelToEdit.name,
-      location: modelToEdit.location,
-      description: modelToEdit.description,
-      // we receive Hz from the server, but our form sends send kHz
-      sampleRate: modelToEdit.sampleRate / 1000,
+      description: modelToEdit.description || '',
     };
   }
 
@@ -91,10 +95,10 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const { name, description, location, sampleRate } = values;
       let response: postAcousticModelResult;
+      const { name, description, location, sampleRate } = values;
       if (isEdit && modelToEdit) {
-        response = await api.models.updateAcousticModel(modelToEdit.id, name.trim(), sampleRate, location.trim(), description.trim());
+        response = await api.models.updateAcousticModel(modelToEdit.id, description.trim());
       } else {
         response = await api.models.postAcousticModel(name.trim(), sampleRate, location.trim(), description.trim());
       }
@@ -138,10 +142,12 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='location' component={TextFormField} label={translate("forms.location")} errorOverride={isError} />
-                <Field name='sampleRate' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.sampleRate_khz")} errorOverride={isError} />
+                {!isEdit && <>
+                  <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
+                  <Field name='location' component={TextFormField} label={translate("forms.location")} errorOverride={isError} />
+                  <Field name='sampleRate' component={SelectFormField}
+                    options={formSelectOptions} label={translate("forms.sampleRate_khz")} errorOverride={isError} />
+                </>}
                 <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
               </Form>
             </DialogContent>
