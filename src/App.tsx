@@ -15,7 +15,7 @@ import { IAM } from './routes/IAM/IAM';
 import { Home } from './routes/main/Home';
 import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
 import { Models } from './routes/models/Models';
-import { UserProfile } from './routes/profile/UserProfile';
+import { Profile } from './routes/profile/Profile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Header } from './routes/shared/header/Header';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
@@ -40,7 +40,7 @@ function App() {
     if (keycloakInitialized) {
       initApi(keycloak.keycloak, keycloak.logout);
     }
-  }, [initApi, keycloak, keycloakInitialized]);
+  }, [keycloakInitialized]);
 
   if (!keycloakInitialized || !apiInitialized) {
     return (<SiteLoadingIndicator />);
@@ -58,7 +58,7 @@ function App() {
         <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
         <Route path={PATHS.editor.to} component={withErrorBoundary(Editor, PageErrorFallback)} />
         <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
-        <Route path={PATHS.profile.to} component={withErrorBoundary(UserProfile, PageErrorFallback)} />
+        <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
       </Router>
     </RootProvider>
   );
