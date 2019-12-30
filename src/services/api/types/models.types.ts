@@ -12,6 +12,10 @@ import { GeneralApiProblem } from './api-problem.types';
 
 export type AcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
 
+export interface AcousticModelEditRequest {
+  description: string;
+}
+
 export interface LanguageModelRequest {
   name: string;
   description: string;
