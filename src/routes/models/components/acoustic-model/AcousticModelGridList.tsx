@@ -230,7 +230,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
               onClick={handleCreateOpen}
               startIcon={<AddIcon />}
             >
-              {translate('models.tabs.acousticModel.create')}
+              {translate('models.createModel')}
             </Button>
           </Grid>
         </Grid>)} />}

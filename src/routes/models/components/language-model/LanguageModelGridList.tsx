@@ -183,22 +183,22 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
       return <Typography align='center' variant='h6' >{translate('models.tabs.languageModel.noResults')}</Typography>;
     }
     return models.map((model, index) => (
-    <LanguageModelGridItem
-      key={index}
-      model={model}
-      canModify={canModify}
-      editOpen={editOpen}
-      checkedModels={checkedModels}
-      topGraphs={topGraphs}
-      subGraphs={subGraphs}
-      handleEditClose={handleEditClose}
-      handleEditOpen={handleEditOpen}
-      handleSubGraphListUpdate={handleSubGraphListUpdate}
-      handleEditSuccess={handleEditSuccess}
-      handleModelCheck={handleModelCheck}
-    />
-  ));
-}
+      <LanguageModelGridItem
+        key={index}
+        model={model}
+        canModify={canModify}
+        editOpen={editOpen}
+        checkedModels={checkedModels}
+        topGraphs={topGraphs}
+        subGraphs={subGraphs}
+        handleEditClose={handleEditClose}
+        handleEditOpen={handleEditOpen}
+        handleSubGraphListUpdate={handleSubGraphListUpdate}
+        handleEditSuccess={handleEditSuccess}
+        handleModelCheck={handleModelCheck}
+      />
+    ));
+  };
 
   if (modelsLoading) {
     return <BulletList />;
@@ -239,7 +239,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
               onClick={handleCreateOpen}
               startIcon={<AddIcon />}
             >
-              {translate('models.tabs.languageModel.create')}
+              {translate('models.createModel')}
             </Button>
           </Grid>
         </Grid>)} />}
