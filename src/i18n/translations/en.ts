@@ -149,6 +149,7 @@ export const en: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',

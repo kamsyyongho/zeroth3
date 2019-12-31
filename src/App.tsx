@@ -2,7 +2,7 @@
 import { createBrowserHistory } from 'history';
 import React from "react";
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
-import { Route, Router } from "react-router-dom";
+import { Route, Router, Switch } from "react-router-dom";
 import { useApi } from './hooks/api/useApi';
 import { useGlobalState } from './hooks/global-state/useGlobalState';
 import { useI18n } from './hooks/i18n/useI18n';
@@ -18,6 +18,7 @@ import { Models } from './routes/models/Models';
 import { Profile } from './routes/profile/Profile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
 import { Header } from './routes/shared/header/Header';
+import { NotFound } from './routes/shared/NotFound';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { PATHS } from './types';
@@ -52,13 +53,16 @@ function App() {
         <ErrorBoundary FallbackComponent={PageErrorFallback}>
           <Header />
         </ErrorBoundary>
-        <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
-        <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
-        <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
-        <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
-        <Route path={PATHS.editor.to} component={withErrorBoundary(Editor, PageErrorFallback)} />
-        <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
-        <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
+        <Switch>
+          <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
+          <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
+          <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
+          <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
+          <Route path={PATHS.editor.to} component={withErrorBoundary(Editor, PageErrorFallback)} />
+          <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
+          <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
+          <Route component={NotFound} />
+        </Switch>
       </Router>
     </RootProvider>
   );

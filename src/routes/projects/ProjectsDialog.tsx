@@ -217,17 +217,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     alignContent='center'
     alignItems='center'
   >
-    <Grid item >
-      <IconButton
-        aria-label="create-button"
-        size="small"
-        color="primary"
-        disabled={projectsLoading}
-        onClick={getProjects}
-      >
-        <CachedIcon />
-      </IconButton>
-    </Grid>
     {!!projects.length && <Grid item >
       <IconButton
         aria-label="delete-button"
@@ -244,6 +233,17 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         /> : <DeleteIcon />}
       </IconButton>
     </Grid>}
+    <Grid item >
+      <IconButton
+        aria-label="create-button"
+        size="small"
+        color="primary"
+        disabled={projectsLoading}
+        onClick={getProjects}
+      >
+        <CachedIcon />
+      </IconButton>
+    </Grid>
     <Grid item >
       <IconButton
         aria-label="create-button"

@@ -17,10 +17,10 @@ import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { NotFound } from '../shared/NotFound';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
-import { EditorNothingToFetch } from './components/EditorNothingToFetch';
 import { StarRating } from './components/StarRating';
 
 
@@ -866,7 +866,7 @@ export function Editor() {
 
 
   if (noRemainingContent || !voiceData || !projectId) {
-    return <EditorNothingToFetch />;
+    return <NotFound text={translate('editor.nothingToTranscribe')} />;
   }
 
   if (initialFetchDone && noAssignedData) {
