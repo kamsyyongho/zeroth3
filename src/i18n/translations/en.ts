@@ -33,6 +33,7 @@ export const en: ResourceLanguage = {
       notFound: 'Not found',
       noData: 'No data',
       progress: 'Progress',
+      refresh: 'Refresh',
     },
     table: {
       page: 'Page',
@@ -185,7 +186,7 @@ export const en: ResourceLanguage = {
       redo: 'Redo',
       undo: 'Undo',
       fetch: 'Fetch',
-      nothingToTranscribe: 'Nothing to transcribe.',
+      nothingToTranscribe: 'Nothing to transcribe',
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
     },

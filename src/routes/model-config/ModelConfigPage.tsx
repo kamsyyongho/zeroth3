@@ -74,6 +74,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         for (let i = 0; i < prevConfigs.length; i++) {
           if (prevConfigs[i].id === idToUpdate) {
             prevConfigs[i] = modelConfig;
+            break;
           }
         }
         return prevConfigs;
@@ -85,18 +86,14 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       });
     }
   };
+
   const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
       return prevSubGraphs;
     });
   };
-  const handleAcousticModelCreate = (newAcousticModel: AcousticModel) => {
-    setAcousticModels((prevAcousticModels) => {
-      prevAcousticModels.push(newAcousticModel);
-      return prevAcousticModels;
-    });
-  };
+
   const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
     setLanguageModels((prevLanguageModels) => {
       prevLanguageModels.push(newLanguageModel);
@@ -272,7 +269,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
       />);
   };

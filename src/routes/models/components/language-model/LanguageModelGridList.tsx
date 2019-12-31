@@ -2,6 +2,7 @@ import { Button, Card, CardContent, Grid, Typography } from '@material-ui/core';
 import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
+import CachedIcon from '@material-ui/icons/Cached';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -26,6 +27,8 @@ const useStyles = makeStyles((theme) =>
 
 interface LanguageModelGridListProps {
   canModify: boolean;
+  refreshTopGraphs: () => void;
+  topGraphsLoading: boolean;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
@@ -36,7 +39,7 @@ export type EditOpenByModelId = BooleanById;
 export type CheckedModelById = BooleanById;
 
 export function LanguageModelGridList(props: LanguageModelGridListProps) {
-  const { canModify, topGraphs, subGraphs, handleSubGraphListUpdate } = props;
+  const { canModify, refreshTopGraphs, topGraphsLoading, topGraphs, subGraphs, handleSubGraphListUpdate } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -98,6 +101,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
   React.useEffect(() => {
     const getModels = async () => {
       if (api?.models) {
+        setModelsLoading(true);
         const response = await api.models.getLanguageModels();
         if (response.kind === 'ok') {
           setModels(response.languageModels);
@@ -112,8 +116,11 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         setModelsLoading(false);
       }
     };
-    getModels();
-  }, [api]);
+    if (!topGraphsLoading) {
+      getModels();
+    }
+    // refresh when top graphs start / end loading
+  }, [topGraphsLoading]);
 
   const handleModelListUpdate = (model: LanguageModel, isEdit?: boolean) => {
     if (isEdit) {
@@ -122,6 +129,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         for (let i = 0; i < prevModels.length; i++) {
           if (prevModels[i].id === idToUpdate) {
             prevModels[i] = model;
+            break;
           }
         }
         return prevModels;
@@ -206,14 +214,14 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
 
   return (
     <Card elevation={0} className={classes.root} >
-      <LanguageModelDialog
+      {!topGraphsLoading && <LanguageModelDialog
         open={createOpen}
         onClose={handleCreateClose}
         onSuccess={handleModelListUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-      />
+      />}
       {canModify && <CardHeader
         action={(<Grid container spacing={1}>
           <Grid item>
@@ -231,6 +239,17 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
             >
               {translate('common.delete')}
             </Button>}
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              color="primary"
+              disabled={topGraphsLoading}
+              onClick={refreshTopGraphs}
+              startIcon={<CachedIcon />}
+            >
+              {translate('common.refresh')}
+            </Button>
           </Grid>
           <Grid item>
             <Button

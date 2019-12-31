@@ -10,8 +10,6 @@ import { GeneralApiProblem } from './api-problem.types';
 // REQUESTS //
 //////////////
 
-export type AcousticModelRequest = Omit<AcousticModel, 'id' | 'version'>;
-
 export interface AcousticModelEditRequest {
   description: string;
 }
@@ -37,19 +35,19 @@ export type getAcousticModelsResult =
   | { kind: 'ok'; acousticModels: AcousticModel[] }
   | GeneralApiProblem;
 
-export type postAcousticModelResult =
-  | { kind: 'ok'; acousticModel: AcousticModel }
+export type refreshAndGetAcousticModelsResult =
+  | { kind: 'ok'; acousticModels: AcousticModel[] }
   | GeneralApiProblem;
 
 export type updateAcousticModelResult =
   | { kind: 'ok'; acousticModel: AcousticModel }
   | GeneralApiProblem;
 
-export type deleteAcousticModelResult = { kind: 'ok' } | GeneralApiProblem;
-
 export type getTopGraphsResult =
   | { kind: 'ok'; topGraphs: TopGraph[] }
   | GeneralApiProblem;
+
+export type refreshAndGetTopGraphResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type getLanguageModelsResult =
   | { kind: 'ok'; languageModels: LanguageModel[] }

@@ -18,7 +18,6 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { postModelConfigResult } from '../../services/api/types';
 import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
-import { AcousticModelDialog } from '../models/components/acoustic-model/AcousticModelDialog';
 import { LanguageModelDialog } from '../models/components/language-model/LanguageModelDialog';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
@@ -34,7 +33,6 @@ interface ModelConfigDialogProps {
   languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
 
@@ -50,13 +48,11 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     languageModels,
     acousticModels,
     handleSubGraphListUpdate,
-    handleAcousticModelCreate,
     handleLanguageModelCreate,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [acousticOpen, setAcousticOpen] = React.useState(false);
   const [languageOpen, setLanguageOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
@@ -154,9 +150,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     }
   };
 
-  const openAcousticDialog = () => setAcousticOpen(true);
   const openLanguageDialog = () => setLanguageOpen(true);
-  const closeAcousticDialog = () => setAcousticOpen(false);
   const closeLanguageDialog = () => setLanguageOpen(false);
 
   return (
@@ -177,14 +171,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                 <Field name='selectedAcousticModelId' component={SelectFormField}
                   options={acousticModelFormSelectOptions} label={translate("forms.acousticModel")} errorOverride={isError} />
-                <Button
-                  fullWidth
-                  color="primary"
-                  onClick={openAcousticDialog}
-                  startIcon={<AddIcon />}
-                >
-                  {translate('models.tabs.acousticModel.create')}
-                </Button>
                 <Field name='selectedLanguageModelId' component={SelectFormField}
                   options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
                 <Button
@@ -237,11 +223,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           </>
         )}
       </Formik>
-      <AcousticModelDialog
-        open={acousticOpen}
-        onClose={closeAcousticDialog}
-        onSuccess={handleAcousticModelCreate}
-      />
       <LanguageModelDialog
         open={languageOpen}
         onClose={closeLanguageDialog}
