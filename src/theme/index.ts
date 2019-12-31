@@ -1,4 +1,4 @@
-import { grey, pink } from '@material-ui/core/colors';
+import { grey, pink, red } from '@material-ui/core/colors';
 import { createMuiTheme, Theme } from '@material-ui/core/styles';
 import { ThemeOptions } from '@material-ui/core/styles/createMuiTheme';
 import { PaletteOptions } from '@material-ui/core/styles/createPalette';
@@ -44,6 +44,7 @@ const customTheme = {
     LC: '#ffe190',
     focussed: grey[400],
   },
+  error: red.A700,
 };
 
 /**
@@ -63,6 +64,7 @@ export interface CustomTheme extends Theme {
     LC: string;
     focussed: string;
   };
+  error: string;
 }
 
 interface CustomThemeOptions extends ThemeOptions {
@@ -79,6 +81,7 @@ interface CustomThemeOptions extends ThemeOptions {
     LC?: string;
     focussed?: string;
   };
+  error?: string;
 }
 
 const overrides: Overrides = {

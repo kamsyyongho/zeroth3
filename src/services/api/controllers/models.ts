@@ -7,8 +7,7 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  AcousticModelRequest,
-  deleteAcousticModelResult,
+  AcousticModelEditRequest,
   deleteLanguageModelResult,
   deleteSubGraphResult,
   getAcousticModelsResult,
@@ -16,10 +15,11 @@ import {
   getSubGraphsResult,
   getTopGraphsResult,
   LanguageModelRequest,
-  postAcousticModelResult,
   postLanguageModelResult,
   postSubGraphResult,
   ProblemKind,
+  refreshAndGetAcousticModelsResult,
+  refreshAndGetTopGraphResult,
   ServerError,
   SubGraphRequest,
   updateAcousticModelResult,
@@ -69,30 +69,15 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Create a new acoustic model
-   * @param name
-   * @param sampleRate - in kHz
-   * @param location
-   * @param description
+   * Refreshes the list in the server, then receives acoustic models
    */
-  async postAcousticModel(
-    name: string,
-    sampleRate: number,
-    location: string,
-    description = ''
-  ): Promise<postAcousticModelResult> {
-    // compile data
-    const request: AcousticModelRequest = {
-      name,
-      sampleRate,
-      location,
-      description,
-    };
+  async refreshAndGetAcousticModels(): Promise<
+    refreshAndGetAcousticModelsResult
+  > {
     // make the api call
-    const response: ApiResponse<
-      AcousticModel,
-      ServerError
-    > = await this.apisauce.post(`/models/acoustic`, request);
+    const response = await this.apisauce.get<AcousticModel[], ServerError>(
+      `/models/acoustic/refresh`
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -105,34 +90,25 @@ export class Models extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const acousticModel = response.data as AcousticModel;
-      return { kind: 'ok', acousticModel };
+      const acousticModels = response.data as AcousticModel[];
+      return { kind: 'ok', acousticModels };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
   }
 
   /**
-   * Update an existing acoustic model
+   * Update an existing acoustic model's description
    * @param modelId
-   * @param name
-   * @param sampleRate - in kHz
-   * @param location
    * @param description
    * @returns a `conflict` kind if the model cannot be updated
    */
   async updateAcousticModel(
     modelId: string,
-    name: string,
-    sampleRate: number,
-    location: string,
     description = ''
   ): Promise<updateAcousticModelResult> {
     // compile data
-    const request: AcousticModelRequest = {
-      name,
-      sampleRate,
-      location,
+    const request: AcousticModelEditRequest = {
       description,
     };
     // make the api call
@@ -157,32 +133,6 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
-  }
-
-  /**
-   * Delete an existing acoustic model
-   * @param modelId
-   * @returns a `conflict` kind if the model cannot be deleted
-   */
-  async deleteAcousticModel(
-    modelId: string
-  ): Promise<deleteAcousticModelResult> {
-    // make the api call
-    const response: ApiResponse<
-      undefined,
-      ServerError
-    > = await this.apisauce.delete(`/models/acoustic/${modelId}`);
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response);
-      if (problem) {
-        if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
-        }
-        return problem;
-      }
-    }
-    return { kind: 'ok' };
   }
 
   /**
@@ -211,6 +161,29 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Refreshes top graphs in the server.
+   * @returns `null` - `202 code`
+   */
+  async refreshAndGetTopGraph(): Promise<refreshAndGetTopGraphResult> {
+    // make the api call
+    const response: ApiResponse<
+      TopGraph[],
+      ServerError
+    > = await this.apisauce.get(`/models/topgraphs/refresh`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 
   /**

@@ -1,17 +1,26 @@
 import { Grid } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme, makeStyles, createStyles } from '@material-ui/core/styles';
 import React from 'react';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      minHeight: '100vh',
+    },
+  }),
+);
+
 export function SiteLoadingIndicator() {
   const theme = useTheme();
+  const classes = useStyles();
   return (<Grid
     container
     spacing={0}
     direction="column"
     alignItems="center"
     justify="center"
-    style={{ minHeight: '100vh' }}
+    className={classes.root}
   >
     <Grid item xs={3}>
       <ScaleLoader

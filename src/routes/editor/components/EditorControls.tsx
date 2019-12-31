@@ -129,7 +129,11 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.undo');
           icon = <ICONS.Undo />;
           props = {
-            onClick: () => { },
+            onClick: () => {
+              //!
+              //TODO
+              //do nothing
+            },
             disabled: true,
           };
           break;
@@ -137,7 +141,11 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.redo');
           icon = <ICONS.Redo />;
           props = {
-            onClick: () => { },
+            onClick: () => {
+              //!
+              //TODO
+              //do nothing
+            },
             disabled: true,
           };
           break;

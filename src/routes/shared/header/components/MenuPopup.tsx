@@ -5,7 +5,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
@@ -37,6 +37,7 @@ function MenuPopup(props: MenuPopupProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const classes = useStyles();
+  const theme = useTheme();
 
   const isCurrentPath = location.pathname === PATHS.profile.to;
 
@@ -61,7 +62,7 @@ function MenuPopup(props: MenuPopupProps) {
   return (
     <>
       <IconButton onClick={handleClick} color={"inherit"} edge='start' >
-        <ICONS.Profile />
+        <ICONS.Profile style={{color: theme.palette.secondary.contrastText}} />
       </IconButton>
       <Menu
         id="simple-menu"

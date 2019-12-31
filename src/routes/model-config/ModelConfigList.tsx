@@ -42,7 +42,6 @@ export interface ModelConfigListProps {
   languageModels: LanguageModel[];
   handleModelConfigUpdate: (modelConfig: ModelConfig, isEdit?: boolean) => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleAcousticModelCreate: (acousticModel: AcousticModel) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: string) => void;
 }
@@ -56,7 +55,6 @@ export function ModelConfigList(props: ModelConfigListProps) {
     modelConfigs,
     handleModelConfigUpdate,
     handleSubGraphListUpdate,
-    handleAcousticModelCreate,
     handleLanguageModelCreate,
     handleModelConfigDelete,
     topGraphs,
@@ -184,7 +182,6 @@ export function ModelConfigList(props: ModelConfigListProps) {
         languageModels={languageModels}
         acousticModels={acousticModels}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
       />
       <ConfirmationDialog

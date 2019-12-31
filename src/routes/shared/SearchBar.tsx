@@ -3,9 +3,9 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import SearchIcon from '@material-ui/icons/Search';
 import matchSorter from 'match-sorter';
 import React from 'react';
+import { ICONS } from '../../theme/icons';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,7 +51,7 @@ export const SearchBar = (props: SearchBarProps) => {
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <SearchIcon color='primary' />
+            <ICONS.Search color='primary' fontSize='small' />
           </InputAdornment>
         ),
         endAdornment: (value.length ? <InputAdornment position="start">

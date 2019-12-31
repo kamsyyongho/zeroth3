@@ -2,6 +2,7 @@ import { Box, Button, CardHeader, Container } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
@@ -16,6 +17,7 @@ import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext'
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
+import { ICONS } from '../../theme/icons';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -33,15 +35,25 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
-    font: {
+    organizationLoader: {
+      paddingTop: theme.spacing(3),
+      paddingLeft: theme.spacing(3),
+      backgroundColor: theme.palette.background.paper,
+    },
+    pageTitle: {
       fontFamily: 'Muli',
       fontWeight: 'bold',
       color: theme.header.lightBlue,
-    }
+    },
+    cardTitle: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.palette.primary.main,
+    },
   }),
 );
 
-export function UserProfile() {
+export function Profile() {
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -73,7 +85,7 @@ export function UserProfile() {
         setGlobalState({ organization: response.organization });
       } else {
         log({
-          file: `UserProfile.tsx`,
+          file: `Profile.tsx`,
           caller: `getOrganization - failed to get organization`,
           value: response,
           important: true,
@@ -115,73 +127,126 @@ export function UserProfile() {
     }
   }, []);
 
-  return (
-    <Container >
-    <Card elevation={0} className={classes.card} >
-    <CardHeader title={translate('menu.profile')}
-    titleTypographyProps={{
-      className: classes.font,
-    }} />
-    <CardContent className={classes.cardContent} >
-      <Box border={1} borderColor={theme.table.border} className={classes.userCard} >
-        <Card elevation={0}>
-          <CardHeader title={translate('profile.user')}
-          />
-          <CardContent>
+  const renderUserCard = () => <Grid item xs component={Card} elevation={0} >
+    <CardHeader
+      title={translate('profile.user')}
+      titleTypographyProps={{
+        variant: 'h6',
+        className: classes.cardTitle,
+      }}
+    />
+    <CardContent>
+      <Grid
+        container
+        direction='row'
+        justify='flex-start'
+        alignItems='center'
+        alignContent='center'
+        spacing={2}
+      >
+        <Grid item >
+          <ICONS.Profile style={{ color: theme.header.lightBlue }} fontSize='large' />
+        </Grid>
+        <Grid item >
+          <Typography color="textPrimary" gutterBottom >
+            {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
+          </Typography>
+          <Typography color="textSecondary" >
+            {`${preferredUsername}  •  ${email}`}
+          </Typography>
+        </Grid>
+      </Grid>
+    </CardContent>
+    <CardActions>
+      <Button
+        variant='contained'
+        color='secondary'
+        size="small"
+        onClick={confirmReset}
+        disabled={passwordResetLoading}
+        startIcon={passwordResetLoading ?
+          <MoonLoader
+            sizeUnit={"px"}
+            size={15}
+            color={theme.palette.secondary.main}
+            loading={true}
+          /> : <VpnKeyIcon />}
+      >
+        {translate('profile.resetPassword')}
+      </Button>
+    </CardActions>
+  </Grid>;
+
+  const renderOrganizationCard = () => <Grid item xs component={Card} elevation={0} >
+    <CardHeader
+      title={translate('profile.organization')}
+      titleTypographyProps={{
+        variant: 'h6',
+        className: classes.cardTitle,
+      }}
+    />
+    <Box borderLeft={1} borderColor={theme.table.border} >
+      <CardContent>
+        <Grid
+          container
+          direction='row'
+          justify='flex-start'
+          alignItems='center'
+          alignContent='center'
+          spacing={2}
+        >
+          <Grid item >
+            <ICONS.Organization style={{ color: theme.header.lightBlue }} fontSize='large' />
+          </Grid>
+          <Grid item >
             <Typography color="textPrimary" gutterBottom >
-              {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
+              {organization?.name}
             </Typography>
             <Typography color="textSecondary" >
-              {preferredUsername}
+              {organization?.id}
             </Typography>
-            <Typography color="textSecondary" gutterBottom >
-              {email}
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button
-              variant='contained'
-              color='secondary'
-              size="small"
-              onClick={confirmReset}
-              disabled={passwordResetLoading}
-              startIcon={passwordResetLoading ?
-                <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.secondary.main}
-                  loading={true}
-                /> : <VpnKeyIcon />}
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Box>
+    {hasRenamePermissions && (<CardActions onClick={showDialog}>
+      <Button
+        variant='contained'
+        color='primary'
+        size="small"
+        startIcon={<EditIcon />}
+      >{translate('organization.rename')}</Button>
+    </CardActions>)}
+  </Grid>;
+
+  return (
+    <Container >
+      <Card elevation={0} className={classes.card} >
+        <CardHeader title={translate('menu.profile')}
+          titleTypographyProps={{
+            className: classes.pageTitle,
+          }} />
+        <CardContent className={classes.cardContent} >
+          <Box border={1} borderColor={theme.table.border} className={classes.userCard} >
+            <Grid
+              container
+              direction='row'
+              justify='center'
+              alignItems='flex-start'
+              alignContent='center'
             >
-              {translate('profile.resetPassword')}
-            </Button>
-          </CardActions>
-        </Card>
-      </Box>
-      {(organizationLoading || !organization || !organization.name) ? <List /> :
-        (<Box border={1} borderColor={theme.table.border} >
-          <Card elevation={0} >
-            <CardHeader title={translate('profile.organization')} />
-            <CardContent>
-              <Typography color="textPrimary" gutterBottom >
-                {organization.name}
-              </Typography>
-              <Typography color="textSecondary" >
-                {organization.id}
-              </Typography>
-            </CardContent>
-            {hasRenamePermissions && (<CardActions onClick={showDialog}>
-              <Button
-                variant='contained'
-                color='primary'
-                size="small"
-                startIcon={<EditIcon />}
-              >{translate('organization.rename')}</Button>
-            </CardActions>)}
-          </Card>
-        </Box>)}
+              {renderUserCard()}
+
+              {(organizationLoading || !organization || !organization.name) ? (
+                <Grid item xs className={classes.organizationLoader} >
+                  <List />
+                </Grid>
+              ) :
+                renderOrganizationCard()}
+            </Grid>
+          </Box>
         </CardContent>
-        </Card>
+      </Card>
       <RenameOrganizationDialog name={(organization && organization.name) ? organization.name : ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
       <ConfirmationDialog
         destructive

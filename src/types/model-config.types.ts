@@ -6,8 +6,8 @@ export interface ModelConfig {
   description: string;
   id: string;
   languageModel: LanguageModel;
-  thresholdHc: Threshold;
-  thresholdLc: Threshold;
+  thresholdHc?: Threshold;
+  thresholdLc?: Threshold;
 }
 
 /**

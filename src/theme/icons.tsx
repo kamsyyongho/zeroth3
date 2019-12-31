@@ -1,16 +1,18 @@
 /* eslint-disable react/display-name */
+import { useTheme } from '@material-ui/core/styles';
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon';
 import React from "react";
 import { ReactComponent as Account } from './icons/account.svg';
 import { ReactComponent as ArrowDown } from './icons/arrow-down.svg';
-import { ReactComponent as ArrowLeft } from './icons/arrow-left.svg';
 import { ReactComponent as ArrowLeftDouble } from './icons/arrow-left-double.svg';
-import { ReactComponent as ArrowRight } from './icons/arrow-right.svg';
+import { ReactComponent as ArrowLeft } from './icons/arrow-left.svg';
 import { ReactComponent as ArrowRightDouble } from './icons/arrow-right-double.svg';
-import { ReactComponent as Edit } from './icons/edit.svg';
-import { ReactComponent as Editor } from './icons/editor.svg';
+import { ReactComponent as ArrowRight } from './icons/arrow-right.svg';
+import { ReactComponent as Check } from './icons/check.svg';
 import { ReactComponent as Close } from './icons/close.svg';
 import { ReactComponent as Commit } from './icons/commit.svg';
+import { ReactComponent as Edit } from './icons/edit.svg';
+import { ReactComponent as Editor } from './icons/editor.svg';
 import { ReactComponent as Faq } from './icons/faq.svg';
 import { ReactComponent as FastForward } from './icons/fast-forward.svg';
 import { ReactComponent as FastRewind } from './icons/fast-rewind.svg';
@@ -21,18 +23,47 @@ import { ReactComponent as InlineSplit } from './icons/inline-split.svg';
 import { ReactComponent as Logout } from './icons/logout.svg';
 import { ReactComponent as Menu } from './icons/menu.svg';
 import { ReactComponent as Merge } from './icons/merge.svg';
-import { ReactComponent as Organization } from './icons/organization.svg';
-import { ReactComponent as Profile } from './icons/profile.svg';
+import { ReactComponent as Models } from './icons/models.svg';
+import { ReactComponent as More } from './icons/more.svg';
+import { OrganizationSvgIcon as Organization } from './icons/OrganizationSvgIcon';
+import { ProfileSvgIcon as Profile } from './icons/ProfileSvgIcon';
 import { ReactComponent as Projects } from './icons/projects.svg';
 import { ReactComponent as Redo } from './icons/redo.svg';
+import { ReactComponent as Remove } from './icons/remove.svg';
 import { ReactComponent as Save } from './icons/save.svg';
+import { ReactComponent as Search } from './icons/search.svg';
 import { ReactComponent as Settings } from './icons/settings.svg';
 import { ReactComponent as Split } from './icons/split.svg';
 import { ReactComponent as Training } from './icons/training.svg';
 import { ReactComponent as Translate } from './icons/translate.svg';
-import { ReactComponent as Models } from './icons/models.svg';
-import { ReactComponent as More } from './icons/more.svg';
+import { ReactComponent as Trash } from './icons/trash.svg';
 import { ReactComponent as Undo } from './icons/undo.svg';
+
+/**
+ * used to get the color from the icon component and pass it to the custom svg
+ * @param props 
+ */
+const getColor = (props: SvgIconProps) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const theme = useTheme();
+  let color = '#000';
+  if (props.style?.color) {
+    color = props.style.color;
+  } else {
+    switch (props.color) {
+      case 'primary':
+        color = theme.palette.primary.main;
+        break;
+      case 'secondary':
+        color = theme.palette.secondary.main;
+        break;
+      case 'disabled':
+        color = theme.palette.action.disabled;
+        break;
+    }
+  }
+  return color;
+};
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface ICONS {
@@ -69,6 +100,10 @@ export const ICONS = {
    * Two right pointing arrows / greater-than symbols `＞＞`
    */
   ArrowRightDouble: (props: SvgIconProps) => <SvgIcon {...props}><ArrowRightDouble /></SvgIcon>,
+  /**  
+   * A check mark `✓`.
+   */
+  Check: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Check /></SvgIcon>,
   /**  
    * A close / 'x' icon.
    */
@@ -137,12 +172,14 @@ export const ICONS = {
   More: (props: SvgIconProps) => <SvgIcon {...props}><More /></SvgIcon>,
   /**
    * An icon of a multi-story office building
+   * - color must be provided in the `color` prop or the `style` props as `color={{color}}`
    */
-  Organization: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Organization /></SvgIcon>,
+  Organization: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Organization color={getColor(props)} /></SvgIcon>,
   /**
    * An outline of a person in a circle
+   * - color must be provided in the `color` prop or the `style` props as `color={{color}}`
    */
-  Profile: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Profile /></SvgIcon>,
+  Profile: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Profile color={getColor(props)} /></SvgIcon>,
   /**
    * Three hexagons / cube outlines arranged next to each other.
    */
@@ -151,12 +188,20 @@ export const ICONS = {
    * Used in the the editor. An icon of an arrow that curves right.
    */
   Redo: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Redo /></SvgIcon>,
+  /**  
+   * A minus inside a cicle `⊖`
+   */
+  Remove: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Remove /></SvgIcon>,
   /**
-   * Used in the the editor. An icon of a floppy disk.
+   * Used in the the editor. An icon of a floppy disk `💾`.
    */
   Save: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Save /></SvgIcon>,
+  /**  
+   * A magnifying glass `🔍`
+   */
+  Search: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Search /></SvgIcon>,
   /**
-   * An icon of a gear / cog.
+   * An icon of a gear / cog `⚙`.
    */
   Settings: (props: SvgIconProps) => <SvgIcon {...props}><Settings /></SvgIcon>,
   /**
@@ -171,6 +216,10 @@ export const ICONS = {
    * Used in the the header
    */
   Translate: (props: SvgIconProps) => <SvgIcon {...props}><Translate /></SvgIcon>,
+  /**  
+   * A trash can / wastebasket `🗑`
+   */
+  Trash: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Trash /></SvgIcon>,
   /**
    * Used in the the editor. An icon of an arrow that curves left.
    */

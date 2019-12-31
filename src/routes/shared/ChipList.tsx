@@ -1,4 +1,5 @@
 import Chip, { ChipProps } from '@material-ui/core/Chip';
+import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 
@@ -25,14 +26,15 @@ const useStyles = makeStyles((theme) =>
 export const ChipList = ({ values, light, ...props }: ChipListProps) => {
   const classes = useStyles();
   return (
-    <>
+    <Grid container >
       {values.map(value => (
-        <Chip
-        key={value}
-        label={value}
-        className={light ? classes.light : classes.default}
-        {...props} />
+        <Grid item key={value} >
+          <Chip
+            label={value}
+            className={light ? classes.light : classes.default}
+            {...props} />
+        </Grid>
       ))}
-    </>
+    </Grid>
   );
 };

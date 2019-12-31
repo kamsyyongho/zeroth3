@@ -14,6 +14,7 @@ export const ko: ResourceLanguage = {
       discard: 'Discard',
       dismiss: 'Dismiss',
       error: '오류',
+      pageError: 'Something went wrong',
       reset: 'Reset',
       success: 'Success',
       failure: 'Failure',
@@ -32,6 +33,7 @@ export const ko: ResourceLanguage = {
       notFound: 'Not found',
       noData: 'No data',
       progress: 'Progress',
+      refresh: 'Refresh',
     },
     table: {
       page: 'Page',
@@ -55,8 +57,8 @@ export const ko: ResourceLanguage = {
       profile: 'Profile',
     },
     profile: {
-      user: 'User profile',
-      organization: 'Organization profile',
+      user: 'User',
+      organization: 'Organization',
       fullName: '{{family}} {{given}}',
       resetPassword: 'Reset password',
     },
@@ -186,6 +188,9 @@ export const ko: ResourceLanguage = {
       redo: 'Redo',
       undo: 'Undo',
       fetch: 'Fetch',
+      nothingToTranscribe: 'Nothing to transcribe',
+      discardChanges: 'Discard changes',
+      confirmTranscript: 'Confirm transcript',
     },
     modelConfig: {
       header: 'Model configuration',

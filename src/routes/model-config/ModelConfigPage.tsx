@@ -55,7 +55,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   interface NavigationPropsToGet {
     project: Project;
   }
-  const navigationProps = getProps<NavigationPropsToGet>(['project']);
+  const navigationProps = React.useMemo(() => getProps<NavigationPropsToGet>(['project']), []);
   const [project, setProject] = React.useState<Project | undefined>(navigationProps.project);
 
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
@@ -64,13 +64,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
 
   const classes = useStyles();
-
-  // to clear any stored navigation props on component dismount
-  React.useEffect(() => {
-    return () => {
-      clearProps();
-    };
-  }, []);
 
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
@@ -81,6 +74,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         for (let i = 0; i < prevConfigs.length; i++) {
           if (prevConfigs[i].id === idToUpdate) {
             prevConfigs[i] = modelConfig;
+            break;
           }
         }
         return prevConfigs;
@@ -92,18 +86,14 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       });
     }
   };
+
   const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
       return prevSubGraphs;
     });
   };
-  const handleAcousticModelCreate = (newAcousticModel: AcousticModel) => {
-    setAcousticModels((prevAcousticModels) => {
-      prevAcousticModels.push(newAcousticModel);
-      return prevAcousticModels;
-    });
-  };
+
   const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
     setLanguageModels((prevLanguageModels) => {
       prevLanguageModels.push(newLanguageModel);
@@ -247,6 +237,8 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         getProject();
       } else {
         setProjectLoading(false);
+        // to remove the navigation props that were received from the previous page
+        clearProps();
       }
       if (canModify) {
         getTopGraphs();
@@ -255,7 +247,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         getAcousticModels();
       }
     }
-  }, [api, projectId]);
+  }, []);
 
   const renderContent = () => {
     if (!isValidId) {
@@ -277,7 +269,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleAcousticModelCreate={handleAcousticModelCreate}
         handleLanguageModelCreate={handleLanguageModelCreate}
       />);
   };

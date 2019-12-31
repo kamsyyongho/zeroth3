@@ -124,45 +124,61 @@ export function ModelTabs() {
     setDeleteLoading(false);
   };
 
-  React.useEffect(() => {
-    const getTopGraphs = async () => {
-      if (api?.models) {
-        const response = await api.models.getTopGraphs();
-        if (response.kind === 'ok') {
-          setTopGraphs(response.topGraphs);
-        } else {
-          log({
-            file: `ModelTabs.tsx`,
-            caller: `getTopGraphs - failed to get top graphs`,
-            value: response,
-            important: true,
-          });
-        }
-        setTopGraphsLoading(false);
+  const getSubGraphs = async () => {
+    if (api?.models) {
+      setSubGraphsLoading(true);
+      setSubGraphs([]);
+      const response = await api.models.getSubGraphs();
+      if (response.kind === 'ok') {
+        setSubGraphs(response.subGraphs);
+      } else {
+        log({
+          file: `ModelTabs.tsx`,
+          caller: `getSubGraphs - failed to get sub graphs`,
+          value: response,
+          important: true,
+        });
       }
-    };
-    getTopGraphs();
-  }, [api]);
+      setSubGraphsLoading(false);
+    }
+  };
 
-  React.useEffect(() => {
-    const getSubGraphs = async () => {
-      if (api?.models) {
-        const response = await api.models.getSubGraphs();
-        if (response.kind === 'ok') {
-          setSubGraphs(response.subGraphs);
-        } else {
-          log({
-            file: `ModelTabs.tsx`,
-            caller: `getSubGraphs - failed to get sub graphs`,
-            value: response,
-            important: true,
-          });
-        }
-        setSubGraphsLoading(false);
+  const getTopGraphs = async () => {
+    if (api?.models) {
+      setTopGraphsLoading(true);
+      const response = await api.models.getTopGraphs();
+      if (response.kind === 'ok') {
+        setTopGraphs(response.topGraphs);
+      } else {
+        log({
+          file: `ModelTabs.tsx`,
+          caller: `getTopGraphs - failed to get top graphs`,
+          value: response,
+          important: true,
+        });
       }
-    };
-    getSubGraphs();
-  }, [api]);
+      setTopGraphsLoading(false);
+    }
+  };
+
+  const refreshTopGraphs = async () => {
+    if (api?.models) {
+      setTopGraphsLoading(true);
+      const response = await api.models.refreshAndGetTopGraph();
+      if (response.kind === 'ok') {
+        getSubGraphs();
+        getTopGraphs();
+      } else {
+        log({
+          file: `ModelTabs.tsx`,
+          caller: `getTopGraphs - failed to get top graphs`,
+          value: response,
+          important: true,
+        });
+      }
+      setTopGraphsLoading(false);
+    }
+  };
 
   const handleSubGraphListUpdate = (newSubGraph: SubGraph, isEdit?: boolean) => {
     if (isEdit) {
@@ -188,6 +204,11 @@ export function ModelTabs() {
     setActiveTab(newActiveTab);
   };
 
+  React.useEffect(() => {
+    getTopGraphs();
+    getSubGraphs();
+  }, []);
+
   return (
     <Paper square elevation={0} className={classes.root} >
       <Tabs
@@ -207,6 +228,8 @@ export function ModelTabs() {
         {tabsThatShouldRender.has(1) && <>
           <LanguageModelGridList
             canModify={canModify}
+            refreshTopGraphs={refreshTopGraphs}
+            topGraphsLoading={topGraphsLoading}
             topGraphs={topGraphs}
             subGraphs={subGraphs}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
