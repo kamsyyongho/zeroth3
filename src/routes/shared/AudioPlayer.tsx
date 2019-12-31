@@ -12,6 +12,9 @@ import StopIcon from '@material-ui/icons/Stop';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import WarningIcon from '@material-ui/icons/Warning';
+import ZoomInIcon from '@material-ui/icons/ZoomIn';
+import ZoomOutIcon from '@material-ui/icons/ZoomOut';
+import ZoomOutMapIcon from '@material-ui/icons/ZoomOutMap';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
@@ -64,6 +67,11 @@ let duration = 0;
 /** array of timeouts so we can cancel them on unsmount */
 let playTimeouts: NodeJS.Timeout[] = [];
 
+/**
+ * default `minPxPerSec` value from `wavesurfer.js`
+ */
+const DEFAULT_ZOOM = 20;
+
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url, onTimeChange, timeToSeekTo, onReady } = props;
   const { translate } = React.useContext(I18nContext);
@@ -72,6 +80,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [isReady, setIsReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
   const [isMute, setIsMute] = React.useState(false);
+  const [zoomLevel, setZoomLevel] = React.useState(DEFAULT_ZOOM);
   const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [durationDisplay, setDurationDisplay] = React.useState('0');
@@ -210,6 +219,18 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  function handleZoom(zoomIn = false) {
+    let newZoom = zoomLevel + (zoomIn ? 80 : -80);
+    if (newZoom < 20) {
+      newZoom = 20;
+    }
+    setZoomLevel(newZoom);
+  };
+
+  function handleShowAll() {
+    setZoomLevel(DEFAULT_ZOOM);
+  };
+
   const handlePlayPause = () => {
     if (waveSurfer) {
       try {
@@ -252,6 +273,16 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  const changeZoomLevel = (currentZoom: number) => {
+    if (waveSurfer) {
+      try {
+        waveSurfer.zoom(currentZoom);
+      } catch (error) {
+        handleError(error.message);
+      }
+    }
+  };
+
   /**
    * mute when the value has changed
    */
@@ -259,6 +290,19 @@ export function AudioPlayer(props: AudioPlayerProps) {
     toggleMute(isMute);
   }, [isMute]);
 
+  /**
+   * zoom when the value has changed
+   */
+  React.useEffect(() => {
+    changeZoomLevel(zoomLevel);
+  }, [zoomLevel]);
+
+  // set the seek location based on the parent
+  React.useEffect(() => {
+    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
+      seekToTime(timeToSeekTo);
+    }
+  }, [timeToSeekTo]);
 
   React.useEffect(() => {
     const initPlayer = () => {
@@ -357,15 +401,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, []);
 
-
-  // set the seek location based on the parent
-  React.useEffect(() => {
-    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
-      seekToTime(timeToSeekTo);
-    }
-  }, [timeToSeekTo]);
-
-
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
     <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
       <Replay5Icon />
@@ -382,6 +417,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
+    <Button aria-label="show-all" onClick={handleShowAll} >
+      <ZoomOutMapIcon />
+    </Button>
+    <Button aria-label="zoom-out" onClick={() => handleZoom()} >
+      <ZoomOutIcon />
+    </Button>
+    <Button aria-label="zoom-in" onClick={() => handleZoom(true)} >
+      <ZoomInIcon />
+    </Button>
     <Button aria-label="seek-lock" onClick={() => setIsMute(!isMute)} >
       {isMute ?
         (<VolumeOffIcon />)
@@ -414,7 +458,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
             item
             direction='row'
             spacing={3}
-            xs={9}
+            xs={7}
             justify='flex-start'
             alignItems='center'
             alignContent='center'
@@ -427,7 +471,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
               <Typography>{`${currentTime} / ${durationDisplay}`}</Typography>
             </Grid>
           </Grid>
-          <Grid container item xs={2} >
+          <Grid container item xs={4} >
             {secondaryControls}
           </Grid>
         </Grid>
