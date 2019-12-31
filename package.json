@@ -71,7 +71,7 @@
     "@types/react-router-dom": "^5.1.0",
     "@types/react-table": "^6.8.5",
     "@types/react-virtualized": "^9.21.5",
-    "@types/wavesurfer.js": "^2.0.2",
+    "@types/wavesurfer.js": "^3.2.0",
     "@types/yup": "^0.26.24",
     "@typescript-eslint/eslint-plugin": "^2.3.1",
     "@typescript-eslint/parser": "^2.3.1",

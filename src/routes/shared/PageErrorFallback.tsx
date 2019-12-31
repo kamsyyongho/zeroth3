@@ -50,7 +50,12 @@ export const PageErrorFallback = (fallbackProps: FallbackProps) => {
       <WarningIcon fontSize='large' className={classes.error} />
     </Grid>
     <Grid item>
-      <Typography variant='h4' >{translate('common.pageError')}</Typography>
+      <Typography
+        variant='h4'
+        align='center'
+      >
+        {translate('common.pageError')}
+      </Typography>
     </Grid>
   </Grid>);
 };

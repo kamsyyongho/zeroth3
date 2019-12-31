@@ -16,7 +16,8 @@ export function useGlobalState() {
    * - does NOT erase previous non-updated values
    */
   function setGlobalState(newState: GlobalState) {
-    setState(prevState => ({ ...prevState, ...newState }));
+    const updatedState = { ...state, ...newState };
+    setState(updatedState);
   }
 
   return { globalState: state, setGlobalState };
