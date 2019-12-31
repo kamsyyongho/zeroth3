@@ -1,4 +1,4 @@
-import { Button, Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -10,12 +10,8 @@ const useStyles = makeStyles((theme) =>
     },
   }),
 );
-interface EditorFetchButtonProps {
-  onClick: () => void;
-}
 
-export function EditorFetchButton(props: EditorFetchButtonProps) {
-  const { onClick } = props;
+export function EditorNothingToFetch() {
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
 
@@ -29,13 +25,12 @@ export function EditorFetchButton(props: EditorFetchButtonProps) {
     className={classes.root}
   >
     <Grid item xs={3}>
-      <Button
-        variant='contained'
-        color='primary'
-        onClick={onClick}
+      <Typography
+        variant='h3'
+        align='center'
       >
-        {translate('editor.fetch')}
-      </Button>
+        {translate('editor.nothingToTranscribe')}
+      </Typography>
     </Grid>
   </Grid>);
 }

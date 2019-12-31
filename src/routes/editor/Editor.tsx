@@ -20,6 +20,7 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
+import { EditorNothingToFetch } from './components/EditorNothingToFetch';
 import { StarRating } from './components/StarRating';
 
 
@@ -326,22 +327,8 @@ export function Editor() {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
 
+        // to trigger the `useEffect` to fetch more
         setVoiceData(undefined);
-
-        // to allow the message to be displayed shortly before navigating away
-
-        // TODO
-        //!
-        //* DO SOMETHING
-
-        // setTimeout(() => {
-        //   handleNavigateAway();
-        // }, 1500);
-
-        // TODO
-        //!
-        //* DO SOMETHING
-
       } else {
         log({
           file: `Editor.tsx`,
@@ -878,20 +865,12 @@ export function Editor() {
   }
 
 
-  if (noRemainingContent) {
-    return <div>TEST NOTHING TO FETCH!!</div>;
+  if (noRemainingContent || !voiceData || !projectId) {
+    return <EditorNothingToFetch />;
   }
 
   if (initialFetchDone && noAssignedData) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} />;
-  }
-
-  if (!voiceData) {
-    return <div>TEST NO DATA!!</div>;
-  }
-
-  if (!projectId) {
-    return <div>TEST INVALID PROJECT ID!!</div>;
   }
 
   const disabledControls = getDisabledControls();
@@ -949,14 +928,14 @@ export function Editor() {
       </Container >
       <ConfirmationDialog
         destructive
-        titleText={`TEST DISCARD CHANGES?`}
+        titleText={`${translate('editor.discardChanges')}?`}
         submitText={translate('common.discard')}
         open={discardDialogOpen}
         onSubmit={discardWordChanges}
         onCancel={closeDiscardDialog}
       />
       <ConfirmationDialog
-        titleText={`TEST CONFIRM TRANSCRIPT?`}
+        titleText={`${translate('editor.confirmTranscript')}?`}
         submitText={translate('editor.confirm')}
         open={confirmDialogOpen}
         onSubmit={confirmData}
