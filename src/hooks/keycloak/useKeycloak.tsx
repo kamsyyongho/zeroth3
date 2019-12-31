@@ -71,7 +71,8 @@ export const useKeycloak = () => {
    * - this function gets passed to, and stored in the api
    */
   const logout = () => {
-    const logoutOptions = { redirectUri: ENV.HOME_URL };
+    const redirectUri = ENV.isProduction ? ENV.HOME_URL : `http://localhost:3000/`;
+    const logoutOptions = { redirectUri };
     setkeycloakInitialized(false);
     keycloak.logout(logoutOptions);
   };
