@@ -863,14 +863,13 @@ export function Editor() {
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;
   }
-
+  
+  if (initialFetchDone && noAssignedData) {
+    return <EditorFetchButton onClick={fetchMoreVoiceData} />;
+  }
 
   if (noRemainingContent || !voiceData || !projectId) {
     return <NotFound text={translate('editor.nothingToTranscribe')} />;
-  }
-
-  if (initialFetchDone && noAssignedData) {
-    return <EditorFetchButton onClick={fetchMoreVoiceData} />;
   }
 
   const disabledControls = getDisabledControls();
