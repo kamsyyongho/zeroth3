@@ -1,11 +1,15 @@
-import { Button, Container, Grid } from '@material-ui/core';
+import { Box, Button, Container, Grid } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import ErrorIcon from '@material-ui/icons/Error';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
+import ErrorBoundary from 'react-error-boundary';
 import AutosizeInput from 'react-input-autosize';
 import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from 'react-virtualized';
+import 'react-virtualized/styles.css'; // for the editor's lists
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
@@ -18,6 +22,7 @@ import { formatSecondsDuration } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
+import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
@@ -28,7 +33,7 @@ export interface ModelConfigsById {
   [x: number]: ModelConfig;
 }
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     container: {
       // flex: 1,
@@ -47,9 +52,20 @@ const useStyles = makeStyles((theme) =>
       color: '#939393',
     },
     splitButton: {
-      maxWidth: 25,
-      minWidth: 25,
-      padding: 5,
+      maxWidth: 24,
+      minWidth: 24,
+      marginTop: -5,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    highRiskSegmentButton: {
+      color: theme.editor.highlight,
+      maxWidth: 24,
+      minWidth: 24,
+      marginTop: -5,
+      marginLeft: theme.spacing(1),
+      paddingTop: 0,
+      paddingBottom: 0,
     },
   }),
 );
@@ -321,6 +337,7 @@ export function Editor() {
   const confirmData = async () => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
+      closeConfirmDialog();
       const response = await api.voiceData.confirmData(projectId, voiceData.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -600,6 +617,7 @@ export function Editor() {
   const getWordStyle = (focussed: boolean, isLC: boolean, isPlaying: boolean) => {
     const LC_COLOR = theme.editor.LC;
     const PLAYING_COLOR = theme.editor.playing;
+    const PLAYING_SHADOW_COLOR = theme.palette.primary.light;
     const FOCUS_COLOR = theme.editor.focussed;
     const wordStyle: React.CSSProperties = {
       outline: 'none',
@@ -609,11 +627,12 @@ export function Editor() {
     if (isLC) {
       wordStyle.backgroundColor = LC_COLOR;
     }
-    if (focussed) {
-      wordStyle.boxShadow = `inset 0px 0px 0px 2px ${FOCUS_COLOR}`;
-    }
     if (isPlaying) {
       wordStyle.color = PLAYING_COLOR;
+      wordStyle.boxShadow = `inset 0px 0px 0px 2px ${PLAYING_SHADOW_COLOR}`;
+    }
+    if (focussed) {
+      wordStyle.boxShadow = `inset 0px 0px 0px 2px ${FOCUS_COLOR}`;
     }
     return wordStyle;
   };
@@ -684,12 +703,12 @@ export function Editor() {
   ) => {
     const [firstSegmentIndex, firstWordIndex] = firstWordLocation;
     const [lastSegmentIndex, lastWordIndex] = lastWordLocation;
-    const isLast = segmentIndex === lastSegmentIndex && wordIndex === lastWordIndex;
-    const isFirst = segmentIndex === firstSegmentIndex && wordIndex === firstWordIndex;
-    if (isLast && !event.shiftKey && event.key === 'Tab') {
+    const isLastWord = segmentIndex === lastSegmentIndex && wordIndex === lastWordIndex;
+    const isFirstWord = segmentIndex === firstSegmentIndex && wordIndex === firstWordIndex;
+    if (isLastWord && !event.shiftKey && event.key === 'Tab') {
       event.preventDefault();
       firstLCWordReference && firstLCWordReference.focus();
-    } else if (isFirst && event.shiftKey && event.key === 'Tab') {
+    } else if (isFirstWord && event.shiftKey && event.key === 'Tab') {
       event.preventDefault();
       lastLCWordReference && lastLCWordReference.focus();
     }
@@ -708,7 +727,6 @@ export function Editor() {
 
   /**
    * - sets which word is focussed
-   * - refreshes all segments to force them to rerender
    * - sets the seek time in the audio player
    */
   const handleFocus = (
@@ -716,17 +734,19 @@ export function Editor() {
     wordIndex: number,
   ) => {
     setFocus(segmentIndex, wordIndex);
-    setSegments(prevSegments => ([...prevSegments]));
     handleWordClick(segmentIndex, wordIndex);
   };
 
+  /**
+   * - sets the word focus
+   * - resets the seek time in the audio player
+   */
   const handleBlur = (
     segmentIndex: number,
     wordIndex: number,
   ) => {
     setFocus(segmentIndex, wordIndex, false);
     setTimeToSeekTo(undefined);
-    setSegments(prevSegments => ([...prevSegments]));
   };
 
   const handlePlayerRendered = () => setCanPlayAudio(true);
@@ -756,8 +776,11 @@ export function Editor() {
       const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
       const tabIndex = getTabIndex(segmentIndex, wordIndex);
 
-      const isFirst = firstWordTabIndex === tabIndex;
-      const isLast = lastWordTabIndex === tabIndex;
+      const isFirstWord = firstWordTabIndex === tabIndex;
+      const isLastWord = lastWordTabIndex === tabIndex;
+      const { highRisk } = segment;
+      const isLastWordInSegment = (segment.wordAlignments.length - 1) === wordIndex;
+
 
       let isSplitSelected = false;
       if (splitLocation &&
@@ -770,9 +793,9 @@ export function Editor() {
 
       const content = <AutosizeInput
         inputRef={
-          isFirst ?
+          isFirstWord ?
             ((inputRef) => firstLCWordReference = inputRef) :
-            (isLast ?
+            (isLastWord ?
               ((inputRef) => lastLCWordReference = inputRef) : undefined)}
         disabled={editorMode !== EDITOR_MODES.edit}
         tabIndex={tabIndex}
@@ -811,6 +834,16 @@ export function Editor() {
           </Button>
         )}
         {content}
+        {highRisk && isLastWordInSegment && (
+          <IconButton
+            aria-label="high-risk-segment-button"
+            size="small"
+            onClick={() => { }}
+            className={classes.highRiskSegmentButton}
+          >
+            <ErrorIcon />
+          </IconButton>
+        )}
       </React.Fragment>);
     });
     return words;
@@ -819,6 +852,7 @@ export function Editor() {
   function rowRenderer({ key, index, style, parent }: ListRowProps) {
     const isRowSelected = segmentMergeIndexes.has(index);
     const isMergeMode = editorMode === EDITOR_MODES.merge;
+    const { highRisk } = segments[index];
 
     return (
       segments[index] && <CellMeasurer
@@ -842,7 +876,13 @@ export function Editor() {
             </Button>
           </Grid>
           <Grid item xs={12} sm container>
-            {renderWords(segments[index], index)}
+            <Box
+              border={highRisk ? 1 : 0}
+              borderColor={theme.editor.highlight}
+              borderRadius={5}
+            >
+              {renderWords(segments[index], index)}
+            </Box>
           </Grid>
         </Grid>
       </CellMeasurer>
@@ -863,8 +903,8 @@ export function Editor() {
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;
   }
-  
-  if (initialFetchDone && noAssignedData) {
+
+  if (initialFetchDone && noAssignedData && !noRemainingContent) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} />;
   }
 
@@ -897,7 +937,8 @@ export function Editor() {
           {segmentsLoading ? <BulletList /> :
             <div style={{
               padding: 15,
-              height: windowSize.height && (windowSize.height - 320),
+              // height: 500,
+              height: windowSize.height && (windowSize?.height - 384),
               minHeight: 250,
             }}>
               <AutoSizer>
@@ -917,12 +958,20 @@ export function Editor() {
               </AutoSizer>
             </div>
           }
-          <AudioPlayer
-            url={voiceData.audioUrl}
-            timeToSeekTo={timeToSeekTo}
-            onTimeChange={handlePlaybackTimeChange}
-            onReady={handlePlayerRendered}
-          />
+
+          {!!voiceData.length && <ErrorBoundary
+            key={voiceData.id}
+            FallbackComponent={PageErrorFallback}
+          >
+            <AudioPlayer
+              key={voiceData.id}
+              url={voiceData.audioUrl}
+              length={voiceData.length}
+              timeToSeekTo={timeToSeekTo}
+              onTimeChange={handlePlaybackTimeChange}
+              onReady={handlePlayerRendered}
+            />
+          </ErrorBoundary>}
         </Paper>
       </Container >
       <ConfirmationDialog
