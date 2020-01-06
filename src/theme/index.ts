@@ -44,6 +44,10 @@ const customTheme = {
     LC: '#ffe190',
     focussed: grey[400],
   },
+  audioPlayer: {
+    waveform: '#2f99cb',
+    loop: grey[800],
+  },
   error: red.A700,
 };
 
@@ -64,6 +68,10 @@ export interface CustomTheme extends Theme {
     LC: string;
     focussed: string;
   };
+  audioPlayer: {
+    waveform: string;
+    loop: string;
+  };
   error: string;
 }
 
@@ -80,6 +88,10 @@ interface CustomThemeOptions extends ThemeOptions {
     highlight?: string;
     LC?: string;
     focussed?: string;
+  };
+  audioPlayer?: {
+    waveform?: string;
+    loop?: string;
   };
   error?: string;
 }

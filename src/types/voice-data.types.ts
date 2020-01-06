@@ -1,5 +1,11 @@
 import { PaginatedResults } from './pagination.types';
 export interface VoiceData {
+  /**
+   * `m3u8` streaming file.
+   * - the peaks data json can be accessed via a path that is based on this url
+   * - `{{audioUrl}}.json`
+   * @example https://domain.com/url.m3u8.json
+   */
   audioUrl: string;
   id: string;
   startAt: Date;
@@ -48,7 +54,10 @@ export interface Segment {
   number: number;
   start: number;
   transcript: string;
+  decoderTranscript?: string;
   wordAlignments: WordAlignment[];
+  speaker?: string;
+  highRisk: boolean;
 }
 
 export interface WordAlignment {

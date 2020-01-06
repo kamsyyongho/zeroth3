@@ -1,3 +1,5 @@
+import randomColor from 'randomcolor';
+
 /**
  * Checks if the contents of two sets are equal.
  * @param aSet
@@ -66,4 +68,37 @@ export function formatSecondsDuration(seconds: number): string {
     timeStringLength = 5; //MM:SS
   }
   return tempDateString.substr(timeStartIndex, timeStringLength);
+}
+
+/**
+ * random int between `0` and `max`
+ * @param max int - non inclusive
+ */
+export function getRandomInt(max: number) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+/**
+ * - used in the editor / audio player segments
+ * @param options overrides the default
+ */
+export function getRandomColor(options?: RandomColorOptionsSingle) {
+  if (options) {
+    return randomColor(options);
+  }
+  const DEFAULT_HUES: string[] = [
+    'red',
+    'orange',
+    'purple',
+    'pink',
+    'green',
+    // 'yellow',
+    // 'blue',
+    // 'monochrome',
+  ];
+  const hue = DEFAULT_HUES[getRandomInt(DEFAULT_HUES.length)];
+  const defaultOptions: RandomColorOptionsSingle = {
+    hue,
+  };
+  return randomColor(defaultOptions);
 }
