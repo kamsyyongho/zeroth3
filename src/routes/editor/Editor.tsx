@@ -15,7 +15,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, VoiceData, WordAlignment } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
@@ -26,6 +26,7 @@ import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
+import { HighRiskSegmentEdit } from './components/HighRiskSegmentEdit';
 import { StarRating } from './components/StarRating';
 
 
@@ -140,8 +141,16 @@ export function Editor() {
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
+  const [openWordKey, setOpenWordKey] = React.useState<string | undefined>();
+  const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
+  const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
+  const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
+  const [segmentIdToDelete, setSegmentIdToDelete] = React.useState<string | undefined>();
+  const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
   const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
+  const [highRiskSegment, setHighRiskSegment] = React.useState<Segment | undefined>();
   // const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
+  const [words, setWords] = React.useState<WordsbyRangeStartAndEndIndexes>({});
   const [discardDialogOpen, setDiscardDialogOpen] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
@@ -767,6 +776,19 @@ export function Editor() {
     }
   };
 
+  const editHighRiskSegment = (segment: Segment) => {
+    setHighRiskSegment(segment);
+  };
+
+  const stopHighRiskSegmentEdit = () => {
+    setHighRiskSegment(undefined);
+    setDeleteAllWordSegments(true);
+    setWords({});
+    setWordsClosed(undefined);
+    setSegmentIdToDelete(undefined);
+    setWordToCreateTimeFor(undefined);
+  };
+
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
       const key = generateWordKey(segmentIndex, wordIndex);
@@ -838,7 +860,7 @@ export function Editor() {
           <IconButton
             aria-label="high-risk-segment-button"
             size="small"
-            onClick={() => { }}
+            onClick={() => editHighRiskSegment(segment)}
             className={classes.highRiskSegmentButton}
           >
             <ErrorIcon />
@@ -899,6 +921,60 @@ export function Editor() {
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
   };
+  
+  const handleWordUpdate = (newWordValues: WordsbyRangeStartAndEndIndexes) => {
+    setWords({ ...newWordValues });
+  };
+
+  const createWordTimeSection = (wordToAddTimeTo: Word, timeToCreateAt: number, wordKey: string) => {
+    setWordToCreateTimeFor({ ...wordToAddTimeTo, segmentStartTime: timeToCreateAt, wordKey });
+  };
+
+  const updateWordTimeSection = (wordToAddTimeTo: Word, startTime: number, endTime: number, wordKey: string) => {
+    setWordToUpdateTimeFor({ ...wordToAddTimeTo, segmentStartTime: startTime, segmentEndTime: endTime, wordKey });
+  };
+
+  const handleWordsReset = () => {
+    setWords({});
+    setDeleteAllWordSegments(true);
+  };
+
+  const handleWordOpen = (openWordKey: string) => {
+    setOpenWordKey(openWordKey);
+
+  };
+
+  const handleWordClose = () => setWordsClosed(true);
+
+  /**
+   * to reset the value once the peaks has made the segment uneditable
+   * - for when a word edit popper is closed
+   */
+  const handleSegmentStatusEditChange = () => setWordsClosed(undefined);
+
+  const handleSegmentDelete = () => {
+    setSegmentIdToDelete(undefined);
+    setDeleteAllWordSegments(undefined);
+  };
+
+  const handleSegmentCreate = () => setWordToCreateTimeFor(undefined);
+
+  const handleSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
+
+  const deleteWordTimeSection = (wordKey: string) => {
+    setSegmentIdToDelete(wordKey);
+  };
+
+  const handleSectionChange = (time: Time, wordKey: string) => {
+    setWords(prevWords => {
+      const updatedWords = { ...prevWords };
+      const updatedWord = updatedWords[wordKey];
+      if (updatedWord) {
+        updatedWord.time = time;
+      }
+      return { ...updatedWords, [wordKey]: updatedWord };
+    });
+  };
 
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;
@@ -934,30 +1010,45 @@ export function Editor() {
           style={{ marginTop: 25 }}
           elevation={5}
         >
-          {segmentsLoading ? <BulletList /> :
-            <div style={{
-              padding: 15,
-              // height: 500,
-              height: windowSize.height && (windowSize?.height - 384),
-              minHeight: 250,
-            }}>
-              <AutoSizer>
-                {({ height, width }) => {
-                  return (
-                    <List
-                      className={classes.list}
-                      height={height}
-                      rowCount={segments.length}
-                      rowHeight={virtualListCache.rowHeight}
-                      rowRenderer={rowRenderer}
-                      width={width}
-                      deferredMeasurementCache={virtualListCache}
-                    />
-                  );
-                }}
-              </AutoSizer>
-            </div>
-          }
+          <div style={{
+            padding: 15,
+            // height: 500,
+            height: windowSize.height && (windowSize?.height - 384),
+            minHeight: 250,
+          }}>
+            {segmentsLoading ? <BulletList /> :
+              (highRiskSegment ?
+                <HighRiskSegmentEdit
+                  words={words}
+                  updateWords={handleWordUpdate}
+                  createWordTimeSection={createWordTimeSection}
+                  updateWordTimeSection={updateWordTimeSection}
+                  deleteWordTimeSection={deleteWordTimeSection}
+                  onWordOpen={handleWordOpen}
+                  onWordClose={handleWordClose}
+                  onReset={handleWordsReset}
+                  onClose={stopHighRiskSegmentEdit}
+                  segment={highRiskSegment}
+                  projectId={projectId}
+                  dataId={voiceData.id}
+                />
+                : <AutoSizer>
+                  {({ height, width }) => {
+                    return (
+                      <List
+                        className={classes.list}
+                        height={height}
+                        rowCount={segments.length}
+                        rowHeight={virtualListCache.rowHeight}
+                        rowRenderer={rowRenderer}
+                        width={width}
+                        deferredMeasurementCache={virtualListCache}
+                      />
+                    );
+                  }}
+                </AutoSizer>)
+            }
+          </div>
 
           {!!voiceData.length && <ErrorBoundary
             key={voiceData.id}
@@ -968,7 +1059,18 @@ export function Editor() {
               url={voiceData.audioUrl}
               length={voiceData.length}
               timeToSeekTo={timeToSeekTo}
+              openWordKey={openWordKey}
+              segmentIdToDelete={segmentIdToDelete}
+              wordsClosed={wordsClosed}
+              deleteAllWordSegments={deleteAllWordSegments}
+              onSegmentDelete={handleSegmentDelete}
+              onSegmentCreate={handleSegmentCreate}
+              onSegmentUpdate={handleSegmentUpdate}
+              onSegmentStatusEditChange={handleSegmentStatusEditChange}
+              wordToCreateTimeFor={wordToCreateTimeFor}
+              wordToUpdateTimeFor={wordToUpdateTimeFor}
               onTimeChange={handlePlaybackTimeChange}
+              onSectionChange={handleSectionChange}
               onReady={handlePlayerRendered}
             />
           </ErrorBoundary>}

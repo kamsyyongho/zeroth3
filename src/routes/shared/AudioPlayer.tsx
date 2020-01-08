@@ -3,7 +3,7 @@
 import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import Forward5Icon from '@material-ui/icons/Forward5';
 import PauseIcon from '@material-ui/icons/Pause';
@@ -15,20 +15,19 @@ import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import WarningIcon from '@material-ui/icons/Warning';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
-import ZoomOutMapIcon from '@material-ui/icons/ZoomOutMap';
 import { useSnackbar } from 'notistack';
+import Peaks, { PeaksInstance, PeaksOptions, Segment, SegmentAddOptions } from 'peaks.js';
 import React from 'react';
-import { TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
+import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
+import PropagateLoader from 'react-spinners/PropagateLoader';
+import ScaleLoader from 'react-spinners/ScaleLoader';
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from 'video.js';
 import 'video.js/dist/video-js.css';
-import WaveSurfer, { WaveSurferParams } from 'wavesurfer.js';
-// import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
-//@ts-ignore
-import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
-//@ts-ignore
-import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
+import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
+import { Time, WordToCreateTimeFor } from '../../types';
+import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
 
 
@@ -47,10 +46,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     controls: {
       marginLeft: 10,
-      marginRight: 10,
     },
     error: {
       color: theme.error,
+      marginTop: 5,
+    },
+    zoomView: {
+      "&:hover": {
+        cursor: 'pointer',
+      }
     },
   }),
 );
@@ -58,64 +62,102 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface AudioPlayerProps {
   url: string;
+  length: number;
   timeToSeekTo?: number;
+  segmentIdToDelete?: string;
+  deleteAllWordSegments?: boolean;
+  wordsClosed?: boolean;
+  openWordKey?: string;
+  wordToCreateTimeFor?: WordToCreateTimeFor;
+  wordToUpdateTimeFor?: WordToCreateTimeFor;
   onTimeChange: (timeInSeconds: number) => void;
+  onSectionChange: (time: Time, wordKey: string) => void;
+  onSegmentDelete: () => void;
+  onSegmentCreate: () => void;
+  onSegmentUpdate: () => void;
+  onSegmentStatusEditChange: () => void;
   onReady: () => void;
 }
 
-/** main `WaveSurfer` object */
-let waveSurfer: WaveSurfer | undefined;
 /** total duration of the file in seconds */
 let duration = 0;
-/** array of timeouts so we can cancel them on unsmount */
-let playTimeouts: NodeJS.Timeout[] = [];
 
-/**
- * default `minPxPerSec` value from `wavesurfer.js`
+/** the timeout used to display the streaming indicator for a minimum time */
+let waitingTimeoutId: NodeJS.Timeout | undefined;
+
+/** the interval used to get the current time */
+let getTimeIntervalId: NodeJS.Timeout | undefined;
+
+/** 
+ * if there was an error in the component 
+ * - lives outside the component, so it doesn't wait on state changes
+ * - used for the meida listeners
  */
-const DEFAULT_ZOOM = 20;
+let fatalError = false;
 
-let player: VideoJsPlayer | undefined;
+let mediaElement: HTMLAudioElement | null = null;
 
-const DEFAULT_EMPTY_TIME = '00:00.00';
+let StreamPlayer: VideoJsPlayer | undefined;
+
+let PeaksPlayer: PeaksInstance | undefined;
+
+let historyLength = 0;
+const getVideoJsLog = () => {
+  const history = videojs.log.history();
+  const length = history.length;
+  if (length > historyLength) {
+    historyLength = length;
+    console.log(`streaming player log: `, history[length - 1]);
+  }
+};
+
+const LOOP_ID = 'LOOP_ID';
+const DEFAULT_LOOP_LENGTH = 5;
 
 export function AudioPlayer(props: AudioPlayerProps) {
-  const { url, onTimeChange, timeToSeekTo, onReady } = props;
+  const { url,
+    length,
+    onTimeChange,
+    onSectionChange,
+    timeToSeekTo,
+    segmentIdToDelete,
+    deleteAllWordSegments,
+    wordsClosed,
+    openWordKey,
+    wordToCreateTimeFor,
+    wordToUpdateTimeFor,
+    onSegmentDelete,
+    onSegmentCreate,
+    onSegmentUpdate,
+    onSegmentStatusEditChange,
+    onReady,
+  } = props;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [errorText, setErrorText] = React.useState('');
-  const [isReady, setIsReady] = React.useState(false);
+  const [peaksReady, setPeaksReady] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
+  const [isLoop, setIsLoop] = React.useState(false);
+  const [waiting, setWaiting] = React.useState(false);
+  const [showStreamLoader, setShowStreamLoader] = React.useState(false);
   const [isMute, setIsMute] = React.useState(false);
-  const [zoomLevel, setZoomLevel] = React.useState(DEFAULT_ZOOM);
   const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = React.useState(1); // 0 to 1
   const [currentTime, setCurrentTime] = React.useState(0);
   const [currentTimeDisplay, setCurrentTimeDisplay] = React.useState(DEFAULT_EMPTY_TIME);
-  const [durationDisplay, setDurationDisplay] = React.useState('0');
+  const [durationDisplay, setDurationDisplay] = React.useState(DEFAULT_EMPTY_TIME);
 
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
 
-  // to clear the component on unmount
-  React.useEffect(() => {
-    return () => {
-      if (waveSurfer) {
-        try {
-          playTimeouts.forEach(timeout => clearTimeout(timeout));
-          playTimeouts = [];
-          waveSurfer.unAll();
-          waveSurfer.destroy();
-          waveSurfer = undefined;
-        } catch {
-          // do nothing
-        }
-      }
-    };
-  }, []);
-
-
-  const handleFinish = () => setIsPlay(false);
   const handlePause = () => setIsPlay(false);
   const handlePlay = () => setIsPlay(true);
+
+  const checkIfFinished = () => {
+    if (!PeaksPlayer?.player || !mediaElement) return;
+    handlePause();
+  };
 
   const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => !prevValue);
 
@@ -124,205 +166,442 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setErrorText(errorText);
   };
 
-  /**
-   * used to play when after a pause
-   * - seeking while playing has performance issues
-   * - it will clone multiple instances of the object
-   * - pausing will prevent this, but only if the player has been paused
-   * for a certain amount of time
-   */
-  const playTimeout = () => {
-    if (waveSurfer) {
-      try {
-        const timeout = setTimeout(() => {
-          waveSurfer?.play();
-          playTimeouts.shift();
-        }, 100);
-        playTimeouts.push(timeout);
-      } catch (error) {
-        displayError(error.message);
-      }
-    }
-  };
-
-  const handleStop = (callback?: () => void) => {
-    if (waveSurfer) {
-      try {
-        waveSurfer.stop();
-        setIsPlay(false);
-        if (callback && typeof callback === 'function') {
-          callback();
-        }
-      } catch (error) {
-        displayError(error.message);
-      }
+  const handleStop = () => {
+    if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
+    try {
+      setIsPlay(false);
+      StreamPlayer.pause();
+      PeaksPlayer.player.seek(0);
+      setCurrentTimeDisplay(DEFAULT_EMPTY_TIME);
+    } catch (error) {
+      displayError(error.message);
     }
   };
 
   const handleError = (errorText: string) => {
     displayError(errorText);
+    fatalError = true;
     handleStop();
   };
 
-
-  const seekToTime = (timeToSeekTo: number) => {
-    if (waveSurfer) {
-      try {
-        let progress = 0;
-        if (timeToSeekTo > 0) {
-          progress = timeToSeekTo / duration;
-        }
-        if (progress > 1 || progress < 0) {
-          return;
-        }
-        waveSurfer.pause();
-        waveSurfer.seekTo(progress);
-        if (isPlay) {
-          playTimeout();
-        }
-      } catch (error) {
-        handleError(error.message);
-      }
+  const handleStreamingError = () => {
+    ;
+    if (mediaElement?.error instanceof Error) {
+      handleError(mediaElement.error.toString());
     }
   };
 
-  const handleReady = () => {
-    if (waveSurfer) {
-      try {
-        setIsReady(true);
-        duration = waveSurfer.getDuration();
-        const durationString = duration.toFixed(2);
-        const decimalIndex = durationString.indexOf('.');
-        const decimals = durationString.substring(decimalIndex);
-        const formattedDuration = formatSecondsDuration(duration);
-        setDurationDisplay(formattedDuration + decimals);
-        if (onReady && typeof onReady === 'function') {
-          onReady();
-        }
-      } catch (error) {
-        handleError(error.message);
-      }
+  const seekToTime = (timeToSeekTo: number) => {
+    if (!PeaksPlayer?.player || timeToSeekTo < 0) return;
+    try {
+      PeaksPlayer.player.seek(timeToSeekTo);
+    } catch (error) {
+      handleError(error.message);
     }
+  };
+
+  const handleStreamReady = () => {
+    if (fatalError || !mediaElement) return;
+    try {
+      duration = PeaksPlayer?.player.getDuration() as number;
+      if (isNaN(duration)) {
+        duration = mediaElement.duration;
+      }
+      const durationString = duration.toFixed(2);
+      const decimalIndex = durationString.indexOf('.');
+      const decimals = durationString.substring(decimalIndex);
+      const formattedDuration = formatSecondsDuration(duration);
+      setDurationDisplay(formattedDuration + decimals);
+      if (onReady && typeof onReady === 'function') {
+        onReady();
+      }
+      setReady(true);
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  const handlePeaksReady = () => {
+    if (fatalError || !PeaksPlayer?.player) return;
+    setPeaksReady(true);
   };
 
   const getCurrentTimeDisplay = (currentTime: number) => {
     const currentTimeString = currentTime.toFixed(2);
-    const currentTimeFixed = Number(currentTimeString);
     const decimalIndex = currentTimeString.indexOf('.');
     const decimals = currentTimeString.substring(decimalIndex);
     const formattedCurrentTime = formatSecondsDuration(currentTime);
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
 
-  const handleAudioProcess = (currentTime: number) => {
-    if (waveSurfer) {
-      try {
-        const currentTimeString = currentTime.toFixed(2);
-        const currentTimeFixed = Number(currentTimeString);
-        setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
-        setCurrentTime(currentTimeFixed);
-        if (onTimeChange && typeof onTimeChange === 'function') {
-          onTimeChange(currentTimeFixed);
-        }
-      } catch (error) {
-        handleError(error.message);
+  const handleAudioProcess = (currentTime?: number) => {
+    if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
+    try {
+      const currentTimeString = currentTime.toFixed(2);
+      const currentTimeFixed = Number(currentTimeString);
+      setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
+      setCurrentTime(currentTime);
+      if (onTimeChange && typeof onTimeChange === 'function') {
+        onTimeChange(currentTimeFixed);
       }
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
-  function handleSeek(progress: number) {
-    if (waveSurfer) {
-      try {
-        const currentTime = duration * progress;
-        const currentTimeFixed = Number(currentTime.toFixed(2));
-        setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
-        setCurrentTime(currentTimeFixed);
-        if (onTimeChange && typeof onTimeChange === 'function') {
-          onTimeChange(currentTimeFixed);
-        }
-      } catch (error) {
-        handleError(error.message);
+  /**
+   * to get the current time quickly
+   * - the `timeupdate` listener for the `HTMLAudioElement` updates too slowly. (~300ms)
+   * - sets or clears an interval (30ms) if the we are currently playing audio
+   */
+  React.useEffect(() => {
+    if (isPlay && !waiting) {
+      getTimeIntervalId = setInterval(() => {
+        handleAudioProcess(mediaElement?.currentTime);
+      }, 30);
+    } else {
+      if (getTimeIntervalId !== undefined) {
+        clearInterval(getTimeIntervalId);
+        getTimeIntervalId = undefined;
       }
+    }
+  }, [isPlay, waiting]);
+
+  /**
+   * display a loading indicator when the player is waiting
+   * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
+   */
+  function handleWaiting() {
+    setWaiting(true);
+    setShowStreamLoader(true);
+    waitingTimeoutId = setTimeout(() => {
+      if (waitingTimeoutId !== undefined) {
+        clearTimeout(waitingTimeoutId);
+        waitingTimeoutId = undefined;
+      }
+      if (!waiting) {
+        setShowStreamLoader(false);
+      }
+    }, 400);
+  }
+
+  const handleLoaded = () => {
+    setWaiting(false);
+  };
+
+  function handleSeek() {
+    if (!PeaksPlayer?.player || !mediaElement) return;
+    try {
+      const { currentTime } = mediaElement;
+      if (isNaN(currentTime)) return;
+      const currentTimeFixed = Number(currentTime.toFixed(2));
+      setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
+      setCurrentTime(currentTime);
+      if (onTimeChange && typeof onTimeChange === 'function') {
+        onTimeChange(currentTimeFixed);
+      }
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
   function handleZoom(zoomIn = false) {
-    let newZoom = zoomLevel + (zoomIn ? 80 : -80);
-    if (newZoom < 20) {
-      newZoom = 20;
-    }
-    setZoomLevel(newZoom);
-  };
-
-  function handleShowAll() {
-    setZoomLevel(DEFAULT_ZOOM);
-  };
-
-  const handlePlayPause = () => {
-    if (waveSurfer) {
-      try {
-        waveSurfer.playPause();
-      } catch (error) {
-        handleError(error.message);
+    if (!PeaksPlayer?.zoom || !peaksReady) return;
+    try {
+      if (zoomIn) {
+        PeaksPlayer.zoom.zoomIn();
+      } else {
+        PeaksPlayer.zoom.zoomOut();
       }
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  const handleSegmentExit = (segment: Segment) => {
+    const { id, startTime, editable } = segment;
+    switch (id) {
+      case LOOP_ID:
+        // referencing the media element to get most up-to-date state
+        if (mediaElement && !mediaElement.paused && isLoop) {
+          seekToTime(startTime);
+        }
+        break;
+      default:
+        // only currently focussed words are editable
+        if (id && editable) {
+          seekToTime(startTime);
+        }
+        break;
+    }
+  };
+
+  const handleSegmentChange = (segment: Segment) => {
+    const { id, startTime, endTime } = segment;
+    const time: Time = {
+      start: startTime,
+      end: endTime,
+    };
+    switch (id) {
+      case LOOP_ID:
+        break;
+      default:
+        if (id) {
+          onSectionChange(time, id);
+        }
+        break;
+    }
+  };
+
+  /**
+   * creates or removes the loop segment
+   */
+  function handleLoopClick() {
+    if (!PeaksPlayer?.segments ||
+      !peaksReady ||
+      !duration ||
+      !mediaElement ||
+      !StreamPlayer) return;
+    try {
+      if (isLoop) {
+        PeaksPlayer.segments.removeById(LOOP_ID);
+      } else {
+        const color = theme.audioPlayer.loop;
+        let startTime = currentTime;
+        let endTime = startTime + DEFAULT_LOOP_LENGTH;
+        if (endTime > duration) {
+          endTime = duration;
+          startTime = endTime - DEFAULT_LOOP_LENGTH;
+          if (startTime < 0) {
+            startTime = 0;
+          }
+        }
+        const segmentOptions: SegmentAddOptions = {
+          startTime,
+          endTime,
+          editable: true,
+          id: LOOP_ID,
+          color,
+        };
+        PeaksPlayer.segments.add(segmentOptions);
+      }
+      setIsLoop(!isLoop);
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  /**
+   * toggle player state via the `VideoJsPlayer`
+   * - toggleing via other methods does not resume play
+   * when the player is stuck when buffering
+   */
+  const handlePlayPause = () => {
+    if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
+    try {
+      if (isPlay) {
+        StreamPlayer.pause();
+      } else {
+        StreamPlayer.play();
+      }
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
   const handleSkip = (rewind = false) => {
-    if (waveSurfer) {
-      try {
-        const interval = rewind ? -5 : 5;
-        waveSurfer.pause();
-        waveSurfer.skip(interval);
-        if (isPlay) {
-          playTimeout();
+    if (!duration) return;
+    const interval = rewind ? -5 : 5;
+    let timeToSeekTo = currentTime + interval;
+    if (timeToSeekTo < 0) {
+      timeToSeekTo = 0;
+    } else if (timeToSeekTo > duration) {
+      timeToSeekTo = duration;
+    }
+    seekToTime(timeToSeekTo);
+  };
+
+  const togglePlaybackSpeed = () => {
+    if (!StreamPlayer) return;
+    try {
+      const speed = playbackSpeed === 1 ? 0.5 : 1;
+      StreamPlayer.playbackRate(speed);
+      setPlaybackSpeed(speed);
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  /**
+   * Toggle mute on the HTMLAudioElement
+   */
+  const toggleMute = () => {
+    if (!PeaksPlayer?.player || !mediaElement || !StreamPlayer) return;
+    try {
+      mediaElement.muted = !isMute;
+      setIsMute(!isMute);
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  const createSegment = (segmentToAdd: SegmentAddOptions) => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      const existingSegments = PeaksPlayer.segments.getSegments();
+      const updatedSegments = existingSegments.map((segment) => {
+        return {
+          startTime: segment.startTime,
+          endTime: segment.endTime,
+          id: segment.id,
+          color: segment.color,
+          labelText: segment.labelText,
+          editable: false,
+        } as SegmentAddOptions;
+      });
+      updatedSegments.push(segmentToAdd);
+      PeaksPlayer.segments.removeAll();
+      PeaksPlayer.segments.add(updatedSegments);
+      if (segmentToAdd.id) {
+        const time: Time = {
+          start: segmentToAdd.startTime,
+          end: segmentToAdd.endTime,
+        };
+        onSectionChange(time, segmentToAdd.id);
+      }
+      onSegmentCreate();
+      seekToTime(segmentToAdd.startTime);
+      setIsLoop(false);
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
+
+  const updateEditableSegment = (editableSegmentId: string) => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      let seekTime: number | undefined;
+      const existingSegments = PeaksPlayer.segments.getSegments();
+      const updatedSegments = existingSegments.map((segment) => {
+        const isMatch = segment.id === editableSegmentId;
+        if (isMatch) {
+          seekTime = segment.startTime;
         }
-      } catch (error) {
-        handleError(error.message);
+        const segmentOptions: SegmentAddOptions = {
+          startTime: segment.startTime,
+          endTime: segment.endTime,
+          id: segment.id,
+          color: segment.color,
+          labelText: segment.labelText,
+          editable: isMatch,
+        };
+        return segmentOptions;
+      });
+      PeaksPlayer.segments.removeAll();
+      PeaksPlayer.segments.add(updatedSegments);
+      onSegmentStatusEditChange();
+      if (typeof seekTime === 'number') {
+        seekToTime(seekTime);
       }
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
-  /**
-   * Toggle volume to `0` or `1`
-   * - setting volume because `setMute` / `toggleMute`
-   * methods are not working properly. They are not unmuting.
-   * @param currentMute 
-   */
-  const toggleMute = (currentMute: boolean) => {
-    if (waveSurfer) {
-      try {
-        const volume = currentMute ? 0 : 1;
-        waveSurfer.setVolume(volume);
-      } catch (error) {
-        handleError(error.message);
+  const updateSegmentTime = (updateSegmentId: string, start: number, end: number) => {
+    if (!PeaksPlayer?.segments || typeof end !== 'number') return;
+    try {
+      if (start < 0) {
+        start = 0;
       }
+      if (end > duration) {
+        end = duration;
+      }
+      const existingSegments = PeaksPlayer.segments.getSegments();
+      const updatedSegments = existingSegments.map((segment) => {
+        const isMatch = segment.id === updateSegmentId;
+        let startTime = segment.startTime;
+        let endTime = segment.endTime;
+        if (isMatch) {
+          startTime = start;
+          endTime = end;
+        }
+        const segmentOptions: SegmentAddOptions = {
+          startTime,
+          endTime,
+          id: segment.id,
+          color: segment.color,
+          labelText: segment.labelText,
+          editable: isMatch,
+        };
+        return segmentOptions;
+      });
+      PeaksPlayer.segments.removeAll();
+      PeaksPlayer.segments.add(updatedSegments);
+      const updatedTime: Time = {
+        start,
+        end,
+      };
+      onSectionChange(updatedTime, updateSegmentId);
+      onSegmentUpdate();
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
-  const changeZoomLevel = (currentZoom: number) => {
-    if (waveSurfer) {
-      try {
-        waveSurfer.zoom(currentZoom);
-      } catch (error) {
-        handleError(error.message);
-      }
+  const makeAllSegmentsUneditable = () => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      const existingSegments = PeaksPlayer.segments.getSegments();
+      const updatedSegments = existingSegments.map((segment) => {
+        const segmentOptions: SegmentAddOptions = {
+          startTime: segment.startTime,
+          endTime: segment.endTime,
+          id: segment.id,
+          color: segment.color,
+          labelText: segment.labelText,
+          editable: false,
+        };
+        return segmentOptions;
+      });
+      PeaksPlayer.segments.removeAll();
+      PeaksPlayer.segments.add(updatedSegments);
+    } catch (error) {
+      handleError(error.message);
     }
   };
 
-  /**
-   * mute when the value has changed
-   */
-  React.useEffect(() => {
-    toggleMute(isMute);
-  }, [isMute]);
+  const deleteSegment = (segmentIdToDelete: string) => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      PeaksPlayer.segments.removeById(segmentIdToDelete);
+      onSegmentDelete();
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
 
-  /**
-   * zoom when the value has changed
-   */
-  React.useEffect(() => {
-    changeZoomLevel(zoomLevel);
-  }, [zoomLevel]);
+  const deleteAllSegments = () => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      const loopSegment = PeaksPlayer.segments.getSegment(LOOP_ID);
+      PeaksPlayer.segments.removeAll();
+      if (loopSegment) {
+        const loopSegmentOptions: SegmentAddOptions = {
+          startTime: loopSegment.startTime,
+          endTime: loopSegment.endTime,
+          id: loopSegment.id,
+          color: loopSegment.color,
+          labelText: loopSegment.labelText,
+          editable: isLoop,
+        };
+        PeaksPlayer.segments.add(loopSegmentOptions);
+      }
+      onSegmentDelete();
+    } catch (error) {
+      handleError(error.message);
+    }
+  };
 
   // set the seek location based on the parent
   React.useEffect(() => {
@@ -331,112 +610,183 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [timeToSeekTo]);
 
+  // delete a word segment based on the parent
   React.useEffect(() => {
-    const initWaveform = () => {
-      const timeline = TimelinePlugin.create({
-        container: "#wave-timeline"
-      });
-      const regions = RegionsPlugin.create({
-        regions: [
-          {
-            start: 1,
-            end: 3,
-            loop: false,
-            color: 'hsla(400, 100%, 30%, 0.5)'
-          }, {
-            start: 5,
-            end: 7,
-            loop: false,
-            color: 'hsla(200, 50%, 70%, 0.4)'
-          }
-        ],
-        dragSelection: {
-          slop: 5
-        }
-      });
-      // const cursor = CursorPlugin.create({
-      //   showTime: true,
-      //   // followCursorY: true,
-      //   opacity: 1,
-      //   // customStyle: {
-      //   //   height: 15,
-      //   // },
-      //   // customShowTimeStyle: {
-      //   //   'background-color': '#000',
-      //   //   color: 'red',
-      //   //   padding: '2px',
-      //   //   'font-size': '10px'
-      //   // },
-      // });
-      // const initialWaveSurfer = WaveSurfer.create({
-      const params: WaveSurferParams = {
-        container: '#waveform',
-        backend: 'MediaElement', // tell it to use pre-recorded peaks
-        height: 64, // default is 128
-        progressColor: '#2f99cb',
-        cursorColor: '#ff4d59',
-        waveColor: '#d4d3d3',
-        barWidth: 2,
-        barRadius: 2,
-        scrollParent: true,
-        plugins: [
-          timeline,
-          regions,
-          // cursor,
-        ]
+    if (typeof segmentIdToDelete === 'string') {
+      deleteSegment(segmentIdToDelete);
+    }
+  }, [segmentIdToDelete]);
+
+  // delete all word segments
+  React.useEffect(() => {
+    if (deleteAllWordSegments === true) {
+      deleteAllSegments();
+    }
+  }, [deleteAllWordSegments]);
+
+  // make all segments uneditable when all words are closed
+  React.useEffect(() => {
+    if (wordsClosed === true) {
+      makeAllSegmentsUneditable();
+    }
+  }, [wordsClosed]);
+
+  // to keep track of the current open word to make only that word editable
+  React.useEffect(() => {
+    if (typeof openWordKey === 'string') {
+      updateEditableSegment(openWordKey);
+    }
+  }, [openWordKey]);
+
+  // set the create a time segment for a word
+  React.useEffect(() => {
+    if (wordToCreateTimeFor !== undefined) {
+      const startTime = wordToCreateTimeFor.segmentStartTime;
+      let endTime = startTime + 2;
+      if (endTime > duration) {
+        endTime = duration;
+      }
+      const { color } = wordToCreateTimeFor;
+      const segmentToAdd: SegmentAddOptions = {
+        startTime,
+        endTime,
+        editable: true,
+        color,
+        id: wordToCreateTimeFor.wordKey,
+        labelText: wordToCreateTimeFor.range.text,
       };
+      createSegment(segmentToAdd);
+    }
+  }, [wordToCreateTimeFor]);
 
-      waveSurfer = WaveSurfer.create(params);
+  // set the create a time segment for a word
+  React.useEffect(() => {
+    if (wordToUpdateTimeFor !== undefined) {
+      const { wordKey, segmentStartTime, segmentEndTime } = wordToUpdateTimeFor;
+      if (typeof segmentEndTime === 'number') {
+        updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
+      }
+    }
+  }, [wordToUpdateTimeFor]);
 
-      // add listeners after waveSurver is initialized
-      waveSurfer.on('ready', handleReady);
-      waveSurfer.on('play', handlePlay);
-      waveSurfer.on('pause', handlePause);
-      waveSurfer.on('audioprocess', handleAudioProcess);
-      waveSurfer.on('seek', handleSeek);
-      waveSurfer.on('finish', handleFinish);
-      waveSurfer.on('error', handleError);
+  React.useEffect(() => {
 
-      const peaksUrl = 'https://tidesquare-data.s3.ap-northeast-2.amazonaws.com/form.json';
+    mediaElement = document.querySelector('audio') as HTMLAudioElement;
+    mediaElement?.addEventListener('loadstart', handleWaiting);
+    mediaElement?.addEventListener('waiting', handleWaiting);
+    mediaElement?.addEventListener('canplay', handleStreamReady);
+    mediaElement?.addEventListener('suspended', event => console.log('suspended', event));
+    mediaElement?.addEventListener('loadeddata', handleLoaded);
+    mediaElement?.addEventListener('pause', checkIfFinished);
+    mediaElement?.addEventListener('seeked', handleSeek);
+    mediaElement?.addEventListener('progress', (progress) => console.log('progress'));
+    mediaElement?.addEventListener('playing', (playing) => {
+      setWaiting(false);
+      if (waitingTimeoutId === undefined) {
+        setShowStreamLoader(false);
+      }
+      handlePlay();
+    });
+    mediaElement?.addEventListener('error', handleStreamingError);
+    mediaElement?.addEventListener('stalled', (stalled) => console.log('stalled', stalled));
 
-      interface Peaks {
-        data: number[];
-        channels: number;
-        length: number;
-        version: number;
-        sample_rate: number;
-        samples_per_pixel: number;
-        bits: number;
+
+    const peaksJsInit = () => {
+      const peaksUrl = `${url}.json`;
+      let zoomLevels = [512, 1024, 2048, 4096];
+      // handle the increased zoom for files less than a minute
+      if (length < 60) {
+        zoomLevels = [2, 4, 8, 16];
       }
 
-      fetch(peaksUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('HTTP error: ' + response.status);
-          }
-          return response.json();
-        })
-        .then((peaks: Peaks) => {
-          if (!waveSurfer) {
-            throw new Error('waveSurfer undefined while fetching peaks');
-          }
-          console.log(
-            'loaded peaks! sample_rate: ' + peaks.sample_rate
-          );
+      const options: PeaksOptions = {
+        /** REQUIRED OPTIONS **/
+        // Containing element: either
+        // container: document.getElementById('peaks-container') as HTMLElement,
 
-          // Load audio from the existing media element
-          const mediaElement = document.querySelector('audio') as HTMLAudioElement;
+        // or (preferred):
+        containers: {
+          zoomview: document.getElementById('zoomview-container') as HTMLElement,
+          overview: document.getElementById('overview-container') as HTMLElement
+        },
+        // HTML5 Media element containing an audio track
+        mediaElement: mediaElement as HTMLAudioElement,
+        /** Optional config with defaults **/
+        // URI to waveform data file in binary or JSON
+        dataUri: {
+          json: peaksUrl,
+        },
+        // If true, Peaks.js will send credentials with all network requests,
+        // i.e., when fetching waveform data.
+        withCredentials: false,
+        // webAudio: {
+        //   // A Web Audio AudioContext instance which can be used
+        //   // to render the waveform if dataUri is not provided
+        //   audioContext: new AudioContext(),
+        //   // Alternatively, provide an AudioBuffer containing the decoded audio
+        //   // samples. In this case, an AudioContext is not needed
+        //   audioBuffer: undefined,
+        //   // If true, the waveform will show all available channels.
+        //   // If false, the audio is shown as a single channel waveform.
+        //   multiChannel: false
+        // },
+        // async logging function
+        logger: console.error.bind(console),
+        // if true, emit cue events on the Peaks instance (see Cue Events)
+        emitCueEvents: true,
+        // default height of the waveform canvases in pixels
+        height: 64,
+        // Array of zoom levels in samples per pixel (big >> small)
+        zoomLevels: zoomLevels,
+        // Bind keyboard controls
+        keyboard: false,
+        // Keyboard nudge increment in seconds (left arrow/right arrow)
+        nudgeIncrement: 0.01,
+        // Color for the in marker of segments
+        inMarkerColor: theme.palette.common.black,
+        // Color for the out marker of segments
+        outMarkerColor: theme.palette.common.black,
+        // Color for the zoomed in waveform
+        zoomWaveformColor: theme.header.lightBlue,
+        // Color for the overview waveform
+        overviewWaveformColor: theme.audioPlayer.waveform,
+        // Color for the overview waveform rectangle
+        // that shows what the zoom view shows
+        // overviewHighlightColor: 'grey',
+        // The default number of pixels from the top and bottom of the canvas
+        // that the overviewHighlight takes up
+        // overviewHighlightOffset: 11,
+        // Color for segments on the waveform
+        segmentColor: 'rgba(255, 161, 39, 1)',
+        // Color of the play head
+        playheadColor: '#ff0000',
+        // Color of the play head text
+        playheadTextColor: '#ff0000',
+        // Show current time next to the play head
+        // (zoom view only)
+        showPlayheadTime: false,
+        // the color of a point marker
+        pointMarkerColor: '#FF0000',
+        // Color of the axis gridlines
+        axisGridlineColor: '#ccc',
+        // Color of the axis labels
+        axisLabelColor: '#aaa',
+        // Random color per segment (overrides segmentColor)
+        randomizeSegmentColor: true,
+      };
 
-          // render the waveform
-          waveSurfer.load(mediaElement, peaks.data, undefined, peaks.length);
+      PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
+        setReady(!error);
+        if (error) {
+          handleError(`PEAKS ERROR: ${error.toString()}`);
+        }
+      });
 
-          // scroll to the top of the page
-          document.body.scrollTop = 0;
-        })
-        .catch((error) => {
-          handleError(`PEAKS ERROR: ${error.message}`);
-          console.warn('AudioPlayer error:', error);
-        });
+      PeaksPlayer.on('peaks.ready', handlePeaksReady);
+      PeaksPlayer.on('segments.exit', handleSegmentExit);
+      PeaksPlayer.on('segments.dragend', handleSegmentChange);
+
+
     };
 
     const initPlayer = () => {
@@ -449,21 +799,20 @@ export function AudioPlayer(props: AudioPlayerProps) {
         height: 0,
       };
 
-      player = videojs('myAudio', options) as VideoJsPlayer;
+      StreamPlayer = videojs('myAudio', options) as VideoJsPlayer;
 
       // load the content once ready
-      player.on('ready', function (error) {
-        if (player) {
-          player?.src({
+      StreamPlayer.on('ready', function (error) {
+        if (StreamPlayer) {
+          StreamPlayer?.src({
             src: url,
-            type: 'application/x-mpegURL',
-            // withCredentials: false,
           });
           // load the waveform once ready
-          initWaveform();
+          peaksJsInit();
         }
       });
     };
+
 
     if (url) {
       initPlayer();
@@ -471,11 +820,53 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   }, []);
 
+  // to clear the component on unmount
+  React.useEffect(() => {
+    return () => {
+      try {
+        if (getTimeIntervalId) {
+          clearTimeout(getTimeIntervalId);
+          getTimeIntervalId = undefined;
+        }
+        if (waitingTimeoutId) {
+          clearTimeout(waitingTimeoutId);
+          waitingTimeoutId = undefined;
+        }
+        if (PeaksPlayer) {
+          PeaksPlayer.destroy();
+          PeaksPlayer = undefined;
+        }
+        if (StreamPlayer) {
+          StreamPlayer.dispose();
+          StreamPlayer = undefined;
+        }
+        if (mediaElement) {
+          mediaElement.removeEventListener('loadstart', handleWaiting);
+          mediaElement.removeEventListener('waiting', handleWaiting);
+          mediaElement.removeEventListener('canplay', handleStreamReady);
+          mediaElement.removeEventListener('loadeddata', handleLoaded);
+          mediaElement.removeEventListener('pause', checkIfFinished);
+          mediaElement.removeEventListener('seeked', handleSeek);
+          mediaElement.removeEventListener('error', handleStreamingError);
+        }
+      } catch (error) {
+        log({
+          file: `AudioPlayer.tsx`,
+          caller: `ERROR DURING UNMOUNT:`,
+          value: error,
+          important: true,
+        });
+      }
+    };
+  }, []);
+
+  // getVideoJsLog();
+
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
     <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
       <Replay5Icon />
     </Button>
-    <Button aria-label="stop" onClick={() => handleStop()} >
+    <Button aria-label="stop" onClick={handleStop} >
       <StopIcon />
     </Button>
     <Button aria-label="play/pause" onClick={handlePlayPause} >
@@ -493,10 +884,17 @@ export function AudioPlayer(props: AudioPlayerProps) {
     <Button aria-label="zoom-out" onClick={() => handleZoom()} >
       <ZoomOutIcon />
     </Button>
-    <Button aria-label="show-all" onClick={handleShowAll} >
-      <ZoomOutMapIcon />
+    <Button aria-label="create-loop" onClick={handleLoopClick} >
+      {isLoop ? '⊗' : '⊕'} <SvgIcon component={TiArrowLoop} />
     </Button>
-    <Button aria-label="seek-lock" onClick={() => setIsMute(!isMute)} >
+    <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} >
+      {playbackSpeed < 1 ?
+        '0.5⨉'
+        :
+        '1.0⨉'
+      }
+    </Button>
+    <Button aria-label="seek-lock" onClick={toggleMute} >
       {isMute ?
         (<VolumeOffIcon />)
         :
@@ -517,35 +915,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       elevation={5}
       className={classes.root}
     >
-      {(isReady && !errorText) && (
-        <Grid
-          container
-          direction='row'
-          justify='space-between'
-        >
-          <Grid
-            container
-            item
-            direction='row'
-            spacing={3}
-            xs={7}
-            justify='flex-start'
-            alignItems='center'
-            alignContent='center'
-            className={classes.controls}
-          >
-            <Grid item>
-              {playerControls}
-            </Grid>
-            <Grid item>
-              <Typography>{`${currentTimeDisplay} / ${durationDisplay}`}</Typography>
-            </Grid>
-          </Grid>
-          <Grid container item xs={4} >
-            {secondaryControls}
-          </Grid>
-        </Grid>
-      )}
       {(!url || !!errorText) && (<Grid
         container
         direction='row'
@@ -561,12 +930,65 @@ export function AudioPlayer(props: AudioPlayerProps) {
           <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
         </Grid>
       </Grid>)}
-      <div className={errorText ? classes.hidden : classes.content}>
-        <div id="waveform" />
-        <div id="wave-timeline" />
-        <div data-vjs-player className={classes.hidden}>
-          <audio id="myAudio" className="video-js vjs-default-skin"></audio>
-        </div>
+      {(ready && !errorText) && (
+        <Grid
+          container
+          direction='row'
+          justify='space-between'
+        >
+          <Grid
+            container
+            item
+            direction='row'
+            spacing={3}
+            xs={6}
+            wrap='nowrap'
+            justify='flex-start'
+            alignItems='center'
+            alignContent='center'
+            className={classes.controls}
+          >
+            <Grid item>
+              {playerControls}
+            </Grid>
+            <Grid item>
+              <Typography noWrap >{`${currentTimeDisplay} / ${durationDisplay}`}</Typography>
+            </Grid>
+            <Grid
+              item
+              className={!duration || (isPlay && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+            >
+              <ScaleLoader
+                height={15}
+                color={theme.palette.primary.main}
+                loading={true}
+              />
+            </Grid>
+          </Grid>
+          <Grid item xs={6} >
+            {secondaryControls}
+          </Grid>
+        </Grid>
+      )}
+      {(!errorText && !peaksReady) && (
+        <Grid
+          container
+          justify='center'
+          alignItems='center'
+          alignContent='center'
+          style={{ height: 128 }}
+        >
+          <PropagateLoader
+            color={theme.palette.primary.main}
+          />
+        </Grid>
+      )}
+      <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
+        <div id="zoomview-container" className={classes.zoomView} />
+        <div id="overview-container" />
+      </div>
+      <div data-vjs-player className={classes.hidden}>
+        <audio id="myAudio" className="video-js vjs-hidden"></audio>
       </div>
     </Paper>
   );

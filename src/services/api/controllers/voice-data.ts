@@ -19,6 +19,8 @@ import {
   SearchDataRequest,
   searchDataResult,
   ServerError,
+  SetFreeTextTranscriptRequest,
+  setFreeTextTranscriptResult,
   SplitSegmentQuery,
   splitSegmentResult,
   UpdateMemoRequest,
@@ -31,6 +33,12 @@ import {
   updateStatusResult,
 } from '../types';
 import { ResponseCode } from '../types/api.types';
+import {
+  MergeWordsInSegmentRequest,
+  mergeWordsInSegmentResult,
+  SplitWordInSegmentRequest,
+  splitWordInSegmentResult,
+} from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -466,5 +474,134 @@ export class VoiceData extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+
+  /**
+   * Overwrites segment data with free text
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param freeText
+   */
+  async setFreeTextTranscript(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    freeText: string
+  ): Promise<setFreeTextTranscriptResult> {
+    // compile data
+    const request: SetFreeTextTranscriptRequest = {
+      freeText,
+    };
+    const response = await this.apisauce.post<Segment, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/free-text`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Merge two neighboring words within a segment
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param firstWordIndex
+   * @param secondWordIndex
+   */
+  async mergeWordsInSegment(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    firstWordIndex: number,
+    secondWordIndex: number
+  ): Promise<mergeWordsInSegmentResult> {
+    // compile data
+    const request: MergeWordsInSegmentRequest = {
+      indexWordA: firstWordIndex,
+      indexWordB: secondWordIndex,
+    };
+    const response = await this.apisauce.post<Segment, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/merge-word`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Split a word into two while providing word timing info
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param splitCharacterIndex
+   * @param splitTime
+   * @param wordAlignmentIndex
+   */
+  async splitWordInSegment(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    splitCharacterIndex: number,
+    splitTime: number,
+    wordAlignmentIndex: number
+  ): Promise<splitWordInSegmentResult> {
+    // compile data
+    const request: SplitWordInSegmentRequest = {
+      splitCharacterIndex,
+      splitTime,
+      wordAlignmentIndex,
+    };
+    const response = await this.apisauce.post<Segment, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-word`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }
