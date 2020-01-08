@@ -1,4 +1,4 @@
-import { grey, pink, red } from '@material-ui/core/colors';
+import { grey, pink, red, green } from '@material-ui/core/colors';
 import { createMuiTheme, Theme } from '@material-ui/core/styles';
 import { ThemeOptions } from '@material-ui/core/styles/createMuiTheme';
 import { PaletteOptions } from '@material-ui/core/styles/createPalette';
@@ -43,6 +43,7 @@ const customTheme = {
     highlight: pink.A200,
     LC: '#ffe190',
     focussed: grey[400],
+    changes: green[400],
   },
   audioPlayer: {
     waveform: '#2f99cb',
@@ -67,6 +68,7 @@ export interface CustomTheme extends Theme {
     highlight: string;
     LC: string;
     focussed: string;
+    changes: string;
   };
   audioPlayer: {
     waveform: string;
@@ -88,6 +90,7 @@ interface CustomThemeOptions extends ThemeOptions {
     highlight?: string;
     LC?: string;
     focussed?: string;
+    changes?: string;
   };
   audioPlayer?: {
     waveform?: string;

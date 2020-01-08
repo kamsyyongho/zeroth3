@@ -1,8 +1,9 @@
-import { Box, Button, Container, Grid } from '@material-ui/core';
+import { Box, Button, Container, Grid, Tooltip, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import ErrorIcon from '@material-ui/icons/Error';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
@@ -52,6 +53,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     segmentTime: {
       color: '#939393',
     },
+    changesIcon: {
+      color: theme.editor.changes,
+      fontSize: 12,
+      marginTop: 5,
+      marginLeft: 5,
+  },
     splitButton: {
       maxWidth: 24,
       minWidth: 24,
@@ -148,7 +155,7 @@ export function Editor() {
   const [segmentIdToDelete, setSegmentIdToDelete] = React.useState<string | undefined>();
   const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
   const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
-  const [highRiskSegment, setHighRiskSegment] = React.useState<Segment | undefined>();
+  const [highRiskSegmentIndex, setHighRiskSegmentIndex] = React.useState<number | undefined>();
   // const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
   const [words, setWords] = React.useState<WordsbyRangeStartAndEndIndexes>({});
   const [discardDialogOpen, setDiscardDialogOpen] = React.useState(false);
@@ -776,12 +783,12 @@ export function Editor() {
     }
   };
 
-  const editHighRiskSegment = (segment: Segment) => {
-    setHighRiskSegment(segment);
+  const editHighRiskSegment = (highSegmentRiskIndex: number) => {
+    setHighRiskSegmentIndex(highSegmentRiskIndex);
   };
 
   const stopHighRiskSegmentEdit = () => {
-    setHighRiskSegment(undefined);
+    setHighRiskSegmentIndex(undefined);
     setDeleteAllWordSegments(true);
     setWords({});
     setWordsClosed(undefined);
@@ -802,6 +809,7 @@ export function Editor() {
       const isLastWord = lastWordTabIndex === tabIndex;
       const { highRisk } = segment;
       const isLastWordInSegment = (segment.wordAlignments.length - 1) === wordIndex;
+      const displayFreeTextEditTrigger = highRisk && isLastWordInSegment;
 
 
       let isSplitSelected = false;
@@ -856,11 +864,11 @@ export function Editor() {
           </Button>
         )}
         {content}
-        {highRisk && isLastWordInSegment && (
+        {displayFreeTextEditTrigger && (
           <IconButton
             aria-label="high-risk-segment-button"
             size="small"
-            onClick={() => editHighRiskSegment(segment)}
+            onClick={() => editHighRiskSegment(segmentIndex)}
             className={classes.highRiskSegmentButton}
           >
             <ErrorIcon />
@@ -874,7 +882,9 @@ export function Editor() {
   function rowRenderer({ key, index, style, parent }: ListRowProps) {
     const isRowSelected = segmentMergeIndexes.has(index);
     const isMergeMode = editorMode === EDITOR_MODES.merge;
-    const { highRisk } = segments[index];
+    const { highRisk, transcript, decoderTranscript } = segments[index];
+
+    const displayTextChangedHover = transcript !== decoderTranscript;
 
     return (
       segments[index] && <CellMeasurer
@@ -905,6 +915,15 @@ export function Editor() {
             >
               {renderWords(segments[index], index)}
             </Box>
+            {displayTextChangedHover && (
+              <Tooltip
+                placement='top-start'
+                title={<Typography variant='h6'>{decoderTranscript}</Typography>}
+                arrow
+              >
+              <FiberManualRecordIcon className={classes.changesIcon} />
+              </Tooltip>
+            )}
           </Grid>
         </Grid>
       </CellMeasurer>
@@ -1017,7 +1036,7 @@ export function Editor() {
             minHeight: 250,
           }}>
             {segmentsLoading ? <BulletList /> :
-              (highRiskSegment ?
+              (typeof highRiskSegmentIndex === 'number' ?
                 <HighRiskSegmentEdit
                   words={words}
                   updateWords={handleWordUpdate}
@@ -1028,7 +1047,8 @@ export function Editor() {
                   onWordClose={handleWordClose}
                   onReset={handleWordsReset}
                   onClose={stopHighRiskSegmentEdit}
-                  segment={highRiskSegment}
+                  segments={segments}
+                  segmentIndex={highRiskSegmentIndex}
                   projectId={projectId}
                   dataId={voiceData.id}
                 />
