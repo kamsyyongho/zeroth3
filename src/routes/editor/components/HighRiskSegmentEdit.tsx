@@ -1,6 +1,7 @@
-import { Button, Grid, TextField } from '@material-ui/core';
+import { Button, Grid } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -9,6 +10,7 @@ import Highlightable from 'highlightable';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import ScaleLoader from 'react-spinners/ScaleLoader';
+import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, SnackbarError, Time, Word, WordsbyRangeStartAndEndIndexes } from '../../../types';
@@ -18,14 +20,12 @@ import { HighRiskSegmentWordPopper } from './HighRiskSegmentWordPopper';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    root: {
-      minHeight: '100vh',
-    },
     spacing: {
       marginTop: 25,
     },
-    hidden: {
-      visibility: 'hidden',
+    textArea: { 
+      minWidth: 400,
+      fontSize: 16,
     },
   }),
 );
@@ -228,7 +228,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   const theme = useTheme();
 
   const setFreeText = async () => {
-    if (api?.voiceData && !isSubmitLoading && text.trim().length) {
+    if (api?.voiceData && !isError && !isSubmitLoading && text.trim().length) {
       setIsSubmitLoading(true);
       setIsError(false);
       const response = await api.voiceData.setFreeTextTranscript(projectId, dataId, segment.id, text.trim());
@@ -268,8 +268,9 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        // onSuccess(response.modelConfig, isEdit);
-        // handleClose();
+        //!
+        //TODO
+        //* DO SOMETHING
       } else {
         log({
           file: `HighRiskSegmentEdit.tsx`,
@@ -346,6 +347,10 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     }
   };
 
+  /**
+   * Unselects any selected text
+   * - the highlight text library does not deselct text if we trim
+   */
   const deselectAllText = () => window.getSelection()?.removeAllRanges();
 
   const removeRange = (rangeToRemove: Range) => {
@@ -370,10 +375,17 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     deleteWordTimeSection(wordKey);
   };
 
+  /**
+   * trims any space characters from the range and
+   * adjusts the start and end positions accordingly
+   * @param rangeToTrim 
+   * @returns `null` if the range is empty after trimming
+   */
   const trimRangeContent = (rangeToTrim: Range): Range | null => {
     const { text, start, end } = rangeToTrim;
     const trimmedText = text.trim();
     if (!trimmedText.length) {
+      deselectAllText();
       return null;
     }
     if (text.length === trimmedText.length) {
@@ -405,7 +417,6 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       end: updatedEnd,
       text: trimmedText,
     };
-    // the highlight text library does not deselct text if we trim
     deselectAllText();
     return updatedRange;
   };
@@ -434,6 +445,8 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   const onTextHighlighted = (range: Range) => {
     wasDeleted = false;
     if (isNaN(range.start) || isNaN(range.end)) {
+      enqueueSnackbar(translate('editor.validation.invalidRange'), { variant: 'error' });
+      deselectAllText();
       return;
     }
     const trimmedRange = trimRangeContent(range);
@@ -548,6 +561,20 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     setText('');
   };
 
+  const onTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const incomingText = event.target.value;
+    if(incomingText.trim().length > VALIDATION.EDITOR.freeText.max){
+      setIsError(true);
+      enqueueSnackbar(
+        translate('forms.validation.lessEqualTo',
+        {target: translate('forms.length') , value: VALIDATION.EDITOR.freeText.max}),
+        { variant: 'error', preventDuplicate: true });
+    } else {
+      setIsError(false);
+      setText(incomingText);
+    }
+  }
+
   return (<Grid
     container
     spacing={3}
@@ -566,25 +593,6 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     /> :
       (<>
         <Grid
-          item
-          onClick={handleAnchorClick}
-          onDoubleClick={handleAnchorClick}
-        >
-          <Highlightable ranges={ranges}
-            enabled={isTextLocked}
-            onTextHighlighted={onTextHighlighted}
-            id={segment.id}
-            // onMouseOverHighlightedWord={onMouseOverHighlightedWordCallback}
-            // onMouseOverHighlightedWord={onMouseOverHighlightedWord}
-            highlightStyle={{
-              backgroundColor: '#ffcc80'
-            }}
-            rangeRenderer={customRenderer}
-            text={text}
-          />
-
-        </Grid>
-        <Grid
           container
           item
           wrap='nowrap'
@@ -592,25 +600,47 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
           alignContent='center'
           alignItems='center'
           justify='center'
+          spacing={3}
           className={classes.spacing}
+          onClick={handleAnchorClick}
+          onDoubleClick={handleAnchorClick}
         >
-          <TextField
-            id="high-risk-segment-free-type-text-field"
-            fullWidth={false}
-            style={{ minWidth: 200 }}
-            disabled={isTextLocked}
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-          />
-          <IconButton
-            color={isTextLocked ? 'secondary' : 'primary'}
-            size='small'
-            aria-label="lock-text"
-            disabled={isSubmitLoading}
-            onClick={isTextLocked ? resetWords : lockText}
-          >
-            {isTextLocked ? <DeleteIcon /> : <CheckIcon />}
-          </IconButton>
+          <Grid item>
+            {isTextLocked ? (
+              <Highlightable ranges={ranges}
+                enabled={isTextLocked}
+                onTextHighlighted={onTextHighlighted}
+                id={segment.id}
+                // onMouseOverHighlightedWord={onMouseOverHighlightedWordCallback}
+                // onMouseOverHighlightedWord={onMouseOverHighlightedWord}
+                highlightStyle={{
+                  backgroundColor: '#ffcc80'
+                }}
+                rangeRenderer={customRenderer}
+                text={text}
+              />
+            ) : (
+                <TextareaAutosize
+                  id="high-risk-segment-free-type-text-area"
+                  rowsMin={1}
+                  rowsMax={10}
+                  className={classes.textArea}
+                  value={text}
+                  onChange={onTextChange}
+                />
+              )}
+          </Grid>
+          <Grid item>
+            <IconButton
+              color={isTextLocked ? 'secondary' : 'primary'}
+              size='small'
+              aria-label="lock-text"
+              disabled={isSubmitLoading || (!isTextLocked && isError)}
+              onClick={isTextLocked ? resetWords : lockText}
+            >
+              {isTextLocked ? <DeleteIcon /> : <CheckIcon />}
+            </IconButton>
+          </Grid>
         </Grid>
         <Grid
           container
@@ -635,7 +665,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
               color='primary'
               variant='contained'
               onClick={splitWord}
-              disabled={isError || isSubmitLoading}
+              disabled={!isTextLocked || isError || isSubmitLoading}
             >
               {translate('common.submit')}
             </Button>

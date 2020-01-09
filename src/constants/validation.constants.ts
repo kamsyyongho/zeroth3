@@ -42,4 +42,10 @@ export const VALIDATION = {
       max: 50,
     },
   },
+  EDITOR: {
+    freeText: {
+      min: 0,
+      max: 255,
+    },
+  },
 };

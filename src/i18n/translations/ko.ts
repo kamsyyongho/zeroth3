@@ -137,6 +137,7 @@ export const ko: ResourceLanguage = {
       none: 'None',
       today: '오늘',
       assign: 'Assign',
+      length: 'Length',
     },
     IAM: {
       users: '사용자',
@@ -198,6 +199,7 @@ export const ko: ResourceLanguage = {
       addSpeaker: 'Add speaker',
       validation: {
         missingTimes: 'All words must have start and end times.',
+        invalidRange: 'Invalid selection range.',
       },
     },
     modelConfig: {
