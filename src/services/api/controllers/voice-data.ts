@@ -482,6 +482,7 @@ export class VoiceData extends ParentApi {
    * @param dataId
    * @param segmentId
    * @param freeText
+   * @returns the updated segment with one free-text word
    */
   async setFreeTextTranscript(
     projectId: string,
