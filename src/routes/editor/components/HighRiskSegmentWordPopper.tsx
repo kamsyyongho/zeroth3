@@ -5,6 +5,8 @@ import IconButton from '@material-ui/core/IconButton';
 import Popper from '@material-ui/core/Popper';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
+import CancelIcon from '@material-ui/icons/Cancel';
+import DeleteIcon from '@material-ui/icons/Delete';
 import RemoveIcon from '@material-ui/icons/Remove';
 import React from 'react';
 import { DEFAULT_EMPTY_TIME } from '../../../constants';
@@ -130,20 +132,40 @@ export function HighRiskSegmentWordPopper(props: HighRiskSegmentWordPopperProps)
               titleTypographyProps={{ variant: 'h5' }}
               subheader={getTimeDuration()}
               avatar={<Avatar aria-label="word-color" style={avatarColor} >{''}</Avatar>}
-            />
-            <CardContent>
-              {word.time ?
-                (<>
-                  {renderTimeChecker(translate('common.startAt'), handleStartChangeTime, word.time.start)}
-                  {renderTimeChecker(translate('common.endAt'), handleEndChangeTime, word.time.end)}
-                </>)
-                :
-                (<Button onClick={createSegment} >CREATE</Button>)
+              action={
+                <IconButton
+                  color={'primary'}
+                  onClick={handlePopperClose}
+                >
+                  <CancelIcon />
+                </IconButton>
               }
-            </CardContent>
+            />
+            {word.time &&
+              <CardContent>
+                {renderTimeChecker(translate('common.startAt'), handleStartChangeTime, word.time.start)}
+                {renderTimeChecker(translate('common.endAt'), handleEndChangeTime, word.time.end)}
+              </CardContent>
+            }
             <CardActions>
-              <Button onClick={deleteWord} >Delete</Button>
-              <Button onClick={handlePopperClose} >Close</Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={deleteWord}
+                startIcon={<DeleteIcon />}
+              >
+                {translate('common.delete')}
+              </Button>
+              {!word.time &&
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={createSegment}
+                  startIcon={<AddIcon />}
+                >
+                  {translate('common.create')}
+                </Button>
+              }
             </CardActions>
           </Card>
         </Fade>

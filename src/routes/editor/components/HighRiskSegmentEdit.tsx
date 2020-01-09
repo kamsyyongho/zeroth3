@@ -11,8 +11,7 @@ import React from 'react';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Segment, SnackbarError, WordsbyRangeStartAndEndIndexes } from '../../../types';
-import { Word } from '../../../types/editor.types';
+import { Segment, SnackbarError, Time, Word, WordsbyRangeStartAndEndIndexes } from '../../../types';
 import log from '../../../util/log/logger';
 import { getRandomColor } from '../../../util/misc';
 import { HighRiskSegmentWordPopper } from './HighRiskSegmentWordPopper';
@@ -32,7 +31,9 @@ const useStyles = makeStyles((theme) =>
 );
 
 interface HighRiskSegmentEditProps {
-  segment: Segment;
+  segments: Segment[];
+  segmentIndex: number;
+  totalLength: number;
   createWordTimeSection: (wordToAddTimeTo: Word, timeToCreateAt: number, wordKey: string) => void;
   deleteWordTimeSection: (segmentIdToDelete: string) => void;
   updateWordTimeSection: (wordToAddTimeTo: Word, startTime: number, endTime: number, wordKey: string) => void;
@@ -42,7 +43,9 @@ interface HighRiskSegmentEditProps {
   onReset: () => void;
   onWordClose: () => void;
   onClose: () => void;
+  onSuccess: (updatedSegment: Segment, segmentIndex: number) => void;
   updateWords: (newWordValues: WordsbyRangeStartAndEndIndexes) => void;
+  setDisabledTimes: (disabledTimes: Time[]) => void;
   words: WordsbyRangeStartAndEndIndexes;
 }
 
@@ -71,6 +74,7 @@ let internalWordsTracker: WordsbyRangeStartAndEndIndexes = {};
 export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   const {
     updateWords,
+    setDisabledTimes,
     createWordTimeSection,
     deleteWordTimeSection,
     updateWordTimeSection,
@@ -78,11 +82,15 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     onReset,
     onWordClose,
     onClose,
+    onSuccess,
     words,
-    segment,
+    segments,
+    segmentIndex,
+    totalLength,
     projectId,
     dataId,
   } = props;
+  const segment = segments[segmentIndex];
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -91,16 +99,46 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   const [loading, setLoading] = React.useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
-  const [text, setText] = React.useState('|현대중공업도|동향이|보도가|난');
-  // const [text, setText] = React.useState(segment.decoderTranscript || '');
+  const [text, setText] = React.useState(segment.transcript || '');
   const [isTextLocked, setIsTextLocked] = React.useState(false);
   const [popperWord, setPopperWord] = React.useState<Word | undefined>();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
+  // to remove the anchor on unmount
   React.useEffect(() => {
     return () => {
       setAnchorEl(null);
     };
+  }, []);
+
+  /**
+   * gets any time that is not part of the current segment 
+   * - used to set the unplayable areas of the audio
+   */
+  const getInvalidAudioTimes = () => {
+    const disabledTimes: Time[] = [];
+    let isLastSegment = false;
+    while (!isLastSegment && disabledTimes.length < 2) {
+      isLastSegment = segmentIndex === segments.length - 1;
+      let start = 0;
+      let end = segment.start;
+      if (disabledTimes.length) {
+        start = segments[segmentIndex + 1].start;
+        end = totalLength;
+      }
+      const time = {
+        start,
+        end,
+      };
+      disabledTimes.push(time);
+    }
+    return disabledTimes;
+  };
+
+  // to limit the audio boundaries to be within the segment
+  React.useEffect(() => {
+    const disabledTimes = getInvalidAudioTimes();
+    setDisabledTimes(disabledTimes);
   }, []);
 
   React.useEffect(() => {
@@ -171,7 +209,14 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   };
 
   const checkIfAllWordsHaveTimes = (wordsArray: Word[]): boolean => {
-    return wordsArray.every(word => (word.time?.start && word.time?.end));
+    // to remove any non-words in case they end up in the array
+    const filteredArray = wordsArray.filter(word => !!word);
+    return filteredArray.every(word => {
+      if (word && typeof word.time?.start === 'number' && typeof word.time?.end === 'number') {
+        return true;
+      }
+      return false;
+    });
   };
 
   const getWithinSegmentTimes = (absoluteTime: number): number => {
@@ -190,9 +235,11 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        // onSuccess(response.modelConfig, isEdit);
-        // handleClose();
+        onSuccess(response.segment, segmentIndex);
+        const { wordAlignments } = response.segment;
+        const text = wordAlignments[0].word || '';
+        setText(text);
+        setIsTextLocked(true);
       } else {
         log({
           file: `HighRiskSegmentEdit.tsx`,
@@ -212,38 +259,35 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     }
   };
 
-  // const mergeWords = async () => {
-  //   if (api?.voiceData && !isSubmitLoading) {
-  //     setIsSubmitLoading(true);
-  //     setIsError(false);
-  //     const response = await api.voiceData.mergeWordsInSegment(projectId, dataId, segment.id, , );
-  //     let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-  //     if (response.kind === 'ok') {
-  //       snackbarError = undefined;
-  //       enqueueSnackbar(translate('common.success'), { variant: 'success' });
-  //       // onSuccess(response.modelConfig, isEdit);
-  //       // handleClose();
-  //     } else {
-  //       log({
-  //         file: `HighRiskSegmentEdit.tsx`,
-  //         caller: `setFreeText - failed to set free text`,
-  //         value: response,
-  //         important: true,
-  //       });
-  //       snackbarError.isError = true;
-  //       setIsError(true);
-  //       const { serverError } = response;
-  //       if (serverError) {
-  //         snackbarError.errorText = serverError.message || "";
-  //       }
-  //     }
-  //     snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-  //     setIsSubmitLoading(false);
-  //   }
-  // };
-
-  console.log('internalWordsTracker', internalWordsTracker);
-  console.log('checkIfAllWordsHaveTimes(sortSelectedWords(internalWordsTracker))', checkIfAllWordsHaveTimes(sortSelectedWords(internalWordsTracker)));
+  const mergeWords = async () => {
+    if (api?.voiceData && !isSubmitLoading) {
+      setIsSubmitLoading(true);
+      setIsError(false);
+      const response = await api.voiceData.mergeWordsInSegment(projectId, dataId, segment.id, 0, 1);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        // onSuccess(response.modelConfig, isEdit);
+        // handleClose();
+      } else {
+        log({
+          file: `HighRiskSegmentEdit.tsx`,
+          caller: `mergeWords - failed to merge words`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        setIsError(true);
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      setIsSubmitLoading(false);
+    }
+  };
 
   const splitWord = async () => {
     if (api?.voiceData && !isSubmitLoading) {
@@ -253,16 +297,13 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       }
       const allWordsHaveTimes = checkIfAllWordsHaveTimes(sortedWords);
       if (!allWordsHaveTimes) {
-        //!
-        //TODO
-        //* DISPLAY SOME MESSAGE HERE
-        //TODO
-        //!
+        enqueueSnackbar(translate('editor.validation.missingTimes'), { variant: 'error' });
         return;
       }
       setIsSubmitLoading(true);
       setIsError(false);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      let returnedSegment: Segment | undefined;
       for (let i = sortedWords.length - 1; i >= 0; i--) {
         const word = sortedWords[i];
         const splitCharacterIndex = word.range.start;
@@ -274,15 +315,15 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         snackbarError = {} as SnackbarError;
         if (response.kind === 'ok') {
           snackbarError = undefined;
-          // onSuccess(response.modelConfig, isEdit);
-          // handleClose();
+          returnedSegment = response.segment;
         } else {
           log({
             file: `HighRiskSegmentEdit.tsx`,
-            caller: `setFreeText - failed to set free text`,
+            caller: `splitWord - failed to split word`,
             value: response,
             important: true,
           });
+          returnedSegment = undefined;
           snackbarError.isError = true;
           setIsError(true);
           const { serverError } = response;
@@ -296,6 +337,10 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
       } else {
         enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        if (returnedSegment) {
+          onSuccess(returnedSegment, segmentIndex);
+          handleClose();
+        }
       }
       setIsSubmitLoading(false);
     }
@@ -462,19 +507,6 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     );
   };
 
-  // function tooltipRenderer(lettersNode: any, range: any, rangeIndex: any, onMouseOverHighlightedWord: any) {
-  //   rangeRenderer(lettersNode, range, rangeIndex, onMouseOverHighlightedWord);
-  //   return (<Tooltip key={`${range.data.id}-${rangeIndex}`}
-  //     // onVisibleChange={onMouseOverHighlightedWord}
-  //     placement="top"
-  //     trigger={'hover'}
-  //     overlay={<Button onClick={() => removeRange(rangeIndex)} >{range.text}</Button>}
-  //     defaultVisible={false}
-  //     animation="zoom">
-  //     <span>{lettersNode}</span>
-  //   </Tooltip>);
-  // }
-
   function customRenderer(currentRenderedNodes: any, currentRenderedRange: any, currentRenderedIndex: any, onMouseOverHighlightedWord: any, ) {
     return tooltipRenderer(currentRenderedNodes, currentRenderedRange, currentRenderedIndex, onMouseOverHighlightedWord);
   }
@@ -511,9 +543,9 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
 
   const lockText = () => {
     if (text.trim().length) {
-      setIsTextLocked(true);
+      setFreeText();
     }
-    setText(text.trim());
+    setText('');
   };
 
   return (<Grid
@@ -564,22 +596,17 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         >
           <TextField
             id="high-risk-segment-free-type-text-field"
-            // label="Read Only"
             fullWidth={false}
             style={{ minWidth: 200 }}
             disabled={isTextLocked}
             value={text}
             onChange={(event) => setText(event.target.value)}
-          // InputProps={{
-          //   readOnly: isTextLocked,
-          // }}
           />
           <IconButton
-            // className={memo !== rawMemo ? undefined : classes.hidden}
-            // disabled={loading}
             color={isTextLocked ? 'secondary' : 'primary'}
             size='small'
             aria-label="lock-text"
+            disabled={isSubmitLoading}
             onClick={isTextLocked ? resetWords : lockText}
           >
             {isTextLocked ? <DeleteIcon /> : <CheckIcon />}
@@ -588,13 +615,31 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         <Grid
           container
           item
-          spacing={2}
+          spacing={1}
           alignContent='center'
           alignItems='center'
           justify='center'
+          className={classes.spacing}
         >
-          <Button onClick={handleClose} >Cancel</Button>
-          <Button onClick={splitWord} >Submit</Button>
+          <Grid item >
+            <Button
+              color='primary'
+              variant='outlined'
+              onClick={handleClose}
+            >
+              {translate('common.back')}
+            </Button>
+          </Grid>
+          <Grid item >
+            <Button
+              color='primary'
+              variant='contained'
+              onClick={splitWord}
+              disabled={isError || isSubmitLoading}
+            >
+              {translate('common.submit')}
+            </Button>
+          </Grid>
         </Grid>
       </>)
     }

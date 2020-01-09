@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       color: theme.editor.changes,
       fontSize: 12,
       marginTop: 5,
-      marginLeft: 5,
+      marginRight: 5,
   },
     splitButton: {
       maxWidth: 24,
@@ -148,6 +148,7 @@ export function Editor() {
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
+  const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
   const [openWordKey, setOpenWordKey] = React.useState<string | undefined>();
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
@@ -787,8 +788,19 @@ export function Editor() {
     setHighRiskSegmentIndex(highSegmentRiskIndex);
   };
 
+  const handleDisabledTimesSet = (disabledTimes: Time[]) => {
+    setDisabledTimes(disabledTimes);
+  };
+
+  const handleHighRiskSegementSuccess = (updatedSegment: Segment, segmentIndex: number) => {
+    const updatedSegments = [...segments];
+    updatedSegments[segmentIndex] = updatedSegment;
+    setSegments(updatedSegments);
+  }
+
   const stopHighRiskSegmentEdit = () => {
     setHighRiskSegmentIndex(undefined);
+    setDisabledTimes(undefined);
     setDeleteAllWordSegments(true);
     setWords({});
     setWordsClosed(undefined);
@@ -908,6 +920,15 @@ export function Editor() {
             </Button>
           </Grid>
           <Grid item xs={12} sm container>
+          {displayTextChangedHover && (
+            <Tooltip
+              placement='top-start'
+              title={<Typography variant='h6'>{decoderTranscript}</Typography>}
+              arrow={false}
+            >
+            <FiberManualRecordIcon className={classes.changesIcon} />
+            </Tooltip>
+          )}
             <Box
               border={highRisk ? 1 : 0}
               borderColor={theme.editor.highlight}
@@ -915,15 +936,6 @@ export function Editor() {
             >
               {renderWords(segments[index], index)}
             </Box>
-            {displayTextChangedHover && (
-              <Tooltip
-                placement='top-start'
-                title={<Typography variant='h6'>{decoderTranscript}</Typography>}
-                arrow
-              >
-              <FiberManualRecordIcon className={classes.changesIcon} />
-              </Tooltip>
-            )}
           </Grid>
         </Grid>
       </CellMeasurer>
@@ -1043,12 +1055,15 @@ export function Editor() {
                   createWordTimeSection={createWordTimeSection}
                   updateWordTimeSection={updateWordTimeSection}
                   deleteWordTimeSection={deleteWordTimeSection}
+                  setDisabledTimes={handleDisabledTimesSet}
                   onWordOpen={handleWordOpen}
                   onWordClose={handleWordClose}
                   onReset={handleWordsReset}
                   onClose={stopHighRiskSegmentEdit}
+                  onSuccess={handleHighRiskSegementSuccess}
                   segments={segments}
                   segmentIndex={highRiskSegmentIndex}
+                  totalLength={voiceData.length}
                   projectId={projectId}
                   dataId={voiceData.id}
                 />
@@ -1078,7 +1093,9 @@ export function Editor() {
               key={voiceData.id}
               url={voiceData.audioUrl}
               length={voiceData.length}
+              highRiskEditMode={!!highRiskSegmentIndex}
               timeToSeekTo={timeToSeekTo}
+              disabledTimes={disabledTimes}
               openWordKey={openWordKey}
               segmentIdToDelete={segmentIdToDelete}
               wordsClosed={wordsClosed}
