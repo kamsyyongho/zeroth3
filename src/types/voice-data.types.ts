@@ -53,10 +53,12 @@ export interface Segment {
   length: number;
   number: number;
   start: number;
+  /** the current transcript */
   transcript: string;
-  decoderTranscript?: string;
+  /** the original transcript created by the decoder */
+  decoderTranscript: string;
   wordAlignments: WordAlignment[];
-  speaker?: string;
+  speaker: string | null;
   highRisk: boolean;
 }
 

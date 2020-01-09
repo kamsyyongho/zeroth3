@@ -1,4 +1,4 @@
-import { grey, pink, red, green } from '@material-ui/core/colors';
+import { green, grey, pink, red } from '@material-ui/core/colors';
 import { createMuiTheme, Theme } from '@material-ui/core/styles';
 import { ThemeOptions } from '@material-ui/core/styles/createMuiTheme';
 import { PaletteOptions } from '@material-ui/core/styles/createPalette';
@@ -48,6 +48,7 @@ const customTheme = {
   audioPlayer: {
     waveform: '#2f99cb',
     loop: grey[800],
+    disabled: grey[300],
   },
   error: red.A700,
 };
@@ -73,6 +74,7 @@ export interface CustomTheme extends Theme {
   audioPlayer: {
     waveform: string;
     loop: string;
+    disabled: string;
   };
   error: string;
 }
@@ -95,6 +97,7 @@ interface CustomThemeOptions extends ThemeOptions {
   audioPlayer?: {
     waveform?: string;
     loop?: string;
+    disabled?: string;
   };
   error?: string;
 }

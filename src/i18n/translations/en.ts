@@ -8,6 +8,7 @@ export const en: ResourceLanguage = {
       delete: 'Delete',
       submit: 'Submit',
       cancel: 'Cancel',
+      back: 'Back',
       create: 'Create',
       edit: 'Edit',
       save: 'Save',
@@ -190,6 +191,9 @@ export const en: ResourceLanguage = {
       nothingToTranscribe: 'Nothing to transcribe',
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
+      validation: {
+        missingTimes: 'All words must have start and end times.',
+      },
     },
     modelConfig: {
       header: 'Model configuration',

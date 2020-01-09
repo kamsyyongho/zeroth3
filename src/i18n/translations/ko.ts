@@ -8,6 +8,7 @@ export const ko: ResourceLanguage = {
       delete: '삭제',
       submit: '제출',
       cancel: '취소',
+      back: 'Back',
       create: 'Create',
       edit: 'Edit',
       save: 'Save',
@@ -192,6 +193,9 @@ export const ko: ResourceLanguage = {
       nothingToTranscribe: 'Nothing to transcribe',
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
+      validation: {
+        missingTimes: 'All words must have start and end times.',
+      },
     },
     modelConfig: {
       header: 'Model configuration',
