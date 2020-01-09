@@ -51,7 +51,7 @@ export function SetItem(props: SetItemProps) {
     </Typography>
   );
 
-  if (!total || Number.isNaN(progress)) {
+  if (!total || isNaN(progress)) {
     processedText = (<Typography color='textSecondary' >
       {translate('common.noData')}
     </Typography>);

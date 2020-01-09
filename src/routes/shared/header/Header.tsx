@@ -162,7 +162,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             </Button>
             <Button
               startIcon={<ICONS.Projects />}
-              endIcon={<ICONS.ArrowDown />}
               color={"inherit"}
               className={classes.projectButton}
               onClick={showProjectsDialog}
