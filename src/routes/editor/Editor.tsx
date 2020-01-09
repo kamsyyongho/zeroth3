@@ -953,7 +953,7 @@ export function Editor() {
             >
               <Box
                 border={1}
-                borderColor={displaySpeakerHover ? theme.editor.changes : theme.palette.background.paper}
+                borderColor={displayTextChangedHover ? theme.editor.changes : theme.palette.background.paper}
                 borderRadius={5}
               >
                 {renderWords(segments[index], index)}

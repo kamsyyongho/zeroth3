@@ -135,6 +135,7 @@ export const en: ResourceLanguage = {
       none: 'None',
       today: 'Today',
       assign: 'Assign',
+      length: 'Length',
     },
     IAM: {
       users: 'Users',
@@ -196,6 +197,7 @@ export const en: ResourceLanguage = {
       addSpeaker: 'Add speaker',
       validation: {
         missingTimes: 'All words must have start and end times.',
+        invalidRange: 'Invalid selection range.',
       },
     },
     modelConfig: {
