@@ -1,4 +1,10 @@
-import { CONTENT_STATUS, Segment, VoiceData, VoiceDataResults, WordAlignment } from '../../../types';
+import {
+  CONTENT_STATUS,
+  Segment,
+  VoiceData,
+  VoiceDataResults,
+  WordAlignment,
+} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -52,13 +58,32 @@ export interface RateTranscriptRequest {
   rating: number;
 }
 
+export interface SetFreeTextTranscriptRequest {
+  freeText: string;
+}
+
+export interface MergeWordsInSegmentRequest {
+  indexWordA: number;
+  indexWordB: number;
+}
+
 export interface MergeTwoSegmentsRequest {
   segmentIdA: string;
   segmentIdB: string;
 }
 
+export interface SplitWordInSegmentRequest {
+  splitCharacterIndex: number;
+  splitTime: number;
+  wordAlignmentIndex: number;
+}
+
 export interface UpdateSegmentRequest {
   wordAlignments: WordAlignment[];
+}
+
+export interface UpdateSpeakerRequest {
+  speaker: string;
 }
 
 export type UpdateSegmentsRequest = Segment[];
@@ -74,7 +99,7 @@ export type searchDataResult =
   | GeneralApiProblem;
 
 export type getAssignedDataResult =
-  | { kind: 'ok'; voiceData: VoiceData ; noContent: boolean }
+  | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
   | GeneralApiProblem;
 
 export type fetchUnconfirmedDataResult =
@@ -101,4 +126,18 @@ export type updateStatusResult =
   | { kind: 'ok'; data: VoiceData }
   | GeneralApiProblem;
 
+export type setFreeTextTranscriptResult =
+  | { kind: 'ok'; segment: Segment }
+  | GeneralApiProblem;
+
+export type mergeWordsInSegmentResult =
+  | { kind: 'ok'; segment: Segment }
+  | GeneralApiProblem;
+
+export type splitWordInSegmentResult =
+  | { kind: 'ok'; segment: Segment }
+  | GeneralApiProblem;
+
 export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;

@@ -2,8 +2,9 @@ import Button, { ButtonProps } from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import PublishIcon from '@material-ui/icons/Publish';
+import { default as PublishIcon, default as SvgIcon } from '@material-ui/icons/Publish';
 import React from 'react';
+import { MdPersonAdd } from 'react-icons/md';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
@@ -52,6 +53,7 @@ export enum EDITOR_CONTROLS {
   edit,
   merge,
   split,
+  speaker,
 }
 
 const primaryControlOrder = [
@@ -61,6 +63,7 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.edit,
   EDITOR_CONTROLS.merge,
   EDITOR_CONTROLS.split,
+  EDITOR_CONTROLS.speaker,
 ];
 
 const secondaryControlOrder = [
@@ -173,6 +176,15 @@ export const EditorControls = (props: EditorControlsProps) => {
           props = {
             onClick: () => onModeChange(EDITOR_MODES.split),
             disabled: disabledControls.includes(EDITOR_CONTROLS.split)
+          };
+          break;
+        case EDITOR_CONTROLS.speaker:
+          label = translate('editor.speaker');
+          icon = <SvgIcon component={MdPersonAdd} />;
+          selected = editorMode === EDITOR_MODES.speaker;
+          props = {
+            onClick: () => onModeChange(EDITOR_MODES.speaker),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.speaker)
           };
           break;
       }

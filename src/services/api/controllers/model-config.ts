@@ -58,20 +58,20 @@ export class ModelConfig extends ParentApi {
    * Create a new model config
    * @param projectId
    * @param name
-   * @param thresholdHc
-   * @param thresholdLc
    * @param description
    * @param acousticModelId
    * @param languageModelId
+   * @param thresholdHc
+   * @param thresholdLc
    */
   async postModelConfig(
     projectId: string,
     name: string,
-    thresholdHc: number,
-    thresholdLc: number,
     description: string,
     acousticModelId: string,
-    languageModelId: string
+    languageModelId: string,
+    thresholdHc: number | null,
+    thresholdLc: number | null
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -114,22 +114,22 @@ export class ModelConfig extends ParentApi {
    * @param modelConfigId
    * @param projectId
    * @param name
-   * @param thresholdHc
-   * @param thresholdLc
    * @param description
    * @param acousticModelId
    * @param languageModelId
+   * @param thresholdHc
+   * @param thresholdLc
    * @returns a `conflict` kind if the model config cannot be updated
    */
   async updateModelConfig(
     modelConfigId: string,
     projectId: string,
     name: string,
-    thresholdHc: number,
-    thresholdLc: number,
     description: string,
     acousticModelId: string,
-    languageModelId: string
+    languageModelId: string,
+    thresholdHc: number | null,
+    thresholdLc: number | null
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {

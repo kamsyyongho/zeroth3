@@ -8,6 +8,7 @@ export const en: ResourceLanguage = {
       delete: 'Delete',
       submit: 'Submit',
       cancel: 'Cancel',
+      back: 'Back',
       create: 'Create',
       edit: 'Edit',
       save: 'Save',
@@ -102,6 +103,7 @@ export const en: ResourceLanguage = {
       },
       numberFiles: 'Number of files to upload: {{count}}',
       email: 'Email',
+      speaker: 'Speaker',
       name: 'Name',
       text: 'Text',
       file: 'File',
@@ -149,6 +151,7 @@ export const en: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',
@@ -186,9 +189,14 @@ export const en: ResourceLanguage = {
       redo: 'Redo',
       undo: 'Undo',
       fetch: 'Fetch',
+      speaker: 'Speaker',
       nothingToTranscribe: 'Nothing to transcribe',
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
+      addSpeaker: 'Add speaker',
+      validation: {
+        missingTimes: 'All words must have start and end times.',
+      },
     },
     modelConfig: {
       header: 'Model configuration',

@@ -11,6 +11,7 @@ import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationP
 import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
+import { NotFound } from '../shared/NotFound';
 import { ProjectTableTabs } from './ProjectTableTabs';
 
 interface ProjectDetailsProps {
@@ -116,10 +117,10 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{translate('common.invalidId')}</Typography>;
+      return <NotFound text={translate('common.invalidId')} />;
     }
     if (!project || !isValidProject) {
-      return <Typography>{translate('common.notFound')}</Typography>;
+      return <NotFound text={translate('projects.notFound')} />;
     }
 
     return (<Card elevation={0} className={classes.card} >
@@ -168,7 +169,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {projectLoading ? <BulletList /> :
         renderContent()
       }
-      <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />
+      {project && isValidProject && <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />}
     </Container >
   );
 }

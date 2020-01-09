@@ -14,7 +14,7 @@ export function ProgressBar(props: ProgressBarProps) {
   if (minWidth) style.minWidth = minWidth;
   if (maxWidth) style.maxWidth = maxWidth;
 
-  const sanitizedValue = Number.isNaN(value) ? 0 : value;
+  const sanitizedValue = isNaN(value) ? 0 : value;
 
   return (
     <LinearProgress variant="determinate" value={sanitizedValue} style={style} />

@@ -8,6 +8,7 @@ export const ko: ResourceLanguage = {
       delete: '삭제',
       submit: '제출',
       cancel: '취소',
+      back: 'Back',
       create: 'Create',
       edit: 'Edit',
       save: 'Save',
@@ -104,6 +105,7 @@ export const ko: ResourceLanguage = {
       },
       numberFiles: 'Number of files to upload: {{count}}',
       email: '이메일',
+      speaker: 'Speaker',
       name: '이름',
       text: 'Text',
       file: 'File',
@@ -151,6 +153,7 @@ export const ko: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
       deleteProject: 'Delete project',
@@ -188,9 +191,14 @@ export const ko: ResourceLanguage = {
       redo: 'Redo',
       undo: 'Undo',
       fetch: 'Fetch',
+      speaker: 'Speaker',
       nothingToTranscribe: 'Nothing to transcribe',
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
+      addSpeaker: 'Add speaker',
+      validation: {
+        missingTimes: 'All words must have start and end times.',
+      },
     },
     modelConfig: {
       header: 'Model configuration',

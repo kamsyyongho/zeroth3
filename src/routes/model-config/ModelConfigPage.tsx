@@ -1,4 +1,4 @@
-import { Container, Typography } from '@material-ui/core';
+import { Container } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import { BulletList } from 'react-content-loader';
@@ -12,6 +12,7 @@ import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
+import { NotFound } from '../shared/NotFound';
 import { ModelConfigList } from './ModelConfigList';
 
 interface ModelConfigPageProps {
@@ -251,10 +252,10 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const renderContent = () => {
     if (!isValidId) {
-      return <Typography>{translate('common.invalidId')}</Typography>;
+      return <NotFound text={translate('common.invalidId')} />;
     }
     if (!project || !isValidProject) {
-      return <Typography>{translate('common.notFound')}</Typography>;
+      return <NotFound text={translate('projects.notFound')} />;
     }
     return (
       <ModelConfigList

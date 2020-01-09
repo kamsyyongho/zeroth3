@@ -4,6 +4,7 @@ import { KeycloakInstance } from 'keycloak-js';
 import log from '../../util/log/logger';
 import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
+import { DataSet } from './controllers/data-set';
 import { IAM } from './controllers/iam';
 import { ModelConfig } from './controllers/model-config';
 import { Models } from './controllers/models';
@@ -13,7 +14,6 @@ import { RawData } from './controllers/raw-data';
 import { Transcriber } from './controllers/transcriber';
 import { User } from './controllers/user';
 import { VoiceData } from './controllers/voice-data';
-import { DataSet } from './controllers/data-set';
 
 /**
  * Main class that manages all requests to the API.
@@ -38,7 +38,9 @@ export class Api {
    * The logout method from `keycloakContext`.
    * - redirects to the login page
    */
-  logout: () => void = () => {};
+  logout: () => void = () => {
+    // empty
+  };
 
   /**
    * Subclass that manages IAM requests.
@@ -104,6 +106,8 @@ export class Api {
    * sequence and will happen before the first React component
    * is mounted.
    * Be as quick as possible in here.
+   * @param keycloak the keycloak instance
+   * @param logout the keycloak logout method
    */
   setup(keycloak: KeycloakInstance, logout: () => void): boolean {
     this.keycloak = keycloak;

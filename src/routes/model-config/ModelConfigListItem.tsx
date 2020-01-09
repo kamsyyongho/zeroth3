@@ -137,7 +137,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       borderColor={theme.table.border}
       className={classes.modelConfigRoot}
     >
-      <ExpansionPanel elevation={0} >
+      <ExpansionPanel elevation={0}>
         <ExpansionPanelSummary
           aria-controls="model-config-expand"
           id="model-config-expand"

@@ -109,21 +109,18 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc } = values;
     if (selectedAcousticModelId === null ||
-      selectedLanguageModelId === null ||
-      thresholdHc === null ||
-      thresholdLc === null
+      selectedLanguageModelId === null
     ) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const { name, description } = values;
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), thresholdHc, thresholdLc, description.trim(), selectedAcousticModelId, selectedLanguageModelId);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), thresholdHc, thresholdLc, description.trim(), selectedAcousticModelId, selectedLanguageModelId);
+        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
