@@ -923,8 +923,8 @@ export function Editor() {
               arrow={true}
             >
               <Box
-                border={(displaySpeakerHover) ? 1 : 0}
-                borderColor={theme.table.border}
+                border={1}
+                borderColor={displaySpeakerHover ? theme.table.border : theme.palette.background.paper}
                 borderRadius={5}
               >
                 <Button
@@ -952,8 +952,8 @@ export function Editor() {
               arrow={false}
             >
               <Box
-                border={displayTextChangedHover ? 1 : 0}
-                borderColor={theme.editor.changes}
+                border={1}
+                borderColor={displaySpeakerHover ? theme.editor.changes : theme.palette.background.paper}
                 borderRadius={5}
               >
                 {renderWords(segments[index], index)}
