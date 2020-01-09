@@ -3,7 +3,6 @@ import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import ErrorIcon from '@material-ui/icons/Error';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
@@ -25,6 +24,7 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
 import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
+import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { HighRiskSegmentEdit } from './components/HighRiskSegmentEdit';
@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       fontSize: 12,
       marginTop: 5,
       marginRight: 5,
-  },
+    },
     splitButton: {
       maxWidth: 24,
       minWidth: 24,
@@ -137,6 +137,7 @@ export enum EDITOR_MODES {
   edit,
   merge,
   split,
+  speaker,
 }
 
 
@@ -157,7 +158,7 @@ export function Editor() {
   const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
   const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
   const [highRiskSegmentIndex, setHighRiskSegmentIndex] = React.useState<number | undefined>();
-  // const [isSegmentEdit, setIsSegmentEdit] = React.useState(false);
+  const [segmentIndexToAssignSpeakerTo, setSegmentIndexToAssignSpeakerTo] = React.useState<number | undefined>();
   const [words, setWords] = React.useState<WordsbyRangeStartAndEndIndexes>({});
   const [discardDialogOpen, setDiscardDialogOpen] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
@@ -792,11 +793,11 @@ export function Editor() {
     setDisabledTimes(disabledTimes);
   };
 
-  const handleHighRiskSegementSuccess = (updatedSegment: Segment, segmentIndex: number) => {
+  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
     setSegments(updatedSegments);
-  }
+  };
 
   const stopHighRiskSegmentEdit = () => {
     setHighRiskSegmentIndex(undefined);
@@ -807,6 +808,10 @@ export function Editor() {
     setSegmentIdToDelete(undefined);
     setWordToCreateTimeFor(undefined);
   };
+
+  const openSpeakerAssignDialog = (segmentIndex: number) => setSegmentIndexToAssignSpeakerTo(segmentIndex);
+
+  const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
 
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
@@ -894,9 +899,12 @@ export function Editor() {
   function rowRenderer({ key, index, style, parent }: ListRowProps) {
     const isRowSelected = segmentMergeIndexes.has(index);
     const isMergeMode = editorMode === EDITOR_MODES.merge;
-    const { highRisk, transcript, decoderTranscript } = segments[index];
+    const isSpeakerMode = editorMode === EDITOR_MODES.speaker;
+    const { speaker, transcript, decoderTranscript } = segments[index];
 
     const displayTextChangedHover = transcript !== decoderTranscript;
+    const displaySpeakerHover = speaker && !isMergeMode;
+    const buttonDisabled = !isMergeMode && !isSpeakerMode;
 
     return (
       segments[index] && <CellMeasurer
@@ -909,33 +917,48 @@ export function Editor() {
       >
         <Grid container spacing={2} >
           <Grid item>
-            <Button
-              className={!isMergeMode ? classes.segmentTimeButton : undefined}
-              color='primary'
-              disabled={!isMergeMode}
-              variant={isRowSelected ? 'contained' : 'outlined'}
-              onClick={() => handleSegmentToMergeClick(index)}
-            >
-              {formatSecondsDuration(segments[index].start)}
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm container>
-          {displayTextChangedHover && (
             <Tooltip
               placement='top-start'
-              title={<Typography variant='h6'>{decoderTranscript}</Typography>}
+              title={(displaySpeakerHover) ? <Typography variant='h6'>{speaker}</Typography> : ''}
+              arrow={true}
+            >
+              <Box
+                border={(displaySpeakerHover) ? 1 : 0}
+                borderColor={theme.table.border}
+                borderRadius={5}
+              >
+                <Button
+                  className={buttonDisabled ? classes.segmentTimeButton : undefined}
+                  color={isSpeakerMode ? 'secondary' : 'primary'}
+                  disabled={buttonDisabled}
+                  variant={isRowSelected ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    if(isSpeakerMode){
+                      openSpeakerAssignDialog(index);
+                    } else {
+                      handleSegmentToMergeClick(index);
+                    }
+                  }}
+                >
+                  {formatSecondsDuration(segments[index].start)}
+                </Button>
+              </Box>
+            </Tooltip>
+          </Grid>
+          <Grid item xs={12} sm container>
+            <Tooltip
+              placement='top-start'
+              title={displayTextChangedHover ? <Typography variant='h6'>{decoderTranscript}</Typography> : ''}
               arrow={false}
             >
-            <FiberManualRecordIcon className={classes.changesIcon} />
+              <Box
+                border={displayTextChangedHover ? 1 : 0}
+                borderColor={theme.editor.changes}
+                borderRadius={5}
+              >
+                {renderWords(segments[index], index)}
+              </Box>
             </Tooltip>
-          )}
-            <Box
-              border={highRisk ? 1 : 0}
-              borderColor={theme.editor.highlight}
-              borderRadius={5}
-            >
-              {renderWords(segments[index], index)}
-            </Box>
           </Grid>
         </Grid>
       </CellMeasurer>
@@ -952,7 +975,7 @@ export function Editor() {
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
   };
-  
+
   const handleWordUpdate = (newWordValues: WordsbyRangeStartAndEndIndexes) => {
     setWords({ ...newWordValues });
   };
@@ -988,9 +1011,9 @@ export function Editor() {
     setDeleteAllWordSegments(undefined);
   };
 
-  const handleSegmentCreate = () => setWordToCreateTimeFor(undefined);
+  const handleAudioSegmentCreate = () => setWordToCreateTimeFor(undefined);
 
-  const handleSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
+  const handleAudioSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
 
   const deleteWordTimeSection = (wordKey: string) => {
     setSegmentIdToDelete(wordKey);
@@ -1060,7 +1083,7 @@ export function Editor() {
                   onWordClose={handleWordClose}
                   onReset={handleWordsReset}
                   onClose={stopHighRiskSegmentEdit}
-                  onSuccess={handleHighRiskSegementSuccess}
+                  onSuccess={handleSegmentUpdate}
                   segments={segments}
                   segmentIndex={highRiskSegmentIndex}
                   totalLength={voiceData.length}
@@ -1101,8 +1124,8 @@ export function Editor() {
               wordsClosed={wordsClosed}
               deleteAllWordSegments={deleteAllWordSegments}
               onSegmentDelete={handleSegmentDelete}
-              onSegmentCreate={handleSegmentCreate}
-              onSegmentUpdate={handleSegmentUpdate}
+              onSegmentCreate={handleAudioSegmentCreate}
+              onSegmentUpdate={handleAudioSegmentUpdate}
               onSegmentStatusEditChange={handleSegmentStatusEditChange}
               wordToCreateTimeFor={wordToCreateTimeFor}
               wordToUpdateTimeFor={wordToUpdateTimeFor}
@@ -1127,6 +1150,15 @@ export function Editor() {
         open={confirmDialogOpen}
         onSubmit={confirmData}
         onCancel={closeConfirmDialog}
+      />
+      <AssignSpeakerDialog
+        projectId={projectId}
+        dataId={voiceData.id}
+        segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
+        segmentIndex={segmentIndexToAssignSpeakerTo}
+        open={segmentIndexToAssignSpeakerTo !== undefined}
+        onClose={closeSpeakerAssignDialog}
+        onSuccess={handleSegmentUpdate}
       />
     </>
   );

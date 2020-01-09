@@ -82,6 +82,10 @@ export interface UpdateSegmentRequest {
   wordAlignments: WordAlignment[];
 }
 
+export interface UpdateSpeakerRequest {
+  speaker: string;
+}
+
 export type UpdateSegmentsRequest = Segment[];
 
 /////////////
@@ -135,3 +139,5 @@ export type splitWordInSegmentResult =
   | GeneralApiProblem;
 
 export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;

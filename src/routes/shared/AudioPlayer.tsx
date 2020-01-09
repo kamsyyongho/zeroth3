@@ -445,12 +445,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
       !mediaElement ||
       !StreamPlayer ||
       (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
-      ) return;
+    ) return;
     try {
       const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
       if (isLoop) {
         PeaksPlayer.segments.removeById(SEGMENT_IDS.LOOP);
-      } else if(!loopSegment){
+      } else if (!loopSegment) {
         const color = theme.audioPlayer.loop;
         let startTime = currentTime;
         let endTime = startTime + DEFAULT_LOOP_LENGTH;

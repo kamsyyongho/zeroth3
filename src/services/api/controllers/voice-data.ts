@@ -38,6 +38,8 @@ import {
   mergeWordsInSegmentResult,
   SplitWordInSegmentRequest,
   splitWordInSegmentResult,
+  UpdateSpeakerRequest,
+  updateSpeakerResult,
 } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
@@ -604,5 +606,39 @@ export class VoiceData extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+  /**
+   * Updates a segment's speaker
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param speaker
+   */
+  async updateSpeaker(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    speaker: string
+  ): Promise<updateSpeakerResult> {
+    // compile data
+    const request: UpdateSpeakerRequest = {
+      speaker,
+    };
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`,
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 }
