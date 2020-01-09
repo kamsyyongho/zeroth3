@@ -20,5 +20,19 @@ export function useGlobalState() {
     setState(updatedState);
   }
 
-  return { globalState: state, setGlobalState };
+  /**
+   * Deletes values based on their keys
+   * @param keys the state keys to delete
+   */
+  function deleteStateValues(keys: string[]) {
+    const newState = { ...state };
+    keys.forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      //@ts-ignore
+      delete newState[key];
+    });
+    setState(newState);
+  }
+
+  return { globalState: state, setGlobalState, deleteStateValues };
 }
