@@ -176,7 +176,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => !prevValue);
 
   const displayError = (errorText: string) => {
-    enqueueSnackbar(errorText, { variant: 'error' });
+    enqueueSnackbar(errorText, { variant: 'error', preventDuplicate: true });
     setErrorText(errorText);
   };
 
@@ -192,15 +192,27 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
-  const handleError = (errorText: string) => {
-    displayError(errorText);
+  const handleError = (error: Error) => {
+    displayError(error.toString());
     fatalError = true;
+    log({
+      file: `AudioPlayer.tsx`,
+      caller: `handleError`,
+      value: error,
+      important: true,
+    });
+    log({
+      file: `AudioPlayer.tsx`,
+      caller: `handleError: trace`,
+      value: error,
+      trace: true,
+    });
     handleStop();
   };
 
   const handleStreamingError = () => {
     if (mediaElement?.error instanceof Error) {
-      handleError(mediaElement.error.toString());
+      handleError(mediaElement.error);
     }
   };
 
@@ -237,7 +249,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     try {
       PeaksPlayer.player.seek(timeToSeekTo);
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -258,7 +270,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       setReady(true);
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -286,13 +298,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onTimeChange(currentTimeFixed);
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
   /**
    * to get the current time quickly
-   * - the `timeupdate` listener for the `HTMLAudioElement` updates too slowly. (~300ms)
+   * - the `timeupdate` listener for the `HTMLAudioElement` updates too slowly. (~300-900ms)
    * - sets or clears an interval (30ms) if the we are currently playing audio
    */
   React.useEffect(() => {
@@ -334,7 +346,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
-      if (isNaN(currentTime)) return;
+      if (typeof currentTime !== 'number') return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
@@ -342,7 +354,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onTimeChange(currentTimeFixed);
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -355,7 +367,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         PeaksPlayer.zoom.zoomOut();
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -472,7 +484,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       isLoop = !isLoop;
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -491,7 +503,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         StreamPlayer.play();
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -514,7 +526,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer.playbackRate(speed);
       setPlaybackSpeed(speed);
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -527,7 +539,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       mediaElement.muted = !isMute;
       setIsMute(!isMute);
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -563,7 +575,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       isLoop = false;
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -594,7 +606,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         seekToTime(seekTime);
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -637,7 +649,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onSegmentUpdate();
       }
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -659,7 +671,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.segments.removeAll();
       PeaksPlayer.segments.add(updatedSegments);
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -669,7 +681,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.segments.removeById(segmentIdToDelete);
       onSegmentDelete();
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -692,7 +704,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       onSegmentDelete();
       internaDisabledTimesTracker = undefined;
     } catch (error) {
-      handleError(error.message);
+      handleError(error);
     }
   };
 
@@ -897,7 +909,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
         setReady(!error);
         if (error) {
-          handleError(`PEAKS ERROR: ${error.toString()}`);
+          handleError(error);
         }
       });
 

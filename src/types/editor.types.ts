@@ -25,3 +25,5 @@ export interface WordToCreateTimeFor extends Word {
   segmentEndTime?: number;
   wordKey: string;
 }
+
+export type SegmentAndWordIndex = [number, number];

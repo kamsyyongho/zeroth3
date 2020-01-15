@@ -8,17 +8,19 @@ import React from "react";
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
 import AutosizeInput from 'react-input-autosize';
-import { AutoSizer, CellMeasurer, CellMeasurerCache, List, ListRowProps } from 'react-virtualized';
+import { AutoSizer, CellMeasurerCache } from 'react-virtualized';
 import 'react-virtualized/styles.css'; // for the editor's lists
+import { ListChildComponentProps, VariableSizeList as List } from 'react-window';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
 import { SnackbarError } from '../../types/snackbar.types';
 import log from '../../util/log/logger';
-import { formatSecondsDuration } from '../../util/misc';
+import { formatSecondsDuration, generateWordKey, parseWordKey } from '../../util/misc';
+import { MyEditor } from '../main/MyEditor';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
@@ -28,6 +30,7 @@ import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { HighRiskSegmentEdit } from './components/HighRiskSegmentEdit';
+import { MemoizedSegmentRow } from './components/SegmentRow';
 import { StarRating } from './components/StarRating';
 
 
@@ -80,20 +83,20 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 const virtualListCache = new CellMeasurerCache({
   fixedWidth: true,
-  defaultHeight: 50,
+  defaultHeight: 60,
 });
 
 /**
  * reference used to reset focus to the first input 
  * when tabbing should wrap around to the beginning
  */
-let firstLCWordReference: HTMLInputElement | null = null;
+const firstLCWordReference: HTMLInputElement | null = null;
 
 /**
  * reference used to reset focus to the last input 
  * when shift-tabbing should wrap around to the end
  */
-let lastLCWordReference: HTMLInputElement | null = null;
+const lastLCWordReference: HTMLInputElement | null = null;
 
 /**
  * ensures that the selected word will be correctly
@@ -105,17 +108,7 @@ const SEEK_SLOP = 0.01;
 const DEFAULT_LC_THRESHOLD = 0.8;
 // const DEFAULT_LC_THRESHOLD = 0.5;
 
-const WORD_KEY_SEPARATOR = '-';
-
-const parseWordKey = (key: string) => {
-  const [segmentIndex, wordIndex] = key.split(WORD_KEY_SEPARATOR);
-  return { segmentIndex: Number(segmentIndex), wordIndex: Number(wordIndex) };
-};
-
-const generateWordKey = (segmentIndex: number, wordIndex: number) => {
-  const key = `${segmentIndex}${WORD_KEY_SEPARATOR}${wordIndex}`;
-  return key;
-};
+const DEFAULT_PADDING_SIZE = 10;
 
 interface SegmentWordProperties {
   [x: number]: {
@@ -126,7 +119,7 @@ interface SegmentWordProperties {
   };
 }
 
-interface SegmentSplitLocation {
+export interface SegmentSplitLocation {
   segmentId: string;
   segmentIndex: number;
   splitIndex: number;
@@ -141,6 +134,18 @@ export enum EDITOR_MODES {
 }
 
 
+interface SizeMap {
+  current:
+  {
+    [x: number]: number;
+  };
+}
+
+const rowHeights: { [x: number]: number; } = {};
+
+let testRef: List | null = null;
+const sizeMap: SizeMap = { current: {} };
+
 export function Editor() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
@@ -149,6 +154,7 @@ export function Editor() {
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
+  const [currentPlayingLocation, setCurrentPlayingLocation] = React.useState<SegmentAndWordIndex>([0, 0]);
   const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
   const [openWordKey, setOpenWordKey] = React.useState<string | undefined>();
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
@@ -164,6 +170,9 @@ export function Editor() {
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
   const [numberOfSegmentsSelected, setNumberOfSegmentsSelected] = React.useState(0);
+  // to force a state change when the segment heights are calculated
+  const [sizeMapCurrentValues, setSizeMapCurrentValues] = React.useState<{ [x: number]: number; }>({});
+  const [counter, setCounter] = React.useState(0);
   const [editorMode, setEditorMode] = React.useState<EDITOR_MODES>(EDITOR_MODES.none);
   const [pendingEditorMode, setPendingEditorMode] = React.useState<EDITOR_MODES | undefined>();
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
@@ -181,6 +190,37 @@ export function Editor() {
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
+
+  const listRef = React.createRef<List | null>();
+  // const sizeMap = React.useRef<SizeMap>({ current: {} });
+  const setSize = React.useCallback((index: number, size: number, reRenderCallback?: () => void) => {
+    // let updateState = false;
+    // // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // //@ts-ignore
+    // if (sizeMap.current[index] !== size) {
+    //   updateState = true;
+    // }
+    sizeMap.current = { ...sizeMap.current, [index]: size };
+    // if (updateState) {
+    //   setSizeMapCurrentValues({ ...sizeMap.current });
+    // }
+    // console.log('sizeMap', sizeMap);
+    // console.log('listRef?.current', listRef?.current);
+    if(reRenderCallback && typeof reRenderCallback === 'function'){
+      reRenderCallback();
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    //@ts-ignore
+    testRef?.resetAfterIndex(index); // added
+    // setCounter(counter + 1);
+  }, []);
+  // console.log('listRef', listRef);
+  // console.log('testRef', testRef);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  //@ts-ignore
+  const getSize = React.useCallback((index: number) => sizeMap.current[index] || 60, []);
+
+  // console.log('sizeMap', sizeMap);
 
   /**
    * used to keep track of which segments to send when updating
@@ -388,9 +428,13 @@ export function Editor() {
 
       // to build which segments to send
       const editedSegmentsToUpdate: Segment[] = [];
-      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
+      const testSegment = {...segments[0]};
+      testSegment.wordAlignments.pop();
+      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(testSegment));
+      // editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
 
-      const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
+      const response = await api.voiceData.updateSegments(projectId, voiceData.id, [testSegment]);
+      // const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -562,6 +606,26 @@ export function Editor() {
     return totalTime;
   };
 
+//!
+//TODO
+//!
+//TODO
+//!
+//TODO
+  // KEEP TRACK OF THE PLAYING / focussed SEGMENT (maybe by key?)
+  // PASS DOWN TO COMPONENT AND MAKE LIST WITH useMemo
+  // DONT CHANGE IF SEGMENT VALUE IS NOT RELEVENT
+
+  // ONLY CALCULATE IF WORD PLAYING IF IN CURRENT SEGMENT
+
+  // MAYBE ADD AN EMPTY SEGMENT INSTEAD OF BOTTOM PADDING
+//!
+//TODO
+//!
+//TODO
+//!
+//TODO
+
   const calculateIsPlaying = (segmentIndex: number, wordIndex: number) => {
     if (!canPlayAudio) return false;
 
@@ -585,6 +649,51 @@ export function Editor() {
       return true;
     }
     return false;
+  };
+
+  /**
+   * Calculates the segment index and word index of the current playing word
+   * - sets the state value if valid
+   * @params time
+   */
+  const calculatePlayingLocation = (time: number) => {
+    try{
+      if(isNaN(time) || !segments.length) return
+      let segmentIndex = 0;
+      let wordIndex = 0;
+      
+      for(let i = 0; i < segments.length; i++){
+        const segment = segments[i];
+        if(segment.start <= time){
+          segmentIndex = i;
+        } else {
+          break;
+        }
+      }
+  
+      const segment = segments[segmentIndex];
+      if(!segment) return
+      const {wordAlignments} = segment;
+      const wordTime = time - segment.start;
+  
+      for(let i = 0; i < wordAlignments.length; i++){
+        const word = wordAlignments[i];
+        if(word.start <= wordTime){
+          wordIndex = i;
+        } else {
+          break;
+        }
+      }
+  
+      setCurrentPlayingLocation([segmentIndex, wordIndex]);
+    } catch(error){
+      log({
+      file: `Editor.tsx`,
+      caller: `calculatePlayingLocation`,
+      value: error,
+      important: true,
+      })
+    }
   };
 
   const updateSegmentsOnChange = (
@@ -815,15 +924,17 @@ export function Editor() {
 
   const renderWords = (segment: Segment, segmentIndex: number) => {
     const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
-      const key = generateWordKey(segmentIndex, wordIndex);
+      
+
+      const key = generateWordKey([segmentIndex, wordIndex]);
       const isFocussed = getWordFocussed(segmentIndex, wordIndex);
       const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
       const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
       const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
-      const tabIndex = getTabIndex(segmentIndex, wordIndex);
+      // const tabIndex = getTabIndex(segmentIndex, wordIndex);
 
-      const isFirstWord = firstWordTabIndex === tabIndex;
-      const isLastWord = lastWordTabIndex === tabIndex;
+      // const isFirstWord = firstWordTabIndex === tabIndex;
+      // const isLastWord = lastWordTabIndex === tabIndex;
       const { highRisk } = segment;
       const isLastWordInSegment = (segment.wordAlignments.length - 1) === wordIndex;
       const displayFreeTextEditTrigger = highRisk && isLastWordInSegment;
@@ -838,14 +949,16 @@ export function Editor() {
         isSplitSelected = true;
       }
 
+      const hasSplitIcon = wordAlignment.word[0] === '|';
+
       const content = <AutosizeInput
-        inputRef={
-          isFirstWord ?
-            ((inputRef) => firstLCWordReference = inputRef) :
-            (isLastWord ?
-              ((inputRef) => lastLCWordReference = inputRef) : undefined)}
-        disabled={editorMode !== EDITOR_MODES.edit}
-        tabIndex={tabIndex}
+        // inputRef={
+        //   isFirstWord ?
+        //     ((inputRef) => firstLCWordReference = inputRef) :
+        //     (isLastWord ?
+        //       ((inputRef) => lastLCWordReference = inputRef) : undefined)}
+        // disabled={editorMode !== EDITOR_MODES.edit}
+        // tabIndex={tabIndex}
         key={key}
         name={key}
         value={wordAlignment.word}
@@ -865,8 +978,7 @@ export function Editor() {
           updateSegmentsOnChange(event, segment, wordAlignment, segmentIndex, wordIndex)
         }
       />;
-
-      return (<React.Fragment key={key}>
+        return (<React.Fragment key={key}>
         {!!wordIndex && (
           <Button
             aria-label="split-button"
@@ -891,31 +1003,38 @@ export function Editor() {
             <ErrorIcon />
           </IconButton>
         )}
-      </React.Fragment>);
-    });
+      </React.Fragment>)});
     return words;
   };
 
-  function rowRenderer({ key, index, style, parent }: ListRowProps) {
+
+  const getItemSize = (index: number) => rowHeights[index] || 70;
+
+  function renderRow(index: number, style: React.CSSProperties, width: number) {
     const isRowSelected = segmentMergeIndexes.has(index);
     const isMergeMode = editorMode === EDITOR_MODES.merge;
     const isSpeakerMode = editorMode === EDITOR_MODES.speaker;
     const { speaker, transcript, decoderTranscript } = segments[index];
 
-    const displayTextChangedHover = transcript !== decoderTranscript;
+    const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
     const displaySpeakerHover = speaker && !isMergeMode;
     const buttonDisabled = !isMergeMode && !isSpeakerMode;
-
+    // console.log('rendering row:', index);
+    // if (index === 2) {
+    //   console.log('props', props);
+    //   console.log('style', style);
+    //   console.log('virtualListCache', virtualListCache);
+    // }
     return (
-      segments[index] && <CellMeasurer
-        key={key}
+      segments[index] &&
+      <div
+        key={index}
         style={style}
-        parent={parent}
-        cache={virtualListCache}
-        columnIndex={0}
-        rowIndex={index}
       >
-        <Grid container spacing={2} >
+        <Grid
+          container
+          spacing={2}
+        >
           <Grid item>
             <Tooltip
               placement='top-start'
@@ -933,7 +1052,7 @@ export function Editor() {
                   disabled={buttonDisabled}
                   variant={isRowSelected ? 'contained' : 'outlined'}
                   onClick={() => {
-                    if(isSpeakerMode){
+                    if (isSpeakerMode) {
                       openSpeakerAssignDialog(index);
                     } else {
                       handleSegmentToMergeClick(index);
@@ -945,10 +1064,10 @@ export function Editor() {
               </Box>
             </Tooltip>
           </Grid>
-          <Grid item xs={12} sm container>
+          <Grid item xs={12} sm container >
             <Tooltip
               placement='top-start'
-              title={displayTextChangedHover ? <Typography variant='h6'>{decoderTranscript}</Typography> : ''}
+              title={displayTextChangedHover ? <Typography variant='h6'>{decoderTranscript?.trim()}</Typography> : ''}
               arrow={false}
             >
               <Box
@@ -961,17 +1080,19 @@ export function Editor() {
             </Tooltip>
           </Grid>
         </Grid>
-      </CellMeasurer>
+      </div>
     );
-  }
+  };
 
   /**
    * keeps track of where the timer is
    * - used to keep track of which word is currently playing
+   * - sets the segment index and word index of the currently playing word
    * @params time
    */
   const handlePlaybackTimeChange = (time: number) => {
     setPlaybackTime(time);
+    calculatePlayingLocation(time);
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
   };
@@ -1030,6 +1151,8 @@ export function Editor() {
     });
   };
 
+
+
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;
   }
@@ -1044,6 +1167,104 @@ export function Editor() {
 
   const disabledControls = getDisabledControls();
 
+  /**
+   * Allows us to add padding to the top and bottom of the list
+   * - Overrides the styling by adding some height
+   * - Required to allow us to keep track of the scroll location
+   */
+  // eslint-disable-next-line react/display-name
+  const listInnerElementType = React.forwardRef(({ style, ...rest }: any, ref) => (
+    <div
+      ref={ref}
+      style={{
+        ...style,
+        height: `${parseFloat(style.height as string) + DEFAULT_PADDING_SIZE * 2}px`
+      }}
+      {...rest}
+    />
+  ));
+
+  const test = <AutoSizer>
+  {({ height, width }) => {
+    return (
+      <List
+      key={counter}
+      ref={(ref) => {
+        // console.log('ref', ref);
+        if (ref) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          //@ts-ignore
+          testRef = ref;
+          // console.log('INNER testRef', testRef);
+        }
+        if (!listRef.current) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          //@ts-ignore
+          listRef.current = ref;
+        }
+      }}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        //@ts-ignore
+        // ref={(ref) => listRef = ref}
+        //   ref={(lref: HTMLInputElement) => {
+        //     if (lref !== null) {
+        // // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // //@ts-ignore
+        //       listRef.current = lref;
+        //     }
+        //   }}
+        height={height}
+        itemCount={segments.length}
+        itemSize={() => 120}
+        // itemSize={getSize}
+        innerElementType={listInnerElementType}
+        // itemSize={getItemSize}
+      width={width}
+      >
+        {(listProps: ListChildComponentProps) => {
+          // console.log(listProps.index, listProps);
+          const {index, style} = listProps;
+          const segmentIsPlaying = currentPlayingLocation[0] === index;
+          return (
+            <div
+              key={index}
+              {...listProps}
+              // to add padding to the list and keep track of the scroll location
+              style={{
+                ...style,
+                top: `${parseFloat(style.top as string) + DEFAULT_PADDING_SIZE}px`
+              }}
+            >
+              <MemoizedSegmentRow
+                segmentIsPlaying={segmentIsPlaying}
+                segments={segments}
+                editorMode={editorMode}
+                segmentMergeIndexes={segmentMergeIndexes}
+                currentHeight={getSize(index)}
+                width={width}
+                openSpeakerAssignDialog={openSpeakerAssignDialog}
+                handleSegmentToMergeClick={handleSegmentToMergeClick}
+                setSize={setSize}
+                segmentIndex={index}
+                splitLocation={splitLocation}
+                getWordFocussed={getWordFocussed}
+                currentPlayingLocation={currentPlayingLocation}
+                handleSplitLocationPress={handleSplitLocationPress}
+                editHighRiskSegment={editHighRiskSegment}
+                handleWordClick={handleWordClick}
+                handleFocus={handleFocus}
+                handleBlur={handleBlur}
+                handleTabKeyCatch={handleTabKeyCatch}
+                updateSegmentsOnChange={updateSegmentsOnChange}
+              />
+            </div>
+          );
+        }}
+      </List>
+    );
+  }}
+  </AutoSizer>
+  
   return (
     <>
       <EditorControls
@@ -1090,24 +1311,13 @@ export function Editor() {
                   projectId={projectId}
                   dataId={voiceData.id}
                 />
-                : <AutoSizer>
-                  {({ height, width }) => {
-                    return (
-                      <List
-                        className={classes.list}
-                        height={height}
-                        rowCount={segments.length}
-                        rowHeight={virtualListCache.rowHeight}
-                        rowRenderer={rowRenderer}
-                        width={width}
-                        deferredMeasurementCache={virtualListCache}
-                      />
-                    );
-                  }}
-                </AutoSizer>)
+                : <MyEditor
+                    segments={segments}
+                    playingLocation={generateWordKey(currentPlayingLocation)}
+                  />)
             }
+            
           </div>
-
           {!!voiceData.length && <ErrorBoundary
             key={voiceData.id}
             FallbackComponent={PageErrorFallback}
@@ -1162,4 +1372,4 @@ export function Editor() {
       />
     </>
   );
-};
+}
