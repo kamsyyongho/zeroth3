@@ -1,6 +1,6 @@
 import randomColor from 'randomcolor';
 import { WORD_KEY_SEPARATOR } from '../constants/misc.constants';
-import { SegmentAndWordIndex } from '../types';
+import { Segment, SegmentAndWordIndex } from '../types';
 
 /**
  * Checks if the contents of two sets are equal.
@@ -110,7 +110,119 @@ export function parseWordKey(key: string): SegmentAndWordIndex {
   return [Number(segmentIndex), Number(wordIndex)];
 }
 
-export function generateWordKey(location: SegmentAndWordIndex) {
+export function generateWordKeyString(location: SegmentAndWordIndex) {
   const key = `${location[0]}${WORD_KEY_SEPARATOR}${location[1]}`;
   return key;
+}
+
+/**
+ * Segment arrays of arrays of word keys
+ */
+type WordKeyLocation3DArray = number[][];
+
+export class WordKeyGenerator {
+  keys: { [x: number]: SegmentAndWordIndex } = {};
+  keyCounter = 0;
+  wordKeyLocations: WordKeyLocation3DArray = [];
+
+  private updateWordKeyLocations = (
+    wordKey: number,
+    wordLocation: SegmentAndWordIndex
+  ) => {
+    const [segmentIndex, wordIndex] = wordLocation;
+    const tempWordKeyLocations = [...this.wordKeyLocations];
+    const tempSegmentWordKeys = tempWordKeyLocations[segmentIndex];
+    if (!tempSegmentWordKeys) {
+      tempWordKeyLocations.push([wordKey]);
+    } else {
+      const numberOfWordsInSegment = tempSegmentWordKeys.length;
+      if (numberOfWordsInSegment - 1 < wordIndex) {
+        tempSegmentWordKeys.push(wordKey);
+      } else {
+        tempSegmentWordKeys.splice(wordIndex, 1, wordKey);
+      }
+      tempWordKeyLocations.splice(segmentIndex, 1, tempSegmentWordKeys);
+    }
+    this.wordKeyLocations = [...tempWordKeyLocations];
+  };
+
+  /** build the initial multi-dimentional array for the word keys */
+  init = (segments: Segment[]) => {
+    const tempWordKeyLocations: WordKeyLocation3DArray = [];
+    segments.forEach(segment => {
+      const tempWords = new Array(segment.wordAlignments.length).fill(-1);
+      tempWordKeyLocations.push(tempWords);
+    });
+    this.wordKeyLocations = tempWordKeyLocations;
+    return true;
+  };
+
+  /** Generates a new key for a given location
+   * @returns the new word key
+   */
+  generateKey = (wordLocation: SegmentAndWordIndex) => {
+    const wordKey = this.keyCounter;
+    this.keyCounter++;
+    this.keys[wordKey] = wordLocation;
+    this.updateWordKeyLocations(wordKey, wordLocation);
+    return wordKey;
+  };
+
+  /** Get the word location from the word key */
+  getLocation = (wordKey: number): SegmentAndWordIndex => {
+    return this.keys[wordKey];
+  };
+
+  /** Update the word location for the given word key */
+  setLocation = (wordKey: number, wordLocation: SegmentAndWordIndex) => {
+    this.keys[wordKey] = wordLocation;
+    this.updateWordKeyLocations(wordKey, wordLocation);
+  };
+
+  /** Get the word key from the word location */
+  getKey = (wordLocation: SegmentAndWordIndex) => {
+    const [segmentIndex, wordIndex] = wordLocation;
+    return this.wordKeyLocations[segmentIndex][wordIndex];
+  };
+
+  /**
+   * Concats the word locations from the merged segment to the previous one
+   * - updates the word keys for the updated locations for the merged segments
+   * and the segments that have been shifted up after the merge
+   */
+  shiftKeysAfterSegmentMerge = (removedSegmentIndex: number) => {
+    const wordLocations = [...this.wordKeyLocations];
+    const segmentToMerge = [...wordLocations[removedSegmentIndex]];
+    const locationsAfterMerge = [...wordLocations];
+    if (removedSegmentIndex) {
+      const prevSegmentIndex = removedSegmentIndex - 1;
+      const segmentToMergeInto = locationsAfterMerge[prevSegmentIndex];
+      const mergedSegment = segmentToMergeInto.concat(segmentToMerge);
+      // to remove the two old and replace with the merged
+      locationsAfterMerge.splice(prevSegmentIndex, 2, mergedSegment);
+      // to update the moved key locations
+      let numberOfWordsInSegmentToMergeInto = segmentToMergeInto.length;
+      segmentToMerge.forEach(wordKey => {
+        const newLocation: SegmentAndWordIndex = [
+          prevSegmentIndex,
+          numberOfWordsInSegmentToMergeInto,
+        ];
+        this.keys[wordKey] = newLocation;
+        numberOfWordsInSegmentToMergeInto++;
+      });
+      // to move the shifted key locations
+      const shiftedSegments = locationsAfterMerge.slice(removedSegmentIndex);
+      shiftedSegments.forEach(segment => {
+        segment.forEach(wordKey => {
+          const [prevSegmentIndex, prevWordIndex] = this.keys[wordKey];
+          const updatedLocation: SegmentAndWordIndex = [
+            prevSegmentIndex - 1,
+            prevWordIndex,
+          ];
+          this.keys[wordKey] = updatedLocation;
+        });
+      });
+    }
+    this.wordKeyLocations = [...locationsAfterMerge];
+  };
 }
