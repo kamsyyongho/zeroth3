@@ -120,11 +120,15 @@ export function generateWordKeyString(location: SegmentAndWordIndex) {
  */
 type WordKeyLocation3DArray = number[][];
 
-export class WordKeyGenerator {
+export class WordKeyStore {
   keys: { [x: number]: SegmentAndWordIndex } = {};
   keyCounter = 0;
   wordKeyLocations: WordKeyLocation3DArray = [];
 
+  /**
+   * Updates the word key location within the 3D array
+   * - push new segments or words if they don't already exist
+   */
   private updateWordKeyLocations = (
     wordKey: number,
     wordLocation: SegmentAndWordIndex
@@ -173,7 +177,10 @@ export class WordKeyGenerator {
     return this.keys[wordKey];
   };
 
-  /** Update the word location for the given word key */
+  /**
+   * Update the word location for the given word key
+   * - updates the key bank object and 3D array
+   */
   setLocation = (wordKey: number, wordLocation: SegmentAndWordIndex) => {
     this.keys[wordKey] = wordLocation;
     this.updateWordKeyLocations(wordKey, wordLocation);
@@ -190,7 +197,7 @@ export class WordKeyGenerator {
    * - updates the word keys for the updated locations for the merged segments
    * and the segments that have been shifted up after the merge
    */
-  shiftKeysAfterSegmentMerge = (removedSegmentIndex: number) => {
+  moveKeysAfterSegmentMerge = (removedSegmentIndex: number) => {
     const wordLocations = [...this.wordKeyLocations];
     const segmentToMerge = [...wordLocations[removedSegmentIndex]];
     const locationsAfterMerge = [...wordLocations];
@@ -210,7 +217,7 @@ export class WordKeyGenerator {
         this.keys[wordKey] = newLocation;
         numberOfWordsInSegmentToMergeInto++;
       });
-      // to move the shifted key locations
+      // to move the shifted key locations in the word key object
       const shiftedSegments = locationsAfterMerge.slice(removedSegmentIndex);
       shiftedSegments.forEach(segment => {
         segment.forEach(wordKey => {
@@ -224,5 +231,43 @@ export class WordKeyGenerator {
       });
     }
     this.wordKeyLocations = [...locationsAfterMerge];
+  };
+
+  /**
+   *
+   */
+  moveKeysAfterSegmentSplit = (
+    segmentIndexToSplit: number,
+    splitWordIndex: number
+  ) => {
+    const wordLocations = [...this.wordKeyLocations];
+    const segmentToSplit = [...wordLocations[segmentIndexToSplit]];
+    const slicedOriginalSegment = segmentToSplit.slice(0, splitWordIndex);
+    const newSegmentContent = segmentToSplit.slice(splitWordIndex);
+    // to update the original segment
+    wordLocations[segmentIndexToSplit] = [...slicedOriginalSegment];
+    // to insert the new segment
+    const segmentIndexToInsert = segmentIndexToSplit + 1;
+    wordLocations.splice(segmentIndexToInsert, 0, newSegmentContent);
+
+    // update the moved locations for word key object
+    newSegmentContent.forEach((wordKey, index) => {
+      const updatedLocation: SegmentAndWordIndex = [segmentIndexToSplit, index];
+      this.keys[wordKey] = updatedLocation;
+    });
+    // update the shifted locations for word key object
+    const shiftedSegments = wordLocations.slice(segmentIndexToInsert);
+    shiftedSegments.forEach(segment => {
+      segment.forEach(wordKey => {
+        const [prevSegmentIndex, prevWordIndex] = this.getLocation(wordKey);
+        const updatedLocation: SegmentAndWordIndex = [
+          prevSegmentIndex + 1,
+          prevWordIndex,
+        ];
+        this.keys[wordKey] = updatedLocation;
+      });
+    });
+
+    this.wordKeyLocations = [...wordLocations];
   };
 }

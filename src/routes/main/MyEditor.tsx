@@ -9,9 +9,9 @@ import { Map } from 'immutable';
 import React from 'react';
 import { Segment, SegmentAndWordIndex, WordAlignment } from '../../types';
 import log from '../../util/log/logger';
-import { generateWordKeyString, WordKeyGenerator } from '../../util/misc';
+import { generateWordKeyString, WordKeyStore } from '../../util/misc';
 
-const wordKeyBank = new WordKeyGenerator();
+const wordKeyBank = new WordKeyStore();
 
 interface WordAlignmentEntityData {
   wordKey: number;
@@ -51,12 +51,17 @@ interface SegmentIdToBlockKey {
 const entityKeyToWordKeyMap: EntityKeyToWordKey = {};
 const wordKeyToEntityKeyMap: WordKeyToEntityKey = {};
 
-const blockKeyMap: BlockKeyToSegmentId = {};
-const segmentIdMap: SegmentIdToBlockKey = {};
+const blockKeyToSegmentIdMap: BlockKeyToSegmentId = {};
+const segmentIdToBlockKeyMap: SegmentIdToBlockKey = {};
 
-
+/**
+ * used to keep track of where a segment Id is in the list of segments
+ */
 const segmentOrderById: string[] = [];
 
+/**
+ * used to get the index of the current segment Id from within the list of segments
+ */
 const findIndexOfSegmentId = (segmentId: string): number | null => {
   const indexLocation = segmentOrderById.indexOf(segmentId);
   if (indexLocation < 0) {
@@ -65,19 +70,27 @@ const findIndexOfSegmentId = (segmentId: string): number | null => {
   return indexLocation;
 };
 
-const replaceSegmentIdAtIndex = (indexLocation: number, segmentId: string): string[] => {
-  segmentOrderById.splice(indexLocation, 1, segmentId);
+/**
+ * updates the segment Id linked with the corresponding block key
+ */
+const updateBlockSegmentId = (blockKey: string, segmentId: string) => {
+  blockKeyToSegmentIdMap[blockKey] = segmentId;
+};
+
+const replaceSegmentIdAtIndex = (replacedIndex: number, segmentId: string): string[] => {
+  segmentOrderById.splice(replacedIndex, 1, segmentId);
   return segmentOrderById;
 };
 
-const insertSegmentIdAtIndex = (indexLocation: number, segmentId: string): string[] => {
-  segmentOrderById.splice(indexLocation, 0, segmentId);
+const insertSegmentIdAtIndex = (insertedIndex: number, wordSplitIndex: number, segmentId: string): string[] => {
+  segmentOrderById.splice(insertedIndex, 0, segmentId);
+  wordKeyBank.moveKeysAfterSegmentSplit(insertedIndex, wordSplitIndex);
   return segmentOrderById;
 };
 
 const removeSegmentIdAtIndexAndShift = (removedIndex: number): string[] => {
   segmentOrderById.splice(removedIndex, 1);
-  wordKeyBank.shiftKeysAfterSegmentMerge(removedIndex);
+  wordKeyBank.moveKeysAfterSegmentMerge(removedIndex);
   return segmentOrderById;
 };
 
@@ -352,7 +365,7 @@ interface MyEditorProps {
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
-  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number) => Promise<void>;
+  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => Promise<void>;
   mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
 }
 
@@ -451,8 +464,8 @@ export function MyEditor(props: MyEditorProps) {
     createdContent.blocks.forEach((block, index) => {
       const { key } = block;
       const { id } = segments[index];
-      blockKeyMap[key] = id;
-      segmentIdMap[id] = key;
+      blockKeyToSegmentIdMap[key] = id;
+      segmentIdToBlockKeyMap[id] = key;
       segmentOrderById.push(id);
     });
 
@@ -588,8 +601,6 @@ export function MyEditor(props: MyEditorProps) {
       }
       const entityKey = getEntityKeyFromWordKey(wordKey);
       if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
-        console.log('entityKey', entityKey);
-        console.log('wordKey', wordKey);
         updateWordForCurrentPlayingLocation(playingLocation);
       }
     }
@@ -679,8 +690,11 @@ export function MyEditor(props: MyEditorProps) {
   };
 
   const buildMergeSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
+    /**
+     * updates the manually merged block with the updated segment Id
+     */
     const onMergeSegmentResponse = (updatedSegment: Segment) => {
-      const segmentBlockKey = targetBlock.key;
+      const blockKey = targetBlock.key;
       const blockSegment = targetBlock.data.segment;
       // get the index using the old segment id
       const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
@@ -693,20 +707,70 @@ export function MyEditor(props: MyEditorProps) {
         });
         return;
       }
-      blockKeyMap[segmentBlockKey] = blockSegment.id;
-      const emptySelectionAtBlock = SelectionState.createEmpty(targetBlock.key);
+      // update with the new segment Id
+      replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
+
+      updateBlockSegmentId(blockKey, updatedSegment.id);
+      const emptySelectionAtBlock = SelectionState.createEmpty(blockKey);
       const contentState = incomingEditorState.getCurrentContent();
-      const dataMap = Map({ segmentIndex: blockSegmentIndex, segment: updatedSegment });
+      const dataMap = Map({ segment: updatedSegment });
       const updatedContentState = Modifier.setBlockData(contentState, emptySelectionAtBlock, dataMap);
 
       const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
       const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
       const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
       setEditorState(allowUndoEditorState);
-      // update with the new segmetnId
-      replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
     };
     return onMergeSegmentResponse;
+  };
+
+  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, wordSplitIndex: number, incomingEditorState: EditorState) => {
+    /**
+     * updates the manually split blocks with the updated segment Ids
+     */
+    const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
+      const [updatedSegment, newSegment] = updatedSegments;
+      const blockKey = targetBlock.key;
+      const newBlockKey = newBlock.key;
+      const blockSegment = targetBlock.data.segment;
+      // get the index using the old segment id
+      const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
+      if (typeof blockSegmentIndex !== 'number') {
+        log({
+          file: `MyEditor.tsx`,
+          caller: `onSplitSegmentResponse`,
+          value: 'Failed to get index of segment to update',
+          important: true,
+        });
+        return;
+      }
+      // update with the new segment Id
+      replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
+
+      const newBlockSegmentIndex = blockSegmentIndex + 1;
+      // set the new block segment Id
+      replaceSegmentIdAtIndex(newBlockSegmentIndex, newSegment.id);
+
+
+      updateBlockSegmentId(blockKey, updatedSegment.id);
+      updateBlockSegmentId(newBlockKey, newSegment.id);
+
+      const emptySelectionAtBlock = SelectionState.createEmpty(blockKey);
+      const contentState = incomingEditorState.getCurrentContent();
+      const updatedDataMap = Map({ segment: updatedSegment });
+      const updatedContentState = Modifier.setBlockData(contentState, emptySelectionAtBlock, updatedDataMap);
+
+
+      const newEmptySelectionAtBlock = SelectionState.createEmpty(newBlockKey);
+      const newDataMap = Map({ segment: newSegment });
+      const newContentState = Modifier.setBlockData(updatedContentState, newEmptySelectionAtBlock, newDataMap);
+
+      const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
+      const updatedContentEditorState = EditorState.push(noUndoEditorState, newContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+      const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
+      setEditorState(allowUndoEditorState);
+    };
+    return onSplitSegmentResponse;
   };
 
   const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
@@ -824,6 +888,7 @@ export function MyEditor(props: MyEditorProps) {
 
           const mergeCallback = buildMergeSegmentCallback(blockBeforeObject, updatedEditorStateWithCorrectSelection);
 
+          // update the word id bank and segment id array
           removeSegmentIdAtIndexAndShift(blockSegmentIndex);
           mergeSegments(blockBeforeSegmentIndex, blockSegmentIndex, mergeCallback);
         }
@@ -899,7 +964,6 @@ export function MyEditor(props: MyEditorProps) {
         const blockSegment = blockObject.data.segment;
         const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
         if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
-          splitSegment(blockSegment.id, segmentIndex, wordIndex);
 
 
           // remove any split characters that may have existed before
@@ -947,6 +1011,7 @@ export function MyEditor(props: MyEditorProps) {
             // get the newly created block
             const newBlock = splitContentState.getBlockAfter(blockObject.key);
             const newBlockKey = newBlock.getKey();
+            const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
 
             //!
             //TODO
@@ -965,6 +1030,15 @@ export function MyEditor(props: MyEditorProps) {
             });
             const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
             setEditorState(editorStateWithCursorMoved);
+
+
+            const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
+
+
+            // update the word id bank and segment id array
+            insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
+
+            splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
           }
 
 
