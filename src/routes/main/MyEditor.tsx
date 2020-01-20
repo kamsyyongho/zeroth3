@@ -1,15 +1,11 @@
-import { Button, Card } from '@material-ui/core';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import CardContent from '@material-ui/core/CardContent';
-import FormatBoldIcon from '@material-ui/icons/FormatBold';
-import FormatItalicIcon from '@material-ui/icons/FormatItalic';
-import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftBlockType, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import { Tooltip, Typography } from '@material-ui/core';
+import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftBlockType, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor, EditorBlock, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import React from 'react';
 import { Segment, SegmentAndWordIndex, WordAlignment } from '../../types';
 import log from '../../util/log/logger';
-import { generateWordKeyString, WordKeyStore } from '../../util/misc';
+import { formatSecondsDuration, generateWordKeyString, WordKeyStore } from '../../util/misc';
 
 const wordKeyBank = new WordKeyStore();
 
@@ -178,6 +174,7 @@ enum KEY_COMMANDS {
   // start of custom types
   'merge-segments-back' = 'merge-segments-back',
   'merge-segments-forward' = 'merge-segments-forward',
+  'toggle-popups' = 'toggle-popups',
 }
 
 enum REMOVAL_DIRECTION {
@@ -204,6 +201,8 @@ enum BLOCK_TYPE {
   "blockquote" = "blockquote",
   "code-block" = "code-block",
   "atomic" = "atomic",
+  // start of custom types
+  'segment' = 'segment',
 }
 
 enum EDITOR_CHANGE_TYPE {
@@ -318,11 +317,44 @@ const TokenSpan = (props: TokenSpanProps) => {
       {props.children}
     </span>
   );
-  // return (
-  //   <Typography component={'span'} data-offset-key={props.offsetkey} style={style}>
-  //     {props.children}
-  //   </Typography>
-  // );
+};
+
+interface CustomBlockSubProps {
+  showPopups: boolean;
+}
+interface CustomBlockProps extends EditorBlock {
+  contentState: ContentState,
+  block: ContentBlock,
+  blockProps: CustomBlockSubProps,
+}
+
+const CustomBlock = (props: CustomBlockProps) => {
+  const { blockProps, block } = props;
+  const { showPopups } = blockProps;
+  const rawBlockData = block.getData();
+  const blockData: SegmentBlockData = rawBlockData.toJS();
+  const segment = blockData.segment || {};
+  const { transcript, decoderTranscript, start } = segment;
+  const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
+  const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
+
+  return (<>
+    <Tooltip
+      placement='top-start'
+      title={displayTextChangedHover ? transcript : ''}
+      open={showPopups}
+      arrow={false}
+    >
+      <Typography
+        contentEditable={false} // prevents the editor from selecting the time
+        style={{ paddingTop: 10 }}
+      >
+        {displayTime}
+      </Typography>
+    </Tooltip>
+    <EditorBlock {...props} />
+  </>
+  );
 };
 
 
@@ -348,6 +380,9 @@ function customKeyBindingFunction(event: React.KeyboardEvent): string {
   if (event.key === "Delete" && event.shiftKey) {
     return KEY_COMMANDS['merge-segments-forward'];
   }
+  if (event.key === "Alt") {
+    return KEY_COMMANDS['toggle-popups'];
+  }
   return getDefaultKeyBinding(event) as DraftEditorCommand;
 }
 
@@ -365,6 +400,7 @@ const decorators = new CompositeDecorator([
 ]);
 
 interface MyEditorProps {
+  height?: number;
   loading?: boolean;
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
@@ -375,6 +411,7 @@ interface MyEditorProps {
 
 export function MyEditor(props: MyEditorProps) {
   const {
+    height,
     loading,
     segments,
     playingLocation,
@@ -383,16 +420,29 @@ export function MyEditor(props: MyEditorProps) {
     mergeSegments,
   } = props;
   const [editorState, setEditorState] = React.useState(
-    // EditorState.createWithContent(convertedRawState)
     EditorState.createEmpty()
   );
   const [ready, setReady] = React.useState(false);
+  const [showPopups, setShowPopups] = React.useState(false);
 
   const editorRef = React.useRef<Editor | null>(null);
 
   const focusEditor = () => {
     editorRef !== null && editorRef.current && editorRef.current.focus();
   };
+
+  function customBlockRenderer(contentBlock: ContentBlock) {
+    const type = contentBlock.getType();
+    if (type === BLOCK_TYPE.segment) {
+      return {
+        component: CustomBlock,
+        editable: true,
+        props: {
+          showPopups,
+        },
+      };
+    }
+  }
 
 
   const createEntity = (wordAlignment: WordAlignment, wordKey: number, key: number) => {
@@ -425,7 +475,8 @@ export function MyEditor(props: MyEditorProps) {
     rawContent.blocks = rawContent.blocks.map((block, index) => {
       const segment = segments[index];
       const newBlock = { ...block };
-      newBlock.type = BLOCK_TYPE.unstyled;
+      newBlock.type = 'test';
+      // newBlock.type = BLOCK_TYPE.unstyled;
       const data: SegmentBlockData = { segment };
       newBlock.data = data;
       let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.replace('|', ' ')).join('•').trim();
@@ -638,17 +689,17 @@ export function MyEditor(props: MyEditorProps) {
     // the `blockObject`'s `characterList` will have incorrect entity keys.
     // They will be incremented by 1 for some reason.
     blockObject.characterList = blockObject.characterList.map((characterProperties) => {
-      const updatedProperties = {...characterProperties};
-      const {entity} = updatedProperties;
-      if(entity){
+      const updatedProperties = { ...characterProperties };
+      const { entity } = updatedProperties;
+      if (entity) {
         let entityKeyNumber = Number(entity);
-        if(typeof entityKeyNumber === 'number'){
+        if (typeof entityKeyNumber === 'number') {
           entityKeyNumber--;
           updatedProperties.entity = entityKeyNumber.toString();
         }
       }
       return updatedProperties;
-    })
+    });
     const blockText = blockObject.text;
 
     const cursorLocationWithinBlock = selectionState.getAnchorOffset();
@@ -796,6 +847,22 @@ export function MyEditor(props: MyEditorProps) {
 
   const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
     console.log('command', command);
+    //!
+    //TODO
+    //!
+    //TODO
+    // MOVE THESE TO A SWITCH
+    //!
+    //TODO
+    //!
+    //TODO
+    if (command === KEY_COMMANDS['toggle-popups']) {
+      setShowPopups(prevValue => !prevValue);
+      // we need to rerender the block components to toggle the popups
+      // to force the editor to update
+      const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(incomingEditorState, incomingEditorState.getSelection());
+      setEditorState(newEditorStateWithSameContentAndSelection);
+    }
     // don't allow if at end
     if (command === KEY_COMMANDS.delete || command === KEY_COMMANDS['delete-word']) {
       const { isEndOfBlock } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -973,13 +1040,13 @@ export function MyEditor(props: MyEditorProps) {
         for (let i = 0; i < characterListToCheck.length; i++) {
           const characterProperties = characterListToCheck[i];
           const character = charactersToCheck[i];
-          if(characterProperties.entity) {
+          if (characterProperties.entity) {
             splitEntityKeyString = characterProperties.entity;
             dinstanceFromCursor = i;
             break;
           }
           // we have invalid content between the cursor and the next valid word
-          if(!SPLITTABLE_CHARACTERS.includes(character)){
+          if (!SPLITTABLE_CHARACTERS.includes(character)) {
             break;
           }
         }
@@ -990,11 +1057,11 @@ export function MyEditor(props: MyEditorProps) {
         }
         const splitEntity = getEntityByKey(splitEntityKeyString);
 
-        validEntity = {...splitEntity};
-      } 
+        validEntity = { ...splitEntity };
+      }
 
       // to check that we still have a valid entity to use
-      if(validEntity) {
+      if (validEntity) {
         // use the entity data to get split location
         const { wordKey } = validEntity.data;
         const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
@@ -1003,7 +1070,7 @@ export function MyEditor(props: MyEditorProps) {
         if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
           let contentStateToSplit = incomingEditorState.getCurrentContent();
           let characterBeforeOffset = cursorOffset;
-          
+
           const deleteEndOffset = cursorOffset + dinstanceFromCursor;
           const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
           // remove any split characters that may have existed before
@@ -1032,7 +1099,7 @@ export function MyEditor(props: MyEditorProps) {
           // to remove if we have valid reason to
           // remove any empty space between the cursor and any found entity
           // remove any empty space before the cursor
-          if(shouldTrimBefore || dinstanceFromCursor){
+          if (shouldTrimBefore || dinstanceFromCursor) {
             const rangeToRemove = new SelectionState({
               anchorKey: blockObject.key,
               anchorOffset: characterBeforeOffset,
@@ -1101,44 +1168,57 @@ export function MyEditor(props: MyEditorProps) {
     }
   };
 
+  // const handleKeyDown = (event: KeyboardEvent) => {
+  //   console.log('event.key', event.key);
+  //   console.log('event.key === Alt', event.key === 'Alt');
+  //   if(event.key === 'Alt'){
+  //     setShowPopups(true);
+  //   }
+  // }
+
+  // const handleKeyUp = (event: KeyboardEvent) => {
+  //   if(event.key === 'Alt'){
+  //     setShowPopups(false);
+  //   }
+  // }
+
+  // // Add window keypress listeners
+  // React.useEffect(() => {
+  //   window.addEventListener('keydown', handleKeyDown);
+  //   window.addEventListener('keyup', handleKeyUp);
+  //   // Remove event listeners on cleanup
+  //   return () => {
+  //     window.removeEventListener('keydown', handleKeyDown);
+  //     window.removeEventListener('keyup', handleKeyUp);
+  //   };
+  // }, []); // Empty array ensures that effect is only run on mount and unmount
 
   //!
   //TODO
   // don't let user to input bullet character
 
   return (
-    <div >
-      <ButtonGroup size="small" aria-label="small outlined button group">
-        <Button
-        // onClick={_onBoldClick}
-        >
-          <FormatBoldIcon />
-        </Button>
-        <Button
-        // onClick={_onItalicClick}
-        >
-          <FormatItalicIcon />
-        </Button>
-      </ButtonGroup>
-      <Card raised>
-        <CardContent
-          onClick={handleClickInsideEditor}
-        >
-          {ready &&
-            <Editor
-              ref={editorRef}
-              editorState={editorState}
-              customStyleMap={styleMap}
-              keyBindingFn={customKeyBindingFunction}
-              onChange={handleChange}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              handleReturn={handleReturnPress}
-              handleKeyCommand={handleKeyCommand}
-            />
-          }
-        </CardContent>
-      </Card>
+    <div
+      onClick={handleClickInsideEditor}
+      style={{
+        height,
+        overflowY: 'auto',
+      }}
+    >
+      {ready &&
+        <Editor
+          ref={editorRef}
+          editorState={editorState}
+          customStyleMap={styleMap}
+          keyBindingFn={customKeyBindingFunction}
+          blockRendererFn={customBlockRenderer}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          handleReturn={handleReturnPress}
+          handleKeyCommand={handleKeyCommand}
+        />
+      }
     </div>
   );
 };
