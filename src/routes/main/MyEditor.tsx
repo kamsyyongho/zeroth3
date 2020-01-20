@@ -28,6 +28,10 @@ interface EntityMap {
 
 let entityMap: EntityMap = {};
 
+const getEntityByKey = (entityKey: string) => {
+  return entityMap[entityKey];
+};
+
 interface EntityKeyToWordAlignmentKey {
   [x: number]: string;
 }
@@ -609,6 +613,9 @@ export function MyEditor(props: MyEditorProps) {
   /**
    * Get the entiy at the current cursor location
    * - checks to the right of the cursor
+   * - the `blockObject`'s `characterList` will originally have incorrect entity keys.
+   * They are incremented by 1 for some reason. 
+   *  **The returned value will have been fixed and will be correct**
    * @param incomingEditorState - will use the current state saved in the store if empty
    * @returns entity is `null` if there is no enity at the selection
    */
@@ -627,6 +634,21 @@ export function MyEditor(props: MyEditorProps) {
     // The block in which the selection starts
     const block = contentState.getBlockForKey(selectionBlockStartKey);
     const blockObject: BlockObject<U> = block.toJS();
+    // to fix the character list entity values
+    // the `blockObject`'s `characterList` will have incorrect entity keys.
+    // They will be incremented by 1 for some reason.
+    blockObject.characterList = blockObject.characterList.map((characterProperties) => {
+      const updatedProperties = {...characterProperties};
+      const {entity} = updatedProperties;
+      if(entity){
+        let entityKeyNumber = Number(entity);
+        if(typeof entityKeyNumber === 'number'){
+          entityKeyNumber--;
+          updatedProperties.entity = entityKeyNumber.toString();
+        }
+      }
+      return updatedProperties;
+    })
     const blockText = blockObject.text;
 
     const cursorLocationWithinBlock = selectionState.getAnchorOffset();
@@ -688,11 +710,10 @@ export function MyEditor(props: MyEditorProps) {
     };
     return cursorContent;
   };
-
+  /**
+   * builds the callback to update the manually merged block with the updated segment Id response
+   */
   const buildMergeSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
-    /**
-     * updates the manually merged block with the updated segment Id
-     */
     const onMergeSegmentResponse = (updatedSegment: Segment) => {
       const blockKey = targetBlock.key;
       const blockSegment = targetBlock.data.segment;
@@ -724,10 +745,10 @@ export function MyEditor(props: MyEditorProps) {
     return onMergeSegmentResponse;
   };
 
+  /**
+   * builds the callback to the manually split blocks with the updated segment Ids response
+   */
   const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, wordSplitIndex: number, incomingEditorState: EditorState) => {
-    /**
-     * updates the manually split blocks with the updated segment Ids
-     */
     const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
       const [updatedSegment, newSegment] = updatedSegments;
       const blockKey = targetBlock.key;
@@ -796,16 +817,15 @@ export function MyEditor(props: MyEditorProps) {
       const blockSegment = blockObject.data.segment;
       const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
       if (isStartOfBlock && !loading && typeof blockSegmentIndex === 'number') {
-        // handle merge
-        //!
-        //!
         const contentState = incomingEditorState.getCurrentContent();
         // get the block before this one
         const blockBefore = contentState.getBlockBefore(blockObject.key);
+
         // if we are already on the first block
         if (!blockBefore) {
           return HANDLE_VALUES.handled;
         }
+
         const blockBeforeObject: BlockObject<SegmentBlockData> = blockBefore.toJS();
         const blockBeforeSegment = blockBeforeObject.data.segment;
         const blockBeforeSegmentIndex = findIndexOfSegmentId(blockBeforeSegment.id);
@@ -868,13 +888,6 @@ export function MyEditor(props: MyEditorProps) {
             remainingBlockToRemove,
             REMOVAL_DIRECTION.backward,
           );
-          //!
-          //TODO
-          //!
-          //TODO
-          //!
-          //TODO
-          // add to  log
 
           // update with new content
           const updatedEditorState = EditorState.push(incomingEditorState, contentStateAfterRemove, EDITOR_CHANGE_TYPE['backspace-character']);
@@ -890,14 +903,9 @@ export function MyEditor(props: MyEditorProps) {
 
           // update the word id bank and segment id array
           removeSegmentIdAtIndexAndShift(blockSegmentIndex);
+          // send the merge request
           mergeSegments(blockBeforeSegmentIndex, blockSegmentIndex, mergeCallback);
         }
-
-        // get the segment data and add to the new block
-        // update the segment list
-        //!
-        //!
-        //!
 
       }
       return HANDLE_VALUES.handled;
@@ -940,44 +948,73 @@ export function MyEditor(props: MyEditorProps) {
 
       const beforeEntityId = characterDetailsBeforeCursor.properties?.entity;
       const afterEntityId = characterDetailsAtCursor.properties?.entity;
-      const isWithinSameEntity = beforeEntityId === afterEntityId;
+      const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
 
       if (isWithinSameEntity) {
         return HANDLE_VALUES.handled;
       }
 
-      // no entity at cursor
-      if (!entity) {
-        // find the closest entity before the cursor and extract the data
-        //!
+      let validEntity = entity;
 
+      // to keep track of how far we had to travel and how many 
+      // characters to erase if we need to find a valid entity
+      let dinstanceFromCursor = 0;
 
-        // remove any split characters that may have existed before
+      // no entity at cursor - we must find the nearest entity
+      if (!validEntity) {
+        // ensure that we are at a valid split point
+        const characterAtCursor = blockObject.text[cursorOffset];
+        if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+          return HANDLE_VALUES.handled;
+        }
+        const characterListToCheck = blockObject.characterList.slice(cursorOffset);
+        const charactersToCheck = blockObject.text.slice(cursorOffset);
+        let splitEntityKeyString: string | null = null;
+        for (let i = 0; i < characterListToCheck.length; i++) {
+          const characterProperties = characterListToCheck[i];
+          const character = charactersToCheck[i];
+          if(characterProperties.entity) {
+            splitEntityKeyString = characterProperties.entity;
+            dinstanceFromCursor = i;
+            break;
+          }
+          // we have invalid content between the cursor and the next valid word
+          if(!SPLITTABLE_CHARACTERS.includes(character)){
+            break;
+          }
+        }
+        const splitEntityKey = Number(splitEntityKeyString);
+        // we hit the end before finding a valid entity
+        if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
+          return HANDLE_VALUES.handled;
+        }
+        const splitEntity = getEntityByKey(splitEntityKeyString);
 
-        // remove any split characters that may have existed after
-        //!
-      } else {
+        validEntity = {...splitEntity};
+      } 
+
+      // to check that we still have a valid entity to use
+      if(validEntity) {
         // use the entity data to get split location
-        const { wordKey } = entity.data;
+        const { wordKey } = validEntity.data;
         const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
-        // const [segmentIndex, wordIndex] = parseWordKey(wordKey);
         const blockSegment = blockObject.data.segment;
         const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
         if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
-
-
+          let contentStateToSplit = incomingEditorState.getCurrentContent();
+          let characterBeforeOffset = cursorOffset;
+          
+          const deleteEndOffset = cursorOffset + dinstanceFromCursor;
+          const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
           // remove any split characters that may have existed before
-
-
           // if space, determine if the next character to the 
           // left is a split character otherwise determine how
           // many empty space characters to remove
-          if (SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character)) {
+          if (shouldTrimBefore) {
             let numberOfCharactersToRemove = 1;
             if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
               const { text } = blockObject;
               const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
-              // if(startingOffsetToCheck )
               for (let i = startingOffsetToCheck; i >= 0; i--) {
                 const character = text[i];
                 if (character === ' ') {
@@ -990,65 +1027,52 @@ export function MyEditor(props: MyEditorProps) {
                 }
               }
             }
-            const characterBeforeOffset = cursorOffset - numberOfCharactersToRemove;
+            characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
+          }
+          // to remove if we have valid reason to
+          // remove any empty space between the cursor and any found entity
+          // remove any empty space before the cursor
+          if(shouldTrimBefore || dinstanceFromCursor){
             const rangeToRemove = new SelectionState({
               anchorKey: blockObject.key,
               anchorOffset: characterBeforeOffset,
               focusKey: blockObject.key,
-              focusOffset: cursorOffset,
+              focusOffset: deleteEndOffset,
             });
-            const contentStateBeforeRemove = incomingEditorState.getCurrentContent();
-            const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateBeforeRemove, rangeToRemove, REMOVAL_DIRECTION.forward);
-            // handle the split
-            const selectionToSplit = new SelectionState({
-              anchorKey: blockObject.key,
-              anchorOffset: characterBeforeOffset,
-              focusKey: blockObject.key,
-              focusOffset: characterBeforeOffset,
-            });
-            const splitContentState = Modifier.splitBlock(contentStateWithRemovedCharaters, selectionToSplit);
-            const editorStateAfterSplit = EditorState.push(incomingEditorState, splitContentState, EDITOR_CHANGE_TYPE['split-block']);
-            // get the newly created block
-            const newBlock = splitContentState.getBlockAfter(blockObject.key);
-            const newBlockKey = newBlock.getKey();
-            const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
-
-            //!
-            //TODO
-            //!
-            //TODO
-            //!
-            //TODO
-            // add to  log
-
-            // set cursor postiion
-            const newBlockCursorPosition = new SelectionState({
-              anchorKey: newBlockKey,
-              anchorOffset: 0,
-              focusKey: newBlockKey,
-              focusOffset: 0,
-            });
-            const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
-            setEditorState(editorStateWithCursorMoved);
-
-
-            const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
-
-
-            // update the word id bank and segment id array
-            insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
-
-            splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
+            const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
+            contentStateToSplit = contentStateWithRemovedCharaters;
           }
 
+          // handle the split
+          const selectionToSplit = new SelectionState({
+            anchorKey: blockObject.key,
+            anchorOffset: characterBeforeOffset,
+            focusKey: blockObject.key,
+            focusOffset: characterBeforeOffset,
+          });
+          const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
+          const editorStateAfterSplit = EditorState.push(incomingEditorState, splitContentState, EDITOR_CHANGE_TYPE['split-block']);
+          // get the newly created block
+          const newBlock = splitContentState.getBlockAfter(blockObject.key);
+          const newBlockKey = newBlock.getKey();
+          const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
 
+          // set cursor postiion
+          const newBlockCursorPosition = new SelectionState({
+            anchorKey: newBlockKey,
+            anchorOffset: 0,
+            focusKey: newBlockKey,
+            focusOffset: 0,
+          });
+          const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
+          setEditorState(editorStateWithCursorMoved);
 
-          // get the segment data and add to the new block
-          // update the segment list
-          //!
-          //!
-          //!
+          const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
 
+          // update the word id bank and segment id array
+          insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
+
+          splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
 
           return HANDLE_VALUES.handled;
         }
