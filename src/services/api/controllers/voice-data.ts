@@ -298,7 +298,7 @@ export class VoiceData extends ParentApi {
    * @param projectId
    * @param dataId
    * @param segmentId
-   * @param splitIndex
+   * @param splitIndex - the wordAlignment index to split at
    */
   async splitSegment(
     projectId: string,

@@ -197,6 +197,7 @@ export const ko: ResourceLanguage = {
       discardChanges: 'Discard changes',
       confirmTranscript: 'Confirm transcript',
       addSpeaker: 'Add speaker',
+      changeSpeaker: 'Change speaker',
       validation: {
         missingTimes: 'All words must have start and end times.',
         invalidRange: 'Invalid selection range.',
