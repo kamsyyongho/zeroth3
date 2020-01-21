@@ -100,6 +100,22 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   return (<div
     className={classes.root}
   >
+    <Grid
+      container
+      wrap='nowrap'
+      direction='row'
+      alignContent='center'
+      alignItems='center'
+      justify='flex-start'
+      className={classes.infoGrid}
+    >
+      <Typography
+        contentEditable={false} // prevents the editor from placing the cursor within the content
+      >
+        {displayTime}
+      </Typography>
+      {speakerButton}
+    </Grid>
     <VisibilitySensor
       offset={DEFAULT_OFFSET}
     >
@@ -111,28 +127,12 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
           arrow={false}
           classes={{ tooltip: classes.tooltipContent }}
         >
-          <Grid
-            container
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-            className={classes.infoGrid}
-          >
-            <Typography
-              contentEditable={false} // prevents the editor from placing the cursor within the content
-            >
-              {displayTime}
-            </Typography>
-            {speakerButton}
-          </Grid>
+          <div className={classes.block} >
+            <EditorBlock {...props} />
+          </div>
         </Tooltip>
       }
     </VisibilitySensor>
-    <div className={classes.block} >
-      <EditorBlock {...props} />
-    </div>
   </div>
   );
 };
