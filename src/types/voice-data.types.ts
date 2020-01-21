@@ -50,8 +50,10 @@ export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
 
 export interface Segment {
   id: string;
+  /** the length in seconds of the segment */
   length: number;
   number: number;
+  /** the starting time of the segment */
   start: number;
   /** the current transcript */
   transcript: string;
@@ -64,8 +66,10 @@ export interface Segment {
 
 export interface WordAlignment {
   confidence: number;
+  /** the length in seconds of the word */
   length: number;
   speaker: string;
+  /** the starting time of the word within the segment */
   start: number;
   word: string;
 }

@@ -8,7 +8,7 @@ import { MdPersonAdd } from 'react-icons/md';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
-import { EDITOR_MODES } from '../Editor';
+import { EDITOR_MODES } from '../EditorPage';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
