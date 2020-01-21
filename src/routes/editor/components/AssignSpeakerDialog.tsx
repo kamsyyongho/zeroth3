@@ -99,7 +99,7 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
       disableEscapeKeyDown={loading}
       aria-labelledby="invite-dialog"
     >
-      <DialogTitle id="invite-dialog">{translate("editor.addSpeaker")}</DialogTitle>
+      <DialogTitle id="invite-dialog">{translate(speaker ? "editor.changeSpeaker" : "editor.addSpeaker")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => (
           <>
