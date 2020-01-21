@@ -3,6 +3,7 @@ import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convert
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import React from 'react';
+import VisibilitySensor from "react-visibility-sensor";
 import { Segment, SegmentAndWordIndex, WordAlignment } from '../../types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, generateWordKeyString, WordKeyStore } from '../../util/misc';
@@ -338,22 +339,34 @@ const CustomBlock = (props: CustomBlockProps) => {
   const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
 
-  return (<>
-    <Tooltip
-      placement='top-start'
-      title={displayTextChangedHover ? transcript : ''}
-      open={showPopups}
-      arrow={false}
+  return (<div
+    style={{
+      padding: 5,
+    }}
+  >
+    <VisibilitySensor
+      offset={{
+        top: 140,
+        bottom: 190,
+      }}
     >
-      <Typography
-        contentEditable={false} // prevents the editor from selecting the time
-        style={{ paddingTop: 10 }}
-      >
-        {displayTime}
-      </Typography>
-    </Tooltip>
+      {({ isVisible }) =>
+        <Tooltip
+          placement='top-start'
+          title={displayTextChangedHover ? transcript : ''}
+          open={showPopups && isVisible}
+          arrow={false}
+        >
+          <Typography
+            contentEditable={false} // prevents the editor from selecting or changing the time
+          >
+            {displayTime}
+          </Typography>
+        </Tooltip>
+      }
+    </VisibilitySensor>
     <EditorBlock {...props} />
-  </>
+  </div>
   );
 };
 
@@ -475,8 +488,7 @@ export function MyEditor(props: MyEditorProps) {
     rawContent.blocks = rawContent.blocks.map((block, index) => {
       const segment = segments[index];
       const newBlock = { ...block };
-      newBlock.type = 'test';
-      // newBlock.type = BLOCK_TYPE.unstyled;
+      newBlock.type = BLOCK_TYPE.segment;
       const data: SegmentBlockData = { segment };
       newBlock.data = data;
       let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.replace('|', ' ')).join('•').trim();
