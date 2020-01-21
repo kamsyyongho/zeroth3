@@ -30,7 +30,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     block: {
       marginLeft: theme.spacing(1),
-    }
+    },
+    tooltipContent: {
+      maxWidth: 'none',
+    },
   }),
 );
 
@@ -106,6 +109,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
           title={displayTextChangedHover ? <Typography contentEditable={false} variant='h6' >{decoderTranscript}</Typography> : ''}
           open={showPopups && isVisible}
           arrow={false}
+          classes={{ tooltip: classes.tooltipContent }}
         >
           <Grid
             container
