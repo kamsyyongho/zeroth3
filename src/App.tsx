@@ -10,7 +10,7 @@ import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
 import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
-import { Editor } from './routes/editor/Editor';
+import { EditorPage } from './routes/editor/EditorPage';
 import { IAM } from './routes/IAM/IAM';
 import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
 import { Models } from './routes/models/Models';
@@ -57,7 +57,7 @@ function App() {
           <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
           <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
           <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
-          <Route path={PATHS.editor.to} component={withErrorBoundary(Editor, PageErrorFallback)} />
+          <Route path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route component={NotFound} />

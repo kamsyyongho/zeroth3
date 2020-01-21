@@ -1,1375 +1,1098 @@
-import { Box, Button, Container, Grid, Tooltip, Typography } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
-import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import ErrorIcon from '@material-ui/icons/Error';
-import { useSnackbar } from 'notistack';
-import React from "react";
-import { BulletList } from 'react-content-loader';
-import ErrorBoundary from 'react-error-boundary';
-import AutosizeInput from 'react-input-autosize';
-import { AutoSizer, CellMeasurerCache } from 'react-virtualized';
-import 'react-virtualized/styles.css'; // for the editor's lists
-import { ListChildComponentProps, VariableSizeList as List } from 'react-window';
-import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { ICONS } from '../../theme/icons';
-import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
-import { SnackbarError } from '../../types/snackbar.types';
+import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import 'draft-js/dist/Draft.css';
+import { Map } from 'immutable';
+import React from 'react';
+import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, INLINE_STYLE_TYPE, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, WordAlignment } from '../../types';
+import { BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, TargetSelection, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { formatSecondsDuration, generateWordKey, parseWordKey } from '../../util/misc';
-import { MyEditor } from '../main/MyEditor';
-import { AudioPlayer } from '../shared/AudioPlayer';
-import { ConfirmationDialog } from '../shared/ConfirmationDialog';
-import { NotFound } from '../shared/NotFound';
-import { PageErrorFallback } from '../shared/PageErrorFallback';
-import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
-import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
-import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
-import { EditorFetchButton } from './components/EditorFetchButton';
-import { HighRiskSegmentEdit } from './components/HighRiskSegmentEdit';
-import { MemoizedSegmentRow } from './components/SegmentRow';
-import { StarRating } from './components/StarRating';
+import { generateWordKeyString, WordKeyStore } from '../../util/misc';
+import { SegmentBlock } from './components/SegmentBlock';
+import { ParentMethodResponse, PARENT_METHOD_TYPES } from './EditorPage';
+
+const wordKeyBank = new WordKeyStore();
 
 
-export interface ModelConfigsById {
-  [x: number]: ModelConfig;
+let entityMap: EntityMap = {};
+
+const getEntityByKey = (entityKey: string) => {
+  return entityMap[entityKey];
+};
+
+
+const entityKeyToWordKeyMap: EntityKeyToWordKey = {};
+const wordKeyToEntityKeyMap: WordKeyToEntityKey = {};
+
+const blockKeyToSegmentIdMap: BlockKeyToSegmentId = {};
+const segmentIdToBlockKeyMap: SegmentIdToBlockKey = {};
+
+/**
+ * used to keep track of where a segment Id is in the list of segments
+ */
+const segmentOrderById: string[] = [];
+
+/**
+ * used to get the index of the current segment Id from within the list of segments
+ */
+const findIndexOfSegmentId = (segmentId: string): number | null => {
+  const indexLocation = segmentOrderById.indexOf(segmentId);
+  if (indexLocation < 0) {
+    return null;
+  }
+  return indexLocation;
+};
+
+
+const replaceSegmentIdAtIndex = (replacedIndex: number, segmentId: string): string[] => {
+  segmentOrderById.splice(replacedIndex, 1, segmentId);
+  return segmentOrderById;
+};
+
+const insertSegmentIdAtIndex = (insertedIndex: number, wordSplitIndex: number, segmentId: string): string[] => {
+  segmentOrderById.splice(insertedIndex, 0, segmentId);
+  wordKeyBank.moveKeysAfterSegmentSplit(insertedIndex, wordSplitIndex);
+  return segmentOrderById;
+};
+
+const removeSegmentIdAtIndexAndShift = (removedIndex: number): string[] => {
+  segmentOrderById.splice(removedIndex, 1);
+  wordKeyBank.moveKeysAfterSegmentMerge(removedIndex);
+  return segmentOrderById;
+};
+
+
+/**
+ * updates the segment Id linked with the corresponding block key
+ */
+const setBlockSegmentId = (blockKey: string, segmentId: string) => {
+  blockKeyToSegmentIdMap[blockKey] = segmentId;
+};
+
+/**
+ * updates the block key linked with the corresponding segment Id
+ */
+const setSegmentIdBlockKey = (segmentId: string, blockKey: string) => {
+  segmentIdToBlockKeyMap[segmentId] = blockKey;
+};
+
+const getSegmentIdFromBlockKey = (blockKey: string) => blockKeyToSegmentIdMap[blockKey];
+
+const getBlockKeyFromSegmentId = (segmentId: string) => segmentIdToBlockKeyMap[segmentId];
+
+const getWordKeyFromEntityKey = (entityKey: number) => entityKeyToWordKeyMap[entityKey];
+
+const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordKey];
+
+const SPLIT_CHARACTER = '•';
+const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
+
+const segmentIndexesWaitingForResponses = new Set<number>();
+
+
+let entityKeyCounter = 0;
+
+let prevPlayingEntityKey = -1;
+
+
+// Custom overrides for "code" style.
+const styleMap: DraftStyleMap = {
+  [INLINE_STYLE_TYPE.PLAYING]: {
+    color: 'blue',
+    boxShadow: `0px 0px 0px 1px ${'blue'}`,
+    // fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
+    // fontSize: 16,
+    // padding: 2
+  },
+};
+
+const styles: { [x: string]: React.CSSProperties; } = {
+  editor: {
+    border: '1px solid #ccc',
+    cursor: 'text',
+    minHeight: 80,
+    padding: 10
+  },
+  button: {
+    marginTop: 10,
+    textAlign: 'center'
+  },
+  immutable: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    padding: '2px 0'
+  },
+  mutable: {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    // backgroundColor: 'rgba(204, 204, 255, 1.0)',
+    padding: '2px 0'
+  },
+  segmented: {
+    backgroundColor: 'rgba(248, 222, 126, 1.0)',
+    padding: '2px 0'
+  }
+};
+
+function getDecoratedStyle(mutability: DraftEntityMutability) {
+  switch (mutability) {
+    case MUTABILITY_TYPE.IMMUTABLE:
+      return styles.immutable;
+    case MUTABILITY_TYPE.MUTABLE:
+      return styles.mutable;
+    case MUTABILITY_TYPE.SEGMENTED:
+      return styles.segmented;
+    default:
+      return null;
+  }
 }
 
-const useStyles = makeStyles((theme: CustomTheme) =>
-  createStyles({
-    container: {
-      // flex: 1,
-      // padding: 0,
-    },
-    list: {
-      outline: 'none', // removes the focus outline
-    },
-    segment: {
-      // padding: 10,
-    },
-    segmentTimeButton: {
-      borderColor: `${theme.palette.background.paper} !important`,
-    },
-    segmentTime: {
-      color: '#939393',
-    },
-    changesIcon: {
-      color: theme.editor.changes,
-      fontSize: 12,
-      marginTop: 5,
-      marginRight: 5,
-    },
-    splitButton: {
-      maxWidth: 24,
-      minWidth: 24,
-      marginTop: -5,
-      paddingTop: 0,
-      paddingBottom: 0,
-    },
-    highRiskSegmentButton: {
-      color: theme.editor.highlight,
-      maxWidth: 24,
-      minWidth: 24,
-      marginTop: -5,
-      marginLeft: theme.spacing(1),
-      paddingTop: 0,
-      paddingBottom: 0,
-    },
-  }),
-);
+interface TokenSpanProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> {
+  contentState: ContentState,
+  offsetkey: string,
+  entityKey: string,
+}
 
-const virtualListCache = new CellMeasurerCache({
-  fixedWidth: true,
-  defaultHeight: 60,
-});
+const TokenSpan = (props: TokenSpanProps) => {
+  const tokenEntity = props.contentState.getEntity(props.entityKey);
+  const mutability = tokenEntity.getMutability();
+  const targetData: WordAlignmentEntityData = tokenEntity.getData();
+  const { wordAlignment } = targetData;
+  const { confidence } = wordAlignment;
+  const LC = confidence < 0.8;
+  let style = getDecoratedStyle(mutability) ?? {};
+  if (LC) {
+    style = { ...style, backgroundColor: 'rgba(248, 222, 126, 1.0)' };
+  }
+  return (
+    <span data-offset-key={props.offsetkey} style={style}>
+      {props.children}
+    </span>
+  );
+};
 
-/**
- * reference used to reset focus to the first input 
- * when tabbing should wrap around to the beginning
- */
-const firstLCWordReference: HTMLInputElement | null = null;
-
-/**
- * reference used to reset focus to the last input 
- * when shift-tabbing should wrap around to the end
- */
-const lastLCWordReference: HTMLInputElement | null = null;
-
-/**
- * ensures that the selected word will be correctly
- * highlighted when setting the audio player seek 
- * from a text input focus
- */
-const SEEK_SLOP = 0.01;
-
-const DEFAULT_LC_THRESHOLD = 0.8;
-// const DEFAULT_LC_THRESHOLD = 0.5;
-
-const DEFAULT_PADDING_SIZE = 10;
-
-interface SegmentWordProperties {
-  [x: number]: {
-    [x: number]: {
-      edited?: boolean,
-      focussed?: boolean;
-    };
+function getEntityStrategy(mutability: DraftEntityMutability) {
+  return function (contentBlock: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) {
+    contentBlock.findEntityRanges((character) => {
+      const entityKey = character.getEntity();
+      if (entityKey === null) {
+        return false;
+      }
+      return contentState.getEntity(entityKey).getMutability() === mutability;
+    }, callback);
   };
 }
 
-export interface SegmentSplitLocation {
-  segmentId: string;
-  segmentIndex: number;
-  splitIndex: number;
+/**
+ * adds custom key binding types that will be picked up by the editor
+ */
+function customKeyBindingFunction(event: React.KeyboardEvent): string {
+  if (event.key === "Backspace" && event.shiftKey) {
+    return KEY_COMMANDS['merge-segments-back'];
+  }
+  if (event.key === "Delete" && event.shiftKey) {
+    return KEY_COMMANDS['merge-segments-forward'];
+  }
+  if (event.key === "Alt") {
+    return KEY_COMMANDS['toggle-popups'];
+  }
+  return getDefaultKeyBinding(event) as DraftEditorCommand;
 }
 
-export enum EDITOR_MODES {
-  none,
-  edit,
-  merge,
-  split,
-  speaker,
-}
-
-
-interface SizeMap {
-  current:
+const decorators = new CompositeDecorator([
   {
-    [x: number]: number;
-  };
+    strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
+    component: TokenSpan
+  }, {
+    strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
+    component: TokenSpan
+  }, {
+    strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
+    component: TokenSpan
+  }
+]);
+
+interface EditorProps {
+  height?: number;
+  responseFromParent?: ParentMethodResponse;
+  onParentResponseHandled: () => void;
+  loading?: boolean;
+  segments: Segment[];
+  playingLocation?: SegmentAndWordIndex;
+  assignSpeaker: (segmentIndex: number) => void;
+  onWordClick: (wordLocation: SegmentAndWordIndex) => void;
+  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => Promise<void>;
+  mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
 }
 
-const rowHeights: { [x: number]: number; } = {};
+export function Editor(props: EditorProps) {
+  const {
+    height,
+    responseFromParent,
+    onParentResponseHandled,
+    loading,
+    segments,
+    playingLocation,
+    assignSpeaker,
+    onWordClick,
+    splitSegment,
+    mergeSegments,
+  } = props;
+  const [editorState, setEditorState] = React.useState(
+    EditorState.createEmpty()
+  );
+  const [ready, setReady] = React.useState(false);
+  const [showPopups, setShowPopups] = React.useState(false);
 
-let testRef: List | null = null;
-const sizeMap: SizeMap = { current: {} };
+  const editorRef = React.useRef<DraftEditor | null>(null);
 
-export function Editor() {
-  const { translate } = React.useContext(I18nContext);
-  const windowSize = useWindowSize();
-  const api = React.useContext(ApiContext);
-  const { enqueueSnackbar } = useSnackbar();
-  const [canPlayAudio, setCanPlayAudio] = React.useState(false);
-  const [playbackTime, setPlaybackTime] = React.useState(0);
-  const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
-  const [currentPlayingLocation, setCurrentPlayingLocation] = React.useState<SegmentAndWordIndex>([0, 0]);
-  const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
-  const [openWordKey, setOpenWordKey] = React.useState<string | undefined>();
-  const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
-  const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
-  const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
-  const [segmentIdToDelete, setSegmentIdToDelete] = React.useState<string | undefined>();
-  const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
-  const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
-  const [highRiskSegmentIndex, setHighRiskSegmentIndex] = React.useState<number | undefined>();
-  const [segmentIndexToAssignSpeakerTo, setSegmentIndexToAssignSpeakerTo] = React.useState<number | undefined>();
-  const [words, setWords] = React.useState<WordsbyRangeStartAndEndIndexes>({});
-  const [discardDialogOpen, setDiscardDialogOpen] = React.useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
-  // to force a state change that will rerender the segment buttons
-  const [numberOfSegmentsSelected, setNumberOfSegmentsSelected] = React.useState(0);
-  // to force a state change when the segment heights are calculated
-  const [sizeMapCurrentValues, setSizeMapCurrentValues] = React.useState<{ [x: number]: number; }>({});
-  const [counter, setCounter] = React.useState(0);
-  const [editorMode, setEditorMode] = React.useState<EDITOR_MODES>(EDITOR_MODES.none);
-  const [pendingEditorMode, setPendingEditorMode] = React.useState<EDITOR_MODES | undefined>();
-  const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
-  const [initialFetchDone, setInitialFetchDone] = React.useState(false);
-  const [noAssignedData, setNoAssignedData] = React.useState(false);
-  const [noRemainingContent, setNoRemainingContent] = React.useState(false);
-  const [segmentsLoading, setSegmentsLoading] = React.useState(true);
-  const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
-  const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
-  const [projectId, setProjectId] = React.useState<string | undefined>();
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>();
-  const [segments, setSegments] = React.useState<Segment[]>([]);
-  const [initialSegments, setInitialSegments] = React.useState<Segment[]>([]);
-  const [segmentWordProperties, setSegmentWordProperties] = React.useState<SegmentWordProperties>({});
-
-  const theme: CustomTheme = useTheme();
-  const classes = useStyles();
-
-  const listRef = React.createRef<List | null>();
-  // const sizeMap = React.useRef<SizeMap>({ current: {} });
-  const setSize = React.useCallback((index: number, size: number, reRenderCallback?: () => void) => {
-    // let updateState = false;
-    // // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // //@ts-ignore
-    // if (sizeMap.current[index] !== size) {
-    //   updateState = true;
-    // }
-    sizeMap.current = { ...sizeMap.current, [index]: size };
-    // if (updateState) {
-    //   setSizeMapCurrentValues({ ...sizeMap.current });
-    // }
-    // console.log('sizeMap', sizeMap);
-    // console.log('listRef?.current', listRef?.current);
-    if(reRenderCallback && typeof reRenderCallback === 'function'){
-      reRenderCallback();
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    //@ts-ignore
-    testRef?.resetAfterIndex(index); // added
-    // setCounter(counter + 1);
-  }, []);
-  // console.log('listRef', listRef);
-  // console.log('testRef', testRef);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //@ts-ignore
-  const getSize = React.useCallback((index: number) => sizeMap.current[index] || 60, []);
-
-  // console.log('sizeMap', sizeMap);
-
-  /**
-   * used to keep track of which segments to send when updating
-   */
-  const editedSegmentIndexes = React.useMemo(() => new Set<number>(), []);
-
-  /**
-   * used to keep track of which segments are selected for merging
-   */
-  const segmentMergeIndexes = React.useMemo(() => new Set<number>(), []);
-
-  /**
-   * Only `CONFIRMED` data can be rated, so we won't show if not
-   */
-  const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
-
-
-  ///////////////////////////////////////////////
-  // CALCULATE FIRST AND LAST WORD `tabIndex`s //
-  ///////////////////////////////////////////////
-  // to keep track of word focus and to reset the loop while tabbing through
-
-  /** tuple in the form of `[segmentIndex, wordIndex]` */
-  let firstWordLocation: [number, number] = React.useMemo(() => [0, 0], []);
-  /** tuple in the form of `[segmentIndex, wordIndex]` */
-  let lastWordLocation: [number, number] = React.useMemo(() => [0, 0], []);
-  /** the current word index counter */
-  let wordTabIndex = React.useMemo(() => 1, []);
-  /** the first word index */
-  let firstWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
-  /** the last word index */
-  let lastWordTabIndex = React.useMemo<undefined | number>(() => undefined, []);
-
-
-  const openDiscardDialog = () => setDiscardDialogOpen(true);
-  const closeDiscardDialog = () => setDiscardDialogOpen(false);
-
-  const openConfirmDialog = () => setConfirmDialogOpen(true);
-  const closeConfirmDialog = () => setConfirmDialogOpen(false);
-
-  const changeEditMode = (newMode: EDITOR_MODES) => {
-    setPendingEditorMode(undefined);
-    if (editorMode === EDITOR_MODES.merge) {
-      // to reset selected merge segments
-      segmentMergeIndexes.clear();
-    }
-    if (editorMode === EDITOR_MODES.split) {
-      // to reset our selected segment
-      setSplitLocation(undefined);
-    }
-    if (newMode === editorMode) {
-      setEditorMode(EDITOR_MODES.none);
-    } else {
-      setEditorMode(newMode);
-    }
+  const focusEditor = () => {
+    editorRef !== null && editorRef.current && editorRef.current.focus();
   };
 
   /**
-   * resets our words to their original state
-   * - the `pendingEditorMode` was saved before the dialog was opened
+   * Forces a rerender by creating a new state from the old one with the same selection
    */
-  const discardWordChanges = () => {
-    setSegments(initialSegments);
-    editedSegmentIndexes.clear();
-    if (pendingEditorMode) {
-      changeEditMode(pendingEditorMode);
+  const forceRerender = (incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
     }
-    closeDiscardDialog();
-  };
-
-  const handleModeChange = (newMode: EDITOR_MODES) => {
-    if (newMode !== EDITOR_MODES.edit && editedSegmentIndexes.size) {
-      setPendingEditorMode(newMode);
-      openDiscardDialog();
-    } else {
-      changeEditMode(newMode);
-    }
-  };
-
-  const handleSegmentToMergeClick = (segmentIndex: number) => {
-    if (segmentMergeIndexes.has(segmentIndex)) {
-      segmentMergeIndexes.delete(segmentIndex);
-    } else if ((segmentMergeIndexes.size === 0) ||
-      // to only select segments that are next to each other
-      (Math.abs(segmentIndex - Array.from(segmentMergeIndexes)[0]) === 1)) {
-      segmentMergeIndexes.add(segmentIndex);
-    }
-    setNumberOfSegmentsSelected(segmentMergeIndexes.size);
-  };
-
-  const getAssignedData = async () => {
-    if (api?.voiceData) {
-      setVoiceDataLoading(true);
-      const response = await api.voiceData.getAssignedData();
-      if (response.kind === 'ok') {
-        setNoAssignedData(response.noContent);
-        setVoiceData(response.voiceData);
-        if (response.voiceData?.projectId) {
-          setProjectId(response.voiceData.projectId);
-        }
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `getAssignedData - failed to get assigned data`,
-          value: response,
-          important: true,
-        });
-      }
-      setVoiceDataLoading(false);
-      setInitialFetchDone(true);
-    }
-  };
-
-  const fetchMoreVoiceData = async () => {
-    if (api?.voiceData) {
-      setVoiceDataLoading(true);
-      const response = await api.voiceData.fetchUnconfirmedData();
-      if (response.kind === 'ok') {
-        setNoAssignedData(response.noContent);
-        setNoRemainingContent(response.noContent);
-        setVoiceData(response.voiceData);
-        if (response.voiceData?.projectId) {
-          setProjectId(response.voiceData.projectId);
-        }
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `fetchMoreVoiceData - failed to get voiceData`,
-          value: response,
-          important: true,
-        });
-      }
-      setVoiceDataLoading(false);
-      setInitialFetchDone(true);
-    };
-  };
-
-  // subsequent fetches
-  React.useEffect(() => {
-    if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
-      getAssignedData();
-    }
-  }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
-
-  // initial fetch
-  React.useEffect(() => {
-    getAssignedData();
-  }, []);
-
-  React.useEffect(() => {
-    const getSegments = async () => {
-      if (api?.voiceData && projectId && voiceData) {
-        setSegmentsLoading(true);
-        const response = await api.voiceData.getSegments(projectId, voiceData.id);
-        if (response.kind === 'ok') {
-          setInitialSegments(response.segments);
-          setSegments(response.segments);
-        } else {
-          log({
-            file: `Editor.tsx`,
-            caller: `getSegments - failed to get segments`,
-            value: response,
-            important: true,
-          });
-        }
-        setSegmentsLoading(false);
-      }
-    };
-    getSegments();
-  }, [voiceData, projectId]);
-
-  const confirmData = async () => {
-    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
-      setConfirmSegmentsLoading(true);
-      closeConfirmDialog();
-      const response = await api.voiceData.confirmData(projectId, voiceData.id);
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === 'ok') {
-        snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-
-        // to trigger the `useEffect` to fetch more
-        setVoiceData(undefined);
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `confirmData - failed to confirm segments`,
-          value: response,
-          important: true,
-        });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
-      }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-      setConfirmSegmentsLoading(false);
-    }
-  };
-
-  const submitSegmentUpdates = async () => {
-    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
-      setSaveSegmentsLoading(true);
-
-      // to build which segments to send
-      const editedSegmentsToUpdate: Segment[] = [];
-      const testSegment = {...segments[0]};
-      testSegment.wordAlignments.pop();
-      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(testSegment));
-      // editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
-
-      const response = await api.voiceData.updateSegments(projectId, voiceData.id, [testSegment]);
-      // const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === 'ok') {
-        snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        // to reset our list
-        editedSegmentIndexes.clear();
-        // reset our new default baseline
-        setInitialSegments(segments);
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `submitSegmentUpdates - failed to update segments`,
-          value: response,
-          important: true,
-        });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
-      }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-      setSaveSegmentsLoading(false);
-    }
-  };
-
-  const submitSegmentMerge = async () => {
-    if (numberOfSegmentsSelected !== 2) {
-      return;
-    }
-    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
-      setSaveSegmentsLoading(true);
-
-      const segmentIndexesToMerge: number[] = Array.from(segmentMergeIndexes);
-      let firstSegmentIndex = 0;
-      let secondSegmentIndex = 0;
-      if (segmentIndexesToMerge[0] < segmentIndexesToMerge[1]) {
-        firstSegmentIndex = segmentIndexesToMerge[0];
-        secondSegmentIndex = segmentIndexesToMerge[1];
-      } else {
-        firstSegmentIndex = segmentIndexesToMerge[1];
-        secondSegmentIndex = segmentIndexesToMerge[0];
-      }
-
-      const firstSegmentId = segments[firstSegmentIndex].id;
-      const secondSegmentId = segments[secondSegmentIndex].id;
-
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === 'ok') {
-        snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-        // to reset our list
-        segmentMergeIndexes.clear();
-        setNumberOfSegmentsSelected(0);
-
-        //cut out and replace the old segments
-        const mergedSegments = [...segments];
-        const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(firstSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
-
-        // reset our new default baseline
-        setSegments(mergedSegments);
-        setInitialSegments(mergedSegments);
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `submitSegmentMerge - failed to merge segments`,
-          value: response,
-          important: true,
-        });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
-      }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-      setSaveSegmentsLoading(false);
-    }
-  };
-
-  const submitSegmentSplit = async () => {
-    if (!splitLocation) return;
-    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
-      setSaveSegmentsLoading(true);
-      const { segmentId, segmentIndex, splitIndex } = splitLocation;
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segmentId, splitIndex);
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-      if (response.kind === 'ok') {
-        snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
-
-        // to reset our selected segment
-        setSplitLocation(undefined);
-
-        //cut out and replace the old segment
-        const splitSegments = [...segments];
-        const [firstSegment, secondSegment] = response.segments;
-        const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
-        splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-
-        // reset our new default baseline
-        setSegments(splitSegments);
-        setInitialSegments(splitSegments);
-      } else {
-        log({
-          file: `Editor.tsx`,
-          caller: `submitSegmentSplit - failed to split segment`,
-          value: response,
-          important: true,
-        });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
-      }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
-      setSaveSegmentsLoading(false);
-    }
-  };
-
-  const handleSaveClick = () => {
-    switch (editorMode) {
-      case EDITOR_MODES.split:
-        submitSegmentSplit();
-        break;
-      case EDITOR_MODES.merge:
-        submitSegmentMerge();
-        break;
-      case EDITOR_MODES.edit:
-        submitSegmentUpdates();
-        break;
-    }
-  };
-
-  const handleActionClick = (confirm = false) => {
-    if (confirm) {
-      openConfirmDialog();
-    } else {
-      handleSaveClick();
-    }
-  };
-
-  const getDisabledControls = () => {
-    const disabledControls: EDITOR_CONTROLS[] = [];
-    const mergeDisabled = segments.length < 2;
-    if (mergeDisabled) {
-      disabledControls.push(EDITOR_CONTROLS.merge);
-    }
-    const splitDisabled = !segments.some(segment => segment.wordAlignments.length > 1);
-    if (splitDisabled) {
-      disabledControls.push(EDITOR_CONTROLS.split);
-    }
-    if (saveSegmentsLoading || confirmSegmentsLoading) {
-      disabledControls.push(EDITOR_CONTROLS.save);
-      disabledControls.push(EDITOR_CONTROLS.confirm);
-    }
-    return disabledControls;
-  };
-
-  const calculateWordTime = (segmentIndex: number, wordIndex: number) => {
-    const segment = segments[segmentIndex];
-    const word = segment.wordAlignments[wordIndex];
-    const segmentTime = segment.start;
-    const wordTime = word.start;
-    const totalTime = segmentTime + wordTime;
-    return totalTime;
-  };
-
-//!
-//TODO
-//!
-//TODO
-//!
-//TODO
-  // KEEP TRACK OF THE PLAYING / focussed SEGMENT (maybe by key?)
-  // PASS DOWN TO COMPONENT AND MAKE LIST WITH useMemo
-  // DONT CHANGE IF SEGMENT VALUE IS NOT RELEVENT
-
-  // ONLY CALCULATE IF WORD PLAYING IF IN CURRENT SEGMENT
-
-  // MAYBE ADD AN EMPTY SEGMENT INSTEAD OF BOTTOM PADDING
-//!
-//TODO
-//!
-//TODO
-//!
-//TODO
-
-  const calculateIsPlaying = (segmentIndex: number, wordIndex: number) => {
-    if (!canPlayAudio) return false;
-
-    const totalTime = calculateWordTime(segmentIndex, wordIndex);
-    if (playbackTime < totalTime) {
-      return false;
-    }
-    const isLastWord = !(wordIndex < segments[segmentIndex].wordAlignments.length - 1);
-    const isLastSegment = !(segmentIndex < segments.length - 1);
-    if (isLastWord && isLastSegment) {
-      return true;
-    }
-
-    let nextTotalTime = totalTime;
-    if (!isLastWord) {
-      nextTotalTime = calculateWordTime(segmentIndex, wordIndex + 1);
-    } else if (!isLastSegment) {
-      nextTotalTime = calculateWordTime(segmentIndex + 1, 0);
-    }
-    if (playbackTime < nextTotalTime) {
-      return true;
-    }
-    return false;
+    // to force the editor to update
+    const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(incomingEditorState, incomingEditorState.getSelection());
+    setEditorState(newEditorStateWithSameContentAndSelection);
   };
 
   /**
-   * Calculates the segment index and word index of the current playing word
-   * - sets the state value if valid
-   * @params time
+   * used in the custom block to open the speaker dialog
    */
-  const calculatePlayingLocation = (time: number) => {
-    try{
-      if(isNaN(time) || !segments.length) return
-      let segmentIndex = 0;
-      let wordIndex = 0;
-      
-      for(let i = 0; i < segments.length; i++){
-        const segment = segments[i];
-        if(segment.start <= time){
-          segmentIndex = i;
-        } else {
-          break;
-        }
-      }
-  
-      const segment = segments[segmentIndex];
-      if(!segment) return
-      const {wordAlignments} = segment;
-      const wordTime = time - segment.start;
-  
-      for(let i = 0; i < wordAlignments.length; i++){
-        const word = wordAlignments[i];
-        if(word.start <= wordTime){
-          wordIndex = i;
-        } else {
-          break;
-        }
-      }
-  
-      setCurrentPlayingLocation([segmentIndex, wordIndex]);
-    } catch(error){
-      log({
-      file: `Editor.tsx`,
-      caller: `calculatePlayingLocation`,
-      value: error,
-      important: true,
-      })
+  const assignSpeakerForSegment = (segmentId: string) => {
+    const segmentIndex = findIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      assignSpeaker(segmentIndex);
     }
   };
 
-  const updateSegmentsOnChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    segment: Segment,
-    wordAlignment: WordAlignment,
-    segmentIndex: number,
-    wordIndex: number,
-  ) => {
-    // to allow us to use the original synthetic event multiple times
-    // prevents a react error
-    // See https://fb.me/react-event-pooling for more information. 
-    event.persist();
-
-    // to track which segments have been edited
-    editedSegmentIndexes.add(segmentIndex);
-
-    // update all segment values
-    setSegments(prevSegments => {
-      const updatedWord: WordAlignment = {
-        ...wordAlignment,
-        word: event.target.value,
+  function customBlockRenderer(contentBlock: ContentBlock) {
+    const type = contentBlock.getType();
+    if (type === BLOCK_TYPE.segment) {
+      return {
+        component: SegmentBlock,
+        editable: true,
+        props: {
+          showPopups,
+          assignSpeakerForSegment,
+        },
       };
-      const updatedWordAlignments = [...segment.wordAlignments];
-      updatedWordAlignments.splice(wordIndex, 1, updatedWord);
+    }
+  }
 
-      const updatedSegment = {
-        ...segment,
-        wordAlignments: updatedWordAlignments,
-      };
-      const updatedSegments = [...prevSegments];
-      updatedSegments.splice(segmentIndex, 1, updatedSegment);
 
-      return updatedSegments;
+  const createEntity = (wordAlignment: WordAlignment, wordKey: number, key: number) => {
+    const data: WordAlignmentEntityData = {
+      wordKey,
+      wordAlignment,
+    };
+    const entity: RawDraftEntity = {
+      type: ENTITY_TYPE.TOKEN,
+      mutability: MUTABILITY_TYPE.MUTABLE,
+      data,
+    };
+    const updatedMap = { ...entityMap, [key]: entity };
+    entityMap = { ...updatedMap };
+  };
+
+  const generateStateFromSegments = () => {
+    console.log('segments', segments);
+    let textString = '';
+    segments.forEach((segment: Segment, index: number) => {
+      if (!index) {
+        textString = `${index}`;
+      } else {
+        textString = textString + `***${index}`;
+      }
     });
-  };
-
-  const getWordFocussed = (segmentIndex: number, wordIndex: number) => {
-    let focussed = false;
-    if (segmentWordProperties &&
-      segmentWordProperties[segmentIndex] &&
-      segmentWordProperties[segmentIndex][wordIndex]) {
-      focussed = !!segmentWordProperties[segmentIndex][wordIndex].focussed;
-    }
-    return focussed;
-  };
-
-  const getWordStyle = (focussed: boolean, isLC: boolean, isPlaying: boolean) => {
-    const LC_COLOR = theme.editor.LC;
-    const PLAYING_COLOR = theme.editor.playing;
-    const PLAYING_SHADOW_COLOR = theme.palette.primary.light;
-    const FOCUS_COLOR = theme.editor.focussed;
-    const wordStyle: React.CSSProperties = {
-      outline: 'none',
-      border: 0,
-      backgroundColor: theme.palette.background.paper,
-    };
-    if (isLC) {
-      wordStyle.backgroundColor = LC_COLOR;
-    }
-    if (isPlaying) {
-      wordStyle.color = PLAYING_COLOR;
-      wordStyle.boxShadow = `inset 0px 0px 0px 2px ${PLAYING_SHADOW_COLOR}`;
-    }
-    if (focussed) {
-      wordStyle.boxShadow = `inset 0px 0px 0px 2px ${FOCUS_COLOR}`;
-    }
-    return wordStyle;
-  };
-
-
-  /**
-   * Determines if an input field can be accessed via tabbing
-   * @param segmentIndex 
-   * @param wordIndex 
-   */
-  const getTabIndex = (segmentIndex: number, wordIndex: number) => {
-    const [maxSegmentIndex, maxWordIndex] = lastWordLocation;
-    wordTabIndex++;
-    // in a new later segment
-    if (segmentIndex > maxSegmentIndex) {
-      lastWordLocation = [segmentIndex, wordIndex];
-      // write the new tab index
-      if (lastWordTabIndex === undefined || lastWordTabIndex < wordTabIndex) {
-        lastWordTabIndex = wordTabIndex;
-      }
-    }
-    // in the same segment but a new later word
-    if (segmentIndex === maxSegmentIndex && wordIndex > maxWordIndex) {
-      lastWordLocation = [segmentIndex, wordIndex];
-      // write the new tab index
-      if (lastWordTabIndex === undefined || lastWordTabIndex < wordTabIndex) {
-        lastWordTabIndex = wordTabIndex;
-      }
-    }
-    // write the values for the first initial word
-    if (firstWordTabIndex === undefined) {
-      firstWordTabIndex = wordTabIndex;
-      firstWordLocation = [segmentIndex, wordIndex];
-    }
-    return wordTabIndex;
-  };
-
-
-  /**
-   * Sets the the focus state of the the word based on its location in the segments
-   * @param isFocussed - the focus state of the word
-   */
-  const setFocus = (segmentIndex: number, wordIndex: number, isFocussed = true) => {
-    setSegmentWordProperties((prevValue) => {
-      if (prevValue && prevValue[segmentIndex]) {
-        if (prevValue[segmentIndex][wordIndex]) {
-          prevValue[segmentIndex][wordIndex].focussed = isFocussed;
-        } else {
-          prevValue[segmentIndex][wordIndex] = {
-            focussed: isFocussed,
-          };
-        }
-      } else {
-        prevValue[segmentIndex] = {
-          [wordIndex]: {
-            focussed: isFocussed,
-          }
+    wordKeyBank.init(segments);
+    const content = ContentState.createFromText(textString, '***');
+    const rawContent = convertToRaw(content);
+    rawContent.blocks = rawContent.blocks.map((block, index) => {
+      const segment = segments[index];
+      const newBlock = { ...block };
+      newBlock.type = BLOCK_TYPE.segment;
+      const data: SegmentBlockData = {
+        segment,
+      };
+      newBlock.data = data;
+      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.replace('|', ' ')).join('•').trim();
+      transcript = transcript.split("• ").join(' ').trim();
+      newBlock.text = transcript;
+      let offsetPosition = 0;
+      const entityRanges: RawDraftEntityRange[] = segment.wordAlignments.map((wordAlignment, wordIndex) => {
+        const wordLocation: SegmentAndWordIndex = [index, wordIndex];
+        const wordKey = wordKeyBank.generateKey(wordLocation);
+        entityKeyToWordKeyMap[entityKeyCounter] = wordKey;
+        wordKeyToEntityKeyMap[wordKey] = entityKeyCounter;
+        createEntity(wordAlignment, wordKey, entityKeyCounter);
+        const { word } = wordAlignment;
+        const filteredWord = word.replace('|', '');
+        const wordLength = filteredWord.length;
+        const wordStartIndex = transcript.indexOf(filteredWord);
+        const offset = offsetPosition + wordStartIndex;
+        const wordOffset = wordStartIndex + wordLength - 1;
+        offsetPosition = offsetPosition + wordOffset;
+        transcript = transcript.slice(wordOffset);
+        const entityRange: RawDraftEntityRange = {
+          offset,
+          length: wordLength,
+          key: entityKeyCounter,
         };
-      }
-      return prevValue;
+        entityKeyCounter++;
+        return entityRange;
+      });
+      newBlock.entityRanges = entityRanges;
+      return newBlock;
     });
+    rawContent.entityMap = { ...entityMap };
+    const updatedContent = convertFromRaw(rawContent);
+    const updatedEditorState = EditorState.createWithContent(updatedContent, decorators);
+    console.log('convertToRaw(content)', convertToRaw(content));
+    console.log('rawContent', rawContent);
+
+    // to keep track of segment locations within the blocks
+    const createdContent = convertToRaw(content);
+    createdContent.blocks.forEach((block, index) => {
+      const { key } = block;
+      const { id } = segments[index];
+      setBlockSegmentId(key, id);
+      setSegmentIdBlockKey(id, key);
+      segmentOrderById.push(id);
+    });
+
+    setEditorState(updatedEditorState);
+    setReady(true);
   };
 
-  const handleTabKeyCatch = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-    segmentIndex: number,
-    wordIndex: number,
-  ) => {
-    const [firstSegmentIndex, firstWordIndex] = firstWordLocation;
-    const [lastSegmentIndex, lastWordIndex] = lastWordLocation;
-    const isLastWord = segmentIndex === lastSegmentIndex && wordIndex === lastWordIndex;
-    const isFirstWord = segmentIndex === firstSegmentIndex && wordIndex === firstWordIndex;
-    if (isLastWord && !event.shiftKey && event.key === 'Tab') {
-      event.preventDefault();
-      firstLCWordReference && firstLCWordReference.focus();
-    } else if (isFirstWord && event.shiftKey && event.key === 'Tab') {
-      event.preventDefault();
-      lastLCWordReference && lastLCWordReference.focus();
+  React.useEffect(() => {
+    generateStateFromSegments();
+    focusEditor();
+  }, []);
+
+
+  React.useEffect(() => {
+    log({
+      file: `Editor.tsx`,
+      caller: `convertToRaw(editorState)`,
+      value: convertToRaw(editorState.getCurrentContent()),
+      important: false,
+      trace: false,
+      error: false,
+      warn: false,
+    });
+  }, [editorState]);
+
+  const getTargetSelection = (wordLocation: SegmentAndWordIndex): TargetSelection | null => {
+    const contentState = editorState.getCurrentContent();
+    // to find the entinty within the correct segment
+    const [segmentIndex, wordIndex] = wordLocation;
+    // const [segmentIndex, wordIndex] = parseWordKey(wordKey);
+    const rawContent = convertToRaw(contentState);
+    const targetBlock = rawContent.blocks[segmentIndex];
+    // to get the target entity key 
+    let targetEntityRange: RawDraftEntityRange | undefined;
+    for (let i = 0; i < targetBlock.entityRanges.length; i++) {
+      const entityRange = targetBlock.entityRanges[i];
+      const entityWordKey = getWordKeyFromEntityKey(entityRange.key);
+      const entityWordLocation = wordKeyBank.getLocation(entityWordKey);
+      // compare strings generated from the tuples because we can't compare the tuples to each other
+      if (generateWordKeyString(entityWordLocation) === generateWordKeyString(wordLocation)) {
+        targetEntityRange = { ...entityRange };
+        break;
+      }
     }
+    if (!targetEntityRange) {
+      return null;
+    }
+    const { key, offset, length } = targetEntityRange;
+    const end = offset + length;
+
+    // to keep track of where the previously played word was
+    prevPlayingEntityKey = key;
+
+    const targetSelectionArea = {
+      anchorOffset: offset,
+      focusOffset: end,
+      anchorKey: targetBlock.key,
+      focusKey: targetBlock.key,
+    };
+    return targetSelectionArea;
   };
 
-  /**
-   * - sets the seek time in the audio player
-   */
-  const handleWordClick = (
-    segmentIndex: number,
-    wordIndex: number,
-  ) => {
-    const wordTime = calculateWordTime(segmentIndex, wordIndex);
-    setTimeToSeekTo(wordTime + SEEK_SLOP);
+  const getSelectionOfAll = (): SelectionState => {
+    const currentContent = editorState.getCurrentContent();
+    const firstBlock = currentContent.getBlockMap().first();
+    const lastBlock = currentContent.getBlockMap().last();
+    const firstBlockKey = firstBlock.getKey();
+    const lastBlockKey = lastBlock.getKey();
+    const lengthOfLastBlock = lastBlock.getLength();
+
+    const selection = new SelectionState({
+      anchorKey: firstBlockKey,
+      anchorOffset: 0,
+      focusKey: lastBlockKey,
+      focusOffset: lengthOfLastBlock,
+    });
+
+    return selection;
   };
 
-  /**
-   * - sets which word is focussed
-   * - sets the seek time in the audio player
-   */
-  const handleFocus = (
-    segmentIndex: number,
-    wordIndex: number,
-  ) => {
-    setFocus(segmentIndex, wordIndex);
-    handleWordClick(segmentIndex, wordIndex);
+  const removeStyleFromSelection = (selectionState: SelectionState, styleType: INLINE_STYLE_TYPE): EditorState => {
+    // to not allow any changes into the stack
+    const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
+    const editorStateWithSelection = EditorState.forceSelection(noUndoEditorState, selectionState);
+    const contentState = editorStateWithSelection.getCurrentContent();
+    const updatedContentState = Modifier.removeInlineStyle(contentState, selectionState, styleType);
+    // add the content change to the editor state
+    const updatedEditorState = EditorState.push(editorStateWithSelection, updatedContentState, EDITOR_CHANGE_TYPE['change-inline-style']);
+    return updatedEditorState;
   };
 
-  /**
-   * - sets the word focus
-   * - resets the seek time in the audio player
-   */
-  const handleBlur = (
-    segmentIndex: number,
-    wordIndex: number,
-  ) => {
-    setFocus(segmentIndex, wordIndex, false);
-    setTimeToSeekTo(undefined);
-  };
+  const updateWordForCurrentPlayingLocation = (wordLocation: SegmentAndWordIndex) => {
+    const targetSelectionArea = getTargetSelection(wordLocation);
 
-  const handlePlayerRendered = () => setCanPlayAudio(true);
+    try {
+      // to add the style for the current playing word
+      if (targetSelectionArea) {
+        const originalSelectionState = editorState.getSelection();
+        // to remove the playing style from all content
+        const selectAllState = getSelectionOfAll();
+        const editorStateWithNoStyling = removeStyleFromSelection(selectAllState, INLINE_STYLE_TYPE.PLAYING);
 
-  const handleSplitLocationPress = (segmentId: string, segmentIndex: number, splitIndex: number) => {
-    if (splitLocation && (
-      (segmentId === (splitLocation.segmentId)) &&
-      (segmentIndex === (splitLocation.segmentIndex)) &&
-      (splitIndex === (splitLocation.splitIndex))
-    )) {
-      setSplitLocation(undefined);
-    } else {
-      setSplitLocation({
-        segmentId,
-        segmentIndex,
-        splitIndex,
+        const newSelection = originalSelectionState.merge(targetSelectionArea) as SelectionState;
+        // select the target area and update style
+        const editorStateWithNewTargetSelection = EditorState.forceSelection(editorStateWithNoStyling, newSelection);
+        const editorStateWithStyles = RichUtils.toggleInlineStyle(editorStateWithNewTargetSelection, INLINE_STYLE_TYPE.PLAYING);
+
+        // reset to the original selection
+        const editorStateWithStylesAndOriginalSelection = EditorState.forceSelection(
+          editorStateWithStyles,
+          originalSelectionState
+        );
+        // to re-enable future any changes into the stack
+        const undoableEditorStateWithStylesAndOriginalSelection = EditorState.set(editorStateWithStylesAndOriginalSelection, { allowUndo: true });
+        setEditorState(undoableEditorStateWithStylesAndOriginalSelection);
+      }
+    } catch (error) {
+      log({
+        file: `Editor.tsx`,
+        caller: `updateWordForCurrentPlayingLocation`,
+        value: error,
+        important: true,
       });
     }
   };
 
-  const editHighRiskSegment = (highSegmentRiskIndex: number) => {
-    setHighRiskSegmentIndex(highSegmentRiskIndex);
-  };
-
-  const handleDisabledTimesSet = (disabledTimes: Time[]) => {
-    setDisabledTimes(disabledTimes);
-  };
-
-  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
-    const updatedSegments = [...segments];
-    updatedSegments[segmentIndex] = updatedSegment;
-    setSegments(updatedSegments);
-  };
-
-  const stopHighRiskSegmentEdit = () => {
-    setHighRiskSegmentIndex(undefined);
-    setDisabledTimes(undefined);
-    setDeleteAllWordSegments(true);
-    setWords({});
-    setWordsClosed(undefined);
-    setSegmentIdToDelete(undefined);
-    setWordToCreateTimeFor(undefined);
-  };
-
-  const openSpeakerAssignDialog = (segmentIndex: number) => setSegmentIndexToAssignSpeakerTo(segmentIndex);
-
-  const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
-
-  const renderWords = (segment: Segment, segmentIndex: number) => {
-    const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
-      
-
-      const key = generateWordKey([segmentIndex, wordIndex]);
-      const isFocussed = getWordFocussed(segmentIndex, wordIndex);
-      const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
-      const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
-      const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
-      // const tabIndex = getTabIndex(segmentIndex, wordIndex);
-
-      // const isFirstWord = firstWordTabIndex === tabIndex;
-      // const isLastWord = lastWordTabIndex === tabIndex;
-      const { highRisk } = segment;
-      const isLastWordInSegment = (segment.wordAlignments.length - 1) === wordIndex;
-      const displayFreeTextEditTrigger = highRisk && isLastWordInSegment;
-
-
-      let isSplitSelected = false;
-      if (splitLocation &&
-        splitLocation.segmentId === segment.id &&
-        splitLocation.segmentIndex === segmentIndex &&
-        splitLocation.splitIndex === wordIndex &&
-        editorMode === EDITOR_MODES.split) {
-        isSplitSelected = true;
+  // update the playing location
+  React.useEffect(() => {
+    if (playingLocation && ready) {
+      const wordKey = wordKeyBank.getKey(playingLocation);
+      if (typeof wordKey !== 'number') {
+        return;
       }
+      const entityKey = getEntityKeyFromWordKey(wordKey);
+      if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
+        updateWordForCurrentPlayingLocation(playingLocation);
+      }
+    }
+  }, [playingLocation, ready]);
 
-      const hasSplitIcon = wordAlignment.word[0] === '|';
+  /**
+   * Get the entiy at the current cursor location
+   * - checks to the right of the cursor
+   * - the `blockObject`'s `characterList` will originally have incorrect entity keys.
+   * They are incremented by 1 for some reason. 
+   *  **The returned value will have been fixed and will be correct**
+   * @param incomingEditorState - will use the current state saved in the store if empty
+   * @returns entity is `null` if there is no enity at the selection
+   */
+  const getCursorContent = <T, U>(incomingEditorState?: EditorState): CursorContent<T, U> => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    const selectionState = incomingEditorState.getSelection();
+    const selectionBlockStartKey = selectionState.getStartKey();
+    const selectionBlockEndKey = selectionState.getEndKey();
+    const startOffset = selectionState.getStartOffset();
+    const endOffset = selectionState.getEndOffset();
+    const contentState = incomingEditorState.getCurrentContent();
+    const isNoSelection = (selectionBlockStartKey === selectionBlockEndKey && startOffset === endOffset);
 
-      const content = <AutosizeInput
-        // inputRef={
-        //   isFirstWord ?
-        //     ((inputRef) => firstLCWordReference = inputRef) :
-        //     (isLastWord ?
-        //       ((inputRef) => lastLCWordReference = inputRef) : undefined)}
-        // disabled={editorMode !== EDITOR_MODES.edit}
-        // tabIndex={tabIndex}
-        key={key}
-        name={key}
-        value={wordAlignment.word}
-        minWidth={5}
-        inputStyle={{
-          ...theme.typography.body1, // font styling
-          ...wordStyle,
-          margin: theme.spacing(0.25),
-          marginTop: 5, // to keep the text even with the split buttons
-        }}
-        autoFocus={isFocussed}
-        onClick={(event) => handleWordClick(segmentIndex, wordIndex)}
-        onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
-        onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
-        onKeyDown={(event) => handleTabKeyCatch(event, segmentIndex, wordIndex)}
-        onChange={(event) =>
-          updateSegmentsOnChange(event, segment, wordAlignment, segmentIndex, wordIndex)
+    // The block in which the selection starts
+    const block = contentState.getBlockForKey(selectionBlockStartKey);
+    const blockObject: BlockObject<U> = block.toJS();
+    // to fix the character list entity values
+    // the `blockObject`'s `characterList` will have incorrect entity keys.
+    // They will be incremented by 1 for some reason.
+    blockObject.characterList = blockObject.characterList.map((characterProperties) => {
+      const updatedProperties = { ...characterProperties };
+      const { entity } = updatedProperties;
+      if (entity) {
+        let entityKeyNumber = Number(entity);
+        if (typeof entityKeyNumber === 'number') {
+          entityKeyNumber--;
+          updatedProperties.entity = entityKeyNumber.toString();
         }
-      />;
-        return (<React.Fragment key={key}>
-        {!!wordIndex && (
-          <Button
-            aria-label="split-button"
-            size="small"
-            disabled={editorMode !== EDITOR_MODES.split}
-            color={'primary'}
-            variant={isSplitSelected ? 'contained' : undefined}
-            onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
-            className={classes.splitButton}
-          >
-            <ICONS.InlineSplit />
-          </Button>
-        )}
-        {content}
-        {displayFreeTextEditTrigger && (
-          <IconButton
-            aria-label="high-risk-segment-button"
-            size="small"
-            onClick={() => editHighRiskSegment(segmentIndex)}
-            className={classes.highRiskSegmentButton}
-          >
-            <ErrorIcon />
-          </IconButton>
-        )}
-      </React.Fragment>)});
-    return words;
-  };
-
-
-  const getItemSize = (index: number) => rowHeights[index] || 70;
-
-  function renderRow(index: number, style: React.CSSProperties, width: number) {
-    const isRowSelected = segmentMergeIndexes.has(index);
-    const isMergeMode = editorMode === EDITOR_MODES.merge;
-    const isSpeakerMode = editorMode === EDITOR_MODES.speaker;
-    const { speaker, transcript, decoderTranscript } = segments[index];
-
-    const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
-    const displaySpeakerHover = speaker && !isMergeMode;
-    const buttonDisabled = !isMergeMode && !isSpeakerMode;
-    // console.log('rendering row:', index);
-    // if (index === 2) {
-    //   console.log('props', props);
-    //   console.log('style', style);
-    //   console.log('virtualListCache', virtualListCache);
-    // }
-    return (
-      segments[index] &&
-      <div
-        key={index}
-        style={style}
-      >
-        <Grid
-          container
-          spacing={2}
-        >
-          <Grid item>
-            <Tooltip
-              placement='top-start'
-              title={(displaySpeakerHover) ? <Typography variant='h6'>{speaker}</Typography> : ''}
-              arrow={true}
-            >
-              <Box
-                border={1}
-                borderColor={displaySpeakerHover ? theme.table.border : theme.palette.background.paper}
-                borderRadius={5}
-              >
-                <Button
-                  className={buttonDisabled ? classes.segmentTimeButton : undefined}
-                  color={isSpeakerMode ? 'secondary' : 'primary'}
-                  disabled={buttonDisabled}
-                  variant={isRowSelected ? 'contained' : 'outlined'}
-                  onClick={() => {
-                    if (isSpeakerMode) {
-                      openSpeakerAssignDialog(index);
-                    } else {
-                      handleSegmentToMergeClick(index);
-                    }
-                  }}
-                >
-                  {formatSecondsDuration(segments[index].start)}
-                </Button>
-              </Box>
-            </Tooltip>
-          </Grid>
-          <Grid item xs={12} sm container >
-            <Tooltip
-              placement='top-start'
-              title={displayTextChangedHover ? <Typography variant='h6'>{decoderTranscript?.trim()}</Typography> : ''}
-              arrow={false}
-            >
-              <Box
-                border={1}
-                borderColor={displayTextChangedHover ? theme.editor.changes : theme.palette.background.paper}
-                borderRadius={5}
-              >
-                {renderWords(segments[index], index)}
-              </Box>
-            </Tooltip>
-          </Grid>
-        </Grid>
-      </div>
-    );
-  };
-
-  /**
-   * keeps track of where the timer is
-   * - used to keep track of which word is currently playing
-   * - sets the segment index and word index of the currently playing word
-   * @params time
-   */
-  const handlePlaybackTimeChange = (time: number) => {
-    setPlaybackTime(time);
-    calculatePlayingLocation(time);
-    // to allow us to continue to force seeking the same word during playback
-    setTimeToSeekTo(undefined);
-  };
-
-  const handleWordUpdate = (newWordValues: WordsbyRangeStartAndEndIndexes) => {
-    setWords({ ...newWordValues });
-  };
-
-  const createWordTimeSection = (wordToAddTimeTo: Word, timeToCreateAt: number, wordKey: string) => {
-    setWordToCreateTimeFor({ ...wordToAddTimeTo, segmentStartTime: timeToCreateAt, wordKey });
-  };
-
-  const updateWordTimeSection = (wordToAddTimeTo: Word, startTime: number, endTime: number, wordKey: string) => {
-    setWordToUpdateTimeFor({ ...wordToAddTimeTo, segmentStartTime: startTime, segmentEndTime: endTime, wordKey });
-  };
-
-  const handleWordsReset = () => {
-    setWords({});
-    setDeleteAllWordSegments(true);
-  };
-
-  const handleWordOpen = (openWordKey: string) => {
-    setOpenWordKey(openWordKey);
-
-  };
-
-  const handleWordClose = () => setWordsClosed(true);
-
-  /**
-   * to reset the value once the peaks has made the segment uneditable
-   * - for when a word edit popper is closed
-   */
-  const handleSegmentStatusEditChange = () => setWordsClosed(undefined);
-
-  const handleSegmentDelete = () => {
-    setSegmentIdToDelete(undefined);
-    setDeleteAllWordSegments(undefined);
-  };
-
-  const handleAudioSegmentCreate = () => setWordToCreateTimeFor(undefined);
-
-  const handleAudioSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
-
-  const deleteWordTimeSection = (wordKey: string) => {
-    setSegmentIdToDelete(wordKey);
-  };
-
-  const handleSectionChange = (time: Time, wordKey: string) => {
-    setWords(prevWords => {
-      const updatedWords = { ...prevWords };
-      const updatedWord = updatedWords[wordKey];
-      if (updatedWord) {
-        updatedWord.time = time;
       }
-      return { ...updatedWords, [wordKey]: updatedWord };
+      return updatedProperties;
     });
+    const blockText = blockObject.text;
+
+    const cursorLocationWithinBlock = selectionState.getAnchorOffset();
+    const characterPropertiesAtCursor = blockObject.characterList[cursorLocationWithinBlock];
+
+    let characterAtCursor = blockText[cursorLocationWithinBlock];
+    let characterPropertiesBeforeCursor = {} as CharacterProperties;
+    let isEndOfBlock = false;
+    let isStartOfBlock = false;
+    let characterBeforeCursor = '';
+    // to handle selecting the end of a block
+    if (characterAtCursor === undefined ||
+      characterPropertiesAtCursor === undefined ||
+      blockObject.characterList.length <= cursorLocationWithinBlock) {
+      isEndOfBlock = true;
+      characterAtCursor = '';
+    }
+    if (cursorLocationWithinBlock === 0) {
+      isStartOfBlock = true;
+    } else {
+      characterBeforeCursor = blockText[cursorLocationWithinBlock - 1];
+      characterPropertiesBeforeCursor = blockObject.characterList[cursorLocationWithinBlock - 1];
+    }
+
+    const characterDetailsAtCursor: CharacterDetails = {
+      character: characterAtCursor,
+      properties: characterPropertiesAtCursor,
+    };
+    const characterDetailsBeforeCursor: CharacterDetails = {
+      character: characterBeforeCursor,
+      properties: characterPropertiesBeforeCursor,
+    };
+    let entity: RawDraftEntity<T> | null = null;
+
+    // Entity key at the start selection
+    const entityKey = block.getEntityAt(startOffset);
+    if (entityKey) {
+      // The actual entity instance
+      const entityInstance = contentState.getEntity(entityKey);
+      const type = entityInstance.getType();
+      const mutability = entityInstance.getMutability();
+      const data: T = entityInstance.getData();
+      entity = {
+        type,
+        mutability,
+        data,
+      };
+    }
+
+    const cursorContent = {
+      isNoSelection,
+      entity,
+      isEndOfBlock,
+      isStartOfBlock,
+      characterDetailsBeforeCursor,
+      characterDetailsAtCursor,
+      cursorOffset: cursorLocationWithinBlock,
+      blockObject,
+    };
+    return cursorContent;
   };
 
-
-
-  if (voiceDataLoading) {
-    return <SiteLoadingIndicator />;
-  }
-
-  if (initialFetchDone && noAssignedData && !noRemainingContent) {
-    return <EditorFetchButton onClick={fetchMoreVoiceData} />;
-  }
-
-  if (noRemainingContent || !voiceData || !projectId) {
-    return <NotFound text={translate('editor.nothingToTranscribe')} />;
-  }
-
-  const disabledControls = getDisabledControls();
+  const updateBlockSegmentData = (contentState: ContentState, blockKey: string, segment: Segment): ContentState => {
+    const emptySelectionAtBlock = SelectionState.createEmpty(blockKey);
+    const updatedDataMap = Map({ segment });
+    const updatedContentState = Modifier.setBlockData(contentState, emptySelectionAtBlock, updatedDataMap);
+    return updatedContentState
+  }  
 
   /**
-   * Allows us to add padding to the top and bottom of the list
-   * - Overrides the styling by adding some height
-   * - Required to allow us to keep track of the scroll location
+   * builds the callback to update the manually merged block with the updated segment Id response
    */
-  // eslint-disable-next-line react/display-name
-  const listInnerElementType = React.forwardRef(({ style, ...rest }: any, ref) => (
-    <div
-      ref={ref}
-      style={{
-        ...style,
-        height: `${parseFloat(style.height as string) + DEFAULT_PADDING_SIZE * 2}px`
-      }}
-      {...rest}
-    />
-  ));
+  const buildMergeSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
+    const onMergeSegmentResponse = (updatedSegment: Segment) => {
+      const blockKey = targetBlock.key;
+      const blockSegment = targetBlock.data.segment;
+      // get the index using the old segment id
+      const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
+      if (typeof blockSegmentIndex !== 'number') {
+        log({
+          file: `Editor.tsx`,
+          caller: `onMergeSegmentResponse`,
+          value: 'Failed to get index of segment to update',
+          important: true,
+        });
+        return;
+      }
+      // update with the new segment Id
+      replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
 
-  const test = <AutoSizer>
-  {({ height, width }) => {
-    return (
-      <List
-      key={counter}
-      ref={(ref) => {
-        // console.log('ref', ref);
-        if (ref) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          //@ts-ignore
-          testRef = ref;
-          // console.log('INNER testRef', testRef);
+      setBlockSegmentId(blockKey, updatedSegment.id);
+      setSegmentIdBlockKey(updatedSegment.id, blockKey);
+      const contentState = incomingEditorState.getCurrentContent();
+      const updatedContentState = updateBlockSegmentData(contentState, blockKey, updatedSegment);
+
+      const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
+      const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+      const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
+      setEditorState(allowUndoEditorState);
+    };
+    return onMergeSegmentResponse;
+  };
+
+  /**
+   * builds the callback to the manually split blocks with the updated segment Ids response
+   */
+  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, wordSplitIndex: number, incomingEditorState: EditorState) => {
+    const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
+      const [updatedSegment, newSegment] = updatedSegments;
+      const blockKey = targetBlock.key;
+      const newBlockKey = newBlock.key;
+      const blockSegment = targetBlock.data.segment;
+      // get the index using the old segment id
+      const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
+      if (typeof blockSegmentIndex !== 'number') {
+        log({
+          file: `Editor.tsx`,
+          caller: `onSplitSegmentResponse`,
+          value: 'Failed to get index of segment to update',
+          important: true,
+        });
+        return;
+      }
+      // update with the new segment Id
+      replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
+
+      const newBlockSegmentIndex = blockSegmentIndex + 1;
+      // set the new block segment Id
+      replaceSegmentIdAtIndex(newBlockSegmentIndex, newSegment.id);
+
+
+      setBlockSegmentId(blockKey, updatedSegment.id);
+      setBlockSegmentId(newBlockKey, newSegment.id);
+      setSegmentIdBlockKey(updatedSegment.id, blockKey);
+      setSegmentIdBlockKey(newSegment.id, newBlockKey);
+
+      const contentState = incomingEditorState.getCurrentContent();
+      // update segment data
+      const updatedContentState = updateBlockSegmentData(contentState, blockKey, updatedSegment);
+      const newContentState = updateBlockSegmentData(updatedContentState, newBlockKey, newSegment);
+
+      const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
+      const updatedContentEditorState = EditorState.push(noUndoEditorState, newContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+      const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
+      setEditorState(allowUndoEditorState);
+    };
+    return onSplitSegmentResponse;
+  };
+
+  const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
+    console.log('command', command);
+    //!
+    //TODO
+    //!
+    //TODO
+    // MOVE THESE TO A SWITCH
+    //!
+    //TODO
+    //!
+    //TODO
+    if (command === KEY_COMMANDS['toggle-popups']) {
+      setShowPopups(prevValue => !prevValue);
+      // we need to rerender the block components to toggle the popups
+      forceRerender(incomingEditorState);
+    }
+    // don't allow if at end
+    if (command === KEY_COMMANDS.delete || command === KEY_COMMANDS['delete-word']) {
+      const { isEndOfBlock } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      if (isEndOfBlock) {
+        return HANDLE_VALUES.handled;
+      }
+    }
+    // don't allow if at start
+    if (command === KEY_COMMANDS.backspace ||
+      command === KEY_COMMANDS['backspace-word'] ||
+      command === KEY_COMMANDS['backspace-to-start-of-line']) {
+      const { isStartOfBlock } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      if (isStartOfBlock) {
+        return HANDLE_VALUES.handled;
+      }
+    }
+    if (command === KEY_COMMANDS['merge-segments-back']) {
+      const { isStartOfBlock, blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      const blockSegment = blockObject.data.segment;
+      const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
+      if (isStartOfBlock && !loading && typeof blockSegmentIndex === 'number') {
+        const contentState = incomingEditorState.getCurrentContent();
+        // get the block before this one
+        const blockBefore = contentState.getBlockBefore(blockObject.key);
+
+        // if we are already on the first block
+        if (!blockBefore) {
+          return HANDLE_VALUES.handled;
         }
-        if (!listRef.current) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          //@ts-ignore
-          listRef.current = ref;
-        }
-      }}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        //@ts-ignore
-        // ref={(ref) => listRef = ref}
-        //   ref={(lref: HTMLInputElement) => {
-        //     if (lref !== null) {
-        // // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // //@ts-ignore
-        //       listRef.current = lref;
-        //     }
-        //   }}
-        height={height}
-        itemCount={segments.length}
-        itemSize={() => 120}
-        // itemSize={getSize}
-        innerElementType={listInnerElementType}
-        // itemSize={getItemSize}
-      width={width}
-      >
-        {(listProps: ListChildComponentProps) => {
-          // console.log(listProps.index, listProps);
-          const {index, style} = listProps;
-          const segmentIsPlaying = currentPlayingLocation[0] === index;
-          return (
-            <div
-              key={index}
-              {...listProps}
-              // to add padding to the list and keep track of the scroll location
-              style={{
-                ...style,
-                top: `${parseFloat(style.top as string) + DEFAULT_PADDING_SIZE}px`
-              }}
-            >
-              <MemoizedSegmentRow
-                segmentIsPlaying={segmentIsPlaying}
-                segments={segments}
-                editorMode={editorMode}
-                segmentMergeIndexes={segmentMergeIndexes}
-                currentHeight={getSize(index)}
-                width={width}
-                openSpeakerAssignDialog={openSpeakerAssignDialog}
-                handleSegmentToMergeClick={handleSegmentToMergeClick}
-                setSize={setSize}
-                segmentIndex={index}
-                splitLocation={splitLocation}
-                getWordFocussed={getWordFocussed}
-                currentPlayingLocation={currentPlayingLocation}
-                handleSplitLocationPress={handleSplitLocationPress}
-                editHighRiskSegment={editHighRiskSegment}
-                handleWordClick={handleWordClick}
-                handleFocus={handleFocus}
-                handleBlur={handleBlur}
-                handleTabKeyCatch={handleTabKeyCatch}
-                updateSegmentsOnChange={updateSegmentsOnChange}
-              />
-            </div>
+
+        const blockBeforeObject: BlockObject<SegmentBlockData> = blockBefore.toJS();
+        const blockBeforeSegment = blockBeforeObject.data.segment;
+        const blockBeforeSegmentIndex = findIndexOfSegmentId(blockBeforeSegment.id);
+        if (typeof blockSegmentIndex === 'number' && typeof blockBeforeSegmentIndex === 'number') {
+
+          // handle the split
+
+          // add empty space to block
+          let beforeEndOffset = blockBeforeObject.characterList.length;
+          if (beforeEndOffset < 0) {
+            beforeEndOffset = 0;
+          }
+          const endOfBlockSelection = new SelectionState({
+            anchorKey: blockBeforeObject.key,
+            anchorOffset: beforeEndOffset,
+            focusKey: blockBeforeObject.key,
+            focusOffset: beforeEndOffset,
+          });
+          const contentStateWithSpace = Modifier.insertText(
+            contentState,
+            endOfBlockSelection,
+            ' ',
           );
-        }}
-      </List>
-    );
-  }}
-  </AutoSizer>
-  
-  return (
-    <>
-      <EditorControls
-        onModeChange={handleModeChange}
-        onAction={handleActionClick}
-        editorMode={editorMode}
-        disabledControls={disabledControls}
-        loading={saveSegmentsLoading || confirmSegmentsLoading}
-      />
-      {alreadyConfirmed && (<StarRating
-        voiceData={voiceData}
-        projectId={projectId}
-      />)}
-      <Container
-        className={classes.container}
-      >
-        <Paper
-          style={{ marginTop: 25 }}
-          elevation={5}
-        >
-          <div style={{
-            padding: 15,
-            // height: 500,
-            height: windowSize.height && (windowSize?.height - 384),
-            minHeight: 250,
-          }}>
-            {segmentsLoading ? <BulletList /> :
-              (typeof highRiskSegmentIndex === 'number' ?
-                <HighRiskSegmentEdit
-                  words={words}
-                  updateWords={handleWordUpdate}
-                  createWordTimeSection={createWordTimeSection}
-                  updateWordTimeSection={updateWordTimeSection}
-                  deleteWordTimeSection={deleteWordTimeSection}
-                  setDisabledTimes={handleDisabledTimesSet}
-                  onWordOpen={handleWordOpen}
-                  onWordClose={handleWordClose}
-                  onReset={handleWordsReset}
-                  onClose={stopHighRiskSegmentEdit}
-                  onSuccess={handleSegmentUpdate}
-                  segments={segments}
-                  segmentIndex={highRiskSegmentIndex}
-                  totalLength={voiceData.length}
-                  projectId={projectId}
-                  dataId={voiceData.id}
-                />
-                : <MyEditor
-                    segments={segments}
-                    playingLocation={generateWordKey(currentPlayingLocation)}
-                  />)
+
+          //  merge the blocks in the editor
+          const currentEndOffset = blockObject.characterList.length;
+          const currentBlockToMoveSelection = new SelectionState({
+            anchorKey: blockObject.key,
+            anchorOffset: 0,
+            focusKey: blockObject.key,
+            focusOffset: currentEndOffset + 1,
+          });
+          // adding one to account for the inserted empty space
+          const updatedBeforeEndOffsetAfterSpace = beforeEndOffset + 1;
+          const endOfBlockSelectionAfterUpdate = new SelectionState({
+            anchorKey: blockBeforeObject.key,
+            anchorOffset: updatedBeforeEndOffsetAfterSpace,
+            focusKey: blockBeforeObject.key,
+            focusOffset: updatedBeforeEndOffsetAfterSpace,
+          });
+          const contentStateAfterMove = Modifier.moveText(
+            contentStateWithSpace,
+            currentBlockToMoveSelection,
+            endOfBlockSelectionAfterUpdate,
+          );
+
+          // to handle removing the moved block completely
+          // moving will leave the moved block with empty text
+
+          // adding one to account for the moved text
+          const updatedBeforeEndOffsetAfterMove = updatedBeforeEndOffsetAfterSpace + blockObject.text.length;
+          const remainingBlockToRemove = new SelectionState({
+            anchorKey: blockBeforeObject.key,
+            anchorOffset: updatedBeforeEndOffsetAfterMove,
+            focusKey: blockObject.key,
+            focusOffset: 0,
+          });
+          const contentStateAfterRemove = Modifier.removeRange(
+            contentStateAfterMove,
+            remainingBlockToRemove,
+            REMOVAL_DIRECTION.backward,
+          );
+
+          // update with new content
+          const updatedEditorState = EditorState.push(incomingEditorState, contentStateAfterRemove, EDITOR_CHANGE_TYPE['backspace-character']);
+          // set the cursor selection to the correct location
+          const updatedEditorStateWithCorrectSelection = EditorState.forceSelection(
+            updatedEditorState,
+            endOfBlockSelectionAfterUpdate,
+          );
+
+          setEditorState(updatedEditorStateWithCorrectSelection);
+
+          const mergeCallback = buildMergeSegmentCallback(blockBeforeObject, updatedEditorStateWithCorrectSelection);
+
+          // update the word id bank and segment id array
+          removeSegmentIdAtIndexAndShift(blockSegmentIndex);
+          // send the merge request
+          mergeSegments(blockBeforeSegmentIndex, blockSegmentIndex, mergeCallback);
+        }
+
+      }
+      return HANDLE_VALUES.handled;
+    }
+
+    const newState = RichUtils.handleKeyCommand(incomingEditorState, command);
+    if (newState) {
+      setEditorState(newState);
+      return HANDLE_VALUES.handled;
+    }
+    return HANDLE_VALUES['not-handled'];
+  };
+
+  const handleChange = (editorState: EditorState) => {
+    if (!loading) {
+      setEditorState(editorState);
+    }
+  };
+
+  const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
+    // only split when holding shift
+    if (event.shiftKey && !loading) {
+
+      const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      const {
+        isNoSelection,
+        entity,
+        isEndOfBlock,
+        isStartOfBlock,
+        characterDetailsBeforeCursor,
+        characterDetailsAtCursor,
+        cursorOffset,
+        blockObject,
+      } = cursorContent;
+
+      // check if we are at a valid location for splitting segments
+      if (isEndOfBlock || isStartOfBlock) {
+        return HANDLE_VALUES.handled;
+      }
+
+      const beforeEntityId = characterDetailsBeforeCursor.properties?.entity;
+      const afterEntityId = characterDetailsAtCursor.properties?.entity;
+      const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
+
+      if (isWithinSameEntity) {
+        return HANDLE_VALUES.handled;
+      }
+
+      let validEntity = entity;
+
+      // to keep track of how far we had to travel and how many 
+      // characters to erase if we need to find a valid entity
+      let dinstanceFromCursor = 0;
+
+      // no entity at cursor - we must find the nearest entity
+      if (!validEntity) {
+        // ensure that we are at a valid split point
+        const characterAtCursor = blockObject.text[cursorOffset];
+        if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+          return HANDLE_VALUES.handled;
+        }
+        const characterListToCheck = blockObject.characterList.slice(cursorOffset);
+        const charactersToCheck = blockObject.text.slice(cursorOffset);
+        let splitEntityKeyString: string | null = null;
+        for (let i = 0; i < characterListToCheck.length; i++) {
+          const characterProperties = characterListToCheck[i];
+          const character = charactersToCheck[i];
+          if (characterProperties.entity) {
+            splitEntityKeyString = characterProperties.entity;
+            dinstanceFromCursor = i;
+            break;
+          }
+          // we have invalid content between the cursor and the next valid word
+          if (!SPLITTABLE_CHARACTERS.includes(character)) {
+            break;
+          }
+        }
+        const splitEntityKey = Number(splitEntityKeyString);
+        // we hit the end before finding a valid entity
+        if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
+          return HANDLE_VALUES.handled;
+        }
+        const splitEntity = getEntityByKey(splitEntityKeyString);
+
+        validEntity = { ...splitEntity };
+      }
+
+      // to check that we still have a valid entity to use
+      if (validEntity) {
+        // use the entity data to get split location
+        const { wordKey } = validEntity.data;
+        const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
+        const blockSegment = blockObject.data.segment;
+        const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
+        if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
+          let contentStateToSplit = incomingEditorState.getCurrentContent();
+          let characterBeforeOffset = cursorOffset;
+
+          const deleteEndOffset = cursorOffset + dinstanceFromCursor;
+          const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
+          // remove any split characters that may have existed before
+          // if space, determine if the next character to the 
+          // left is a split character otherwise determine how
+          // many empty space characters to remove
+          if (shouldTrimBefore) {
+            let numberOfCharactersToRemove = 1;
+            if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
+              const { text } = blockObject;
+              const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
+              for (let i = startingOffsetToCheck; i >= 0; i--) {
+                const character = text[i];
+                if (character === ' ') {
+                  numberOfCharactersToRemove++;
+                } else if (character === SPLIT_CHARACTER) {
+                  numberOfCharactersToRemove++;
+                  break;
+                } else {
+                  break;
+                }
+              }
             }
-            
-          </div>
-          {!!voiceData.length && <ErrorBoundary
-            key={voiceData.id}
-            FallbackComponent={PageErrorFallback}
-          >
-            <AudioPlayer
-              key={voiceData.id}
-              url={voiceData.audioUrl}
-              length={voiceData.length}
-              highRiskEditMode={!!highRiskSegmentIndex}
-              timeToSeekTo={timeToSeekTo}
-              disabledTimes={disabledTimes}
-              openWordKey={openWordKey}
-              segmentIdToDelete={segmentIdToDelete}
-              wordsClosed={wordsClosed}
-              deleteAllWordSegments={deleteAllWordSegments}
-              onSegmentDelete={handleSegmentDelete}
-              onSegmentCreate={handleAudioSegmentCreate}
-              onSegmentUpdate={handleAudioSegmentUpdate}
-              onSegmentStatusEditChange={handleSegmentStatusEditChange}
-              wordToCreateTimeFor={wordToCreateTimeFor}
-              wordToUpdateTimeFor={wordToUpdateTimeFor}
-              onTimeChange={handlePlaybackTimeChange}
-              onSectionChange={handleSectionChange}
-              onReady={handlePlayerRendered}
-            />
-          </ErrorBoundary>}
-        </Paper>
-      </Container >
-      <ConfirmationDialog
-        destructive
-        titleText={`${translate('editor.discardChanges')}?`}
-        submitText={translate('common.discard')}
-        open={discardDialogOpen}
-        onSubmit={discardWordChanges}
-        onCancel={closeDiscardDialog}
-      />
-      <ConfirmationDialog
-        titleText={`${translate('editor.confirmTranscript')}?`}
-        submitText={translate('editor.confirm')}
-        open={confirmDialogOpen}
-        onSubmit={confirmData}
-        onCancel={closeConfirmDialog}
-      />
-      <AssignSpeakerDialog
-        projectId={projectId}
-        dataId={voiceData.id}
-        segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
-        segmentIndex={segmentIndexToAssignSpeakerTo}
-        open={segmentIndexToAssignSpeakerTo !== undefined}
-        onClose={closeSpeakerAssignDialog}
-        onSuccess={handleSegmentUpdate}
-      />
-    </>
+            characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
+          }
+          // to remove if we have valid reason to
+          // remove any empty space between the cursor and any found entity
+          // remove any empty space before the cursor
+          if (shouldTrimBefore || dinstanceFromCursor) {
+            const rangeToRemove = new SelectionState({
+              anchorKey: blockObject.key,
+              anchorOffset: characterBeforeOffset,
+              focusKey: blockObject.key,
+              focusOffset: deleteEndOffset,
+            });
+            const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
+            contentStateToSplit = contentStateWithRemovedCharaters;
+          }
+
+          // handle the split
+          const selectionToSplit = new SelectionState({
+            anchorKey: blockObject.key,
+            anchorOffset: characterBeforeOffset,
+            focusKey: blockObject.key,
+            focusOffset: characterBeforeOffset,
+          });
+          const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
+          const editorStateAfterSplit = EditorState.push(incomingEditorState, splitContentState, EDITOR_CHANGE_TYPE['split-block']);
+          // get the newly created block
+          const newBlock = splitContentState.getBlockAfter(blockObject.key);
+          const newBlockKey = newBlock.getKey();
+          const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
+
+          // set cursor postiion
+          const newBlockCursorPosition = new SelectionState({
+            anchorKey: newBlockKey,
+            anchorOffset: 0,
+            focusKey: newBlockKey,
+            focusOffset: 0,
+          });
+          const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
+          setEditorState(editorStateWithCursorMoved);
+
+          const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
+
+          // update the word id bank and segment id array
+          insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
+
+          splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
+
+          return HANDLE_VALUES.handled;
+        }
+
+      }
+
+    }
+    return HANDLE_VALUES.handled;
+
+  };
+
+  const handleFocus = () => {
+    console.log('handleFocus');
+  };
+
+  const handleBlur = () => {
+    console.log('handleBlur');
+  };
+
+  const handleClickInsideEditor = () => {
+    const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>();
+    console.log('handleClickInsideEditor', entity);
+    if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
+      const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
+      onWordClick(segmentAndWordIndex);
+    }
+  };
+
+  // const handleKeyDown = (event: KeyboardEvent) => {
+  //   console.log('event.key', event.key);
+  //   console.log('event.key === Alt', event.key === 'Alt');
+  //   if(event.key === 'Alt'){
+  //     setShowPopups(true);
+  //   }
+  // }
+
+  // const handleKeyUp = (event: KeyboardEvent) => {
+  //   if(event.key === 'Alt'){
+  //     setShowPopups(false);
+  //   }
+  // }
+
+  // // Add window keypress listeners
+  // React.useEffect(() => {
+  //   window.addEventListener('keydown', handleKeyDown);
+  //   window.addEventListener('keyup', handleKeyUp);
+  //   // Remove event listeners on cleanup
+  //   return () => {
+  //     window.removeEventListener('keydown', handleKeyDown);
+  //     window.removeEventListener('keyup', handleKeyUp);
+  //   };
+  // }, []); // Empty array ensures that effect is only run on mount and unmount
+
+  React.useEffect(() => {
+    if(responseFromParent && responseFromParent instanceof Object){
+      onParentResponseHandled();
+      const {type, payload} = responseFromParent;
+      console.log('inside', {type, payload});
+      const {segment} = payload;
+      const currentContentState = editorState.getCurrentContent();
+      let blockKey: string | undefined;
+      let updatedContentState: ContentState | undefined;
+      switch (type) {
+        case PARENT_METHOD_TYPES.speaker:
+          blockKey = getBlockKeyFromSegmentId(segment.id);
+          console.log('blockKey', blockKey);
+          if(blockKey){
+            updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
+          }
+          
+          break;
+      
+        default:
+          break;
+      }
+      console.log('updatedContentState', updatedContentState);
+      if(updatedContentState){
+        console.log('updatedContentState.toJS()', updatedContentState.toJS());
+        const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
+        const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+        const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
+        setEditorState(allowUndoEditorState);
+      }
+    }
+  }, [responseFromParent]);
+
+  //!
+  //TODO
+  // don't let user to input bullet character
+
+  return (
+    <div
+      onClick={handleClickInsideEditor}
+      style={{
+        height,
+        overflowY: 'auto',
+      }}
+    >
+      {ready &&
+        <DraftEditor
+          ref={editorRef}
+          editorState={editorState}
+          customStyleMap={styleMap}
+          keyBindingFn={customKeyBindingFunction}
+          blockRendererFn={customBlockRenderer}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          handleReturn={handleReturnPress}
+          handleKeyCommand={handleKeyCommand}
+        />
+      }
+    </div>
   );
-}
+};
