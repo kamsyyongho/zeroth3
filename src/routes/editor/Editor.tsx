@@ -210,7 +210,9 @@ const decorators = new CompositeDecorator([
 
 interface EditorProps {
   height?: number;
+  /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
+  /** let the parent know that we've handled the request */
   onParentResponseHandled: () => void;
   loading?: boolean;
   segments: Segment[];
@@ -605,8 +607,8 @@ export function Editor(props: EditorProps) {
     const emptySelectionAtBlock = SelectionState.createEmpty(blockKey);
     const updatedDataMap = Map({ segment });
     const updatedContentState = Modifier.setBlockData(contentState, emptySelectionAtBlock, updatedDataMap);
-    return updatedContentState
-  }  
+    return updatedContentState;
+  };
 
   /**
    * builds the callback to update the manually merged block with the updated segment Id response
@@ -1009,56 +1011,28 @@ export function Editor(props: EditorProps) {
     }
   };
 
-  // const handleKeyDown = (event: KeyboardEvent) => {
-  //   console.log('event.key', event.key);
-  //   console.log('event.key === Alt', event.key === 'Alt');
-  //   if(event.key === 'Alt'){
-  //     setShowPopups(true);
-  //   }
-  // }
-
-  // const handleKeyUp = (event: KeyboardEvent) => {
-  //   if(event.key === 'Alt'){
-  //     setShowPopups(false);
-  //   }
-  // }
-
-  // // Add window keypress listeners
-  // React.useEffect(() => {
-  //   window.addEventListener('keydown', handleKeyDown);
-  //   window.addEventListener('keyup', handleKeyUp);
-  //   // Remove event listeners on cleanup
-  //   return () => {
-  //     window.removeEventListener('keydown', handleKeyDown);
-  //     window.removeEventListener('keyup', handleKeyUp);
-  //   };
-  // }, []); // Empty array ensures that effect is only run on mount and unmount
-
   React.useEffect(() => {
-    if(responseFromParent && responseFromParent instanceof Object){
+    if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
-      const {type, payload} = responseFromParent;
-      console.log('inside', {type, payload});
-      const {segment} = payload;
+      const { type, payload } = responseFromParent;
+      const { segment } = payload;
       const currentContentState = editorState.getCurrentContent();
       let blockKey: string | undefined;
       let updatedContentState: ContentState | undefined;
       switch (type) {
         case PARENT_METHOD_TYPES.speaker:
           blockKey = getBlockKeyFromSegmentId(segment.id);
-          console.log('blockKey', blockKey);
-          if(blockKey){
+          if (blockKey) {
             updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
           }
-          
+
           break;
-      
+
         default:
           break;
       }
-      console.log('updatedContentState', updatedContentState);
-      if(updatedContentState){
-        console.log('updatedContentState.toJS()', updatedContentState.toJS());
+      // set our updated state
+      if (updatedContentState) {
         const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
         const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
         const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });

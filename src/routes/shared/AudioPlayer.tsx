@@ -72,6 +72,7 @@ interface AudioPlayerProps {
   openWordKey?: string;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
+  onAutoSeekToggle: (value: boolean) => void;
   onTimeChange: (timeInSeconds: number) => void;
   onSectionChange: (time: Time, wordKey: string) => void;
   onSegmentDelete: () => void;
@@ -131,6 +132,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const { url,
     length,
     onTimeChange,
+    onAutoSeekToggle,
     onSectionChange,
     highRiskEditMode,
     timeToSeekTo,
@@ -173,7 +175,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
     handlePause();
   };
 
-  const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => !prevValue);
+  const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => {
+    onAutoSeekToggle(!prevValue);
+    return !prevValue;
+  });
 
   const displayError = (errorText: string) => {
     enqueueSnackbar(errorText, { variant: 'error', preventDuplicate: true });
@@ -187,6 +192,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer.pause();
       PeaksPlayer.player.seek(0);
       setCurrentTimeDisplay(DEFAULT_EMPTY_TIME);
+      if (onTimeChange && typeof onTimeChange === 'function') {
+        onTimeChange(0);
+      }
     } catch (error) {
       displayError(error.message);
     }
@@ -1031,7 +1039,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         '1.0⨉'
       }
     </Button>
-    <Button aria-label="seek-lock" onClick={toggleMute} >
+    <Button aria-label="mute" onClick={toggleMute} >
       {isMute ?
         (<VolumeOffIcon />)
         :
