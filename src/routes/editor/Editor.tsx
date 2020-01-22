@@ -1,14 +1,33 @@
+import { Backdrop } from '@material-ui/core';
+import Card from '@material-ui/core/Card';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import { useSnackbar, VariantType } from 'notistack';
 import React from 'react';
+import Draggable from 'react-draggable';
+import { CustomTheme } from '../../theme/index';
 import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, INLINE_STYLE_TYPE, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment } from '../../types';
 import { BlockInfo, BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, EntityRangeByEntityKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, TargetSelection, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { generateWordKeyString, WordKeyStore } from '../../util/misc';
+import { EntityContent } from './components/EntityContent';
 import { SegmentBlock } from './components/SegmentBlock';
 import { ParentMethodResponse, PARENT_METHOD_TYPES } from './EditorPage';
+
+
+const useStyles = makeStyles((theme: CustomTheme) =>
+  createStyles({
+    backdrop: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: theme.shadows[1],
+      borderTopLeftRadius: 4,
+      borderTopRightRadius: 4,
+    },
+  }),
+);
+
 
 const wordKeyBank = new WordKeyStore();
 
@@ -86,8 +105,6 @@ const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordK
 const SPLIT_CHARACTER = '•';
 const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
 
-const segmentIndexesWaitingForResponses = new Set<number>();
-
 
 let entityKeyCounter = 0;
 
@@ -105,68 +122,6 @@ const styleMap: DraftStyleMap = {
   },
 };
 
-const styles: { [x: string]: React.CSSProperties; } = {
-  editor: {
-    border: '1px solid #ccc',
-    cursor: 'text',
-    minHeight: 80,
-    padding: 10
-  },
-  button: {
-    marginTop: 10,
-    textAlign: 'center'
-  },
-  immutable: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    padding: '2px 0'
-  },
-  mutable: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    // backgroundColor: 'rgba(204, 204, 255, 1.0)',
-    padding: '2px 0'
-  },
-  segmented: {
-    backgroundColor: 'rgba(248, 222, 126, 1.0)',
-    padding: '2px 0'
-  }
-};
-
-function getDecoratedStyle(mutability: DraftEntityMutability) {
-  switch (mutability) {
-    case MUTABILITY_TYPE.IMMUTABLE:
-      return styles.immutable;
-    case MUTABILITY_TYPE.MUTABLE:
-      return styles.mutable;
-    case MUTABILITY_TYPE.SEGMENTED:
-      return styles.segmented;
-    default:
-      return null;
-  }
-}
-
-interface TokenSpanProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> {
-  contentState: ContentState,
-  offsetkey: string,
-  entityKey: string,
-}
-
-const TokenSpan = (props: TokenSpanProps) => {
-  const tokenEntity = props.contentState.getEntity(props.entityKey);
-  const mutability = tokenEntity.getMutability();
-  const targetData: WordAlignmentEntityData = tokenEntity.getData();
-  const { wordAlignment } = targetData;
-  const { confidence } = wordAlignment;
-  const LC = confidence < 0.8;
-  let style = getDecoratedStyle(mutability) ?? {};
-  if (LC) {
-    style = { ...style, backgroundColor: 'rgba(248, 222, 126, 1.0)' };
-  }
-  return (
-    <span data-offset-key={props.offsetkey} style={style}>
-      {props.children}
-    </span>
-  );
-};
 
 function getEntityStrategy(mutability: DraftEntityMutability) {
   return function (contentBlock: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) {
@@ -199,13 +154,13 @@ function customKeyBindingFunction(event: React.KeyboardEvent): string {
 const decorators = new CompositeDecorator([
   {
     strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
-    component: TokenSpan
+    component: EntityContent
   }, {
     strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
-    component: TokenSpan
+    component: EntityContent
   }, {
     strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
-    component: TokenSpan
+    component: EntityContent
   }
 ]);
 
@@ -240,16 +195,19 @@ export function Editor(props: EditorProps) {
     mergeSegments,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
+  const classes = useStyles();
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty()
   );
   const [ready, setReady] = React.useState(false);
+  const [overlayStyle, setOverlayStyle] = React.useState<React.CSSProperties | undefined>();
+  const [readOnlyEditorState, setReadOnlyEditorState] = React.useState<EditorState | undefined>();
   const [showPopups, setShowPopups] = React.useState(false);
   const [previousSelectedCursorContent, setPreviousSelectedCursorContent] = React.useState<CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined>();
-  const [previousEditorState, setPreviousEditorState] = React.useState<EditorState | undefined>();
   const [previousSelectionState, setPreviousSelectionState] = React.useState<SelectionState | undefined>();
 
   const editorRef = React.useRef<DraftEditor | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
 
   const focusEditor = () => {
     editorRef !== null && editorRef.current && editorRef.current.focus();
@@ -343,7 +301,7 @@ export function Editor(props: EditorProps) {
         segment,
       };
       newBlock.data = data;
-      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.replace('|', ' ')).join('•').trim();
+      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join('•').trim();
       transcript = transcript.split("• ").join(' ').trim();
       newBlock.text = transcript;
       let offsetPosition = 0;
@@ -352,8 +310,11 @@ export function Editor(props: EditorProps) {
         const wordKey = wordKeyBank.generateKey(wordLocation);
         entityKeyToWordKeyMap[entityKeyCounter] = wordKey;
         wordKeyToEntityKeyMap[wordKey] = entityKeyCounter;
-        createEntity(wordAlignment, wordKey, entityKeyCounter);
-        const { word } = wordAlignment;
+        // in case there are spaces that were introduced at any point
+        const trimmedWordAlignment = { ...wordAlignment };
+        trimmedWordAlignment.word = trimmedWordAlignment.word.trim();
+        createEntity(trimmedWordAlignment, wordKey, entityKeyCounter);
+        const { word } = trimmedWordAlignment;
         const filteredWord = word.replace('|', '');
         const wordLength = filteredWord.length;
         const wordStartIndex = transcript.indexOf(filteredWord);
@@ -659,6 +620,63 @@ export function Editor(props: EditorProps) {
     return cursorContent;
   };
 
+  const setEntityAtSelection = (draftEntity: RawDraftEntity, incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    const { type, mutability, data } = draftEntity;
+    const contentState = incomingEditorState.getCurrentContent();
+
+    // Returns ContentState record updated to include the newly created DraftEntity record in it's EntityMap.
+    let newContentState = contentState.createEntity(type, mutability, { url: data });
+
+    // Call getLastCreatedEntityKey to get the key of the newly created DraftEntity record.
+    const entityKey = contentState.getLastCreatedEntityKey();
+
+    ////// update stores
+
+    // Get the current selection
+    const selectionState = incomingEditorState.getSelection();
+
+    // Add the created entity to the current selection, for a new contentState
+    newContentState = Modifier.applyEntity(
+      newContentState,
+      selectionState,
+      entityKey
+    );
+
+    // Add newContentState to the existing editorState, for a new editorState
+    const newEditorState = EditorState.push(
+      incomingEditorState,
+      newContentState,
+      'apply-entity'
+    );
+
+    setReadOnlyEditorState(newEditorState);
+
+    setEditorState(newEditorState);
+  };
+
+  const removeEntitiesAtSelection = (incomingEditorState?: EditorState, selectionState?: SelectionState) => {
+    if(!incomingEditorState){
+      incomingEditorState = editorState;
+    }
+    const contentState = incomingEditorState.getCurrentContent();
+
+    if(!selectionState){
+      selectionState = incomingEditorState.getSelection();
+    }
+
+    //Unlink Entity
+    const newContentState = Modifier.applyEntity(contentState, selectionState, null);
+    const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
+    const updatedEditorState = EditorState.push(noUndoEditorState, newContentState, EDITOR_CHANGE_TYPE['apply-entity'])
+    const undoableEditorState = EditorState.set(updatedEditorState, { allowUndo: true });
+    
+    setEditorState(undoableEditorState)
+    setReadOnlyEditorState(undefined);
+  }
+
   const updateBlockSegmentData = (contentState: ContentState, blockKey: string, segment: Segment): ContentState => {
     const emptySelectionAtBlock = SelectionState.createEmpty(blockKey);
     const updatedDataMap = Map({ segment });
@@ -696,6 +714,11 @@ export function Editor(props: EditorProps) {
       const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
       const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
       setEditorState(allowUndoEditorState);
+
+      // to account for the previous blocks and keys changing after success
+      const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(allowUndoEditorState);
+      setPreviousSelectionState(allowUndoEditorState.getSelection());
+      setPreviousSelectedCursorContent(cursorContent);
     };
     return onMergeSegmentResponse;
   };
@@ -742,6 +765,11 @@ export function Editor(props: EditorProps) {
       const updatedContentEditorState = EditorState.push(noUndoEditorState, newContentState, EDITOR_CHANGE_TYPE['change-block-data']);
       const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
       setEditorState(allowUndoEditorState);
+
+      // to account for the previous blocks and keys changing after success
+      const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(allowUndoEditorState);
+      setPreviousSelectionState(allowUndoEditorState.getSelection());
+      setPreviousSelectedCursorContent(cursorContent);
     };
     return onSplitSegmentResponse;
   };
@@ -757,6 +785,9 @@ export function Editor(props: EditorProps) {
     //TODO
     //!
     //TODO
+    if (readOnlyEditorState) {
+      return HANDLE_VALUES.handled;
+    }
     if (command === KEY_COMMANDS['toggle-popups']) {
       setShowPopups(prevValue => !prevValue);
       // we need to rerender the block components to toggle the popups
@@ -773,10 +804,12 @@ export function Editor(props: EditorProps) {
     if (command === KEY_COMMANDS.backspace ||
       command === KEY_COMMANDS['backspace-word'] ||
       command === KEY_COMMANDS['backspace-to-start-of-line']) {
-      const { isStartOfBlock } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      const { isStartOfBlock, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
       if (isStartOfBlock) {
         return HANDLE_VALUES.handled;
       }
+      // handle entity 
+      // check if temp entity
     }
     if (command === KEY_COMMANDS['merge-segments-back']) {
       const { isStartOfBlock, blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -892,10 +925,13 @@ export function Editor(props: EditorProps) {
   };
 
   const handleChange = (incomingEditorState: EditorState) => {
+    if (readOnlyEditorState) {
+      setEditorState(cloneEditorState(readOnlyEditorState));
+      return;
+    }
     const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-    const { blockObject } = cursorContent;
-    console.log('blockObject', blockObject);
-    if (!previousSelectedCursorContent || !previousSelectionState) {
+    const { blockObject, isNoSelection, entity } = cursorContent;
+    if (loading || !previousSelectedCursorContent || !previousSelectionState) {
       setPreviousSelectedCursorContent(cursorContent);
       setPreviousSelectionState(incomingEditorState.getSelection());
     } else if (previousSelectedCursorContent && previousSelectionState) {
@@ -939,7 +975,7 @@ export function Editor(props: EditorProps) {
 
             // get the entities in the block
             const entityKeysInBlock = new Set<string>();
-            characterList.forEach((characterProperties, index) => {
+            characterList.forEach((characterProperties) => {
               const entityKeyString = characterProperties.entity;
               const entityKey = Number(entityKeyString);
               if (entityKeyString && typeof entityKey === 'number') {
@@ -950,19 +986,33 @@ export function Editor(props: EditorProps) {
 
             // update the text of each word alignment and push to the list
             const wordAlignments: WordAlignment[] = [];
-            entityKeysArray.forEach((entityKey, index) => {
+            let wordContentHasChanged = false;
+
+            entityKeysArray.forEach((entityKey) => {
               const entity = getEntityByKey(entityKey);
               const { wordAlignment } = entity.data;
               const entityRange = entityRangeByEntityKey[entityKey];
               if (wordAlignment && entityRange) {
+                const { word } = wordAlignment;
                 const { offset, length } = entityRange;
-                const endTextIndex = offset + length + 1;
-                const entityText = text.slice(offset, endTextIndex);
+                const endTextIndex = offset + length;
+                let entityText = text.slice(offset, endTextIndex);
+                const wordHasPipe = word[0] === '|';
+                // the original content might still contain the pipes
+                const filteredWordText = word.replace('|', '');
+                if (!wordContentHasChanged && filteredWordText !== entityText) {
+                  wordContentHasChanged = true;
+                }
+                // to replace the pipe because the backend will not regenerate this data
+                if (wordHasPipe) {
+                  entityText = `|${entityText}`;
+                }
                 wordAlignment.word = entityText;
                 wordAlignments.push(wordAlignment);
               }
             });
-            if (wordAlignments.length) {
+            console.log('wordContentHasChanged', wordContentHasChanged);
+            if (wordAlignments.length && wordContentHasChanged) {
               updateSegment(segment.id, wordAlignments);
             }
           }
@@ -972,6 +1022,19 @@ export function Editor(props: EditorProps) {
         // update since block focus changed
         setPreviousSelectedCursorContent(cursorContent);
       }
+      // if same block with non-entity selection
+      else if (!isNoSelection && !entity) {
+        const draftEntity: RawDraftEntity = {
+          type: ENTITY_TYPE.TEMP,
+          mutability: MUTABILITY_TYPE.MUTABLE,
+          data: {}
+        };
+        console.log('draftEntity', draftEntity);
+        setEntityAtSelection(draftEntity, incomingEditorState);
+        return;
+      }
+
+
 
     }
     if (!loading) {
@@ -982,9 +1045,11 @@ export function Editor(props: EditorProps) {
   };
 
   const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
+    if (readOnlyEditorState) {
+      return HANDLE_VALUES.handled;
+    }
     // only split when holding shift
     if (event.shiftKey && !loading) {
-
       const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
       const {
         isNoSelection,
@@ -999,6 +1064,7 @@ export function Editor(props: EditorProps) {
 
       // check if we are at a valid location for splitting segments
       if (isEndOfBlock || isStartOfBlock) {
+        displayWarningMessage('TEST INVALID SPLIT LOCATION');
         return HANDLE_VALUES.handled;
       }
 
@@ -1007,6 +1073,7 @@ export function Editor(props: EditorProps) {
       const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
 
       if (isWithinSameEntity) {
+        displayWarningMessage('TEST INVALID SPLIT LOCATION');
         return HANDLE_VALUES.handled;
       }
 
@@ -1021,6 +1088,7 @@ export function Editor(props: EditorProps) {
         // ensure that we are at a valid split point
         const characterAtCursor = blockObject.text[cursorOffset];
         if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+          displayWarningMessage('TEST INVALID SPLIT LOCATION');
           return HANDLE_VALUES.handled;
         }
         const characterListToCheck = blockObject.characterList.slice(cursorOffset);
@@ -1042,6 +1110,7 @@ export function Editor(props: EditorProps) {
         const splitEntityKey = Number(splitEntityKeyString);
         // we hit the end before finding a valid entity
         if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
+          displayWarningMessage('TEST INVALID SPLIT LOCATION');
           return HANDLE_VALUES.handled;
         }
         const splitEntity = getEntityByKey(splitEntityKeyString);
@@ -1152,6 +1221,9 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
+    if(readOnlyEditorState){
+      return;
+    }
     const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>();
     console.log('handleClickInsideEditor', entity);
     if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
@@ -1186,6 +1258,22 @@ export function Editor(props: EditorProps) {
     }
   }, [responseFromParent]);
 
+
+  // used to calculate the exact dimensions of the root div
+  // so we can make the overlay the exact same size
+  React.useEffect(() => {
+    if(containerRef.current){
+      const {offsetHeight, offsetWidth, offsetLeft, offsetTop} = containerRef.current;
+      const overlayPositionStyle: React.CSSProperties = {
+        top: offsetTop,
+        left: offsetLeft,
+        width: offsetWidth,
+        height: offsetHeight,
+      };
+      setOverlayStyle(overlayPositionStyle);
+    }
+  }, [containerRef])
+
   //!
   //TODO
   // don't let user to input bullet character
@@ -1195,12 +1283,38 @@ export function Editor(props: EditorProps) {
 
   return (
     <div
+      ref={containerRef}
       onClick={handleClickInsideEditor}
       style={{
         height,
         overflowY: 'auto',
       }}
     >
+
+    <Backdrop
+      className={classes.backdrop}
+      style={overlayStyle}
+      open={!!readOnlyEditorState}
+      onClick={() => {
+        return undefined;
+      }}
+    >
+      <Draggable
+        axis="both"
+        handle=".handle"
+        defaultPosition={{x: 0, y: 0}}
+        position={undefined}
+        bounds={'parent'}
+        offsetParent={containerRef.current ?? undefined}
+        // grid={[25, 25]}
+        scale={1}
+      >
+        <Card>
+          <div className="handle">Drag from here</div>
+          <div onClick={() => removeEntitiesAtSelection()}>CLOSE</div>
+        </Card>
+      </Draggable>
+    </Backdrop>
       {ready &&
         <DraftEditor
           ref={editorRef}
@@ -1215,6 +1329,7 @@ export function Editor(props: EditorProps) {
           handleKeyCommand={handleKeyCommand}
         />
       }
+
     </div>
   );
 };

@@ -209,6 +209,8 @@ export enum ENTITY_TYPE {
   'TOKEN' = 'TOKEN',
   'PHOTO' = 'PHOTO',
   'IMAGE' = 'IMAGE',
+  // start of custom types
+  'TEMP' = 'TEMP',
 }
 
 export enum INLINE_STYLE_TYPE {

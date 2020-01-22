@@ -14,8 +14,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
-import { SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, generateWordKeyString } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
@@ -402,7 +401,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to reset our list
         editedSegmentIndexes.clear();
         // reset our new default baseline
@@ -433,7 +431,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // reset our new default baseline
         setInitialSegments(segments);
       } else {
@@ -479,7 +476,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to reset our list
         segmentMergeIndexes.clear();
         setNumberOfSegmentsSelected(0);
@@ -518,7 +514,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
 
         // to reset our selected segment
         setSplitLocation(undefined);
@@ -1307,13 +1302,13 @@ export function EditorPage() {
           elevation={5}
         >
           <div style={{
-            padding: 15,
+            // padding: 15,
             // height: 500,
             height: editorHeight,
             minHeight: 250,
-            paddingTop: 0,
-            paddingBottom: 0,
-            paddingRight: 0,
+            // paddingTop: 0,
+            // paddingBottom: 0,
+            // paddingRight: 0,
           }}>
             {segmentsLoading ? <BulletList /> :
               (typeof highRiskSegmentIndex === 'number' ?
