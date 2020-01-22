@@ -1,4 +1,10 @@
-import { DraftBlockType, RawDraftEntity } from 'draft-js';
+import {
+  ContentBlock,
+  DraftBlockType,
+  RawDraftEntity,
+  RawDraftEntityRange,
+  RawDraftInlineStyleRange,
+} from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
 export interface Range {
   start: number;
@@ -36,11 +42,15 @@ export interface WordAlignmentEntityData {
 }
 
 export interface SegmentBlockData {
-  segment: Segment;
+  segment?: Segment;
 }
 
 export interface EntityMap {
   [key: string]: RawDraftEntity<WordAlignmentEntityData>;
+}
+
+export interface EntityRangeByEntityKey {
+  [x: string]: RawDraftEntityRange;
 }
 
 export interface EntityKeyToWordAlignmentKey {
@@ -80,6 +90,16 @@ export interface CharacterProperties {
 /**
  * The object returned from the `toJS` method of a block
  */
+export interface BlockInfo<T = {}> {
+  blockObject: BlockObject<T>;
+  block: ContentBlock;
+  entityRanges: RawDraftEntityRange[];
+  inlineStyleRanges: RawDraftInlineStyleRange[];
+}
+
+/**
+ * The object returned from the `toJS` method of a block
+ */
 export interface BlockObject<T = {}> {
   key: string;
   type: DraftBlockType;
@@ -104,6 +124,8 @@ export interface CursorContent<T, U> {
   characterDetailsAtCursor: CharacterDetails;
   cursorOffset: number;
   blockObject: BlockObject<U>;
+  blockEntityRanges: RawDraftEntityRange[];
+  blockInlineStyleRanges: RawDraftInlineStyleRange[];
 }
 
 export enum KEY_COMMANDS {

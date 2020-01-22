@@ -15,7 +15,7 @@ import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
-import { SnackbarError } from '../../types/snackbar.types';
+import { SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, generateWordKeyString } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
@@ -368,7 +368,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
 
         // to trigger the `useEffect` to fetch more
         setVoiceData(undefined);
@@ -385,7 +385,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setConfirmSegmentsLoading(false);
     }
   };
@@ -396,17 +396,13 @@ export function EditorPage() {
 
       // to build which segments to send
       const editedSegmentsToUpdate: Segment[] = [];
-      const testSegment = { ...segments[0] };
-      testSegment.wordAlignments.pop();
-      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(testSegment));
-      // editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
+      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
 
-      const response = await api.voiceData.updateSegments(projectId, voiceData.id, [testSegment]);
-      // const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
+      const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to reset our list
         editedSegmentIndexes.clear();
         // reset our new default baseline
@@ -424,7 +420,36 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
+  const submitSegmentUpdate = async (segmentId: string, wordAlignments: WordAlignment[]) => {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
+      setSaveSegmentsLoading(true);
+
+      const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        // reset our new default baseline
+        setInitialSegments(segments);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentUpdate - failed to update segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -454,7 +479,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to reset our list
         segmentMergeIndexes.clear();
         setNumberOfSegmentsSelected(0);
@@ -481,7 +506,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -493,7 +518,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
 
         // to reset our selected segment
         setSplitLocation(undefined);
@@ -522,7 +547,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -1319,6 +1344,7 @@ export function EditorPage() {
                   playingLocation={currentPlayingLocation}
                   loading={saveSegmentsLoading}
                   onWordClick={handleWordClick}
+                  updateSegment={submitSegmentUpdate}
                   splitSegment={submitSegmentSplit}
                   mergeSegments={submitSegmentMerge}
                   assignSpeaker={openSpeakerAssignDialog}

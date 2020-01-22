@@ -1,9 +1,10 @@
 import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
+import { useSnackbar, VariantType } from 'notistack';
 import React from 'react';
-import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, INLINE_STYLE_TYPE, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, WordAlignment } from '../../types';
-import { BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, TargetSelection, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
+import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, INLINE_STYLE_TYPE, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment } from '../../types';
+import { BlockInfo, BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, EntityRangeByEntityKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, TargetSelection, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { generateWordKeyString, WordKeyStore } from '../../util/misc';
 import { SegmentBlock } from './components/SegmentBlock';
@@ -217,6 +218,7 @@ interface EditorProps {
   loading?: boolean;
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
+  updateSegment: (segmentId: string, wordAlignments: WordAlignment[]) => void;
   assignSpeaker: (segmentIndex: number) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
   splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => Promise<void>;
@@ -231,16 +233,21 @@ export function Editor(props: EditorProps) {
     loading,
     segments,
     playingLocation,
+    updateSegment,
     assignSpeaker,
     onWordClick,
     splitSegment,
     mergeSegments,
   } = props;
+  const { enqueueSnackbar } = useSnackbar();
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty()
   );
   const [ready, setReady] = React.useState(false);
   const [showPopups, setShowPopups] = React.useState(false);
+  const [previousSelectedCursorContent, setPreviousSelectedCursorContent] = React.useState<CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined>();
+  const [previousEditorState, setPreviousEditorState] = React.useState<EditorState | undefined>();
+  const [previousSelectionState, setPreviousSelectionState] = React.useState<SelectionState | undefined>();
 
   const editorRef = React.useRef<DraftEditor | null>(null);
 
@@ -249,15 +256,31 @@ export function Editor(props: EditorProps) {
   };
 
   /**
+   * Creates a new state from the old one with the same selection
+   * @param incomingEditorState
+   */
+  const cloneEditorState = (incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(incomingEditorState, incomingEditorState.getSelection());
+    return newEditorStateWithSameContentAndSelection;
+  };
+
+  /**
    * Forces a rerender by creating a new state from the old one with the same selection
+   * @param incomingEditorState
    */
   const forceRerender = (incomingEditorState?: EditorState) => {
     if (!incomingEditorState) {
       incomingEditorState = editorState;
     }
     // to force the editor to update
-    const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(incomingEditorState, incomingEditorState.getSelection());
-    setEditorState(newEditorStateWithSameContentAndSelection);
+    setEditorState(cloneEditorState(incomingEditorState));
+  };
+
+  const displayWarningMessage = (message: string, variant: VariantType = SNACKBAR_VARIANTS.info) => {
+    enqueueSnackbar(message, { variant });
   };
 
   /**
@@ -391,7 +414,6 @@ export function Editor(props: EditorProps) {
     const contentState = editorState.getCurrentContent();
     // to find the entinty within the correct segment
     const [segmentIndex, wordIndex] = wordLocation;
-    // const [segmentIndex, wordIndex] = parseWordKey(wordKey);
     const rawContent = convertToRaw(contentState);
     const targetBlock = rawContent.blocks[segmentIndex];
     // to get the target entity key 
@@ -503,6 +525,52 @@ export function Editor(props: EditorProps) {
   }, [playingLocation, ready]);
 
   /**
+   * gets the block object and corrects the character list entity keys. Also gets 
+   * additional block info that is only supplied when parsing the raw content
+   * - the `characterList` will originally have incorrect entity keys.
+   * They are incremented by 1 for some reason. 
+   *  **The returned value will have been fixed and will be correct**
+   * @returns the adjusted block object
+   * @returns the original block
+   * @returns the inline style ranges for the block
+   * @returns the inline entity ranges for the block
+   */
+  function getBlockInfoForBlockKey<U>(blockKey: string, contentState: ContentState): BlockInfo<U> {
+    // The block in which the selection starts
+    const block = contentState.getBlockForKey(blockKey);
+    const blockObject: BlockObject<U> = block.toJS();
+    // to fix the character list entity values
+    // the `blockObject`'s `characterList` will have incorrect entity keys.
+    // They will be incremented by 1 for some reason.
+    blockObject.characterList = blockObject.characterList.map((characterProperties) => {
+      const updatedProperties = { ...characterProperties };
+      const { entity } = updatedProperties;
+      if (entity) {
+        let entityKeyNumber = Number(entity);
+        if (typeof entityKeyNumber === 'number') {
+          entityKeyNumber--;
+          updatedProperties.entity = entityKeyNumber.toString();
+        }
+      }
+      return updatedProperties;
+    });
+
+    // get the data that is only surfaces when parsing raw content state
+    const rawContent = convertToRaw(contentState);
+    let blockIndex = 0;
+    for (let i = 0; i < rawContent.blocks.length; i++) {
+      const block = rawContent.blocks[i];
+      if (block.key === blockKey) {
+        blockIndex = i;
+        break;
+      }
+    }
+    const { inlineStyleRanges, entityRanges } = rawContent.blocks[blockIndex];
+
+    return { blockObject, block, inlineStyleRanges, entityRanges };
+  }
+
+  /**
    * Get the entiy at the current cursor location
    * - checks to the right of the cursor
    * - the `blockObject`'s `characterList` will originally have incorrect entity keys.
@@ -521,26 +589,12 @@ export function Editor(props: EditorProps) {
     const startOffset = selectionState.getStartOffset();
     const endOffset = selectionState.getEndOffset();
     const contentState = incomingEditorState.getCurrentContent();
+
+
     const isNoSelection = (selectionBlockStartKey === selectionBlockEndKey && startOffset === endOffset);
 
     // The block in which the selection starts
-    const block = contentState.getBlockForKey(selectionBlockStartKey);
-    const blockObject: BlockObject<U> = block.toJS();
-    // to fix the character list entity values
-    // the `blockObject`'s `characterList` will have incorrect entity keys.
-    // They will be incremented by 1 for some reason.
-    blockObject.characterList = blockObject.characterList.map((characterProperties) => {
-      const updatedProperties = { ...characterProperties };
-      const { entity } = updatedProperties;
-      if (entity) {
-        let entityKeyNumber = Number(entity);
-        if (typeof entityKeyNumber === 'number') {
-          entityKeyNumber--;
-          updatedProperties.entity = entityKeyNumber.toString();
-        }
-      }
-      return updatedProperties;
-    });
+    const { blockObject, block, entityRanges, inlineStyleRanges } = getBlockInfoForBlockKey<U>(selectionBlockStartKey, contentState);
     const blockText = blockObject.text;
 
     const cursorLocationWithinBlock = selectionState.getAnchorOffset();
@@ -599,6 +653,8 @@ export function Editor(props: EditorProps) {
       characterDetailsAtCursor,
       cursorOffset: cursorLocationWithinBlock,
       blockObject,
+      blockEntityRanges: entityRanges,
+      blockInlineStyleRanges: inlineStyleRanges,
     };
     return cursorContent;
   };
@@ -616,7 +672,7 @@ export function Editor(props: EditorProps) {
   const buildMergeSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
     const onMergeSegmentResponse = (updatedSegment: Segment) => {
       const blockKey = targetBlock.key;
-      const blockSegment = targetBlock.data.segment;
+      const blockSegment = targetBlock.data.segment as Segment;
       // get the index using the old segment id
       const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
       if (typeof blockSegmentIndex !== 'number') {
@@ -652,7 +708,7 @@ export function Editor(props: EditorProps) {
       const [updatedSegment, newSegment] = updatedSegments;
       const blockKey = targetBlock.key;
       const newBlockKey = newBlock.key;
-      const blockSegment = targetBlock.data.segment;
+      const blockSegment = targetBlock.data.segment as Segment;
       // get the index using the old segment id
       const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
       if (typeof blockSegmentIndex !== 'number') {
@@ -725,6 +781,9 @@ export function Editor(props: EditorProps) {
     if (command === KEY_COMMANDS['merge-segments-back']) {
       const { isStartOfBlock, blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
       const blockSegment = blockObject.data.segment;
+      if (!blockSegment) {
+        return HANDLE_VALUES.handled;
+      }
       const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
       if (isStartOfBlock && !loading && typeof blockSegmentIndex === 'number') {
         const contentState = incomingEditorState.getCurrentContent();
@@ -738,6 +797,9 @@ export function Editor(props: EditorProps) {
 
         const blockBeforeObject: BlockObject<SegmentBlockData> = blockBefore.toJS();
         const blockBeforeSegment = blockBeforeObject.data.segment;
+        if (!blockBeforeSegment) {
+          return HANDLE_VALUES.handled;
+        }
         const blockBeforeSegmentIndex = findIndexOfSegmentId(blockBeforeSegment.id);
         if (typeof blockSegmentIndex === 'number' && typeof blockBeforeSegmentIndex === 'number') {
 
@@ -829,9 +891,93 @@ export function Editor(props: EditorProps) {
     return HANDLE_VALUES['not-handled'];
   };
 
-  const handleChange = (editorState: EditorState) => {
+  const handleChange = (incomingEditorState: EditorState) => {
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const { blockObject } = cursorContent;
+    console.log('blockObject', blockObject);
+    if (!previousSelectedCursorContent || !previousSelectionState) {
+      setPreviousSelectedCursorContent(cursorContent);
+      setPreviousSelectionState(incomingEditorState.getSelection());
+    } else if (previousSelectedCursorContent && previousSelectionState) {
+      const blockToCompare = { ...previousSelectedCursorContent.blockObject };
+      // check if no longer on previous block
+      if (blockToCompare && (blockToCompare.key !== blockObject.key)) {
+        // get the current state of the previous block
+        const contentState = incomingEditorState.getCurrentContent();
+        const currentStateOfPreviousBlockObjectAndBlock = getBlockInfoForBlockKey<SegmentBlockData>(blockToCompare.key, contentState);
+        const currentStateOfPreviousBlockObject = currentStateOfPreviousBlockObjectAndBlock.blockObject;
+        const currentEntityRangesOfPreviousBlock = currentStateOfPreviousBlockObjectAndBlock.entityRanges;
+        console.log('currentStateOfPreviousBlockObject.characterList', currentStateOfPreviousBlockObject.characterList);
+        // check for changes between previous state of the prev block and current state of prev block
+        if (JSON.stringify(blockToCompare.characterList) !== JSON.stringify(currentStateOfPreviousBlockObject.characterList)) {
+          // ensure all characters are within an entity
+          const allWordsHaveEntity = currentStateOfPreviousBlockObject.characterList.every((characterProperties, index) => {
+            if (characterProperties.entity) {
+              return true;
+            }
+            const character = currentStateOfPreviousBlockObject.text[index];
+            return SPLITTABLE_CHARACTERS.includes(character);
+          });
+          console.log('CHANGES PRESENT');
+          console.log('allWordsHaveEntity', allWordsHaveEntity);
+          if (!allWordsHaveEntity) {
+            //revert to old cursor position and display message
+            const prevSelectionEditorState = EditorState.forceSelection(incomingEditorState, previousSelectionState);
+            setEditorState(prevSelectionEditorState);
+            displayWarningMessage('TEST WORDS MISSING TIME INFO');
+            return;
+          }
+
+          // build request and submit change
+          const { segment } = currentStateOfPreviousBlockObject.data;
+          if (segment?.id) {
+            const { text, characterList } = currentStateOfPreviousBlockObject;
+            const entityRangeByEntityKey: EntityRangeByEntityKey = {};
+            currentEntityRangesOfPreviousBlock.forEach(entityRange => {
+              entityRangeByEntityKey[entityRange.key] = entityRange;
+            });
+
+            // get the entities in the block
+            const entityKeysInBlock = new Set<string>();
+            characterList.forEach((characterProperties, index) => {
+              const entityKeyString = characterProperties.entity;
+              const entityKey = Number(entityKeyString);
+              if (entityKeyString && typeof entityKey === 'number') {
+                entityKeysInBlock.add(entityKeyString);
+              }
+            });
+            const entityKeysArray = Array.from(entityKeysInBlock);
+
+            // update the text of each word alignment and push to the list
+            const wordAlignments: WordAlignment[] = [];
+            entityKeysArray.forEach((entityKey, index) => {
+              const entity = getEntityByKey(entityKey);
+              const { wordAlignment } = entity.data;
+              const entityRange = entityRangeByEntityKey[entityKey];
+              if (wordAlignment && entityRange) {
+                const { offset, length } = entityRange;
+                const endTextIndex = offset + length + 1;
+                const entityText = text.slice(offset, endTextIndex);
+                wordAlignment.word = entityText;
+                wordAlignments.push(wordAlignment);
+              }
+            });
+            if (wordAlignments.length) {
+              updateSegment(segment.id, wordAlignments);
+            }
+          }
+
+        }
+
+        // update since block focus changed
+        setPreviousSelectedCursorContent(cursorContent);
+      }
+
+    }
     if (!loading) {
-      setEditorState(editorState);
+      // update location since we are still in same block
+      setPreviousSelectionState(incomingEditorState.getSelection());
+      setEditorState(incomingEditorState);
     }
   };
 
@@ -909,6 +1055,9 @@ export function Editor(props: EditorProps) {
         const { wordKey } = validEntity.data;
         const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
         const blockSegment = blockObject.data.segment;
+        if (!blockSegment) {
+          return HANDLE_VALUES.handled;
+        }
         const blockSegmentIndex = findIndexOfSegmentId(blockSegment.id);
         if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
           let contentStateToSplit = incomingEditorState.getCurrentContent();
@@ -1025,10 +1174,6 @@ export function Editor(props: EditorProps) {
           if (blockKey) {
             updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
           }
-
-          break;
-
-        default:
           break;
       }
       // set our updated state
@@ -1044,6 +1189,9 @@ export function Editor(props: EditorProps) {
   //!
   //TODO
   // don't let user to input bullet character
+  //!
+  //TODO
+  // space when at the end of an entity breaks out of it
 
   return (
     <div
