@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
-import { ModelConfig, SnackbarError } from '../../../types';
+import { ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
@@ -97,7 +97,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess();
         onClose();
       } else {
@@ -123,7 +123,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

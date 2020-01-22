@@ -16,7 +16,7 @@ import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { postModelConfigResult } from '../../services/api/types';
-import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
 import { LanguageModelDialog } from '../models/components/language-model/LanguageModelDialog';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
@@ -125,7 +125,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(response.modelConfig, isEdit);
         handleClose();
       } else {
@@ -142,7 +142,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

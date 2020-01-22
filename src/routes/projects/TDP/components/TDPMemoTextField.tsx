@@ -11,7 +11,7 @@ import { PERMISSIONS } from '../../../../constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
-import { SnackbarError, VoiceData } from '../../../../types';
+import { SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../../types';
 import log from '../../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
@@ -58,7 +58,7 @@ export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         setLoading(false);
         // to build the updated voice data
         const updatedVoiceData = { ...voiceData, memo };
@@ -75,7 +75,7 @@ export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setLoading(false);
       }
     }

@@ -10,7 +10,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { deleteSubGraphResult } from '../../../services/api/types';
 import { ServerError } from '../../../services/api/types/api-problem.types';
-import { BooleanById, SubGraph, TopGraph } from '../../../types';
+import { BooleanById, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../types';
 import log from '../../../util/log/logger';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 import { TabPanel } from '../../shared/TabPanel';
@@ -113,7 +113,7 @@ export function ModelTabs() {
         if (serverError?.message) {
           errorMessageText = serverError.message;
         }
-        enqueueSnackbar(errorMessageText, { variant: 'error' });
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       } else {
         successIds.push(subGraphsToDelete[responseIndex]);
         enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });

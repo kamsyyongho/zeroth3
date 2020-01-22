@@ -7,7 +7,7 @@ import React from 'react';
 import { MdPersonAdd, MdPersonPin } from 'react-icons/md';
 import VisibilitySensor from "react-visibility-sensor";
 import { CustomTheme } from '../../../theme/index';
-import { SegmentBlockData } from '../../../types';
+import { Segment, SegmentBlockData } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -69,7 +69,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   const { showPopups, assignSpeakerForSegment } = blockProps;
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
-  const segment = blockData.segment || {};
+  const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker } = segment;
   const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
@@ -121,8 +121,8 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
     >
       {({ isVisible }) =>
         <Tooltip
-          placement='top-start'
-          title={displayTextChangedHover ? <Typography contentEditable={false} variant='h6' >{decoderTranscript}</Typography> : ''}
+          placement='right-start'
+          title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
           open={showPopups && isVisible}
           arrow={false}
           classes={{ tooltip: classes.tooltipContent }}

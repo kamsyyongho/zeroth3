@@ -16,7 +16,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { removeTranscriberFromDataSetResult } from '../../../../services/api/types';
-import { DataSet, SnackbarError, Transcriber, TranscriberStats } from '../../../../types';
+import { DataSet, SnackbarError, SNACKBAR_VARIANTS, Transcriber, TranscriberStats } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { differencesBetweenSets, isEqualSet } from '../../../../util/misc';
 import { SearchBar } from '../../../shared/SearchBar';
@@ -137,7 +137,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // build the updated data
         const updatedDateSet = { ...dataSet, transcribers: response.transcribers };
         onUpdateDataSetSuccess(updatedDateSet, dataSetIndex);
@@ -155,7 +155,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setIsAddLoading(false);
     }
   };
@@ -199,7 +199,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
           if (serverError) {
             snackbarError.errorText = serverError.message || "";
           }
-          snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+          snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         }
         transcriberIdIndexCounter++;
       });
@@ -208,7 +208,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
       // to prevent multiple success messages when removing multiple alerts
       // also only display success if there were no errors
       if (!willAddTranscribers && !snackbarError.isError) {
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
       }
 
       // to build the user since it isn't returned from the server

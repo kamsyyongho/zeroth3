@@ -12,8 +12,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { CellProps } from 'react-table';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { CONTENT_STATUS, CONTENT_STATUS_VALUES, VoiceData } from '../../../../types';
-import { SnackbarError } from '../../../../types/snackbar.types';
+import { CONTENT_STATUS, CONTENT_STATUS_VALUES, SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../../types';
 import log from '../../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
@@ -62,7 +61,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         setLoading(false);
         onSuccess(response.data, index);
       } else {
@@ -77,7 +76,7 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setLoading(false);
       }
     }

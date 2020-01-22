@@ -13,7 +13,7 @@ import ScaleLoader from 'react-spinners/ScaleLoader';
 import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Segment, SnackbarError, Time, Word, WordsbyRangeStartAndEndIndexes } from '../../../types';
+import { Segment, SnackbarError, SNACKBAR_VARIANTS, Time, Word, WordsbyRangeStartAndEndIndexes } from '../../../types';
 import log from '../../../util/log/logger';
 import { getRandomColor } from '../../../util/misc';
 import { HighRiskSegmentWordPopper } from './HighRiskSegmentWordPopper';
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) =>
     spacing: {
       marginTop: 25,
     },
-    textArea: { 
+    textArea: {
       minWidth: 400,
       fontSize: 16,
     },
@@ -150,7 +150,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
     // to allow the loading indicator to be displayed
     setTimeout(() => {
       onClose();
-    }, 1);
+    }, 10);
   };
 
   const handleAnchorClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -254,7 +254,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setIsSubmitLoading(false);
     }
   };
@@ -267,7 +267,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         //!
         //TODO
         //* DO SOMETHING
@@ -285,7 +285,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setIsSubmitLoading(false);
     }
   };
@@ -298,7 +298,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
       }
       const allWordsHaveTimes = checkIfAllWordsHaveTimes(sortedWords);
       if (!allWordsHaveTimes) {
-        enqueueSnackbar(translate('editor.validation.missingTimes'), { variant: 'error' });
+        enqueueSnackbar(translate('editor.validation.missingTimes'), { variant: SNACKBAR_VARIANTS.error });
         return;
       }
       setIsSubmitLoading(true);
@@ -335,9 +335,9 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         }
       }
       if (snackbarError?.isError) {
-        enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       } else {
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         if (returnedSegment) {
           onSuccess(returnedSegment, segmentIndex);
           handleClose();
@@ -445,7 +445,7 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
   const onTextHighlighted = (range: Range) => {
     wasDeleted = false;
     if (isNaN(range.start) || isNaN(range.end)) {
-      enqueueSnackbar(translate('editor.validation.invalidRange'), { variant: 'error' });
+      enqueueSnackbar(translate('editor.validation.invalidRange'), { variant: SNACKBAR_VARIANTS.error });
       deselectAllText();
       return;
     }
@@ -563,17 +563,17 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
 
   const onTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const incomingText = event.target.value;
-    if(incomingText.trim().length > VALIDATION.EDITOR.freeText.max){
+    if (incomingText.trim().length > VALIDATION.EDITOR.freeText.max) {
       setIsError(true);
       enqueueSnackbar(
         translate('forms.validation.lessEqualTo',
-        {target: translate('forms.length') , value: VALIDATION.EDITOR.freeText.max}),
+          { target: translate('forms.length'), value: VALIDATION.EDITOR.freeText.max }),
         { variant: 'error', preventDuplicate: true });
     } else {
       setIsError(false);
       setText(incomingText);
     }
-  }
+  };
 
   return (<Grid
     container
@@ -607,7 +607,8 @@ export function HighRiskSegmentEdit(props: HighRiskSegmentEditProps) {
         >
           <Grid item>
             {isTextLocked ? (
-              <Highlightable ranges={ranges}
+              <Highlightable
+                ranges={ranges}
                 enabled={isTextLocked}
                 onTextHighlighted={onTextHighlighted}
                 id={segment.id}

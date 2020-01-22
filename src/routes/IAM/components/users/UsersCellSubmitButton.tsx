@@ -8,8 +8,7 @@ import { CellProps } from 'react-table';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { deleteRoleResult } from '../../../../services/api/types/iam.types';
-import { User } from '../../../../types';
-import { SnackbarError } from '../../../../types/snackbar.types';
+import { SnackbarError, SNACKBAR_VARIANTS, User } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { differencesBetweenSets, isEqualSet } from '../../../../util/misc';
 import { SelectedRoleIdsByIndex } from './UsersTable';
@@ -84,7 +83,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to refresh the transcriber list
         const transcriberRoleWasChanged = rolesToAdd.includes(transcriberRoleId);
         if (transcriberRoleWasChanged) {
@@ -104,7 +103,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setIsAddLoading(false);
     }
   };
@@ -152,7 +151,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
         }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       }
       roleIdIndexCounter++;
     });
@@ -161,7 +160,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     // to prevent multiple success messages when removing multiple alerts
     // also only display success if there were no errors
     if (!willAddRoles && !snackbarError.isError) {
-      enqueueSnackbar(translate('common.success'), { variant: 'success' });
+      enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
     }
 
     // to build the user since it isn't returned from the server

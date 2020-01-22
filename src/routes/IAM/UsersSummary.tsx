@@ -1,21 +1,14 @@
-import { Grid } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import DeleteIcon from '@material-ui/icons/Delete';
-import SendIcon from '@material-ui/icons/Send';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
-import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { ProblemKind, ServerError } from '../../services/api/types';
-import { deleteUserResult } from '../../services/api/types/iam.types';
-import { Role, User } from '../../types';
+import { deleteUserResult, ProblemKind, ServerError } from '../../services/api/types';
+import { Role, SNACKBAR_VARIANTS, User } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Forbidden } from '../shared/Forbidden';
@@ -212,7 +205,7 @@ export function UsersSummary(props: UsersSummaryProps) {
         if (serverError?.message) {
           errorMessageText = serverError.message;
         }
-        enqueueSnackbar(errorMessageText, { variant: 'error' });
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       } else {
         successIds.push(usersToDelete[responseIndex]);
         enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });

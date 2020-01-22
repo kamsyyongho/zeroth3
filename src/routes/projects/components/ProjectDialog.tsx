@@ -16,7 +16,7 @@ import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { postProjectResult, updateProjectResult } from '../../../services/api/types';
-import { Project, SnackbarError } from '../../../types';
+import { Project, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
@@ -81,7 +81,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
       if (response.kind === 'ok') {
         const { project } = response;
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(project, isEdit);
         handleClose();
       } else {
@@ -98,7 +98,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };
