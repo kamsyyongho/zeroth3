@@ -28,8 +28,9 @@ interface AudioUploadDialogProps {
   onSuccess: () => void;
 }
 
-const MAX_TOTAL_FILE_SIZE_LIMIT = 10000000; // 10 MB in bytes
-const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '10 MB';
+/** this is using the same simple (incorrect) method for calculating file size as file upload library */
+const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
+const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const { open, projectId, modelConfigs, onClose, onSuccess } = props;
