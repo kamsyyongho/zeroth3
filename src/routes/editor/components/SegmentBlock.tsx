@@ -36,6 +36,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     badge: {
       backgroundColor: theme.editor.changes,
+    },
+    timeButton: {
+      padding: 0,
+      margin: 0,
     }
   }),
 );
@@ -122,6 +126,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       >
         <Button
           disabled
+          className={classes.timeButton}
         >
           <Typography
             contentEditable={false} // prevents the editor from placing the cursor within the content
