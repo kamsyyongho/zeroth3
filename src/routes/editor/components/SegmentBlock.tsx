@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     infoGrid: {
       marginBottom: theme.spacing(1),
+      "&:hover": {
+        cursor: 'default',
+      }
     },
     block: {
       marginLeft: theme.spacing(1),
@@ -40,7 +43,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     timeButton: {
       padding: 0,
       margin: 0,
-    }
+    },
   }),
 );
 
