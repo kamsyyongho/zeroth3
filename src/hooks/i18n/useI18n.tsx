@@ -1,8 +1,9 @@
-import { Locale, format } from 'date-fns';
+import { format, Locale } from 'date-fns';
 import { enUS, ko } from 'date-fns/locale';
 import { TOptions } from 'i18next';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { shortcuts } from '../../i18n/translations/shortcuts';
 import { ParsedI18n } from './I18nContext';
 
 interface FormatOptions {
@@ -63,12 +64,15 @@ function getDateTimeFormat(locale: Locale | PickerLocale) {
   return dateTimeString;
 }
 
+const isMacOs = () => navigator.userAgent.includes('Mac');
+
 export const useI18n = (): ParsedI18n => {
   const { t, i18n } = useTranslation();
   const defaultLocale = i18n.language === LANGUAGES.en ? extendLocaleType(enUS) : extendLocaleType(ko);
   const defaultDateTimeFormat = getDateTimeFormat(defaultLocale);
   const [pickerLocale, setPickerLocale] = useState<PickerLocale>(defaultLocale);
   const [dateTimeFormat, setDateTimeFormat] = useState<string>(defaultDateTimeFormat);
+  const [isMac, setIsMac] = useState<boolean>(isMacOs());
 
   /**
    * Translates text.
@@ -77,6 +81,17 @@ export const useI18n = (): ParsedI18n => {
    */
   const translate = (key: string, options?: TOptions | string): string => {
     return key ? t(key, options) : '';
+  };
+
+  /**
+   * Displays text according to the operating system
+   * @param key The i18next key.
+   */
+  const osText = (key: string): string => {
+    if (isMac) {
+      return shortcuts.mac[key] ?? '';
+    }
+    return shortcuts.other[key] ?? '';
   };
 
   /**
@@ -97,5 +112,14 @@ export const useI18n = (): ParsedI18n => {
    */
   const formatDate = (date: number | Date) => format(date, dateTimeFormat);
 
-  return { translate, i18n, toggleLanguage, language: i18n.language, pickerLocale, dateTimeFormat, formatDate };
+  return {
+    translate,
+    osText,
+    i18n,
+    toggleLanguage,
+    language: i18n.language,
+    pickerLocale,
+    dateTimeFormat,
+    formatDate,
+  };
 };
