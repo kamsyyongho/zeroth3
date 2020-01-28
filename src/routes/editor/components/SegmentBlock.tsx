@@ -1,4 +1,4 @@
-import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { Badge, Button, Grid, Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import clsx from 'clsx';
@@ -34,6 +34,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     tooltipContent: {
       maxWidth: 'none',
     },
+    badge: {
+      backgroundColor: theme.editor.changes,
+    }
   }),
 );
 
@@ -71,7 +74,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker } = segment;
-  const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
+  const displayTextChangedHover = ((transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
@@ -109,30 +112,43 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       justify='flex-start'
       className={classes.infoGrid}
     >
-      <Typography
-        contentEditable={false} // prevents the editor from placing the cursor within the content
+      <Badge
+        invisible={!displayTextChangedHover}
+        variant="dot"
+        color='error'
+        classes={{
+          colorError: classes.badge,
+        }}
       >
-        {displayTime}
-      </Typography>
-      {speakerButton}
-    </Grid>
-    <VisibilitySensor
-      offset={DEFAULT_OFFSET}
-    >
-      {({ isVisible }) =>
-        <Tooltip
-          placement='right-start'
-          title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
-          open={showPopups && isVisible}
-          arrow={false}
-          classes={{ tooltip: classes.tooltipContent }}
+        <Button
+          disabled
         >
-          <div className={classes.block} >
-            <EditorBlock {...props} />
-          </div>
-        </Tooltip>
-      }
-    </VisibilitySensor>
+          <Typography
+            contentEditable={false} // prevents the editor from placing the cursor within the content
+          >
+            {displayTime}
+          </Typography>
+        </Button>
+      </Badge>
+      <VisibilitySensor
+        offset={DEFAULT_OFFSET}
+      >
+        {({ isVisible }) =>
+          <Tooltip
+            placement='right-start'
+            title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
+            open={showPopups && isVisible}
+            arrow={false}
+            classes={{ tooltip: classes.tooltipContent }}
+          >
+            {speakerButton}
+          </Tooltip>
+        }
+      </VisibilitySensor>
+    </Grid>
+    <div className={classes.block} >
+      <EditorBlock {...props} />
+    </div>
   </div>
   );
 };
