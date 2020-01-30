@@ -31,6 +31,46 @@ import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
 
 
+/** total duration of the file in seconds */
+let duration = 0;
+/** the timeout used to display the streaming indicator for a minimum time */
+let waitingTimeoutId: NodeJS.Timeout | undefined;
+/** the interval used to get the current time */
+let getTimeIntervalId: NodeJS.Timeout | undefined;
+/** 
+ * if there was an error in the component 
+ * - lives outside the component, so it doesn't wait on state changes
+ * - used for the meida listeners
+ */
+let fatalError = false;
+let mediaElement: HTMLAudioElement | null = null;
+let StreamPlayer: VideoJsPlayer | undefined;
+let PeaksPlayer: PeaksInstance | undefined;
+let internaDisabledTimesTracker: Time[] | undefined;
+let validTimeBondaries: Time | undefined;
+let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
+let isLoop = false;
+
+enum SEGMENT_IDS {
+  'LOOP' = 'LOOP',
+  'DISABLED_0' = 'DISABLED_0',
+  'DISABLED_1' = 'DISABLED_1',
+}
+const SEGMENT_IDS_ARRAY = Object.keys(SEGMENT_IDS);
+const DEFAULT_LOOP_LENGTH = 5;
+const STARTING_WORD_LOOP_LENGTH = 0.5;
+/**
+ * for adding a bit of slop because `Peaks.js` does
+ * not like creating segments at exactly `0`
+ */
+const ZERO_TIME_SLOP = 0.00001;
+
+enum DOM_IDS {
+  'zoomview-container' = 'zoomview-container',
+  'overview-container' = 'overview-container',
+  'audio-container' = 'audio-container',
+}
+
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     content: {
@@ -43,6 +83,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     root: {
       backgroundColor: theme.palette.background.default,
       padding: 10,
+    },
+    peaksContainer: {
+      height: 128,
     },
     controls: {
       marginLeft: 10,
@@ -58,7 +101,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
   }),
 );
-
 
 interface AudioPlayerProps {
   url: string;
@@ -81,52 +123,6 @@ interface AudioPlayerProps {
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
 }
-
-/** total duration of the file in seconds */
-let duration = 0;
-
-/** the timeout used to display the streaming indicator for a minimum time */
-let waitingTimeoutId: NodeJS.Timeout | undefined;
-
-/** the interval used to get the current time */
-let getTimeIntervalId: NodeJS.Timeout | undefined;
-
-/** 
- * if there was an error in the component 
- * - lives outside the component, so it doesn't wait on state changes
- * - used for the meida listeners
- */
-let fatalError = false;
-
-let mediaElement: HTMLAudioElement | null = null;
-
-let StreamPlayer: VideoJsPlayer | undefined;
-
-let PeaksPlayer: PeaksInstance | undefined;
-
-let historyLength = 0;
-const getVideoJsLog = () => {
-  const history = videojs.log.history();
-  const length = history.length;
-  if (length > historyLength) {
-    historyLength = length;
-    console.log(`streaming player log: `, history[length - 1]);
-  }
-};
-
-enum SEGMENT_IDS {
-  'LOOP' = 'LOOP',
-  'DISABLED_0' = 'DISABLED_0',
-  'DISABLED_1' = 'DISABLED_1',
-}
-const SEGMENT_IDS_ARRAY = Object.keys(SEGMENT_IDS);
-const DEFAULT_LOOP_LENGTH = 5;
-
-let internaDisabledTimesTracker: Time[] | undefined;
-
-let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
-
-let isLoop = false;
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const { url,
@@ -445,7 +441,19 @@ export function AudioPlayer(props: AudioPlayerProps) {
           onSectionChange(time, id);
           // to handle resetting the segment to the last valid
           // options if we are trying to put it in an invalid area
-        } else if (id && !isValidSection && tempDragStartSegmentResetOptions && PeaksPlayer?.segments) {
+        } else if (id &&
+          !isValidSection &&
+          tempDragStartSegmentResetOptions &&
+          PeaksPlayer?.segments &&
+          typeof validTimeBondaries?.start === 'number' &&
+          typeof validTimeBondaries?.end === 'number') {
+          // to reset to the valid limits if dragged outside the valid range
+          if (startTime < validTimeBondaries?.start) {
+            tempDragStartSegmentResetOptions.startTime = validTimeBondaries?.start;
+          }
+          if (endTime > validTimeBondaries?.end) {
+            tempDragStartSegmentResetOptions.endTime = validTimeBondaries?.end;
+          }
           PeaksPlayer.segments.removeById(id);
           PeaksPlayer.segments.add(tempDragStartSegmentResetOptions);
         }
@@ -710,7 +718,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         PeaksPlayer.segments.add(loopSegmentOptions);
       }
       onSegmentDelete();
+      // reset internal trackers
       internaDisabledTimesTracker = undefined;
+      validTimeBondaries = undefined;
     } catch (error) {
       handleError(error);
     }
@@ -755,10 +765,35 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     internaDisabledTimesTracker = disabledTimes;
     if (disabledTimes instanceof Array) {
-      disabledTimes.forEach((disabledTime, index) => {
+      // to calculate the valid time bondaries
+      if (disabledTimes.length > 1) {
+        validTimeBondaries = {
+          start: disabledTimes[0].end as number,
+          end: disabledTimes[1].start as number,
+        };
+        // the valid segment is the last one
+      } else if (disabledTimes[0].start === 0) {
+        validTimeBondaries = {
+          start: disabledTimes[0].end as number,
+          end: duration,
+        };
+        // to ensure that the end time is always gerater than the start time
+        if (validTimeBondaries.start &&
+          validTimeBondaries.end &&
+          validTimeBondaries.start > validTimeBondaries.end) {
+          validTimeBondaries.end = validTimeBondaries.start + 0.5;
+        }
+        // the valid segment is the first one
+      } else {
+        validTimeBondaries = {
+          start: 0 + ZERO_TIME_SLOP,
+          end: disabledTimes[0].start as number,
+        };
+      }
+      disabledTimes.forEach((disabledTime: Time, index) => {
         const startTime = disabledTime.start as number;
         const endTime = disabledTime.end as number;
-        if (typeof startTime === 'number' && typeof endTime === 'number') {
+        if (typeof startTime === 'number' && typeof endTime === 'number' && endTime > startTime) {
           const color = theme.audioPlayer.disabled;
           const disabledSegment: SegmentAddOptions = {
             startTime,
@@ -776,32 +811,49 @@ export function AudioPlayer(props: AudioPlayerProps) {
   // set the create a time segment for a word
   React.useEffect(() => {
     if (wordToCreateTimeFor !== undefined) {
-      // adding a bit to account for segment creation slop
-      const startTime = wordToCreateTimeFor.segmentStartTime + 0.03;
-      let endTime = startTime + 0.5;
+      // adding a bit of slop because `Peaks.js` does not 
+      // like creating segments at exactly `0`
+      const startTime = wordToCreateTimeFor.segmentStartTime + ZERO_TIME_SLOP;
+      let endTime = wordToCreateTimeFor.segmentStartTime + STARTING_WORD_LOOP_LENGTH;
       if (endTime > duration) {
         endTime = duration;
       }
-      const { color } = wordToCreateTimeFor;
-      const segmentToAdd: SegmentAddOptions = {
-        startTime,
-        endTime,
-        editable: true,
-        color,
-        id: wordToCreateTimeFor.wordKey,
-        labelText: wordToCreateTimeFor.range.text,
-      };
-      createSegment(segmentToAdd);
+      if (endTime > startTime) {
+        const { color } = wordToCreateTimeFor;
+        const segmentToAdd: SegmentAddOptions = {
+          startTime,
+          endTime,
+          editable: true,
+          color,
+          id: wordToCreateTimeFor.wordKey,
+          labelText: wordToCreateTimeFor.text,
+        };
+        createSegment(segmentToAdd);
+      }
     }
   }, [wordToCreateTimeFor]);
 
   // set the update the time for a segment
   React.useEffect(() => {
     if (wordToUpdateTimeFor !== undefined) {
-      const { wordKey, segmentStartTime, segmentEndTime } = wordToUpdateTimeFor;
+      const { wordKey } = wordToUpdateTimeFor;
+      let { segmentStartTime, segmentEndTime } = wordToUpdateTimeFor;
       if (typeof segmentEndTime === 'number') {
         const isValidTime = checkIfValidSegmentArea(segmentStartTime, segmentEndTime);
         if (isValidTime) {
+          if(segmentStartTime === 0){
+            segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
+          }
+          updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
+        } else if (typeof validTimeBondaries?.start === 'number' &&
+          typeof validTimeBondaries?.end === 'number') {
+          // to reset to the valid limits if outside the valid range
+          if (segmentStartTime < validTimeBondaries?.start) {
+            segmentStartTime = validTimeBondaries?.start as number;
+          }
+          if (segmentEndTime > validTimeBondaries?.end) {
+            segmentEndTime = validTimeBondaries?.end as number;
+          }
           updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
         }
       }
@@ -845,8 +897,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
         // or (preferred):
         containers: {
-          zoomview: document.getElementById('zoomview-container') as HTMLElement,
-          overview: document.getElementById('overview-container') as HTMLElement
+          zoomview: document.getElementById(DOM_IDS['zoomview-container']) as HTMLElement,
+          overview: document.getElementById(DOM_IDS['overview-container']) as HTMLElement
         },
         // HTML5 Media element containing an audio track
         mediaElement: mediaElement as HTMLAudioElement,
@@ -940,7 +992,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         height: 0,
       };
 
-      StreamPlayer = videojs('myAudio', options) as VideoJsPlayer;
+      StreamPlayer = videojs(DOM_IDS['audio-container'], options) as VideoJsPlayer;
 
       // load the content once ready
       StreamPlayer.on('ready', function (error) {
@@ -967,19 +1019,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
       try {
         if (getTimeIntervalId) {
           clearTimeout(getTimeIntervalId);
-          getTimeIntervalId = undefined;
         }
         if (waitingTimeoutId) {
           clearTimeout(waitingTimeoutId);
-          waitingTimeoutId = undefined;
         }
         if (PeaksPlayer) {
           PeaksPlayer.destroy();
-          PeaksPlayer = undefined;
         }
         if (StreamPlayer) {
           StreamPlayer.dispose();
-          StreamPlayer = undefined;
         }
         if (mediaElement) {
           mediaElement.removeEventListener('loadstart', handleWaiting);
@@ -998,10 +1046,19 @@ export function AudioPlayer(props: AudioPlayerProps) {
           important: true,
         });
       }
+      duration = 0;
+      waitingTimeoutId = undefined;
+      getTimeIntervalId = undefined;
+      fatalError = false;
+      isLoop = false;
+      mediaElement = null;
+      StreamPlayer = undefined;
+      PeaksPlayer = undefined;
+      internaDisabledTimesTracker = undefined;
+      validTimeBondaries = undefined;
+      tempDragStartSegmentResetOptions = undefined;
     };
   }, []);
-
-  // getVideoJsLog();
 
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
     <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
@@ -1121,7 +1178,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           justify='center'
           alignItems='center'
           alignContent='center'
-          style={{ height: 128 }}
+          className={classes.peaksContainer}
         >
           <PropagateLoader
             color={theme.palette.primary.main}
@@ -1129,11 +1186,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
         </Grid>
       )}
       <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
-        <div id="zoomview-container" className={classes.zoomView} />
-        <div id="overview-container" />
+        <div id={DOM_IDS['zoomview-container']} className={classes.zoomView} />
+        <div id={DOM_IDS['overview-container']} />
       </div>
       <div data-vjs-player className={classes.hidden}>
-        <audio id="myAudio" className="video-js vjs-hidden"></audio>
+        <audio id={DOM_IDS['audio-container']} className="video-js vjs-hidden"></audio>
       </div>
     </Paper>
   );
