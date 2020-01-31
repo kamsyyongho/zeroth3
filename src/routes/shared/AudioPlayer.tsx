@@ -48,6 +48,7 @@ let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
 let internaDisabledTimesTracker: Time[] | undefined;
 let validTimeBondaries: Time | undefined;
+let loopValidTimeBoundaries: Time | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 
@@ -301,6 +302,17 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (onTimeChange && typeof onTimeChange === 'function') {
         onTimeChange(currentTimeFixed);
       }
+      // to stay within any loops
+      if(typeof validTimeBondaries?.start === 'number' &&
+      typeof validTimeBondaries?.end === 'number' &&
+      currentTime > validTimeBondaries?.end) {
+        seekToTime(validTimeBondaries.start);
+      } else if (isLoop && 
+        typeof loopValidTimeBoundaries?.start === 'number' &&
+      typeof loopValidTimeBoundaries?.end === 'number' &&
+      currentTime > loopValidTimeBoundaries?.end) {
+        seekToTime(loopValidTimeBoundaries.start);
+      }
     } catch (error) {
       handleError(error);
     }
@@ -448,11 +460,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
           typeof validTimeBondaries?.start === 'number' &&
           typeof validTimeBondaries?.end === 'number') {
           // to reset to the valid limits if dragged outside the valid range
-          if (startTime < validTimeBondaries?.start) {
-            tempDragStartSegmentResetOptions.startTime = validTimeBondaries?.start;
+          if (startTime < validTimeBondaries.start) {
+            tempDragStartSegmentResetOptions.startTime = validTimeBondaries.start;
           }
-          if (endTime > validTimeBondaries?.end) {
-            tempDragStartSegmentResetOptions.endTime = validTimeBondaries?.end;
+          if (endTime > validTimeBondaries.end) {
+            tempDragStartSegmentResetOptions.endTime = validTimeBondaries.end;
           }
           PeaksPlayer.segments.removeById(id);
           PeaksPlayer.segments.add(tempDragStartSegmentResetOptions);
@@ -478,6 +490,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
       if (isLoop) {
         PeaksPlayer.segments.removeById(SEGMENT_IDS.LOOP);
+        loopValidTimeBoundaries = undefined;
       } else if (!loopSegment) {
         const color = theme.audioPlayer.loop;
         let startTime = currentTime;
@@ -497,6 +510,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
           color,
         };
         PeaksPlayer.segments.add(segmentOptions);
+        loopValidTimeBoundaries = {
+          start: startTime,
+          end: endTime,
+        };
       }
       isLoop = !isLoop;
     } catch (error) {
@@ -590,6 +607,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         seekToTime(segmentToAdd.startTime);
       }
       isLoop = false;
+      loopValidTimeBoundaries = undefined;
     } catch (error) {
       handleError(error);
     }
@@ -841,18 +859,18 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof segmentEndTime === 'number') {
         const isValidTime = checkIfValidSegmentArea(segmentStartTime, segmentEndTime);
         if (isValidTime) {
-          if(segmentStartTime === 0){
+          if (segmentStartTime === 0) {
             segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
           }
           updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
         } else if (typeof validTimeBondaries?.start === 'number' &&
           typeof validTimeBondaries?.end === 'number') {
           // to reset to the valid limits if outside the valid range
-          if (segmentStartTime < validTimeBondaries?.start) {
-            segmentStartTime = validTimeBondaries?.start as number;
+          if (segmentStartTime < validTimeBondaries.start) {
+            segmentStartTime = validTimeBondaries.start;
           }
-          if (segmentEndTime > validTimeBondaries?.end) {
-            segmentEndTime = validTimeBondaries?.end as number;
+          if (segmentEndTime > validTimeBondaries.end) {
+            segmentEndTime = validTimeBondaries.end;
           }
           updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
         }
@@ -884,10 +902,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
     const peaksJsInit = () => {
       const peaksUrl = `${url}.json`;
-      let zoomLevels = [512, 1024, 2048, 4096];
+      let zoomLevels = [64, 128, 256];
       // handle the increased zoom for files less than a minute
       if (length < 60) {
-        zoomLevels = [2, 4, 8, 16];
+        zoomLevels = [32, 64, 128];
       }
 
       const options: PeaksOptions = {
@@ -1056,6 +1074,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer = undefined;
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
+      loopValidTimeBoundaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
     };
   }, []);
