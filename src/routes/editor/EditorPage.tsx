@@ -5,7 +5,6 @@ import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
-import { CellMeasurerCache } from 'react-virtualized';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
@@ -70,11 +69,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
   }),
 );
-
-const virtualListCache = new CellMeasurerCache({
-  fixedWidth: true,
-  defaultHeight: 60,
-});
 
 /**
  * reference used to reset focus to the first input 
