@@ -75,7 +75,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     openConfirm,
     deleteLoading,
   } = props;
-  const { acousticModel, languageModel, name, id, thresholdHc, thresholdLc, description } = modelConfig;
+  const { acousticModel, languageModel, name, id, thresholdLr, thresholdHr, description } = modelConfig;
   const { translate } = React.useContext(I18nContext);
   const { width } = useWindowSize();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -183,10 +183,10 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                     className={classes.category}
                     variant='subtitle2'
                   >
-                    {`${translate('forms.thresholdLc')}:`}
+                    {`${translate('forms.thresholdHr')}:`}
                   </Typography>
                   <Typography color="textSecondary" className={classes.text}>
-                    {thresholdLc}
+                    {thresholdHr}
                   </Typography>
                 </Grid>
                 <Grid
@@ -201,10 +201,10 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                     className={classes.category}
                     variant='subtitle2'
                   >
-                    {`${translate('forms.thresholdHc')}:`}
+                    {`${translate('forms.thresholdLr')}:`}
                   </Typography>
                   <Typography color="textSecondary" className={classes.text}>
-                    {thresholdHc}
+                    {thresholdLr}
                   </Typography>
                 </Grid>
               </CardContent>

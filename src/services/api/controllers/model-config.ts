@@ -61,8 +61,8 @@ export class ModelConfig extends ParentApi {
    * @param description
    * @param acousticModelId
    * @param languageModelId
-   * @param thresholdHc
-   * @param thresholdLc
+   * @param thresholdLr
+   * @param thresholdHr
    */
   async postModelConfig(
     projectId: string,
@@ -70,14 +70,14 @@ export class ModelConfig extends ParentApi {
     description: string,
     acousticModelId: string,
     languageModelId: string,
-    thresholdHc: number | null,
-    thresholdLc: number | null
+    thresholdLr: number | null,
+    thresholdHr: number | null
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
       name,
-      thresholdHc,
-      thresholdLc,
+      thresholdLr,
+      thresholdHr,
       description,
       acousticModelId,
       languageModelId,
@@ -117,8 +117,8 @@ export class ModelConfig extends ParentApi {
    * @param description
    * @param acousticModelId
    * @param languageModelId
-   * @param thresholdHc
-   * @param thresholdLc
+   * @param thresholdLr
+   * @param thresholdHr
    * @returns a `conflict` kind if the model config cannot be updated
    */
   async updateModelConfig(
@@ -128,14 +128,14 @@ export class ModelConfig extends ParentApi {
     description: string,
     acousticModelId: string,
     languageModelId: string,
-    thresholdHc: number | null,
-    thresholdLc: number | null
+    thresholdLr: number | null,
+    thresholdHr: number | null
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
       name,
-      thresholdHc,
-      thresholdLc,
+      thresholdLr,
+      thresholdHr,
       description,
       acousticModelId,
       languageModelId,

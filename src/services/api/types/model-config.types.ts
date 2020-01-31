@@ -9,8 +9,8 @@ export interface ModelConfigRequest {
   acousticModelId: string;
   languageModelId: string;
   name: string;
-  thresholdHc: Threshold | null;
-  thresholdLc: Threshold | null;
+  thresholdLr: Threshold | null;
+  thresholdHr: Threshold | null;
   description: string;
 }
 
