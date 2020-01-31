@@ -1,14 +1,22 @@
+import { ClickAwayListener, Popper, Tooltip, Typography } from '@material-ui/core';
 import Button, { ButtonProps } from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
+import Fade from '@material-ui/core/Fade';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import { default as PublishIcon, default as SvgIcon } from '@material-ui/icons/Publish';
+import AddIcon from '@material-ui/icons/Add';
+import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
+import MultilineChartIcon from '@material-ui/icons/MultilineChart';
+import { default as PublishIcon } from '@material-ui/icons/Publish';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import ToggleIcon from 'material-ui-toggle-icon';
 import React from 'react';
-import { MdPersonAdd } from 'react-icons/md';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { EDITOR_MODES } from '../EditorPage';
+import { ConfidenceSlider } from './ConfidenceSlider';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -42,28 +50,35 @@ const useStyles = makeStyles((theme) =>
     toggle: {
       color: theme.palette.secondary.contrastText,
     },
+    popper: {
+      zIndex: 100,
+    },
   }),
 );
 
 export enum EDITOR_CONTROLS {
-  save,
   confirm,
+  save,
   undo,
   redo,
-  edit,
   merge,
   split,
-  speaker,
+  toggleMore,
+  createWord,
+  setThreshold,
+  debug,
 }
 
 const primaryControlOrder = [
   EDITOR_CONTROLS.save,
   EDITOR_CONTROLS.undo,
   EDITOR_CONTROLS.redo,
-  EDITOR_CONTROLS.edit,
   EDITOR_CONTROLS.merge,
   EDITOR_CONTROLS.split,
-  EDITOR_CONTROLS.speaker,
+  EDITOR_CONTROLS.toggleMore,
+  EDITOR_CONTROLS.createWord,
+  EDITOR_CONTROLS.setThreshold,
+  EDITOR_CONTROLS.debug,
 ];
 
 const secondaryControlOrder = [
@@ -71,21 +86,53 @@ const secondaryControlOrder = [
 ];
 
 interface EditorControlsProps {
-  onModeChange: (newMode: EDITOR_MODES) => void;
+  onCommandClick: (newMode: EDITOR_CONTROLS) => void;
   onAction: (confirm?: boolean) => void;
   editorMode: EDITOR_MODES;
   disabledControls?: EDITOR_CONTROLS[];
+  editorOptionsVisible: boolean;
+  debugMode?: boolean;
+  toggleDebugMode: () => void;
   loading?: boolean;
+  editorReady?: boolean;
+  wordConfidenceThreshold: number;
+  onThresholdChange: (threshold: number) => void;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
-  const { editorMode, onModeChange, onAction, disabledControls = [], loading } = props;
-  const { translate } = React.useContext(I18nContext);
+  const {
+    editorMode,
+    onCommandClick,
+    onAction,
+    disabledControls = [],
+    editorOptionsVisible,
+    debugMode,
+    toggleDebugMode,
+    loading,
+    editorReady,
+    wordConfidenceThreshold,
+    onThresholdChange,
+  } = props;
+  const { translate, osText } = React.useContext(I18nContext);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [sliderOpen, setSliderOpen] = React.useState(false);
+
+  const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
+
+  const handleClickAway = () => {
+    if (sliderOpen) {
+      setAnchorEl(null);
+    }
+  };
+
+  const open = Boolean(anchorEl);
 
   const classes = useStyles();
   const theme = useTheme();
 
-  const renderButton = (label: string, Icon: JSX.Element | null, buttonProps?: ButtonProps, selected?: boolean) => (
+  const renderButton = (label: string, Icon: JSX.Element | null, tooltipText: string, buttonProps?: ButtonProps, selected?: boolean) => (
     <Button
       key={label}
       {...buttonProps}
@@ -95,19 +142,27 @@ export const EditorControls = (props: EditorControlsProps) => {
       }}
       className={classes.button}
     >
-      <Grid
-        container
-        direction='column'
-        alignItems='center'
+      <Tooltip
+        placement='bottom'
+        title={tooltipText ? <Typography variant='h6' >{tooltipText}</Typography> : ''}
+        arrow={true}
       >
-        {Icon}
-        {label}
-      </Grid>
-    </Button>);
+        <Grid
+          container
+          direction='column'
+          alignItems='center'
+        >
+          {Icon}
+          {label}
+        </Grid>
+      </Tooltip>
+    </Button>
+  );
 
   const renderButtons = (controlOrder: EDITOR_CONTROLS[]) => {
     return controlOrder.map((control) => {
       let label = '';
+      let tooltipText = '';
       let icon: JSX.Element | null = null;
       let props: ButtonProps = {};
       let selected = false;
@@ -116,8 +171,8 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('common.save');
           icon = <ICONS.Save />;
           props = {
-            onClick: () => onAction(),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.save)
+            onClick: () => onCommandClick(EDITOR_CONTROLS.save),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.save) || !editorReady,
           };
           break;
         case EDITOR_CONTROLS.confirm:
@@ -125,12 +180,13 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <PublishIcon />;
           props = {
             onClick: () => onAction(true),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm)
+            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm) || !editorReady,
           };
           break;
         case EDITOR_CONTROLS.undo:
           label = translate('editor.undo');
           icon = <ICONS.Undo />;
+          tooltipText = osText('undo');
           props = {
             onClick: () => {
               //!
@@ -143,6 +199,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.redo:
           label = translate('editor.redo');
           icon = <ICONS.Redo />;
+          tooltipText = osText('redo');
           props = {
             onClick: () => {
               //!
@@ -152,46 +209,79 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: true,
           };
           break;
-        case EDITOR_CONTROLS.edit:
-          label = translate('editor.edit');
-          icon = <ICONS.Edit />;
-          selected = editorMode === EDITOR_MODES.edit;
-          props = {
-            onClick: () => onModeChange(EDITOR_MODES.edit),
-          };
-          break;
         case EDITOR_CONTROLS.merge:
           label = translate('editor.merge');
           icon = <ICONS.Merge />;
+          tooltipText = osText('merge');
           selected = editorMode === EDITOR_MODES.merge;
           props = {
-            onClick: () => onModeChange(EDITOR_MODES.merge),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.merge)
+            onClick: () => onCommandClick(EDITOR_CONTROLS.merge),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.merge) || !editorReady,
           };
           break;
         case EDITOR_CONTROLS.split:
           label = translate('editor.split');
           icon = <ICONS.Split />;
+          tooltipText = osText('split');
           selected = editorMode === EDITOR_MODES.split;
           props = {
-            onClick: () => onModeChange(EDITOR_MODES.split),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.split)
+            onClick: () => onCommandClick(EDITOR_CONTROLS.split),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.split) || !editorReady,
           };
           break;
-        case EDITOR_CONTROLS.speaker:
-          label = translate('editor.speaker');
-          icon = <SvgIcon component={MdPersonAdd} />;
-          selected = editorMode === EDITOR_MODES.speaker;
+        case EDITOR_CONTROLS.toggleMore:
+          label = translate('editor.toggleMore');
+          icon = <ToggleIcon
+            on={editorOptionsVisible}
+            onIcon={<VisibilityIcon />}
+            offIcon={<VisibilityOffIcon />}
+          />;
+          tooltipText = osText('toggleMore');
+          selected = editorOptionsVisible;
           props = {
-            onClick: () => onModeChange(EDITOR_MODES.speaker),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.speaker)
+            onClick: () => onCommandClick(EDITOR_CONTROLS.toggleMore),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore) || !editorReady,
+          };
+          break;
+        case EDITOR_CONTROLS.createWord:
+          label = translate('editor.createWord');
+          icon = <AddIcon />;
+          tooltipText = osText('createWord');
+          selected = editorMode === EDITOR_MODES.createWord;
+          props = {
+            onClick: () => onCommandClick(EDITOR_CONTROLS.createWord),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord) || !editorReady,
+          };
+          break;
+        case EDITOR_CONTROLS.setThreshold:
+          label = translate('editor.wordConfidence');
+          icon = <MultilineChartIcon />;
+          selected = !!anchorEl;
+          props = {
+            onClick: (event: React.MouseEvent<HTMLElement>) => {
+              handleThresholdClick(event);
+              onCommandClick(EDITOR_CONTROLS.setThreshold);
+            },
+            disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold) || !editorReady,
+          };
+          break;
+        case EDITOR_CONTROLS.debug:
+          label = 'DEBUG';
+          icon = <DeveloperModeIcon />;
+          selected = !!debugMode;
+          props = {
+            onClick: () => {
+              toggleDebugMode();
+              onCommandClick(EDITOR_CONTROLS.debug);
+            },
+            disabled: disabledControls.includes(EDITOR_CONTROLS.debug) || !editorReady,
           };
           break;
       }
       if (loading) {
         props.disabled = true;
       }
-      return renderButton(label, icon, props, selected);
+      return renderButton(label, icon, tooltipText, props, selected);
     });
   };
 
@@ -221,6 +311,20 @@ export const EditorControls = (props: EditorControlsProps) => {
       >
         {renderButtons(secondaryControlOrder)}
       </ButtonGroup>
+      <ClickAwayListener onClickAway={handleClickAway} >
+        <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
+          {({ TransitionProps }) => (
+            <Fade {...TransitionProps} >
+              <ConfidenceSlider
+                wordConfidenceThreshold={wordConfidenceThreshold}
+                onThresholdChange={onThresholdChange}
+                isOpen={open}
+                setSliderOpen={setSliderOpen}
+              />
+            </Fade>
+          )}
+        </Popper>
+      </ClickAwayListener>
     </Grid>
   );
 };
