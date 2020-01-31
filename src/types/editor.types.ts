@@ -6,6 +6,7 @@ import {
   RawDraftInlineStyleRange,
 } from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
+
 export interface Range {
   start: number;
   end: number; // this value used as rangeIndex
@@ -18,12 +19,16 @@ export interface Time {
   end?: number;
 }
 
+/** used to create word alignment data */
 export interface Word {
   color: string;
   time?: Time;
-  range: Range;
+  text: string;
 }
 
+//todo
+//!
+// delete
 export interface WordsbyRangeStartAndEndIndexes {
   [x: string]: Word;
 }
@@ -122,6 +127,7 @@ export interface CursorContent<T, U> {
   isStartOfBlock: boolean;
   characterDetailsBeforeCursor: CharacterDetails;
   characterDetailsAtCursor: CharacterDetails;
+  selectionCharacterDetails: CharacterDetails[];
   cursorOffset: number;
   blockObject: BlockObject<U>;
   blockEntityRanges: RawDraftEntityRange[];
@@ -151,6 +157,7 @@ export enum KEY_COMMANDS {
   'merge-segments-back' = 'merge-segments-back',
   'merge-segments-forward' = 'merge-segments-forward',
   'toggle-popups' = 'toggle-popups',
+  'create-word' = 'create-word',
 }
 
 export enum REMOVAL_DIRECTION {
