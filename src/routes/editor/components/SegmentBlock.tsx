@@ -123,6 +123,10 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
         invisible={!displayTextChangedHover}
         variant="dot"
         color='error'
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
         classes={{
           colorError: classes.badge,
         }}

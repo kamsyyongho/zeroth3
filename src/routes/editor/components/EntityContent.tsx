@@ -1,3 +1,4 @@
+import { Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { ContentState, DraftEntityMutability } from 'draft-js';
 import React from 'react';
@@ -74,10 +75,12 @@ interface EntityContentProps extends React.DetailedHTMLProps<React.HTMLAttribute
   contentState: ContentState,
   offsetKey: string,
   entityKey: string,
+  wordConfidenceThreshold: number;
+  debugMode?: boolean;
 }
 
 export const EntityContent = (props: EntityContentProps) => {
-  const { contentState, offsetKey, entityKey } = props;
+  const { contentState, offsetKey, entityKey, wordConfidenceThreshold, debugMode } = props;
   const classes = useStyles();
   const tokenEntity = contentState.getEntity(entityKey);
   const type = tokenEntity.getType();
@@ -85,13 +88,28 @@ export const EntityContent = (props: EntityContentProps) => {
   const targetData: WordAlignmentEntityData = tokenEntity.getData();
   const { wordAlignment } = targetData;
   const confidence = wordAlignment?.confidence ?? 0;
-  const LC = confidence < 0.8;
+  const LC = confidence < wordConfidenceThreshold;
   let style = getDecoratedStyle(mutability) ?? {};
   if (LC) {
     style = { ...style, backgroundColor: 'rgba(248, 222, 126, 1.0)' };
   }
-  if(type === ENTITY_TYPE.TEMP){
-    style = {...style, backgroundColor: 'red'};
+  if (type === ENTITY_TYPE.TEMP) {
+    style = { ...style, backgroundColor: 'red' };
+  }
+
+
+  if (debugMode) {
+    const timeText = `start: ${wordAlignment?.start}, length: ${wordAlignment?.length}`;
+    return <Tooltip
+      placement='bottom'
+      title={<Typography variant='body1' >{timeText}</Typography>}
+      arrow={true}
+      classes={{ tooltip: classes.tooltipContent }}
+    >
+      <span data-offset-key={offsetKey} style={style}>
+        {props.children}
+      </span>
+    </Tooltip>;
   }
 
   return (
