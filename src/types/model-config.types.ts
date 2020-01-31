@@ -6,14 +6,14 @@ export interface ModelConfig {
   description: string;
   id: string;
   languageModel: LanguageModel;
-  thresholdHc?: Threshold;
-  thresholdLc?: Threshold;
+  thresholdLr?: Threshold;
+  thresholdHr?: Threshold;
 }
 
 /**
  * The confidence threshold value
  * - float
  * - `threshold >= 0`
- * - `thresholdHc` `>` `thresholdLc`
+ * - `thresholdLr` `>` `thresholdHr`
  */
 export type Threshold = number;

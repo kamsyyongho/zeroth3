@@ -36,8 +36,8 @@ export interface VoiceDataResults extends PaginatedResults {
 
 export enum CONTENT_STATUS {
   DECODED = 'DECODED',
-  UNCONFIRMED_LC = 'UNCONFIRMED_LC',
-  UNCONFIRMED_HC = 'UNCONFIRMED_HC',
+  UNCONFIRMED_HR = 'UNCONFIRMED_HR',
+  UNCONFIRMED_LR = 'UNCONFIRMED_LR',
   FETCHED = 'FETCHED',
   CONFIRMED = 'CONFIRMED',
   TRAINABLE_SV = 'TRAINABLE_SV',
@@ -68,7 +68,6 @@ export interface WordAlignment {
   confidence: number;
   /** the length in seconds of the word */
   length: number;
-  speaker: string;
   /** the starting time of the word within the segment */
   start: number;
   word: string;

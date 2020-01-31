@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { FilterParams, SnackbarError } from '../../../../types';
+import { FilterParams, SnackbarError, SNACKBAR_VARIANTS } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 
@@ -43,7 +43,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
     setIsError(false);
     setLoading(false);
     onClose();
-  }
+  };
 
   const handleSuccess = () => {
     handleClose();
@@ -72,7 +72,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         handleSuccess();
       } else {
         log({
@@ -88,7 +88,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

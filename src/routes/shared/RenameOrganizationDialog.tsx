@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { SnackbarError } from '../../types/snackbar.types';
+import { SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { TextFormField } from './form-fields/TextFormField';
 
@@ -57,7 +57,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess();
         onClose();
       } else {
@@ -74,7 +74,7 @@ export function RenameOrganizationDialog(props: RenameOrganizationDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

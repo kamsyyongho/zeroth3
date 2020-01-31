@@ -23,7 +23,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
 import { deleteProjectResult } from '../../services/api/types/projects.types';
-import { PATHS, Project } from '../../types';
+import { PATHS, Project, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { SearchBar } from '../shared/SearchBar';
@@ -198,7 +198,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         if (serverError?.message) {
           errorMessageText = serverError.message;
         }
-        enqueueSnackbar(errorMessageText, { variant: 'error' });
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       } else {
         successIds.push(projectsToDelete[responseIndex]);
         enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });

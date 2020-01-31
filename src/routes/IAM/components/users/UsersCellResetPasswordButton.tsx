@@ -8,7 +8,7 @@ import { CellProps } from 'react-table';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { User } from '../../../../types';
-import { SnackbarError } from '../../../../types/snackbar.types';
+import { SnackbarError, SNACKBAR_VARIANTS } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 
@@ -41,7 +41,7 @@ export function UsersCellResetPasswordButton(props: UsersCellResetPasswordButton
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === "ok") {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
       } else {
         log({
           file: `UsersCellResetPasswordButton.tsx`,
@@ -55,7 +55,7 @@ export function UsersCellResetPasswordButton(props: UsersCellResetPasswordButton
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setIsLoading(false);
     }
   };

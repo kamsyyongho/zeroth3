@@ -16,7 +16,7 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { postLanguageModelResult } from '../../../../services/api/types/models.types';
-import { LanguageModel, SnackbarError, SubGraph, TopGraph } from '../../../../types';
+import { LanguageModel, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
@@ -112,7 +112,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(response.languageModel, isEdit);
         handleClose();
       } else {
@@ -129,7 +129,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

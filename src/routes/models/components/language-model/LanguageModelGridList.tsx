@@ -11,7 +11,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { deleteLanguageModelResult, ServerError } from '../../../../services/api/types';
-import { BooleanById, LanguageModel, SubGraph, TopGraph } from '../../../../types';
+import { BooleanById, LanguageModel, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { LanguageModelDialog } from './LanguageModelDialog';
@@ -170,7 +170,7 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
         if (serverError?.message) {
           errorMessageText = serverError.message;
         }
-        enqueueSnackbar(errorMessageText, { variant: 'error' });
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       } else {
         successIds.push(modelsToDelete[responseIndex]);
         enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });

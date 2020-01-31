@@ -10,6 +10,7 @@ export interface ParsedI18n {
    */
   i18n: i18n,
   translate: (key: string, options?: TOptions | string) => string,
+  osText: (key: string) => string,
   toggleLanguage: () => void;
   language: string;
   dateTimeFormat: string;
@@ -21,6 +22,7 @@ export interface ParsedI18n {
 const defaultContext: ParsedI18n = {
   i18n: {} as i18n,
   translate: () => '',
+  osText: () => '',
   toggleLanguage: noop,
   language: "en",
   dateTimeFormat: "",

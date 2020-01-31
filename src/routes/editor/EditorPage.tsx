@@ -1,23 +1,16 @@
-import { Box, Button, Container, Grid, Tooltip, Typography } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
+import { Container } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import ErrorIcon from '@material-ui/icons/Error';
 import { useSnackbar } from 'notistack';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
-import AutosizeInput from 'react-input-autosize';
-import { CellMeasurerCache } from 'react-virtualized';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { ICONS } from '../../theme/icons';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
-import { SnackbarError } from '../../types/snackbar.types';
+import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordsbyRangeStartAndEndIndexes, WordToCreateTimeFor } from '../../types';
 import log from '../../util/log/logger';
-import { formatSecondsDuration, generateWordKeyString } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
@@ -77,11 +70,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }),
 );
 
-const virtualListCache = new CellMeasurerCache({
-  fixedWidth: true,
-  defaultHeight: 60,
-});
-
 /**
  * reference used to reset focus to the first input 
  * when tabbing should wrap around to the beginning
@@ -127,6 +115,9 @@ export enum EDITOR_MODES {
   merge,
   split,
   speaker,
+  toggleMore,
+  createWord,
+  setLc,
 }
 
 
@@ -164,16 +155,21 @@ export function EditorPage() {
   const [splitLocation, setSplitLocation] = React.useState<SegmentSplitLocation | undefined>();
   const [highRiskSegmentIndex, setHighRiskSegmentIndex] = React.useState<number | undefined>();
   const [segmentIndexToAssignSpeakerTo, setSegmentIndexToAssignSpeakerTo] = React.useState<number | undefined>();
+  const [wordTimeFromPlayer, setWordTimeFromPlayer] = React.useState<Time | undefined>();
   const [words, setWords] = React.useState<WordsbyRangeStartAndEndIndexes>({});
+  const [editorReady, setEditorReady] = React.useState(false);
   const [discardDialogOpen, setDiscardDialogOpen] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   // to force a state change that will rerender the segment buttons
   const [numberOfSegmentsSelected, setNumberOfSegmentsSelected] = React.useState(0);
   // to force a state change when the segment heights are calculated
   const [sizeMapCurrentValues, setSizeMapCurrentValues] = React.useState<{ [x: number]: number; }>({});
-  const [counter, setCounter] = React.useState(0);
+  const [wordConfidenceThreshold, setWordConfidenceThreshold] = React.useState(0.8);
   const [editorMode, setEditorMode] = React.useState<EDITOR_MODES>(EDITOR_MODES.none);
+  const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
   const [pendingEditorMode, setPendingEditorMode] = React.useState<EDITOR_MODES | undefined>();
+  const [editorOptionsVisible, setEditorOptionsVisible] = React.useState(false);
+  const [debugMode, setDebugMode] = React.useState(false);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [noAssignedData, setNoAssignedData] = React.useState(false);
@@ -257,15 +253,6 @@ export function EditorPage() {
       changeEditMode(pendingEditorMode);
     }
     closeDiscardDialog();
-  };
-
-  const handleModeChange = (newMode: EDITOR_MODES) => {
-    if (newMode !== EDITOR_MODES.edit && editedSegmentIndexes.size) {
-      setPendingEditorMode(newMode);
-      openDiscardDialog();
-    } else {
-      changeEditMode(newMode);
-    }
   };
 
   const handleSegmentToMergeClick = (segmentIndex: number) => {
@@ -368,7 +355,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
 
         // to trigger the `useEffect` to fetch more
         setVoiceData(undefined);
@@ -385,7 +372,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setConfirmSegmentsLoading(false);
     }
   };
@@ -396,17 +383,12 @@ export function EditorPage() {
 
       // to build which segments to send
       const editedSegmentsToUpdate: Segment[] = [];
-      const testSegment = { ...segments[0] };
-      testSegment.wordAlignments.pop();
-      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(testSegment));
-      // editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
+      editedSegmentIndexes.forEach(segmentIndex => editedSegmentsToUpdate.push(segments[segmentIndex]));
 
-      const response = await api.voiceData.updateSegments(projectId, voiceData.id, [testSegment]);
-      // const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
+      const response = await api.voiceData.updateSegments(projectId, voiceData.id, editedSegmentsToUpdate);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
         // to reset our list
         editedSegmentIndexes.clear();
         // reset our new default baseline
@@ -424,7 +406,38 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
+  const submitSegmentUpdate = async (segmentId: string, wordAlignments: WordAlignment[], segmentIndex: number, onSuccess: (segment: Segment) => void) => {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
+      setSaveSegmentsLoading(true);
+
+      const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        const updatedSegment: Segment = { ...segments[segmentIndex], wordAlignments: [...wordAlignments] };
+        const updatedSegments = [...segments];
+        updatedSegments.splice(segmentIndex, 1, updatedSegment);
+        setSegments(updatedSegments);
+        onSuccess(updatedSegment);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentUpdate - failed to update segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -454,7 +467,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
         // to reset our list
         segmentMergeIndexes.clear();
         setNumberOfSegmentsSelected(0);
@@ -481,7 +493,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -493,7 +505,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
 
         // to reset our selected segment
         setSplitLocation(undefined);
@@ -506,7 +517,7 @@ export function EditorPage() {
 
         // reset our new default baseline
         setSegments(splitSegments);
-        setInitialSegments(splitSegments);        
+        setInitialSegments(splitSegments);
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -522,7 +533,7 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
   };
@@ -567,12 +578,22 @@ export function EditorPage() {
   };
 
   const calculateWordTime = (segmentIndex: number, wordIndex: number) => {
-    const segment = segments[segmentIndex];
-    const word = segment.wordAlignments[wordIndex];
-    const segmentTime = segment.start;
-    const wordTime = word.start;
-    const totalTime = segmentTime + wordTime;
-    return totalTime;
+    try {
+      const segment = segments[segmentIndex];
+      const word = segment.wordAlignments[wordIndex];
+      const segmentTime = segment.start;
+      const wordTime = word.start;
+      const totalTime = segmentTime + wordTime;
+      return totalTime;
+    } catch (error) {
+      log({
+        file: `EditorPage.tsx`,
+        caller: `calculateWordTime - failed to calculate time`,
+        value: error.toString(),
+        important: true,
+      });
+      return 0;
+    }
   };
 
   //!
@@ -888,17 +909,17 @@ export function EditorPage() {
   const updateEditorAfterSpeakerAssign = (updatedSegment: Segment, segmentIndex: number): ParentMethodResponse => {
     return {
       type: PARENT_METHOD_TYPES.speaker,
-      payload: {segment: updatedSegment, index: segmentIndex},
-    }
-  }
+      payload: { segment: updatedSegment, index: segmentIndex },
+    };
+  };
 
   const handleSpeakerAssignSuccess = (updatedSegment: Segment, segmentIndex: number) => {
     const responseToPassToEditor = updateEditorAfterSpeakerAssign(updatedSegment, segmentIndex);
     setResponseToPassToEditor(responseToPassToEditor);
     handleSegmentUpdate(updatedSegment, segmentIndex);
-  }
+  };
 
-  const stopHighRiskSegmentEdit = () => {
+  const handleWordTimeCreationClose = () => {
     setHighRiskSegmentIndex(undefined);
     setDisabledTimes(undefined);
     setDeleteAllWordSegments(true);
@@ -915,168 +936,6 @@ export function EditorPage() {
   const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
 
   const handleEditorResponseHandled = () => setResponseToPassToEditor(undefined);
-
-  const renderWords = (segment: Segment, segmentIndex: number) => {
-    const words = segment.wordAlignments.map((wordAlignment, wordIndex) => {
-
-
-      const key = generateWordKeyString([segmentIndex, wordIndex]);
-      const isFocussed = getWordFocussed(segmentIndex, wordIndex);
-      const isLC = wordAlignment.confidence < DEFAULT_LC_THRESHOLD;
-      const isPlaying = calculateIsPlaying(segmentIndex, wordIndex);
-      const wordStyle = getWordStyle(isFocussed, isLC, isPlaying);
-      // const tabIndex = getTabIndex(segmentIndex, wordIndex);
-
-      // const isFirstWord = firstWordTabIndex === tabIndex;
-      // const isLastWord = lastWordTabIndex === tabIndex;
-      const { highRisk } = segment;
-      const isLastWordInSegment = (segment.wordAlignments.length - 1) === wordIndex;
-      const displayFreeTextEditTrigger = highRisk && isLastWordInSegment;
-
-
-      let isSplitSelected = false;
-      if (splitLocation &&
-        splitLocation.segmentId === segment.id &&
-        splitLocation.segmentIndex === segmentIndex &&
-        splitLocation.splitIndex === wordIndex &&
-        editorMode === EDITOR_MODES.split) {
-        isSplitSelected = true;
-      }
-
-      const hasSplitIcon = wordAlignment.word[0] === '|';
-
-      const content = <AutosizeInput
-        // inputRef={
-        //   isFirstWord ?
-        //     ((inputRef) => firstLCWordReference = inputRef) :
-        //     (isLastWord ?
-        //       ((inputRef) => lastLCWordReference = inputRef) : undefined)}
-        // disabled={editorMode !== EDITOR_MODES.edit}
-        // tabIndex={tabIndex}
-        key={key}
-        name={key}
-        value={wordAlignment.word}
-        minWidth={5}
-        inputStyle={{
-          ...theme.typography.body1, // font styling
-          ...wordStyle,
-          margin: theme.spacing(0.25),
-          marginTop: 5, // to keep the text even with the split buttons
-        }}
-        autoFocus={isFocussed}
-        // onClick={(event) => handleWordClick(segmentIndex, wordIndex)}
-        onFocus={(event) => handleFocus(segmentIndex, wordIndex)}
-        onBlur={(event) => handleBlur(segmentIndex, wordIndex)}
-        onKeyDown={(event) => handleTabKeyCatch(event, segmentIndex, wordIndex)}
-        onChange={(event) =>
-          updateSegmentsOnChange(event, segment, wordAlignment, segmentIndex, wordIndex)
-        }
-      />;
-      return (<React.Fragment key={key}>
-        {!!wordIndex && (
-          <Button
-            aria-label="split-button"
-            size="small"
-            disabled={editorMode !== EDITOR_MODES.split}
-            color={'primary'}
-            variant={isSplitSelected ? 'contained' : undefined}
-            onClick={() => handleSplitLocationPress(segment.id, segmentIndex, wordIndex)}
-            className={classes.splitButton}
-          >
-            <ICONS.InlineSplit />
-          </Button>
-        )}
-        {content}
-        {displayFreeTextEditTrigger && (
-          <IconButton
-            aria-label="high-risk-segment-button"
-            size="small"
-            onClick={() => editHighRiskSegment(segmentIndex)}
-            className={classes.highRiskSegmentButton}
-          >
-            <ErrorIcon />
-          </IconButton>
-        )}
-      </React.Fragment>);
-    });
-    return words;
-  };
-
-
-
-  function renderRow(index: number, style: React.CSSProperties, width: number) {
-    const isRowSelected = segmentMergeIndexes.has(index);
-    const isMergeMode = editorMode === EDITOR_MODES.merge;
-    const isSpeakerMode = editorMode === EDITOR_MODES.speaker;
-    const { speaker, transcript, decoderTranscript } = segments[index];
-
-    const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
-    const displaySpeakerHover = speaker && !isMergeMode;
-    const buttonDisabled = !isMergeMode && !isSpeakerMode;
-    // console.log('rendering row:', index);
-    // if (index === 2) {
-    //   console.log('props', props);
-    //   console.log('style', style);
-    //   console.log('virtualListCache', virtualListCache);
-    // }
-    return (
-      segments[index] &&
-      <div
-        key={index}
-        style={style}
-      >
-        <Grid
-          container
-          spacing={2}
-        >
-          <Grid item>
-            <Tooltip
-              placement='top-start'
-              title={(displaySpeakerHover) ? <Typography variant='h6'>{speaker}</Typography> : ''}
-              arrow={true}
-            >
-              <Box
-                border={1}
-                borderColor={displaySpeakerHover ? theme.table.border : theme.palette.background.paper}
-                borderRadius={5}
-              >
-                <Button
-                  className={buttonDisabled ? classes.segmentTimeButton : undefined}
-                  color={isSpeakerMode ? 'secondary' : 'primary'}
-                  disabled={buttonDisabled}
-                  variant={isRowSelected ? 'contained' : 'outlined'}
-                  onClick={() => {
-                    if (isSpeakerMode) {
-                      openSpeakerAssignDialog(index);
-                    } else {
-                      handleSegmentToMergeClick(index);
-                    }
-                  }}
-                >
-                  {formatSecondsDuration(segments[index].start)}
-                </Button>
-              </Box>
-            </Tooltip>
-          </Grid>
-          <Grid item xs={12} sm container >
-            <Tooltip
-              placement='top-start'
-              title={displayTextChangedHover ? <Typography variant='h6'>{decoderTranscript?.trim()}</Typography> : ''}
-              arrow={false}
-            >
-              <Box
-                border={1}
-                borderColor={displayTextChangedHover ? theme.editor.changes : theme.palette.background.paper}
-                borderRadius={5}
-              >
-                {renderWords(segments[index], index)}
-              </Box>
-            </Tooltip>
-          </Grid>
-        </Grid>
-      </div>
-    );
-  };
 
   /**
    * keeps track of where the timer is
@@ -1115,6 +974,8 @@ export function EditorPage() {
 
   const handleWordClose = () => setWordsClosed(true);
 
+  const handleCommandHandled = () => setEditorCommand(undefined);
+
   /**
    * to reset the value once the peaks has made the segment uneditable
    * - for when a word edit popper is closed
@@ -1135,15 +996,10 @@ export function EditorPage() {
   };
 
   const handleSectionChange = (time: Time, wordKey: string) => {
-    setWords(prevWords => {
-      const updatedWords = { ...prevWords };
-      const updatedWord = updatedWords[wordKey];
-      if (updatedWord) {
-        updatedWord.time = time;
-      }
-      return { ...updatedWords, [wordKey]: updatedWord };
-    });
+    setWordTimeFromPlayer(time);
   };
+
+  const toggleDebugMode = () => setDebugMode((prevValue) => !prevValue);
 
 
 
@@ -1161,114 +1017,22 @@ export function EditorPage() {
 
   const disabledControls = getDisabledControls();
 
-  /**
-   * Allows us to add padding to the top and bottom of the list
-   * - Overrides the styling by adding some height
-   * - Required to allow us to keep track of the scroll location
-   */
-  // eslint-disable-next-line react/display-name
-  const listInnerElementType = React.forwardRef(({ style, ...rest }: any, ref) => (
-    <div
-      ref={ref}
-      style={{
-        ...style,
-        height: `${parseFloat(style.height as string) + DEFAULT_PADDING_SIZE * 2}px`
-      }}
-      {...rest}
-    />
-  ));
-
-  // const test = <AutoSizer>
-  // {({ height, width }) => {
-  //   return (
-  //     <List
-  //     key={counter}
-  //     ref={(ref) => {
-  //       // console.log('ref', ref);
-  //       if (ref) {
-  //         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //         //@ts-ignore
-  //         testRef = ref;
-  //         // console.log('INNER testRef', testRef);
-  //       }
-  //       if (!listRef.current) {
-  //         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //         //@ts-ignore
-  //         listRef.current = ref;
-  //       }
-  //     }}
-  //       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //       //@ts-ignore
-  //       // ref={(ref) => listRef = ref}
-  //       //   ref={(lref: HTMLInputElement) => {
-  //       //     if (lref !== null) {
-  //       // // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  //       // //@ts-ignore
-  //       //       listRef.current = lref;
-  //       //     }
-  //       //   }}
-  //       height={height}
-  //       itemCount={segments.length}
-  //       itemSize={() => 120}
-  //       // itemSize={getSize}
-  //       innerElementType={listInnerElementType}
-  //       // itemSize={getItemSize}
-  //     width={width}
-  //     >
-  //       {(listProps: ListChildComponentProps) => {
-  //         // console.log(listProps.index, listProps);
-  //         const {index, style} = listProps;
-  //         const segmentIsPlaying = currentPlayingLocation[0] === index;
-  //         return (
-  //           <div
-  //             key={index}
-  //             {...listProps}
-  //             // to add padding to the list and keep track of the scroll location
-  //             style={{
-  //               ...style,
-  //               top: `${parseFloat(style.top as string) + DEFAULT_PADDING_SIZE}px`
-  //             }}
-  //           >
-  //             <MemoizedSegmentRow
-  //               segmentIsPlaying={segmentIsPlaying}
-  //               segments={segments}
-  //               editorMode={editorMode}
-  //               segmentMergeIndexes={segmentMergeIndexes}
-  //               currentHeight={getSize(index)}
-  //               width={width}
-  //               openSpeakerAssignDialog={openSpeakerAssignDialog}
-  //               handleSegmentToMergeClick={handleSegmentToMergeClick}
-  //               setSize={setSize}
-  //               segmentIndex={index}
-  //               splitLocation={splitLocation}
-  //               getWordFocussed={getWordFocussed}
-  //               currentPlayingLocation={currentPlayingLocation}
-  //               handleSplitLocationPress={handleSplitLocationPress}
-  //               editHighRiskSegment={editHighRiskSegment}
-  //               handleWordClick={handleWordClick}
-  //               handleFocus={handleFocus}
-  //               handleBlur={handleBlur}
-  //               handleTabKeyCatch={handleTabKeyCatch}
-  //               updateSegmentsOnChange={updateSegmentsOnChange}
-  //             />
-  //           </div>
-  //         );
-  //       }}
-  //     </List>
-  //   );
-  // }}
-  // </AutoSizer>
-
   const editorHeight = windowSize.height && (windowSize?.height - 384);
 
   return (
     <>
       <EditorControls
-        onModeChange={handleModeChange}
+        onCommandClick={setEditorCommand}
         onAction={handleActionClick}
         editorMode={editorMode}
         disabledControls={disabledControls}
+        editorOptionsVisible={editorOptionsVisible}
+        debugMode={debugMode}
+        toggleDebugMode={toggleDebugMode}
+        wordConfidenceThreshold={wordConfidenceThreshold}
+        onThresholdChange={setWordConfidenceThreshold}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
+        editorReady={editorReady}
       />
       {alreadyConfirmed && (<StarRating
         voiceData={voiceData}
@@ -1282,13 +1046,13 @@ export function EditorPage() {
           elevation={5}
         >
           <div style={{
-            padding: 15,
+            // padding: 15,
             // height: 500,
             height: editorHeight,
             minHeight: 250,
-            paddingTop: 0,
-            paddingBottom: 0,
-            paddingRight: 0,
+            // paddingTop: 0,
+            // paddingBottom: 0,
+            // paddingRight: 0,
           }}>
             {segmentsLoading ? <BulletList /> :
               (typeof highRiskSegmentIndex === 'number' ?
@@ -1302,7 +1066,7 @@ export function EditorPage() {
                 //   onWordOpen={handleWordOpen}
                 //   onWordClose={handleWordClose}
                 //   onReset={handleWordsReset}
-                //   onClose={stopHighRiskSegmentEdit}
+                //   onClose={handleWordTimeCreationClose}
                 //   onSuccess={handleSegmentUpdate}
                 //   segments={segments}
                 //   segmentIndex={highRiskSegmentIndex}
@@ -1312,16 +1076,34 @@ export function EditorPage() {
                 // />
                 null
                 : <Editor
+                  key={voiceData.id}
                   responseFromParent={responseToPassToEditor}
                   onParentResponseHandled={handleEditorResponseHandled}
+                  editorCommand={editorCommand}
+                  onCommandHandled={handleCommandHandled}
                   height={editorHeight}
                   segments={segments}
+                  onReady={setEditorReady}
+                  popupsOpen={editorOptionsVisible}
+                  debugMode={debugMode}
+                  onPopupToggle={setEditorOptionsVisible}
+                  wordConfidenceThreshold={wordConfidenceThreshold}
                   playingLocation={currentPlayingLocation}
                   loading={saveSegmentsLoading}
                   onWordClick={handleWordClick}
+                  updateSegment={submitSegmentUpdate}
                   splitSegment={submitSegmentSplit}
                   mergeSegments={submitSegmentMerge}
                   assignSpeaker={openSpeakerAssignDialog}
+                  onWordTimeCreationClose={handleWordTimeCreationClose}
+                  wordTimePickerProps={{
+                    setDisabledTimes: handleDisabledTimesSet,
+                    createWordTimeSection: createWordTimeSection,
+                    updateWordTimeSection: updateWordTimeSection,
+                    deleteWordTimeSection: deleteWordTimeSection,
+                    totalLength: voiceData.length,
+                    wordTimeFromPlayer,
+                  }}
                 />)
             }
 

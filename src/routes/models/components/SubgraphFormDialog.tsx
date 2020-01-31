@@ -15,7 +15,7 @@ import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { postSubGraphResult } from '../../../services/api/types';
-import { SnackbarError, SubGraph } from '../../../types';
+import { SnackbarError, SNACKBAR_VARIANTS, SubGraph } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
@@ -107,7 +107,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(response.subGraph, isEdit);
         onClose();
       } else {
@@ -124,7 +124,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

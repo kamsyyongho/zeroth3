@@ -16,7 +16,7 @@ import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { postModelConfigResult } from '../../services/api/types';
-import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
 import { LanguageModelDialog } from '../models/components/language-model/LanguageModelDialog';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
@@ -70,16 +70,16 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
-  const thresholdLcText = translate("forms.thresholdLc");
-  const thresholdHcText = translate("forms.thresholdHc");
+  const thresholdHrText = translate("forms.thresholdHr");
+  const thresholdLrText = translate("forms.thresholdLr");
   const numberText = translate("forms.validation.number");
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLc: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).lessThan(yup.ref('thresholdHc'), `${translate('forms.validation.lessThan', { target: thresholdLcText, value: thresholdHcText })}`).nullable(),
-    thresholdHc: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).moreThan(yup.ref('thresholdLc'), `${translate('forms.validation.greaterThan', { target: thresholdHcText, value: thresholdLcText })}`).nullable(),
+    thresholdHr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).lessThan(yup.ref('thresholdLr'), `${translate('forms.validation.lessThan', { target: thresholdHrText, value: thresholdLrText })}`).nullable(),
+    thresholdLr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).moreThan(yup.ref('thresholdHr'), `${translate('forms.validation.greaterThan', { target: thresholdLrText, value: thresholdHrText })}`).nullable(),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
@@ -87,8 +87,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: "",
     selectedAcousticModelId: null,
     selectedLanguageModelId: null,
-    thresholdLc: null,
-    thresholdHc: null,
+    thresholdHr: null,
+    thresholdLr: null,
     description: "",
   };
   if (configToEdit) {
@@ -97,8 +97,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       name: configToEdit.name,
       selectedAcousticModelId: configToEdit.acousticModel.id,
       selectedLanguageModelId: configToEdit.languageModel.id,
-      thresholdLc: configToEdit.thresholdLc ?? null,
-      thresholdHc: configToEdit.thresholdHc ?? null,
+      thresholdHr: configToEdit.thresholdHr ?? null,
+      thresholdLr: configToEdit.thresholdLr ?? null,
       description: configToEdit.description,
     };
   }
@@ -109,7 +109,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
@@ -118,14 +118,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       setIsError(false);
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdHc, thresholdLc);
+        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(response.modelConfig, isEdit);
         handleClose();
       } else {
@@ -142,7 +142,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };
@@ -179,17 +179,17 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   {translate('models.tabs.languageModel.create')}
                 </Button>
                 <Field
-                  name='thresholdLc'
+                  name='thresholdHr'
                   component={TextFormField}
-                  label={thresholdLcText}
+                  label={thresholdHrText}
                   type='number'
                   margin="normal"
                   errorOverride={isError}
                 />
                 <Field
-                  name='thresholdHc'
+                  name='thresholdLr'
                   component={TextFormField}
-                  label={thresholdHcText}
+                  label={thresholdLrText}
                   type='number'
                   margin="normal"
                   errorOverride={isError}

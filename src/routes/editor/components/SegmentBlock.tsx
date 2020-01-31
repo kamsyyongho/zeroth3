@@ -1,4 +1,4 @@
-import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { Badge, Button, Grid, Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import clsx from 'clsx';
@@ -7,7 +7,7 @@ import React from 'react';
 import { MdPersonAdd, MdPersonPin } from 'react-icons/md';
 import VisibilitySensor from "react-visibility-sensor";
 import { CustomTheme } from '../../../theme/index';
-import { SegmentBlockData } from '../../../types';
+import { Segment, SegmentBlockData } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -27,12 +27,22 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     infoGrid: {
       marginBottom: theme.spacing(1),
+      "&:hover": {
+        cursor: 'default',
+      }
     },
     block: {
       marginLeft: theme.spacing(1),
     },
     tooltipContent: {
       maxWidth: 'none',
+    },
+    badge: {
+      backgroundColor: theme.editor.changes,
+    },
+    timeButton: {
+      padding: 0,
+      margin: 0,
     },
   }),
 );
@@ -69,9 +79,9 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   const { showPopups, assignSpeakerForSegment } = blockProps;
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
-  const segment = blockData.segment || {};
+  const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker } = segment;
-  const displayTextChangedHover = (transcript?.trim() !== decoderTranscript?.trim()) && decoderTranscript?.trim();
+  const displayTextChangedHover = ((transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
@@ -100,36 +110,54 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   return (<div
     className={classes.root}
   >
-    <VisibilitySensor
-      offset={DEFAULT_OFFSET}
+    <Grid
+      container
+      wrap='nowrap'
+      direction='row'
+      alignContent='center'
+      alignItems='center'
+      justify='flex-start'
+      className={classes.infoGrid}
     >
-      {({ isVisible }) =>
-        <Tooltip
-          placement='top-start'
-          title={displayTextChangedHover ? <Typography contentEditable={false} variant='h6' >{decoderTranscript}</Typography> : ''}
-          open={showPopups && isVisible}
-          arrow={false}
-          classes={{ tooltip: classes.tooltipContent }}
+      <Badge
+        invisible={!displayTextChangedHover}
+        variant="dot"
+        color='error'
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{
+          colorError: classes.badge,
+        }}
+      >
+        <Button
+          disabled
+          className={classes.timeButton}
         >
-          <Grid
-            container
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-            className={classes.infoGrid}
+          <Typography
+            contentEditable={false} // prevents the editor from placing the cursor within the content
           >
-            <Typography
-              contentEditable={false} // prevents the editor from placing the cursor within the content
-            >
-              {displayTime}
-            </Typography>
+            {displayTime}
+          </Typography>
+        </Button>
+      </Badge>
+      <VisibilitySensor
+        offset={DEFAULT_OFFSET}
+      >
+        {({ isVisible }) =>
+          <Tooltip
+            placement='right-start'
+            title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
+            open={showPopups && isVisible}
+            arrow={false}
+            classes={{ tooltip: classes.tooltipContent }}
+          >
             {speakerButton}
-          </Grid>
-        </Tooltip>
-      }
-    </VisibilitySensor>
+          </Tooltip>
+        }
+      </VisibilitySensor>
+    </Grid>
     <div className={classes.block} >
       <EditorBlock {...props} />
     </div>

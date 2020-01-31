@@ -128,10 +128,12 @@ export class WordKeyStore {
   /**
    * Updates the word key location within the 3D array
    * - push new segments or words if they don't already exist
+   * @param insert - will insert instead of replacing values
    */
   private updateWordKeyLocations = (
     wordKey: number,
-    wordLocation: SegmentAndWordIndex
+    wordLocation: SegmentAndWordIndex,
+    insert = false
   ) => {
     const [segmentIndex, wordIndex] = wordLocation;
     const tempWordKeyLocations = [...this.wordKeyLocations];
@@ -143,11 +145,39 @@ export class WordKeyStore {
       if (numberOfWordsInSegment - 1 < wordIndex) {
         tempSegmentWordKeys.push(wordKey);
       } else {
-        tempSegmentWordKeys.splice(wordIndex, 1, wordKey);
+        tempSegmentWordKeys.splice(wordIndex, insert ? 0 : 1, wordKey);
       }
       tempWordKeyLocations.splice(segmentIndex, 1, tempSegmentWordKeys);
     }
     this.wordKeyLocations = [...tempWordKeyLocations];
+  };
+
+  /**
+   * inserts a key at the specified location and 
+   * updates the locations for any keys down the line
+   * that it displaces
+   */
+  private moveKeysAndInsert = (
+    wordKey: number,
+    wordLocation: SegmentAndWordIndex
+  ) => {
+    let currentWordKeyAtLocation: number | undefined = this.getKey(
+      wordLocation
+    );
+    let newLocation: SegmentAndWordIndex | undefined;
+    while (currentWordKeyAtLocation !== undefined) {
+      if(!newLocation){
+        newLocation = [
+          wordLocation[0],
+          wordLocation[1] + 1,
+        ]
+      } else {
+        newLocation = [newLocation[0], newLocation[1] + 1];
+      }
+      this.keys[currentWordKeyAtLocation] = newLocation;
+      currentWordKeyAtLocation = this.getKey(newLocation);
+    }
+    this.updateWordKeyLocations(wordKey, wordLocation, true);
   };
 
   /** build the initial multi-dimentional array for the word keys */
@@ -162,15 +192,29 @@ export class WordKeyStore {
   };
 
   /** Generates a new key for a given location
+   * @param insert - will insert instead of replacing values
    * @returns the new word key
    */
-  generateKey = (wordLocation: SegmentAndWordIndex) => {
+  generateKey = (wordLocation: SegmentAndWordIndex, insert = false) => {
     const wordKey = this.keyCounter;
     this.keyCounter++;
     this.keys[wordKey] = wordLocation;
-    this.updateWordKeyLocations(wordKey, wordLocation);
+    if (insert) {
+      // increment the the keys then insert
+      this.moveKeysAndInsert(wordKey, wordLocation);
+    } else {
+      this.updateWordKeyLocations(wordKey, wordLocation);
+    }
     return wordKey;
   };
+
+  /** Generates a key that for a word that will be pushed the end of a segment
+   */
+  generateKeyForEndOfSegment = (segmentIndex: number): number => {
+    const nextWordIndex = this.wordKeyLocations[segmentIndex].length;
+    const nextWordLocation: SegmentAndWordIndex = [segmentIndex, nextWordIndex];
+    return this.generateKey(nextWordLocation);
+  }
 
   /** Get the word location from the word key */
   getLocation = (wordKey: number): SegmentAndWordIndex => {

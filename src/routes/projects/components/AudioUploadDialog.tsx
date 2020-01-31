@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
-import { ModelConfig, SnackbarError } from '../../../types';
+import { ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
@@ -28,8 +28,9 @@ interface AudioUploadDialogProps {
   onSuccess: () => void;
 }
 
-const MAX_TOTAL_FILE_SIZE_LIMIT = 10000000; // 10 MB in bytes
-const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '10 MB';
+/** this is using the same simple (incorrect) method for calculating file size as file upload library */
+const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
+const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const { open, projectId, modelConfigs, onClose, onSuccess } = props;
@@ -97,7 +98,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess();
         onClose();
       } else {
@@ -123,7 +124,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

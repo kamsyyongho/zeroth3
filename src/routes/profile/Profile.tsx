@@ -18,7 +18,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
-import { SnackbarError } from '../../types/snackbar.types';
+import { SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
@@ -116,7 +116,7 @@ export function Profile() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setPasswordResetLoading(false);
     }
   };

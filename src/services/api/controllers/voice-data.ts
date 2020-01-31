@@ -14,8 +14,11 @@ import {
   getSegmentsDataResult,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
+  MergeWordsInSegmentRequest,
+  mergeWordsInSegmentResult,
   ProblemKind,
   RateTranscriptRequest,
+  ResponseCode,
   SearchDataRequest,
   searchDataResult,
   ServerError,
@@ -23,24 +26,19 @@ import {
   setFreeTextTranscriptResult,
   SplitSegmentQuery,
   splitSegmentResult,
+  SplitWordInSegmentRequest,
+  splitWordInSegmentResult,
   UpdateMemoRequest,
   updateMemoResult,
   UpdateSegmentRequest,
   updateSegmentResult,
   UpdateSegmentsRequest,
   updateSegmentsResult,
+  UpdateSpeakerRequest,
+  updateSpeakerResult,
   UpdateStatusRequest,
   updateStatusResult,
 } from '../types';
-import { ResponseCode } from '../types/api.types';
-import {
-  MergeWordsInSegmentRequest,
-  mergeWordsInSegmentResult,
-  SplitWordInSegmentRequest,
-  splitWordInSegmentResult,
-  UpdateSpeakerRequest,
-  updateSpeakerResult,
-} from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**

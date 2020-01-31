@@ -1,5 +1,12 @@
-import { DraftBlockType, RawDraftEntity } from 'draft-js';
+import {
+  ContentBlock,
+  DraftBlockType,
+  RawDraftEntity,
+  RawDraftEntityRange,
+  RawDraftInlineStyleRange,
+} from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
+
 export interface Range {
   start: number;
   end: number; // this value used as rangeIndex
@@ -12,12 +19,16 @@ export interface Time {
   end?: number;
 }
 
+/** used to create word alignment data */
 export interface Word {
   color: string;
   time?: Time;
-  range: Range;
+  text: string;
 }
 
+//todo
+//!
+// delete
 export interface WordsbyRangeStartAndEndIndexes {
   [x: string]: Word;
 }
@@ -36,11 +47,15 @@ export interface WordAlignmentEntityData {
 }
 
 export interface SegmentBlockData {
-  segment: Segment;
+  segment?: Segment;
 }
 
 export interface EntityMap {
   [key: string]: RawDraftEntity<WordAlignmentEntityData>;
+}
+
+export interface EntityRangeByEntityKey {
+  [x: string]: RawDraftEntityRange;
 }
 
 export interface EntityKeyToWordAlignmentKey {
@@ -80,6 +95,16 @@ export interface CharacterProperties {
 /**
  * The object returned from the `toJS` method of a block
  */
+export interface BlockInfo<T = {}> {
+  blockObject: BlockObject<T>;
+  block: ContentBlock;
+  entityRanges: RawDraftEntityRange[];
+  inlineStyleRanges: RawDraftInlineStyleRange[];
+}
+
+/**
+ * The object returned from the `toJS` method of a block
+ */
 export interface BlockObject<T = {}> {
   key: string;
   type: DraftBlockType;
@@ -102,8 +127,11 @@ export interface CursorContent<T, U> {
   isStartOfBlock: boolean;
   characterDetailsBeforeCursor: CharacterDetails;
   characterDetailsAtCursor: CharacterDetails;
+  selectionCharacterDetails: CharacterDetails[];
   cursorOffset: number;
   blockObject: BlockObject<U>;
+  blockEntityRanges: RawDraftEntityRange[];
+  blockInlineStyleRanges: RawDraftInlineStyleRange[];
 }
 
 export enum KEY_COMMANDS {
@@ -129,6 +157,7 @@ export enum KEY_COMMANDS {
   'merge-segments-back' = 'merge-segments-back',
   'merge-segments-forward' = 'merge-segments-forward',
   'toggle-popups' = 'toggle-popups',
+  'create-word' = 'create-word',
 }
 
 export enum REMOVAL_DIRECTION {
@@ -187,6 +216,8 @@ export enum ENTITY_TYPE {
   'TOKEN' = 'TOKEN',
   'PHOTO' = 'PHOTO',
   'IMAGE' = 'IMAGE',
+  // start of custom types
+  'TEMP' = 'TEMP',
 }
 
 export enum INLINE_STYLE_TYPE {

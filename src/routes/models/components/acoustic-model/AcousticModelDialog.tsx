@@ -15,7 +15,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { AcousticModel, SnackbarError } from '../../../../types';
+import { AcousticModel, SnackbarError, SNACKBAR_VARIANTS } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
@@ -78,7 +78,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess(response.acousticModel, isEdit);
         handleClose();
       } else {
@@ -95,7 +95,7 @@ export function AcousticModelDialog(props: AcousticModelDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

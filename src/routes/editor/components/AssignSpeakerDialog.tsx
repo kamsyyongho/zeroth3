@@ -13,7 +13,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Segment, SnackbarError } from '../../../types';
+import { Segment, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
@@ -67,7 +67,7 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         const updatedSegment = { ...segment, speaker: values.speaker.trim() };
         onSuccess(updatedSegment, segmentIndex);
         onClose();
@@ -85,7 +85,7 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

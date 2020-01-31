@@ -12,7 +12,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
 import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
-import { SnackbarError } from '../../types/';
+import { SnackbarError, SNACKBAR_VARIANTS } from '../../types/';
 import { PATHS } from '../../types/path.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -100,7 +100,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        enqueueSnackbar(translate('common.success'), { variant: 'success' });
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         handleModelConfigDelete(modelConfigId);
       } else {
         log({
@@ -115,7 +115,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: 'error' });
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setDeleteLoading(false);
     }
   };
