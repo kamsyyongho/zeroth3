@@ -15,6 +15,7 @@ import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import WarningIcon from '@material-ui/icons/Warning';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
+import ToggleIcon from 'material-ui-toggle-icon';
 import { useSnackbar } from 'notistack';
 import Peaks, { PeaksInstance, PeaksOptions, Segment, SegmentAddOptions } from 'peaks.js';
 import React from 'react';
@@ -66,6 +67,9 @@ const STARTING_WORD_LOOP_LENGTH = 0.5;
  */
 const ZERO_TIME_SLOP = 0.00001;
 
+/** the zoom levels for the peaks */
+const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
+
 enum DOM_IDS {
   'zoomview-container' = 'zoomview-container',
   'overview-container' = 'overview-container',
@@ -100,13 +104,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         cursor: 'pointer',
       }
     },
+    buttonSelected: {
+      backgroundColor: theme.palette.grey[300],
+    },
   }),
 );
 
 interface AudioPlayerProps {
   url: string;
   length: number;
-  highRiskEditMode?: boolean;
   timeToSeekTo?: number;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
@@ -131,7 +137,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
-    highRiskEditMode,
     timeToSeekTo,
     disabledTimes,
     segmentIdToDelete,
@@ -152,6 +157,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
+  const [loop, setLoop] = React.useState(false);
+  const [zoomLevel, setZoomLevel] = React.useState(0); // <0 | 1 | 2>
   const [waiting, setWaiting] = React.useState(false);
   const [showStreamLoader, setShowStreamLoader] = React.useState(false);
   const [isMute, setIsMute] = React.useState(false);
@@ -303,14 +310,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onTimeChange(currentTimeFixed);
       }
       // to stay within any loops
-      if(typeof validTimeBondaries?.start === 'number' &&
-      typeof validTimeBondaries?.end === 'number' &&
-      currentTime > validTimeBondaries?.end) {
+      if (typeof validTimeBondaries?.start === 'number' &&
+        typeof validTimeBondaries?.end === 'number' &&
+        currentTime > validTimeBondaries?.end) {
         seekToTime(validTimeBondaries.start);
-      } else if (isLoop && 
+      } else if (isLoop &&
         typeof loopValidTimeBoundaries?.start === 'number' &&
-      typeof loopValidTimeBoundaries?.end === 'number' &&
-      currentTime > loopValidTimeBoundaries?.end) {
+        typeof loopValidTimeBoundaries?.end === 'number' &&
+        currentTime > loopValidTimeBoundaries?.end) {
         seekToTime(loopValidTimeBoundaries.start);
       }
     } catch (error) {
@@ -379,8 +386,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
     try {
       if (zoomIn) {
         PeaksPlayer.zoom.zoomIn();
+        if (zoomLevel > 0) {
+          setZoomLevel(zoomLevel - 1);
+        }
       } else {
         PeaksPlayer.zoom.zoomOut();
+        if (zoomLevel < DEFAULT_ZOOM_LEVELS.length - 1) {
+          setZoomLevel(zoomLevel + 1);
+        }
       }
     } catch (error) {
       handleError(error);
@@ -516,6 +529,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         };
       }
       isLoop = !isLoop;
+      setLoop(isLoop);
     } catch (error) {
       handleError(error);
     }
@@ -902,11 +916,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
     const peaksJsInit = () => {
       const peaksUrl = `${url}.json`;
-      let zoomLevels = [64, 128, 256];
-      // handle the increased zoom for files less than a minute
-      if (length < 60) {
-        zoomLevels = [32, 64, 128];
-      }
+      const zoomLevels = DEFAULT_ZOOM_LEVELS;
 
       const options: PeaksOptions = {
         /** REQUIRED OPTIONS **/
@@ -1095,18 +1105,29 @@ export function AudioPlayer(props: AudioPlayerProps) {
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
-    <Button aria-label="zoom-in" onClick={() => handleZoom(true)} >
+    <Button
+      aria-label="zoom-in"
+      onClick={() => handleZoom(true)}
+      disabled={zoomLevel === 0}
+    >
       <ZoomInIcon />
     </Button>
-    <Button aria-label="zoom-out" onClick={() => handleZoom()} >
+    <Button
+      aria-label="zoom-out"
+      onClick={() => handleZoom()}
+      disabled={zoomLevel === DEFAULT_ZOOM_LEVELS.length - 1}
+    >
       <ZoomOutIcon />
     </Button>
     <Button
       aria-label="create-loop"
-      disabled={!!internaDisabledTimesTracker || highRiskEditMode}
+      disabled={!!internaDisabledTimesTracker}
       onClick={handleLoopClick}
+      classes={{
+        root: loop ? classes.buttonSelected : undefined,
+      }}
     >
-      {isLoop ? '⊗' : '⊕'} <SvgIcon component={TiArrowLoop} />
+      <SvgIcon component={TiArrowLoop} />
     </Button>
     <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} >
       {playbackSpeed < 1 ?
@@ -1115,19 +1136,31 @@ export function AudioPlayer(props: AudioPlayerProps) {
         '1.0⨉'
       }
     </Button>
-    <Button aria-label="mute" onClick={toggleMute} >
-      {isMute ?
-        (<VolumeOffIcon />)
-        :
-        (<VolumeUpIcon />)
-      }
+    <Button
+      aria-label="mute"
+      onClick={toggleMute}
+      classes={{
+        root: isMute ? classes.buttonSelected : undefined,
+      }}
+    >
+      <ToggleIcon
+        on={!isMute}
+        onIcon={<VolumeUpIcon />}
+        offIcon={<VolumeOffIcon />}
+      />
     </Button>
-    <Button aria-label="seek-lock" onClick={toggleLockSeek} >
-      {autoSeekDisabled ?
-        (<SvgIcon component={TiLockClosedOutline} />)
-        :
-        (<SvgIcon component={TiLockOpenOutline} />)
-      }
+    <Button
+      aria-label="seek-lock"
+      onClick={toggleLockSeek}
+      classes={{
+        root: autoSeekDisabled ? classes.buttonSelected : undefined,
+      }}
+    >
+      <ToggleIcon
+        on={!autoSeekDisabled}
+        onIcon={<SvgIcon component={TiLockOpenOutline} />}
+        offIcon={<SvgIcon component={TiLockClosedOutline} />}
+      />
     </Button>
   </ButtonGroup>);
 
