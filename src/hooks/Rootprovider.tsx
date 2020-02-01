@@ -4,7 +4,6 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { ThemeProvider } from '@material-ui/styles';
 import { SnackbarProvider } from 'notistack';
 import React from 'react';
-import 'react-virtualized/styles.css'; // for the editor's lists
 import { SNACKBAR } from '../constants';
 import { Api } from '../services/api/api';
 import { theme } from '../theme/index';

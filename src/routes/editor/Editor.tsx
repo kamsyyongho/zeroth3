@@ -1,7 +1,7 @@
 import { Backdrop } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import { useSnackbar, VariantType } from 'notistack';
@@ -127,15 +127,17 @@ let newWordWasCreated = false;
 
 
 // Custom overrides for "code" style.
-const styleMap: DraftStyleMap = {
-  [INLINE_STYLE_TYPE.PLAYING]: {
-    color: 'blue',
-    boxShadow: `0px 0px 0px 1px ${'blue'}`,
-    // fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
-    // fontSize: 16,
-    // padding: 2
-  },
-};
+const buildStyleMap = (theme: CustomTheme) => {
+  return {
+    [INLINE_STYLE_TYPE.PLAYING]: {
+      color: theme.editor.playing,
+      boxShadow: `0px 0px 0px 1px ${theme.editor.playing}`,
+      // fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
+      // fontSize: 16,
+      // padding: 2
+    },
+  }
+}
 
 
 function getEntityStrategy(mutability: DraftEntityMutability) {
@@ -230,6 +232,7 @@ export function Editor(props: EditorProps) {
   const windowWidth = windowSize.width;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty()
   );
@@ -1750,7 +1753,7 @@ return (
       <DraftEditor
         ref={editorRef}
         editorState={editorState}
-        customStyleMap={styleMap}
+        customStyleMap={buildStyleMap(theme)}
         keyBindingFn={customKeyBindingFunction}
         blockRendererFn={customBlockRenderer}
         onChange={handleChange}

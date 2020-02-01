@@ -41,8 +41,8 @@ const customTheme = {
   editor: {
     playing: '#077db5',
     highlight: pink.A200,
-    LC: '#ffe190',
-    focussed: grey[400],
+    LowConfidence: '#ffe190',
+    entity: grey[300],
     changes: green[400],
   },
   audioPlayer: {
@@ -67,8 +67,8 @@ export interface CustomTheme extends Theme {
   editor: {
     playing: string;
     highlight: string;
-    LC: string;
-    focussed: string;
+    LowConfidence: string;
+    entity: string;
     changes: string;
   };
   audioPlayer: {
@@ -90,8 +90,8 @@ interface CustomThemeOptions extends ThemeOptions {
   editor?: {
     playing?: string;
     highlight?: string;
-    LC?: string;
-    focussed?: string;
+    LowConfidence?: string;
+    entity?: string;
     changes?: string;
   };
   audioPlayer?: {

@@ -1,10 +1,4 @@
-import {
-  ContentBlock,
-  DraftBlockType,
-  RawDraftEntity,
-  RawDraftEntityRange,
-  RawDraftInlineStyleRange,
-} from 'draft-js';
+import { ContentBlock, DraftBlockType, RawDraftEntity, RawDraftEntityRange, RawDraftInlineStyleRange } from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
 
 export interface Range {
@@ -24,13 +18,6 @@ export interface Word {
   color: string;
   time?: Time;
   text: string;
-}
-
-//todo
-//!
-// delete
-export interface WordsbyRangeStartAndEndIndexes {
-  [x: string]: Word;
 }
 
 export interface WordToCreateTimeFor extends Word {

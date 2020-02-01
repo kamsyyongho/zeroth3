@@ -15,7 +15,6 @@ import React from 'react';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
-import { EDITOR_MODES } from '../EditorPage';
 import { ConfidenceSlider } from './ConfidenceSlider';
 
 const useStyles = makeStyles((theme) =>
@@ -87,8 +86,7 @@ const secondaryControlOrder = [
 
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
-  onAction: (confirm?: boolean) => void;
-  editorMode: EDITOR_MODES;
+  onConfirm: () => void;
   disabledControls?: EDITOR_CONTROLS[];
   editorOptionsVisible: boolean;
   debugMode?: boolean;
@@ -101,9 +99,8 @@ interface EditorControlsProps {
 
 export const EditorControls = (props: EditorControlsProps) => {
   const {
-    editorMode,
     onCommandClick,
-    onAction,
+    onConfirm,
     disabledControls = [],
     editorOptionsVisible,
     debugMode,
@@ -179,7 +176,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.confirm');
           icon = <PublishIcon />;
           props = {
-            onClick: () => onAction(true),
+            onClick: onConfirm,
             disabled: disabledControls.includes(EDITOR_CONTROLS.confirm) || !editorReady,
           };
           break;
@@ -213,7 +210,6 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.merge');
           icon = <ICONS.Merge />;
           tooltipText = osText('merge');
-          selected = editorMode === EDITOR_MODES.merge;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.merge),
             disabled: disabledControls.includes(EDITOR_CONTROLS.merge) || !editorReady,
@@ -223,7 +219,6 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.split');
           icon = <ICONS.Split />;
           tooltipText = osText('split');
-          selected = editorMode === EDITOR_MODES.split;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.split),
             disabled: disabledControls.includes(EDITOR_CONTROLS.split) || !editorReady,
@@ -247,7 +242,6 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.createWord');
           icon = <AddIcon />;
           tooltipText = osText('createWord');
-          selected = editorMode === EDITOR_MODES.createWord;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.createWord),
             disabled: disabledControls.includes(EDITOR_CONTROLS.createWord) || !editorReady,
