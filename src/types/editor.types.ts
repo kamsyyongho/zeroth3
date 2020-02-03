@@ -1,4 +1,10 @@
-import { ContentBlock, DraftBlockType, RawDraftEntity, RawDraftEntityRange, RawDraftInlineStyleRange } from 'draft-js';
+import {
+  ContentBlock,
+  DraftBlockType,
+  RawDraftEntity,
+  RawDraftEntityRange,
+  RawDraftInlineStyleRange,
+} from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
 
 export interface Range {
@@ -20,11 +26,19 @@ export interface Word {
   text: string;
 }
 
+/**
+ * for creating Peaks.js segments
+ * - these are **NOT** voice data segments
+ */
 export interface WordToCreateTimeFor extends Word {
-  segmentStartTime: number;
-  segmentEndTime?: number;
-  wordKey: string;
+  wordKey?: string;
 }
+
+/**
+ * For displaying the word and segment lengths in the audio player timeline
+ * - [`word information`, `segment information`]
+ */
+export type PlayingWordAndSegment = [WordToCreateTimeFor, WordToCreateTimeFor];
 
 export type SegmentAndWordIndex = [number, number];
 

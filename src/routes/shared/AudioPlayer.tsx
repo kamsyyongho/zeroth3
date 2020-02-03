@@ -28,6 +28,7 @@ import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
 import { Time, WordToCreateTimeFor } from '../../types';
+import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
 
@@ -57,6 +58,8 @@ enum SEGMENT_IDS {
   'LOOP' = 'LOOP',
   'DISABLED_0' = 'DISABLED_0',
   'DISABLED_1' = 'DISABLED_1',
+  'WORD' = 'WORD',
+  'SEGMENT' = 'SEGMENT',
 }
 const SEGMENT_IDS_ARRAY = Object.keys(SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
@@ -119,6 +122,7 @@ interface AudioPlayerProps {
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
   openWordKey?: string;
+  currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
   onAutoSeekToggle: (value: boolean) => void;
@@ -127,6 +131,7 @@ interface AudioPlayerProps {
   onSegmentDelete: () => void;
   onSegmentCreate: () => void;
   onSegmentUpdate: () => void;
+  onPlayingSegmentCreate: () => void;
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
 }
@@ -143,11 +148,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
     deleteAllWordSegments,
     wordsClosed,
     openWordKey,
+    currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
     onSegmentDelete,
     onSegmentCreate,
     onSegmentUpdate,
+    onPlayingSegmentCreate,
     onSegmentStatusEditChange,
     onReady,
   } = props;
@@ -164,6 +171,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [isMute, setIsMute] = React.useState(false);
   const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
   const [playbackSpeed, setPlaybackSpeed] = React.useState(1); // 0 to 1
+  // for recreating the segments after disabling a loop
+  const [savedCurrentPlayingWordPlayerSegment, setSavedCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
   const [currentTime, setCurrentTime] = React.useState(0);
   const [currentTimeDisplay, setCurrentTimeDisplay] = React.useState(DEFAULT_EMPTY_TIME);
   const [durationDisplay, setDurationDisplay] = React.useState(DEFAULT_EMPTY_TIME);
@@ -309,17 +318,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (onTimeChange && typeof onTimeChange === 'function') {
         onTimeChange(currentTimeFixed);
       }
-      // to stay within any loops
-      if (typeof validTimeBondaries?.start === 'number' &&
-        typeof validTimeBondaries?.end === 'number' &&
-        currentTime > validTimeBondaries?.end) {
-        seekToTime(validTimeBondaries.start);
-      } else if (isLoop &&
-        typeof loopValidTimeBoundaries?.start === 'number' &&
-        typeof loopValidTimeBoundaries?.end === 'number' &&
-        currentTime > loopValidTimeBoundaries?.end) {
-        seekToTime(loopValidTimeBoundaries.start);
-      }
     } catch (error) {
       handleError(error);
     }
@@ -416,17 +414,20 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleSegmentExit = (segment: Segment) => {
-    const { id, startTime, editable } = segment;
+    const { id, startTime, endTime, editable } = segment;
     switch (id) {
+      case SEGMENT_IDS.SEGMENT:
+      case SEGMENT_IDS.WORD:
+        break;
       case SEGMENT_IDS.LOOP:
         // referencing the media element to get most up-to-date state
-        if (mediaElement && !mediaElement.paused && isLoop) {
+        if (mediaElement && !mediaElement.paused && mediaElement.currentTime > endTime) {
           seekToTime(startTime);
         }
         break;
       default:
         // only currently focussed words are editable
-        if (id && editable) {
+        if (id && editable && !SEGMENT_IDS_ARRAY.includes(id)) {
           seekToTime(startTime);
         }
         break;
@@ -458,6 +459,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const isValidSection = checkIfValidSegmentArea(startTime, endTime);
     switch (id) {
       case SEGMENT_IDS.LOOP:
+        validTimeBondaries = time;
+        break;
       case SEGMENT_IDS.DISABLED_0:
       case SEGMENT_IDS.DISABLED_1:
         break;
@@ -487,54 +490,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         break;
     }
   };
-
-  /**
-   * creates or removes the loop segment
-   */
-  function handleLoopClick() {
-    if (!PeaksPlayer?.segments ||
-      !peaksReady ||
-      !duration ||
-      !mediaElement ||
-      !StreamPlayer ||
-      (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
-    ) return;
-    try {
-      const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
-      if (isLoop) {
-        PeaksPlayer.segments.removeById(SEGMENT_IDS.LOOP);
-        loopValidTimeBoundaries = undefined;
-      } else if (!loopSegment) {
-        const color = theme.audioPlayer.loop;
-        let startTime = currentTime;
-        let endTime = startTime + DEFAULT_LOOP_LENGTH;
-        if (endTime > duration) {
-          endTime = duration;
-          startTime = endTime - DEFAULT_LOOP_LENGTH;
-          if (startTime < 0) {
-            startTime = 0;
-          }
-        }
-        const segmentOptions: SegmentAddOptions = {
-          startTime,
-          endTime,
-          editable: true,
-          id: SEGMENT_IDS.LOOP,
-          color,
-        };
-        PeaksPlayer.segments.add(segmentOptions);
-        loopValidTimeBoundaries = {
-          start: startTime,
-          end: endTime,
-        };
-      }
-      isLoop = !isLoop;
-      setLoop(isLoop);
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
 
   /**
    * toggle player state via the `VideoJsPlayer`
@@ -622,6 +577,152 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       isLoop = false;
       loopValidTimeBoundaries = undefined;
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const createPlaybackSegments = (currentPlayingWordSegment: SegmentAddOptions, currentPlayingSegmentSegment: SegmentAddOptions) => {
+    if (!PeaksPlayer?.segments) return;
+    try {
+      const existingSegments = PeaksPlayer.segments.getSegments();
+      let wordPlaybackSegmentExists = false;
+      let segmentPlaybackSegmentExists = false;
+      const updatedSegments = existingSegments.map((segment) => {
+        const isWordMatch = segment.id === SEGMENT_IDS.WORD;
+        const isSegmentMatch = segment.id === SEGMENT_IDS.SEGMENT;
+        if (isWordMatch) {
+          wordPlaybackSegmentExists = true;
+          return currentPlayingWordSegment;
+        }
+        if (isSegmentMatch) {
+          segmentPlaybackSegmentExists = true;
+          return currentPlayingSegmentSegment;
+        }
+        const segmentOptions: SegmentAddOptions = {
+          startTime: segment.startTime,
+          endTime: segment.endTime,
+          id: segment.id,
+          color: segment.color,
+          labelText: segment.labelText,
+          editable: segment.editable,
+        };
+        return segmentOptions;
+      });
+      if (!segmentPlaybackSegmentExists) {
+        updatedSegments.push(currentPlayingSegmentSegment);
+      }
+      if (!wordPlaybackSegmentExists) {
+        updatedSegments.push(currentPlayingWordSegment);
+      }
+      PeaksPlayer.segments.removeAll();
+      PeaksPlayer.segments.add(updatedSegments);
+      onPlayingSegmentCreate();
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const parseCurrentlyPlayingWordSegment = (segmentInfoToUse?: PlayingWordAndSegment) => {
+    if (!segmentInfoToUse) {
+      segmentInfoToUse = currentPlayingWordPlayerSegment;
+    }
+    if (segmentInfoToUse !== undefined) {
+      setSavedCurrentPlayingWordPlayerSegment(segmentInfoToUse);
+      const [wordInfo, segmentInfo] = segmentInfoToUse;
+      if (typeof wordInfo.time?.start !== 'number' ||
+        typeof wordInfo.time?.end !== 'number' ||
+        typeof segmentInfo.time?.start !== 'number' ||
+        typeof segmentInfo.time?.end !== 'number'
+      ) {
+        return;
+      }
+      // adding a bit of slop because `Peaks.js` does not 
+      // like creating segments at exactly `0`
+      let startTime = wordInfo.time.start;
+      if (startTime === 0) {
+        startTime = startTime + ZERO_TIME_SLOP;
+      }
+      let endTime = wordInfo.time.end;
+      if (endTime > duration && duration > 0) {
+        endTime = duration;
+      }
+      let segmentStartTime = segmentInfo.time.start;
+      if (segmentStartTime === 0) {
+        segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
+      }
+      let segmentEndTime = segmentInfo.time.end;
+      if (segmentEndTime > duration && duration > 0) {
+        segmentEndTime = duration;
+      }
+      if (endTime > startTime || segmentEndTime > segmentStartTime) {
+        const wordSegmentToAdd: SegmentAddOptions = {
+          startTime,
+          endTime,
+          editable: false,
+          color: wordInfo.color,
+          id: SEGMENT_IDS.WORD,
+          labelText: wordInfo.text,
+        };
+        const segmentSegmentToAdd: SegmentAddOptions = {
+          startTime: segmentStartTime,
+          endTime: segmentEndTime,
+          editable: false,
+          color: segmentInfo.color,
+          id: SEGMENT_IDS.SEGMENT,
+          labelText: segmentInfo.text,
+        };
+        createPlaybackSegments(wordSegmentToAdd, segmentSegmentToAdd);
+      }
+    }
+  };
+
+  /**
+   * creates or removes the loop segment
+   */
+  function handleLoopClick() {
+    if (!PeaksPlayer?.segments ||
+      !peaksReady ||
+      !duration ||
+      !mediaElement ||
+      !StreamPlayer ||
+      (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
+    ) return;
+    try {
+      const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
+      if (isLoop) {
+        PeaksPlayer.segments.removeById(SEGMENT_IDS.LOOP);
+        loopValidTimeBoundaries = undefined;
+        setLoop(false);
+        parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
+      } else if (!loopSegment) {
+        const color = theme.audioPlayer.loop;
+        let startTime = currentTime;
+        let endTime = startTime + DEFAULT_LOOP_LENGTH;
+        if (endTime > duration) {
+          endTime = duration;
+          startTime = endTime - DEFAULT_LOOP_LENGTH;
+          if (startTime < 0) {
+            startTime = 0;
+          }
+        }
+        const segmentOptions: SegmentAddOptions = {
+          startTime,
+          endTime,
+          editable: true,
+          id: SEGMENT_IDS.LOOP,
+          color,
+        };
+        // only have the loop segment visible
+        PeaksPlayer.segments.removeAll();
+        PeaksPlayer.segments.add(segmentOptions);
+        loopValidTimeBoundaries = {
+          start: startTime,
+          end: endTime,
+        };
+        setLoop(true);
+      }
+      isLoop = !isLoop;
     } catch (error) {
       handleError(error);
     }
@@ -758,6 +859,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  // once everything is ready
+  React.useEffect(() => {
+    if (duration > 0 && ready) {
+      parseCurrentlyPlayingWordSegment();
+    }
+  }, [duration, ready]);
+
   // set the seek location based on the parent
   React.useEffect(() => {
     if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
@@ -824,7 +932,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       disabledTimes.forEach((disabledTime: Time, index) => {
         const startTime = disabledTime.start as number;
-        const endTime = disabledTime.end as number;
+        let endTime = disabledTime.end;
+        // if it's the second disabled boundary
+        if (typeof endTime !== 'number' && duration) {
+          endTime = duration;
+        }
         if (typeof startTime === 'number' && typeof endTime === 'number' && endTime > startTime) {
           const color = theme.audioPlayer.disabled;
           const disabledSegment: SegmentAddOptions = {
@@ -843,10 +955,17 @@ export function AudioPlayer(props: AudioPlayerProps) {
   // set the create a time segment for a word
   React.useEffect(() => {
     if (wordToCreateTimeFor !== undefined) {
+      const { time } = wordToCreateTimeFor;
+      if (typeof time?.start !== 'number') {
+        return;
+      }
       // adding a bit of slop because `Peaks.js` does not 
       // like creating segments at exactly `0`
-      const startTime = wordToCreateTimeFor.segmentStartTime + ZERO_TIME_SLOP;
-      let endTime = wordToCreateTimeFor.segmentStartTime + STARTING_WORD_LOOP_LENGTH;
+      let startTime = time.start;
+      if (startTime === 0) {
+        startTime = startTime + ZERO_TIME_SLOP;
+      }
+      let endTime = time.start + STARTING_WORD_LOOP_LENGTH;
       if (endTime > duration) {
         endTime = duration;
       }
@@ -865,29 +984,37 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [wordToCreateTimeFor]);
 
+  // set the time segment for the currently playing word
+  React.useEffect(() => {
+    if (!isLoop) {
+      parseCurrentlyPlayingWordSegment();
+    }
+  }, [currentPlayingWordPlayerSegment]);
+
   // set the update the time for a segment
   React.useEffect(() => {
     if (wordToUpdateTimeFor !== undefined) {
-      const { wordKey } = wordToUpdateTimeFor;
-      let { segmentStartTime, segmentEndTime } = wordToUpdateTimeFor;
-      if (typeof segmentEndTime === 'number') {
-        const isValidTime = checkIfValidSegmentArea(segmentStartTime, segmentEndTime);
-        if (isValidTime) {
-          if (segmentStartTime === 0) {
-            segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
-          }
-          updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
-        } else if (typeof validTimeBondaries?.start === 'number' &&
-          typeof validTimeBondaries?.end === 'number') {
-          // to reset to the valid limits if outside the valid range
-          if (segmentStartTime < validTimeBondaries.start) {
-            segmentStartTime = validTimeBondaries.start;
-          }
-          if (segmentEndTime > validTimeBondaries.end) {
-            segmentEndTime = validTimeBondaries.end;
-          }
-          updateSegmentTime(wordKey, segmentStartTime, segmentEndTime);
+      const { wordKey, time } = wordToUpdateTimeFor;
+      if (typeof time?.start !== 'number' || typeof time?.end !== 'number') {
+        return;
+      }
+      let { start, end } = time;
+      const isValidTime = checkIfValidSegmentArea(start, end);
+      if (isValidTime) {
+        if (start === 0) {
+          start = start + ZERO_TIME_SLOP;
         }
+        updateSegmentTime(wordKey as string, start, end);
+      } else if (typeof validTimeBondaries?.start === 'number' &&
+        typeof validTimeBondaries?.end === 'number') {
+        // to reset to the valid limits if outside the valid range
+        if (start < validTimeBondaries.start) {
+          start = validTimeBondaries.start;
+        }
+        if (end > validTimeBondaries.end) {
+          end = validTimeBondaries.end;
+        }
+        updateSegmentTime(wordKey as string, start, end);
       }
     }
   }, [wordToUpdateTimeFor]);

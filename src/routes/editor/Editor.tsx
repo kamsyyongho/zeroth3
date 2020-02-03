@@ -1636,7 +1636,6 @@ React.useEffect(() => {
     if (readOnlyEditorState) {
       return;
     }
-    console.log('editorCommand', editorCommand);
     switch (editorCommand) {
       case EDITOR_CONTROLS.save:
         updateSegmentOnChange(undefined, undefined, true);
