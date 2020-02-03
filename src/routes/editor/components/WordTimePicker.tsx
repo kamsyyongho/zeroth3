@@ -40,11 +40,10 @@ let wordTimeFromPlayerTracker: Time | undefined;
 
 /** props that need to passed to the time picker that will come from the main editor page */
 export interface WordTimePickerRootProps {
-  totalLength: number;
   wordTimeFromPlayer?: Time;
-  createWordTimeSection: (wordToAddTimeTo: Word, timeToCreateAt: number, wordKey: string) => void;
+  createWordTimeSection: (wordToAddTimeTo: Word, wordKey: string) => void;
   deleteWordTimeSection: (segmentIdToDelete: string) => void;
-  updateWordTimeSection: (wordToAddTimeTo: Word, startTime: number, endTime: number, wordKey: string) => void;
+  updateWordTimeSection: (wordToAddTimeTo: Word, wordKey: string) => void;
   setDisabledTimes: (disabledTimes: Time[]) => void;
 }
 
@@ -72,7 +71,6 @@ export function WordTimePicker(props: WordTimePickerProps) {
     updateWordTimeSection,
     segments,
     segmentIndex,
-    totalLength,
     onSuccess,
     onClose,
     onInvalidTime,
@@ -91,10 +89,11 @@ export function WordTimePicker(props: WordTimePickerProps) {
     while (!isLastSegment && disabledTimes.length < 2) {
       isLastSegment = segmentIndex === segments.length - 1;
       let start = 0;
-      let end = segment.start;
+      let end: number | undefined = segment.start;
       if (disabledTimes.length) {
-        start = segments[segmentIndex + 1].start;
-        end = totalLength;
+        start = segments[segmentIndex].length;
+        // end for the second section will be set to the audio duration in the player
+        end = undefined;
       }
       const time = {
         start,
@@ -106,7 +105,11 @@ export function WordTimePicker(props: WordTimePickerProps) {
   };
 
   const createSegment = () => {
-    createWordTimeSection(wordToCreateTimeFor, segment.start, wordKey);
+    const segmentTime: Time = {
+      start: segment.start,
+    };
+    const updatedWord = { ...wordToCreateTimeFor, time: segmentTime };
+    createWordTimeSection(updatedWord, wordKey);
   };
 
   const handleCreate = (incomingWordTime?: Time) => {
@@ -178,7 +181,12 @@ export function WordTimePicker(props: WordTimePickerProps) {
       end = end + (DEFAULT_TIME_INCREMENT * (increment ? 1 : -1));
       end = Number(end.toFixed(2));
     }
-    updateWordTimeSection(word, start, end, wordKey);
+    const updatedTime: Time = {
+      start,
+      end,
+    };
+    const updatedWord = { ...word, time: updatedTime };
+    updateWordTimeSection(updatedWord, wordKey);
   };
 
 
