@@ -116,6 +116,7 @@ const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordK
 
 const SPLIT_CHARACTER = '•';
 const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
+const SPLIT_CHARACTER_REGEX = new RegExp(SPLIT_CHARACTER,"g");
 
 
 let entityKeyCounter = 0;
@@ -375,8 +376,8 @@ const generateDecorators = () => new CompositeDecorator([
         segment,
       };
       newBlock.data = data;
-      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join('•').trim();
-      transcript = transcript.split("• ").join(' ').trim();
+      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join(SPLIT_CHARACTER).trim();
+      transcript = transcript.split("• ").join(' ').replace(SPLIT_CHARACTER_REGEX, '').trim();
       newBlock.text = transcript;
       let offsetPosition = 0;
       const entityRanges: RawDraftEntityRange[] = segment.wordAlignments.map((wordAlignment, wordIndex) => {
@@ -430,12 +431,40 @@ const generateDecorators = () => new CompositeDecorator([
     focusEditor();
   }, []);
 
+  /**
+   * build new entity and key maps when Draft.js changes the enity key map
+   * - Draft.js will sometimes reorder and rename 
+   * the keys, so our maps will be out of sync
+   */
+  const rebuildEntityMapFromContentState = (contentState: ContentState) => {
+    const rawContent = convertToRaw(contentState);
+    const incomingEntityMap = rawContent.entityMap;
+    // only rebuild if the internal entity map has changed
+    if(JSON.stringify(incomingEntityMap) === JSON.stringify(entityMap)){
+      return;
+    }
+    const entityKeys = Object.keys(incomingEntityMap);
+    entityKeys.forEach(entityKey => {
+      const entityKeyNumber = Number(entityKey);
+      const data = incomingEntityMap[entityKey].data as WordAlignmentEntityData;
+      if(typeof data?.wordKey === 'number'){
+        linkEntityKeyAndWordKey(entityKeyNumber, data.wordKey);
+      }
+    });
+    entityMap = {...incomingEntityMap} as EntityMap;
+  }
 
   React.useEffect(() => {
+    const contentState = editorState.getCurrentContent();
+    rebuildEntityMapFromContentState(contentState);
     log({
       file: `Editor.tsx`,
       caller: `convertToRaw(editorState)`,
-      value: convertToRaw(editorState.getCurrentContent()),
+      value: {
+        rawContent: convertToRaw(contentState),
+        wordKeyMap: wordKeyBank.getKeyMap(),
+        locationMap: wordKeyBank.getLocationMap(),
+      },
       important: false,
       trace: false,
       error: false,
@@ -547,13 +576,10 @@ const generateDecorators = () => new CompositeDecorator([
   React.useEffect(() => {
     if (playingLocation && ready) {
       const wordKey = wordKeyBank.getKey(playingLocation);
-      console.log('playingLocation', playingLocation);
       if (typeof wordKey !== 'number') {
         return;
       }
       const entityKey = getEntityKeyFromWordKey(wordKey);
-      console.log('wordKey', wordKey);
-      console.log('entityKey', entityKey);
       if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
         updateWordForCurrentPlayingLocation(playingLocation);
       }
@@ -1207,12 +1233,81 @@ const generateDecorators = () => new CompositeDecorator([
           const character = currentStateOfPreviousBlockObject.text[index];
           return SPLITTABLE_CHARACTERS.includes(character);
         });
+
+        // to squash all the content into one large word alignment
         if (!allWordsHaveEntity) {
-          //revert to old cursor position and display message
-          const prevSelectionEditorState = EditorState.forceSelection(incomingEditorState, previousSelectionState);
-          setEditorState(prevSelectionEditorState);
-          displayMessage(translate('editor.validation.missingTimes'));
-          return false;
+          const { segment } = currentStateOfPreviousBlockObject.data;
+          if(segment?.id){
+            const segmentIndex = getIndexOfSegmentId(segment.id) as number;
+            const originalSelectionState = editorState.getSelection();
+            
+
+            const filteredText = currentStateOfPreviousBlockObject.text.replace(SPLIT_CHARACTER_REGEX, '').trim();
+
+            const blockSelectionState = new SelectionState({
+              anchorKey: currentStateOfPreviousBlockObject.key,
+              anchorOffset: 0,
+              focusKey: currentStateOfPreviousBlockObject.key,
+              focusOffset: currentStateOfPreviousBlockObject.characterList.length,
+            });
+          
+            const removedEntitiesEditorState = removeEntitiesAtSelection(incomingEditorState, blockSelectionState);
+            
+            const replacedTextContentState = Modifier.replaceText(removedEntitiesEditorState.getCurrentContent(), blockSelectionState, filteredText);
+
+            const replacedTextEditorState = EditorState.createWithContent(replacedTextContentState, generateDecorators());
+            const updatedRawContent = convertToRaw(replacedTextEditorState.getCurrentContent());
+
+            const newBlock = updatedRawContent.blocks[segmentIndex]
+
+            const updatedBlockSelectionState = new SelectionState({
+              anchorKey: newBlock.key,
+              anchorOffset: 0,
+              focusKey: newBlock.key,
+              focusOffset: newBlock.text.length,
+            });
+
+            const replacedTextEditorStateWithSelection = EditorState.forceSelection(replacedTextEditorState, updatedBlockSelectionState);
+
+            const wordAlignment: WordAlignment = {
+              confidence: 1,
+              length: segment.length,
+              start: 0,
+              word: filteredText,
+            };
+            
+            const newWordKey = wordKeyBank.generateKeyAndClearSegment(segmentIndex)
+            // create the new word entity
+            const draftEntity: RawDraftEntity<WordAlignmentEntityData> = {
+              type: ENTITY_TYPE.TOKEN,
+              mutability: MUTABILITY_TYPE.MUTABLE,
+              data: {
+                wordKey: newWordKey,
+                wordAlignment,
+              },
+            };
+
+            // save the word entity
+            const {entityKey, updatedEditorState} = setEntityAtSelection(draftEntity, replacedTextEditorStateWithSelection);
+            let entityKeyNumber = Number(entityKey);
+            // we must decrement the values because we are adjusting the origially incorrect values
+            entityKeyNumber--;
+            const adjustedEntityKey = entityKeyNumber.toString();
+        
+            // store all info
+            linkEntityKeyAndWordKey(entityKeyNumber, newWordKey);
+            setEntityByKey(adjustedEntityKey, draftEntity);
+
+            const editorStateWithCursorMoved = EditorState.forceSelection(updatedEditorState, originalSelectionState);
+            const updatedContentState = editorStateWithCursorMoved.getCurrentContent();
+
+            const editorStateWithNoUndo = EditorState.createWithContent(updatedContentState, generateDecorators());
+            setEditorState(editorStateWithNoUndo);
+
+            const updateCallback = buildUpdateSegmentCallback(currentStateOfPreviousBlockObject, editorStateWithNoUndo);
+            updateSegment(segment.id, [wordAlignment], segmentIndex, updateCallback);
+            return false;
+          }
         }
         // build request and submit change
         const { segment } = currentStateOfPreviousBlockObject.data;
