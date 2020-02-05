@@ -238,31 +238,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const checkIfValidSegmentArea = (startTime: number, endTime: number) => {
-    if (!internaDisabledTimesTracker || internaDisabledTimesTracker.length < 1) return true;
-    const isValidArea = internaDisabledTimesTracker.every((disabledTimeArea, index) => {
-      const { start, end } = disabledTimeArea;
-      if (index === 0) {
-        if (
-          startTime >= (start as number) &&
-          startTime >= (end as number) &&
-          endTime >= (start as number) &&
-          endTime >= (end as number)
-        ) {
-          return true;
-        }
-      } else {
-        if (
-          startTime <= (start as number) &&
-          startTime <= (end as number) &&
-          endTime <= (end as number) &&
-          endTime <= (start as number)
-        ) {
-          return true;
-        }
-      }
-      return false;
-    });
-    return isValidArea;
+    if (!validTimeBondaries) return false;
+    if(validTimeBondaries.start && validTimeBondaries.end && (startTime >= validTimeBondaries.start && endTime <= validTimeBondaries.end)){
+      return true
+    }
+    return false
   };
 
   const seekToTime = (timeToSeekTo: number) => {
@@ -656,11 +636,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
         segmentEndTime = duration;
       }
       if (endTime > startTime || segmentEndTime > segmentStartTime) {
+        const segmentsSameLength = endTime === segmentEndTime && startTime === segmentStartTime;
         const wordSegmentToAdd: SegmentAddOptions = {
           startTime,
           endTime,
           editable: false,
-          color: wordInfo.color,
+          // to simulate the word segment not existing
+          color: segmentsSameLength ? segmentInfo.color : wordInfo.color,
           id: SEGMENT_IDS.WORD,
           labelText: wordInfo.text,
         };
@@ -904,6 +886,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   // to set zones outside of the current custom edit segment that are disabled
   React.useEffect(() => {
     internaDisabledTimesTracker = disabledTimes;
+    console.log('disabledTimes', disabledTimes);
     if (disabledTimes instanceof Array) {
       // to calculate the valid time bondaries
       if (disabledTimes.length > 1) {
@@ -1040,7 +1023,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('error', handleStreamingError);
     mediaElement?.addEventListener('stalled', (stalled) => console.log('stalled', stalled));
 
-
     const peaksJsInit = () => {
       const peaksUrl = `${url}.json`;
       const zoomLevels = DEFAULT_ZOOM_LEVELS;
@@ -1062,6 +1044,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         dataUri: {
           json: peaksUrl,
         },
+        // rawData: {
+        //   json: jsonShort,
+        // },
         // If true, Peaks.js will send credentials with all network requests,
         // i.e., when fetching waveform data.
         withCredentials: false,
@@ -1089,9 +1074,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         // Keyboard nudge increment in seconds (left arrow/right arrow)
         nudgeIncrement: 0.01,
         // Color for the in marker of segments
-        inMarkerColor: theme.palette.common.black,
-        // Color for the out marker of segments
-        outMarkerColor: theme.palette.common.black,
+        // segmentStartMarkerColor: theme.editor.highlight,
+        // // Color for the out marker of segments
+        // segmentEndMarkerColor: theme.editor.highlight,
         // Color for the zoomed in waveform
         zoomWaveformColor: theme.header.lightBlue,
         // Color for the overview waveform
@@ -1122,12 +1107,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
       };
 
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
+        console.warn('error', error);
+        console.warn('peaksInstance', peaksInstance);
         setReady(!error);
         if (error) {
           handleError(error);
         }
       });
-
       PeaksPlayer.on('peaks.ready', handlePeaksReady);
       PeaksPlayer.on('segments.exit', handleSegmentExit);
       PeaksPlayer.on('segments.enter', handleSegmentEnter);
