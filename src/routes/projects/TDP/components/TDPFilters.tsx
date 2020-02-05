@@ -43,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 export function TDPFilters(props: TDPFiltersProps) {
   const { updateVoiceData, modelConfigsById, loading } = props;
   const { translate } = React.useContext(I18nContext);
+  const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
@@ -276,7 +277,15 @@ export function TDPFilters(props: TDPFiltersProps) {
                 <CardActions>
                   <Button
                     disabled={loading}
-                    onClick={() => formikProps.resetForm()}
+                    onClick={() => {
+                      if(submitPressed){
+                        formikProps.resetForm();
+                        formikProps.submitForm();
+                        setSubmitPressed(false);
+                      } else {
+                        formikProps.resetForm();
+                      }
+                    }}
                     color="secondary"
                     variant="outlined"
                   >
@@ -284,7 +293,10 @@ export function TDPFilters(props: TDPFiltersProps) {
                   </Button>
                   <Button
                     disabled={!formikProps.isValid || loading}
-                    onClick={formikProps.submitForm}
+                    onClick={() => {
+                      formikProps.submitForm();
+                      setSubmitPressed(true);
+                    }}
                     color="primary"
                     variant="contained"
                   >{loading &&
