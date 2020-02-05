@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Organization } from '../../types';
 
 export interface GlobalState {
-  organization?: Organization;
+  organizations?: Organization[];
 }
 
 /**

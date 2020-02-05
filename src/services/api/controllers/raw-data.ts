@@ -1,6 +1,11 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { getGeneralApiProblem } from '../api-problem';
-import { getRawDataResult, ProblemKind, ServerError, uploadRawDataResult } from '../types';
+import {
+  getRawDataResult,
+  ProblemKind,
+  ServerError,
+  uploadRawDataResult,
+} from '../types';
 import { RawDataAdditionalProps } from '../types/raw-data.types';
 import { ParentApi } from './parent-api';
 
@@ -11,7 +16,7 @@ export class RawData extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
@@ -26,7 +31,7 @@ export class RawData extends ParentApi {
     const response = await this.apisauce.get<
       RawDataAdditionalProps,
       ServerError
-    >(`/projects/${projectId}/raw-data`);
+    >(this.getPathWithOrganization(`/projects/${projectId}/raw-data`));
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -73,7 +78,9 @@ export class RawData extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      `/projects/${projectId}/raw-data`,
+      this.getPathWithOrganization(
+        this.getPathWithOrganization(`/projects/${projectId}/raw-data`)
+      ),
       request,
       config
     );

@@ -1,17 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Role, User } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  assignRolesToUserResult,
-  deleteRoleResult,
-  deleteUserResult,
-  getRolesResult,
-  getUserResult,
-  inviteUserResult,
-  ProblemKind,
-  resetPasswordOfUserResult,
-  ServerError,
-} from '../types';
+import { assignRolesToUserResult, deleteRoleResult, deleteUserResult, getRolesResult, getUserResult, inviteUserResult, ProblemKind, resetPasswordOfUserResult, ServerError } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -21,9 +11,12 @@ export class IAM extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
+  constructor(
+    apisauce: ApisauceInstance,
+    logout: () => void
+  ) {
     super(apisauce, logout);
   }
 
@@ -33,7 +26,7 @@ export class IAM extends ParentApi {
   async getUsers(): Promise<getUserResult> {
     // make the api call
     const response: ApiResponse<User[], ServerError> = await this.apisauce.get(
-      `/iam/users`
+      this.getPathWithOrganization(`/iam/users`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -90,7 +83,9 @@ export class IAM extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/iam/users/${userId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/iam/users/${userId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -119,7 +114,7 @@ export class IAM extends ParentApi {
     };
     // make the api call
     const response: ApiResponse<User, ServerError> = await this.apisauce.post(
-      `/iam/users/${userId}/roles`,
+      this.getPathWithOrganization(`/iam/users/${userId}/roles`),
       request
     );
     // the typical ways to die when calling an api
@@ -151,7 +146,9 @@ export class IAM extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/iam/users/${userId}/roles/${roleId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/iam/users/${userId}/roles/${roleId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -178,7 +175,10 @@ export class IAM extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.post(`/iam/users/invite`, request);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/iam/users/invite`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -203,7 +203,9 @@ export class IAM extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.post(`/iam/users/${userId}/reset-password`);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/iam/users/${userId}/reset-password`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

@@ -2,7 +2,7 @@ import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Organization } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  getOrganizationResult,
+  getOrganizationsResult,
   ProblemKind,
   RenameOrganizationRequest,
   renameOrganizationResult,
@@ -17,17 +17,17 @@ export class Organizations extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
   /**
-   * Gets the current organization
+   * Gets the current organizations
    */
-  async getOrganization(): Promise<getOrganizationResult> {
-    const response = await this.apisauce.get<Organization, ServerError>(
+  async getOrganizations(): Promise<getOrganizationsResult> {
+    const response = await this.apisauce.get<Organization[], ServerError>(
       `/organizations`
     );
     // the typical ways to die when calling an api
@@ -42,8 +42,8 @@ export class Organizations extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const organization = response.data as Organization;
-      return { kind: 'ok', organization };
+      const organizations = response.data as Organization[];
+      return { kind: 'ok', organizations };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -62,7 +62,10 @@ export class Organizations extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.patch(`/organizations/name`, request);
+    > = await this.apisauce.patch(
+      this.getPathWithOrganization(`/name`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

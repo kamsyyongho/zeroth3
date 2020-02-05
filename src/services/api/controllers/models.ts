@@ -1,31 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import {
-  AcousticModel,
-  LanguageModel,
-  SubGraph,
-  TopGraph,
-} from '../../../types';
+import { AcousticModel, LanguageModel, SubGraph, TopGraph } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  AcousticModelEditRequest,
-  deleteLanguageModelResult,
-  deleteSubGraphResult,
-  getAcousticModelsResult,
-  getLanguageModelsResult,
-  getSubGraphsResult,
-  getTopGraphsResult,
-  LanguageModelRequest,
-  postLanguageModelResult,
-  postSubGraphResult,
-  ProblemKind,
-  refreshAndGetAcousticModelsResult,
-  refreshAndGetTopGraphResult,
-  ServerError,
-  SubGraphRequest,
-  updateAcousticModelResult,
-  updateLanguageModelResult,
-  updateSubGraphResult,
-} from '../types';
+import { AcousticModelEditRequest, deleteLanguageModelResult, deleteSubGraphResult, getAcousticModelsResult, getLanguageModelsResult, getSubGraphsResult, getTopGraphsResult, LanguageModelRequest, postLanguageModelResult, postSubGraphResult, ProblemKind, refreshAndGetAcousticModelsResult, refreshAndGetTopGraphResult, ServerError, SubGraphRequest, updateAcousticModelResult, updateLanguageModelResult, updateSubGraphResult } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -35,9 +11,12 @@ export class Models extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
+  constructor(
+    apisauce: ApisauceInstance,
+    logout: () => void
+  ) {
     super(apisauce, logout);
   }
 
@@ -47,7 +26,7 @@ export class Models extends ParentApi {
   async getAcousticModels(): Promise<getAcousticModelsResult> {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      `/models/acoustic`
+      this.getPathWithOrganization(`/models/acoustic`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -76,7 +55,7 @@ export class Models extends ParentApi {
   > {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      `/models/acoustic/refresh`
+      this.getPathWithOrganization(`/models/acoustic/refresh`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -115,7 +94,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       AcousticModel,
       ServerError
-    > = await this.apisauce.put(`/models/acoustic/${modelId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/acoustic/${modelId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -143,7 +125,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/topgraphs`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/topgraphs`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -172,7 +156,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/topgraphs/refresh`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/topgraphs/refresh`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -194,7 +180,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel[],
       ServerError
-    > = await this.apisauce.get(`/models/language-models`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/language-models`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -238,7 +226,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel,
       ServerError
-    > = await this.apisauce.post(`/models/language-models`, request);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/language-models`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -285,7 +276,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel,
       ServerError
-    > = await this.apisauce.put(`/models/language-models/${modelId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/language-models/${modelId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -317,7 +311,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/models/language-models/${modelId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/models/language-models/${modelId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -339,7 +335,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/subgraphs`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/subgraphs`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -380,7 +378,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.post(`/models/subgraphs`, request);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/subgraphs`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -425,7 +426,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.put(`/models/subgraphs/${subGraphId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -455,7 +459,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/models/subgraphs/${subGraphId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -497,7 +503,11 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.post(`/models/subgraphs/file`, request, config);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/subgraphs/file`),
+      request,
+      config
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

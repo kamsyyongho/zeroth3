@@ -13,7 +13,7 @@ export interface RenameOrganizationRequest {
 // RESULTS //
 /////////////
 
-export type getOrganizationResult =
-  | { kind: 'ok'; organization: Organization }
+export type getOrganizationsResult =
+  | { kind: 'ok'; organizations: Organization[] }
   | GeneralApiProblem;
 export type renameOrganizationResult = { kind: 'ok' } | GeneralApiProblem;

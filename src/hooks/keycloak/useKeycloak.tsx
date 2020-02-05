@@ -1,7 +1,7 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
 import ENV from '../../services/env';
-import { ROLES } from '../../types';
+import { ORGANIZATION_ID_KEY, ROLES } from '../../types';
 import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
@@ -12,7 +12,8 @@ export interface KeycloakUser {
   email?: string;
   name?: string;
   preferredUsername?: string;
-  organizationId?: number;
+  organizationIds?: string[];
+  currentOrganizationId?: string;
 }
 
 interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
@@ -21,7 +22,7 @@ interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
   email?: string;
   name?: string;
   preferred_username?: string;
-  organization_id?: number;
+  organization_id?: string[];
 }
 
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
@@ -85,7 +86,7 @@ export const useKeycloak = () => {
     }
     if (keycloak?.tokenParsed) {
       user = {
-        organizationId: keycloak.tokenParsed.organization_id,
+        organizationIds: keycloak.tokenParsed.organization_id,
         familyName: keycloak.tokenParsed.family_name,
         givenName: keycloak.tokenParsed.given_name,
         email: keycloak.tokenParsed.email,
@@ -93,6 +94,7 @@ export const useKeycloak = () => {
         preferredUsername: keycloak.tokenParsed.preferred_username,
       };
     }
+
   } catch (error) {
     log({
       file: `useKeycloak.tsx`,
@@ -101,7 +103,7 @@ export const useKeycloak = () => {
       error: true,
     });
   }
-
+  
   /**
    * checks if the user has the required permissions
    */
@@ -115,6 +117,19 @@ export const useKeycloak = () => {
     return false;
   };
 
+  // get or set the organization from/to localStorage
+  if (user.organizationIds) {
+    const currentOrganizationId = localStorage.getItem(ORGANIZATION_ID_KEY);
+    if (user.organizationIds.length) {
+      if (!currentOrganizationId ||
+        (currentOrganizationId && !user.organizationIds.includes(currentOrganizationId))) {
+        localStorage.setItem(ORGANIZATION_ID_KEY, user.organizationIds[0]);
+        user.currentOrganizationId = user.organizationIds[0];
+      } else if (currentOrganizationId) {
+        user.currentOrganizationId = currentOrganizationId;
+      }
+    }
+  }
   const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user, hasPermission };
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };

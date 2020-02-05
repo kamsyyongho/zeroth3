@@ -14,7 +14,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { ICONS } from '../../../theme/icons';
 import { IMAGES } from '../../../theme/images';
-import { PATHS } from '../../../types';
+import { Organization, PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
@@ -54,11 +54,12 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organization } = globalState;
-  const [organizationLoading, setOrganizationLoading] = React.useState(true);
+  const { organizations } = globalState;
+  const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
+  const [organization, setOrganization] = React.useState<Organization | undefined>();
 
   const classes = useStyles();
 
@@ -76,20 +77,20 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   const getOrganization = async () => {
     if (api?.organizations) {
-      setOrganizationLoading(true);
-      const response = await api.organizations.getOrganization();
+      setOrganizationsLoading(true);
+      const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setGlobalState({ organization: response.organization });
+        setGlobalState({ organizations: response.organizations });
       } else {
         log({
           file: `Header.tsx`,
-          caller: `getOrganization - failed to get organization`,
+          caller: `getOrganizations - failed to get organizations`,
           value: response,
           important: true,
         });
       }
     }
-    setOrganizationLoading(false);
+    setOrganizationsLoading(false);
   };
 
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
@@ -97,12 +98,25 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
-    if (user.organizationId && !organization) {
+    if (user.currentOrganizationId && !organizations) {
       getOrganization();
     } else {
-      setOrganizationLoading(false);
+      setOrganizationsLoading(false);
     }
   }, []);
+
+  // to get the currently selected organization's info
+  React.useEffect(() => {
+    if (organizations && organizations.length && user.currentOrganizationId) {
+      for (let i = 0; i < organizations.length; i++) {
+        const organization = organizations[i];
+        if (organization.id === user.currentOrganizationId) {
+          setOrganization(organization);
+          break;
+        }
+      }
+    }
+  }, [organizations]);
 
 
   // to show a notification when the organization name should be changed
