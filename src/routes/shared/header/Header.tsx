@@ -1,10 +1,11 @@
+/* eslint-disable react/display-name */
 import { Button, Toolbar } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import { useSnackbar } from 'notistack';
+import { OptionsObject, useSnackbar } from 'notistack';
 import React from 'react';
 import { Link } from "react-router-dom";
 import { PERMISSIONS } from '../../../constants';
@@ -20,7 +21,7 @@ import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
 import MenuPopup from './components/MenuPopup';
-
+import { UploadProgressNotification } from './components/UploadProgressNotification';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -48,13 +49,28 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
+/** in ms */
+const DEFAULT_POLLING_TIMEOUT = 5000;
+// const DEFAULT_POLLING_TIMEOUT = 10000;
+let uploadQueueCheckTimeoutId: NodeJS.Timeout | undefined;
+const QUEUE_NOTIFICATION_KEY = 0;
+const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
+  persist: true,
+  preventDuplicate: true,
+  anchorOrigin: {
+    vertical: 'bottom',
+    horizontal: 'center',
+  },
+  key: QUEUE_NOTIFICATION_KEY,
+};
+
 export const Header: React.FunctionComponent<{}> = (props) => {
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organizations } = globalState;
+  const { organizations, uploadQueueEmpty } = globalState;
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -93,6 +109,60 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     setOrganizationsLoading(false);
   };
 
+  const clearNotificationTimeout = () => {
+    if (uploadQueueCheckTimeoutId) {
+      clearTimeout(uploadQueueCheckTimeoutId);
+      uploadQueueCheckTimeoutId = undefined;
+    }
+  };
+
+  const getUploadQueue = async () => {
+    if (api?.rawData) {
+      const response = await api.rawData.getRawDataQueue('b024defd-cc2d-4b35-baa4-6c24d8cb49e0');
+      if (response.kind === 'ok') {
+        const { queue } = response;
+        const { totalCount, currentProjectCount } = queue;
+        if (!totalCount || totalCount === currentProjectCount) {
+          setGlobalState({ uploadQueueEmpty: true });
+          clearNotificationTimeout();
+          if (!totalCount) {
+            enqueueSnackbar(`${translate('common.uploaded')}: ${currentProjectCount} / ${totalCount}`, {
+              ...DEFAULT_NOTIFICATION_OPTIONS,
+              content: (key, message) => {
+                return (
+                  <UploadProgressNotification key={key} message={message} progress={100} onClose={clearNotificationTimeout} />
+                );
+              }
+            });
+          }
+        } else {
+          // must be a number from 0 to 100
+          const progress = currentProjectCount / totalCount * 100;
+          enqueueSnackbar(`${translate('common.uploading')}: ${currentProjectCount} / ${totalCount}`, {
+            ...DEFAULT_NOTIFICATION_OPTIONS,
+            content: (key, message) => {
+              return (
+                <UploadProgressNotification key={key} message={message} progress={progress} onClose={clearNotificationTimeout} />
+              );
+            }
+          });
+
+          // check again after a few seconds
+          uploadQueueCheckTimeoutId = setTimeout(() => {
+            getUploadQueue();
+          }, DEFAULT_POLLING_TIMEOUT);
+        }
+      } else {
+        log({
+          file: `Header.tsx`,
+          caller: `getUploadQueue - failed to get raw data queue`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+  };
+
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
@@ -103,6 +173,9 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     } else {
       setOrganizationsLoading(false);
     }
+    return () => {
+      clearNotificationTimeout();
+    };
   }, []);
 
   // to get the currently selected organization's info
@@ -117,6 +190,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       }
     }
   }, [organizations]);
+
+  // to check for current upload progress
+  React.useEffect(() => {
+    if (!uploadQueueEmpty) {
+      getUploadQueue();
+    }
+  }, [uploadQueueEmpty]);
 
 
   // to show a notification when the organization name should be changed

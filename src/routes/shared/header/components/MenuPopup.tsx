@@ -62,7 +62,7 @@ function MenuPopup(props: MenuPopupProps) {
   return (
     <>
       <IconButton onClick={handleClick} color={"inherit"} edge='start' >
-        <ICONS.Profile style={{color: theme.palette.secondary.contrastText}} />
+        <ICONS.Profile style={{ color: theme.palette.secondary.contrastText }} />
       </IconButton>
       <Menu
         id="simple-menu"
