@@ -11,7 +11,7 @@ export const shortcuts: {
     merge: '⇧ Shift + ⌫ Backspace',
     split: '⇧ Shift + ⏎ Return',
     toggleMore: '⌥ Opt',
-    createWord: '⇧ Shift + ⌥ Opt',
+    editSegmentTime: '⇧ Shift + ⌥ Opt',
   },
   other: {
     undo: 'Ctrl + Z',
@@ -19,7 +19,7 @@ export const shortcuts: {
     merge: '⇧ Shift + Backspace',
     split: '⇧ Shift + ↵ Enter',
     toggleMore: 'Alt',
-    createWord: '⇧ Shift + Alt',
+    editSegmentTime: '⇧ Shift + Alt',
   },
 };
 
