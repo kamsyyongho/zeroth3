@@ -243,6 +243,7 @@ export function ModelTabs() {
             deleteLoading={deleteLoading}
             canDelete={!!subGraphsToDelete.length}
             subGraphs={subGraphs}
+            topGraphs={topGraphs}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
           />
         </>}

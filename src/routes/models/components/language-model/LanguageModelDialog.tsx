@@ -3,7 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme, makeStyles, createStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
@@ -22,6 +22,15 @@ import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormF
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
+import clsx from 'clsx';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 
 interface LanguageModelDialogProps {
   open: boolean;
@@ -47,6 +56,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const [isError, setIsError] = React.useState(false);
   const isEdit = !!modelToEdit;
 
+  const classes = useStyles();
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
@@ -57,7 +67,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   }, [topGraphs]);
 
   // to handle the chip multi-select input values
-  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => ({ label: subGraph.name, value: subGraph.id }));
+  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => ({ label: subGraph.name, value: subGraph.id, disabled: !subGraph.progress }));
   const subGraphsById: SubGraphsById = {};
   subGraphs.forEach(subGraph => subGraphsById[subGraph.id] = subGraph.name);
 
@@ -86,7 +96,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     initialValues = {
       ...initialValues,
       name: modelToEdit.name,
-      description: modelToEdit.description,
+      description: modelToEdit.description as string,
       selectedTopGraphId: modelToEdit.topGraph.id,
       selectedSubGraphIds: modelToEdit.subGraphs.map(subGraph => subGraph.id),
     };
@@ -142,6 +152,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="language-model-dialog"
+      className={clsx(subOpen && classes.hidden)}
     >
       <DialogTitle id="language-model-dialog">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -200,6 +211,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         open={subOpen}
         onClose={() => setSubOpen(false)}
         onSuccess={handleSubGraphListUpdate}
+        topGraphs={topGraphs}
       />
     </Dialog>
   );

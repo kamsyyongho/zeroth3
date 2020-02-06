@@ -14,7 +14,7 @@ import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { SubGraph } from '../../../../types';
+import { SubGraph, TopGraph } from '../../../../types';
 import { CheckedSubGraphById } from '../ModelTabs';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
@@ -43,6 +43,7 @@ export interface SubGraphListProps {
   canModify: boolean;
   subGraphsLoading: boolean;
   subGraphs: SubGraph[];
+  topGraphs: TopGraph[];
   checkedSubGraphs: CheckedSubGraphById;
   deleteLoading: boolean;
   canDelete: boolean;
@@ -56,6 +57,7 @@ export function SubGraphList(props: SubGraphListProps) {
     canModify,
     subGraphsLoading,
     subGraphs,
+    topGraphs,
     checkedSubGraphs,
     deleteLoading,
     canDelete,
@@ -112,6 +114,7 @@ export function SubGraphList(props: SubGraphListProps) {
         subGraphToEdit={subGraphToEdit}
         onClose={closeDialog}
         onSuccess={handleSubGraphListUpdate}
+        topGraphs={topGraphs}
       />
       <Card elevation={0} className={classes.card} >
         <CardHeader

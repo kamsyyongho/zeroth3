@@ -5,6 +5,7 @@ import React from "react";
 export interface SelectFormFieldOption {
   label: string;
   value: string | number;
+  disabled?: boolean;
 }
 
 export type SelectFormFieldOptions = Array<SelectFormFieldOption>;
@@ -13,7 +14,7 @@ interface SelectFormFieldProps extends FieldProps {
   errorOverride?: boolean;
   fullWidth?: boolean;
   label?: string;
-  disabledValues?: unknown[];
+  disabledValues?: (string | number)[];
   options: SelectFormFieldOptions;
 }
 
@@ -32,11 +33,13 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, di
         {options.map((op: SelectFormFieldOption) => {
           // account for blank options
           if (op.value === '') {
-            return (<MenuItem key={'empty'} value={op.value}>
+            return (<MenuItem key={'empty'} value={op.value} >
               <em>{op.label}</em>
             </MenuItem>);
           }
-          return (<MenuItem disabled={(disabledValues).includes(op.value)} key={op.value} value={op.value}>
+          console.warn('op.disabled', op.disabled);
+          console.warn('op', op);
+          return (<MenuItem disabled={op.disabled || (disabledValues).includes(op.value)} key={op.value} value={op.value}>
             {op.label}
           </MenuItem>);
         })}

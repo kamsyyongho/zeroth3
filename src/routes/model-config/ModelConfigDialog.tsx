@@ -3,10 +3,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import React from 'react';
@@ -22,6 +23,13 @@ import { LanguageModelDialog } from '../models/components/language-model/Languag
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 interface ModelConfigDialogProps {
   projectId: string;
   open: boolean;
@@ -58,12 +66,13 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const [isError, setIsError] = React.useState(false);
   const isEdit = !!configToEdit;
 
+  const classes = useStyles();
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
   const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id }));
+  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id, disabled: !acousticModel.progress }));
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");
@@ -158,6 +167,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="model-config-dialog"
+      className={clsx(languageOpen && classes.hidden)}
     >
       <DialogTitle id="model-config-dialog">{translate(`modelConfig.header`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>

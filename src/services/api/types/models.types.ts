@@ -1,9 +1,4 @@
-import {
-  AcousticModel,
-  LanguageModel,
-  SubGraph,
-  TopGraph,
-} from '../../../types';
+import { AcousticModel, LanguageModel, SubGraph, TopGraph } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -24,7 +19,9 @@ export interface LanguageModelRequest {
 export interface SubGraphRequest {
   name: string;
   text: string;
+  topGraphId: string;
   public?: boolean;
+  immutable?: boolean;
 }
 
 /////////////

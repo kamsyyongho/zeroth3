@@ -358,21 +358,27 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Create a new subgraph
+   * Create a new subgraph using text
    * @param name
    * @param text
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    */
   async postSubGraph(
     name: string,
     text: string,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean
   ): Promise<postSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
       name,
       text,
+      topGraphId,
       public: isPublic,
+      immutable: isImmutable,
     };
     // make the api call
     const response: ApiResponse<
@@ -407,20 +413,26 @@ export class Models extends ParentApi {
    * @param subGraphId
    * @param name
    * @param text
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    * @returns a `conflict` kind if the subgraph cannot be updated
    */
   async updateSubGraph(
     subGraphId: string,
     name: string,
     text: string,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean
   ): Promise<updateSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
       name,
       text,
+      topGraphId,
       public: isPublic,
+      immutable: isImmutable,
     };
     // make the api call
     const response: ApiResponse<
@@ -476,23 +488,31 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Upload a subgraph file
+   * Create a new subgraph using a file to upload
    * @param name - the subgraph name
    * @param file - multipart file to upload
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    */
   async uploadSubGraphFile(
     name: string,
     file: File,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean,
   ): Promise<postSubGraphResult> {
     // compile data
     // needs name
     const request = new FormData();
     request.append('name', name);
     request.append('file', file);
+    request.append('topGraphId', topGraphId);
     if (typeof isPublic === 'boolean') {
       request.append('public', JSON.stringify(isPublic));
+    }
+    if (typeof isImmutable === 'boolean') {
+      request.append('public', JSON.stringify(isImmutable));
     }
     const config = {
       headers: {

@@ -55,7 +55,11 @@ export function TDPFilters(props: TDPFiltersProps) {
   }, [translate]);
 
   const modelConfigFormSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({ label: modelConfigsById[id].name, value: modelConfigsById[id].id }));
+    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({
+      label: modelConfigsById[id].name,
+      value: modelConfigsById[id].id,
+      disabled: !modelConfigsById[id].progress,
+    }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
     return tempFormSelectOptions;
@@ -278,7 +282,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                   <Button
                     disabled={loading}
                     onClick={() => {
-                      if(submitPressed){
+                      if (submitPressed) {
                         formikProps.resetForm();
                         formikProps.submitForm();
                         setSubmitPressed(false);
@@ -289,7 +293,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                     color="secondary"
                     variant="outlined"
                   >
-                    {translate('common.clear')}
+                    {translate('common.clearAll')}
                   </Button>
                   <Button
                     disabled={!formikProps.isValid || loading}
