@@ -34,6 +34,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     userCard: {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
+    },
+    organizationCard: {
+      backgroundColor: theme.palette.background.paper,
     },
     organizationLoader: {
       paddingTop: theme.spacing(3),
@@ -49,6 +53,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       fontFamily: 'Muli',
       fontWeight: 'bold',
       color: theme.palette.primary.main,
+    },
+    hidden: {
+      visibility: 'hidden',
     },
   }),
 );
@@ -203,7 +210,7 @@ export function Profile() {
         className: classes.cardTitle,
       }}
     />
-    <Box borderLeft={1} borderColor={theme.table.border} >
+    <Box borderLeft={1} borderColor={theme.table.border} className={classes.organizationCard} >
       <CardContent>
         <Grid
           container
@@ -227,14 +234,15 @@ export function Profile() {
         </Grid>
       </CardContent>
     </Box>
-    {hasRenamePermissions && (<CardActions onClick={showDialog}>
-      <Button
+    <CardActions>
+      {hasRenamePermissions && <Button
         variant='contained'
         color='primary'
         size="small"
+        onClick={showDialog}
         startIcon={<EditIcon />}
-      >{translate('organization.rename')}</Button>
-    </CardActions>)}
+      >{translate('organization.rename')}</Button>}
+    </CardActions>
   </Grid>;
 
   return (
