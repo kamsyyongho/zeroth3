@@ -43,6 +43,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  */
 const SEEK_SLOP = 0.00001;
 
+const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
+
+let internalSegmentsTracker: Segment[] = [];
 
 export enum PARENT_METHOD_TYPES {
   speaker
@@ -64,8 +67,6 @@ export interface TimePickerRootProps {
   updateTimeSection: (wordToAddTimeTo: Word, wordKey: string, isWord?: boolean) => void;
   setDisabledTimes: (disabledTimes: Time[]) => void;
 }
-
-const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
 
 
 export function EditorPage() {
@@ -115,6 +116,9 @@ export function EditorPage() {
    */
   const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
 
+  React.useEffect(() => {
+    internalSegmentsTracker = segments;
+  }, [segments]);
 
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
@@ -400,7 +404,11 @@ export function EditorPage() {
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
-    const segment = segments[segmentIndex];
+    let segmentsToUse = segments;
+    if(!segmentsToUse.length){
+      segmentsToUse = [...internalSegmentsTracker];
+    }
+    const segment = segmentsToUse[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
     const endTime = startTime + wordAlignment.length;
@@ -440,12 +448,16 @@ export function EditorPage() {
    */
   const calculatePlayingLocation = (time: number): SegmentAndWordIndex | undefined => {
     try {
-      if (isNaN(time) || !segments.length) return;
+      let segmentsToUse = segments;
+      if(!segmentsToUse.length){
+        segmentsToUse = [...internalSegmentsTracker];
+      }
+      if (isNaN(time) || !segmentsToUse.length) return;
       let segmentIndex = 0;
       let wordIndex = 0;
 
-      for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
+      for (let i = 0; i < segmentsToUse.length; i++) {
+        const segment = segmentsToUse[i];
         if (segment.start <= time) {
           segmentIndex = i;
         } else {
@@ -453,7 +465,7 @@ export function EditorPage() {
         }
       }
 
-      const segment = segments[segmentIndex];
+      const segment = segmentsToUse[segmentIndex];
       if (!segment) return;
       const { wordAlignments } = segment;
       const wordTime = time - segment.start;
@@ -613,6 +625,7 @@ export function EditorPage() {
   // subsequent fetches
   React.useEffect(() => {
     if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+      internalSegmentsTracker = [];
       setSegmentsLoading(true);
       setSegments([]);
       setPlaybackTime(0);
@@ -621,6 +634,7 @@ export function EditorPage() {
       setCurrentlyPlayingWordPlayerSegment(undefined);
       handleWordTimeCreationClose();
       getAssignedData();
+      
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
@@ -716,7 +730,6 @@ export function EditorPage() {
             <AudioPlayer
               key={voiceData.id}
               url={voiceData.audioUrl}
-              length={voiceData.length}
               timeToSeekTo={timeToSeekTo}
               disabledTimes={disabledTimes}
               openWordKey={openWordKey}

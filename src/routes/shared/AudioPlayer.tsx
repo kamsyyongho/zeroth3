@@ -115,7 +115,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface AudioPlayerProps {
   url: string;
-  length: number;
   timeToSeekTo?: number;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
@@ -137,8 +136,8 @@ interface AudioPlayerProps {
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
-  const { url,
-    length,
+  const {
+    url,
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
@@ -882,7 +881,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   // to set zones outside of the current custom edit segment that are disabled
   React.useEffect(() => {
     internaDisabledTimesTracker = disabledTimes;
-    console.log('disabledTimes', disabledTimes);
     if (disabledTimes instanceof Array) {
       // to calculate the valid time bondaries
       if (disabledTimes.length > 1) {
