@@ -35,6 +35,7 @@ interface DropZoneFormFieldProps extends FieldProps, DropzoneAreaProps {
   dropZoneText?: string;
   hidden?: boolean;
   fullWidth?: boolean;
+  onDuplicateFileNames?: (fileName: string, resetError?: boolean) => void;
 }
 
 export const DropZoneFormField = ({
@@ -50,27 +51,35 @@ export const DropZoneFormField = ({
   acceptedFiles,
   hidden,
   fullWidth,
+  onDuplicateFileNames,
   ...props
 }: DropZoneFormFieldProps) => {
   const { translate } = React.useContext(I18nContext);
-  const [duplicateError, setDuplicateError] = React.useState(false);
 
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
-  const isError = !!errorText || !!errorOverride || duplicateError;
+  const isError = !!errorText || !!errorOverride;
 
   const handleChange = (selectedFiles: File[]) => {
-    const uniqueFileNames = new Set<string>();
-    selectedFiles.forEach(file => {
-      uniqueFileNames.add(file.name);
-    });
-    if (uniqueFileNames.size !== selectedFiles.length) {
-      form.setFieldError(field.name, translate('forms.dropZone.reject.duplicateFileNames'));
-      setDuplicateError(true);
+    if (typeof onDuplicateFileNames === 'function') {
+      const uniqueFileNames: string[] = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        if (uniqueFileNames.includes(file.name)) {
+          onDuplicateFileNames(file.name);
+          form.setFieldError(field.name, `${translate('forms.dropZone.reject.duplicateFileNames')}: ${file.name}`);
+          break;
+        } else {
+          uniqueFileNames.push(file.name);
+        }
+      }
+      if (uniqueFileNames.length === selectedFiles.length) {
+        form.setFieldValue(field.name, selectedFiles);
+        onDuplicateFileNames('', true);
+      }
     } else {
       form.setFieldValue(field.name, selectedFiles);
-      setDuplicateError(false);
     }
   };
 

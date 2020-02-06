@@ -104,7 +104,7 @@ export const ko: ResourceLanguage = {
           main: 'File {{name}} was rejected.',
           notSupported: 'File type not supported.',
           exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
-          duplicateFileNames: 'File names must be unique.',
+          duplicateFileNames: 'File names must be unique',
         },
       },
       numberFiles: 'Number of files to upload: {{count}}',

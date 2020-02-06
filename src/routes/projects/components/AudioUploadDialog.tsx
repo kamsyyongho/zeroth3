@@ -41,6 +41,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const [duplicateError, setDuplicateError] = React.useState('');
 
   const theme = useTheme();
 
@@ -63,6 +64,13 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const requiredTranslationText = translate("forms.validation.required");
   const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
+  const handleDuplicateFileNames = (fileName: string, resetError = false) => {
+    if (resetError) {
+      setDuplicateError('');
+    } else {
+      setDuplicateError(`${translate('forms.dropZone.reject.duplicateFileNames')}: ${fileName}`);
+    }
+  };
 
   const testMaxTotalFileSize = (files: File[]) => {
     let fileSizeCounter = 0;
@@ -158,9 +166,10 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                   name='files'
                   dropZoneText={translate('forms.dropZone.audio_plural')}
                   component={DropZoneFormField}
+                  onDuplicateFileNames={handleDuplicateFileNames}
                   helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
-                  errorOverride={isError || !!formikProps.errors.files}
-                  errorTextOverride={formikProps.errors.files}
+                  errorOverride={isError || !!formikProps.errors.files || duplicateError}
+                  errorTextOverride={formikProps.errors.files || duplicateError}
                 />
               </Form>
             </DialogContent>
