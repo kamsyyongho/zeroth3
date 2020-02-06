@@ -4,16 +4,15 @@ export interface TopGraph {
 }
 
 export interface Model extends TopGraph {
-  description: string;
+  description?: string | null;
   version: string;
 }
 
 export interface AcousticModel extends Model {
-  /**
-   * in Hz
-   */
+  /** in Hz */
   sampleRate: number;
   location: string;
+  progress: number;
 }
 
 export interface LanguageModel extends Model {
@@ -21,5 +20,8 @@ export interface LanguageModel extends Model {
   subGraphs: TopGraph[];
 }
 
-export type SubGraph = TopGraph;
-
+export interface SubGraph extends TopGraph {
+  immutable: boolean;
+  progress: number;
+  topGraphId: string;
+}

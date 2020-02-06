@@ -6,6 +6,7 @@ export interface ModelConfig {
   description: string;
   id: string;
   languageModel: LanguageModel;
+  progress: number;
   thresholdLr?: Threshold;
   thresholdHr?: Threshold;
 }
@@ -16,4 +17,4 @@ export interface ModelConfig {
  * - `threshold >= 0`
  * - `thresholdLr` `>` `thresholdHr`
  */
-export type Threshold = number;
+export type Threshold = number | null;

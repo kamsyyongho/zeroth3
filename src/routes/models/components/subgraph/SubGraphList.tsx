@@ -96,7 +96,7 @@ export function SubGraphList(props: SubGraphListProps) {
       return (
         <Box key={subGraph.id} border={1} borderColor={theme.table.border} className={classes.subGraphRoot}>
           <Grid item xs component={Card} elevation={0} >
-            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
+            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && !subGraph.immutable && <>
               <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
               <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
                 <EditIcon />

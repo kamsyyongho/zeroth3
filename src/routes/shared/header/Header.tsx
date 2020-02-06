@@ -75,7 +75,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
   const hideProjectsDialog = () => setIsProjectsOpen(false);
 
-  const getOrganization = async () => {
+  const getOrganizations = async () => {
     if (api?.organizations) {
       setOrganizationsLoading(true);
       const response = await api.organizations.getOrganizations();
@@ -99,7 +99,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
     if (user.currentOrganizationId && !organizations) {
-      getOrganization();
+      getOrganizations();
     } else {
       setOrganizationsLoading(false);
     }
@@ -215,7 +215,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       <RenameOrganizationDialog
         name={organization?.name ?? ''}
         open={isRenameOpen}
-        onSuccess={getOrganization}
+        onSuccess={getOrganizations}
         onClose={hideRenameDialog}
       />
       <ProjectsDialog

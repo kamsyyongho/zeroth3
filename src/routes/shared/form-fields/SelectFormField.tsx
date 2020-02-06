@@ -37,8 +37,6 @@ export const SelectFormField = ({ field, form, label, options, errorOverride, di
               <em>{op.label}</em>
             </MenuItem>);
           }
-          console.warn('op.disabled', op.disabled);
-          console.warn('op', op);
           return (<MenuItem disabled={op.disabled || (disabledValues).includes(op.value)} key={op.value} value={op.value}>
             {op.label}
           </MenuItem>);

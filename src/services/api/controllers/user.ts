@@ -12,10 +12,7 @@ export class User extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param logout parent method coming from keycloak
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
