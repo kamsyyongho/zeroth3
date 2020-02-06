@@ -69,8 +69,8 @@ export const AppDrawer = (props: AppDrawerProps) => {
           isCurrentPath = true;
         }
         drawerItems.push(<ListItem button key={index} onClick={() => navigateToPage(to, isCurrentPath)} >
-        {Icon && <ListItemIcon >
-          <Icon color={isCurrentPath ? 'primary' : undefined} />
+          {Icon && <ListItemIcon >
+            <Icon color={isCurrentPath ? 'primary' : undefined} />
           </ListItemIcon>}
           <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
         </ListItem>);
@@ -95,7 +95,8 @@ export const AppDrawer = (props: AppDrawerProps) => {
     <Drawer
       open={open}
       onClose={toggleDrawer(false)}
-      style={{ zIndex: theme.zIndex.drawer - 500 }}
+      // this needs to be an inline style to remain under the navbar
+      style={{ zIndex: theme.zIndex.drawer }}
     >
       <div
         className={classes.contents}

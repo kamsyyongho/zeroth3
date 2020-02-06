@@ -1,9 +1,5 @@
 /* eslint-disable react/display-name */
 import { SvgIconProps } from '@material-ui/core';
-import HomeIcon from '@material-ui/icons/Home';
-import { FaRegEdit, FaUserShield } from 'react-icons/fa';
-import { GiCube } from 'react-icons/gi';
-import SvgIcon from '@material-ui/core/SvgIcon';
 import React from 'react';
 import { ICONS } from '../theme/icons';
 
