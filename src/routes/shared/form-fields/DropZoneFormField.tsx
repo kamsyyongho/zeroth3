@@ -52,12 +52,27 @@ export const DropZoneFormField = ({
   fullWidth,
   ...props
 }: DropZoneFormFieldProps) => {
+  const { translate } = React.useContext(I18nContext);
+  const [duplicateError, setDuplicateError] = React.useState(false);
+
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
-  const isError = !!errorText || !!errorOverride;
+  const isError = !!errorText || !!errorOverride || duplicateError;
 
-  const { translate } = React.useContext(I18nContext);
+  const handleChange = (selectedFiles: File[]) => {
+    const uniqueFileNames = new Set<string>();
+    selectedFiles.forEach(file => {
+      uniqueFileNames.add(file.name);
+    });
+    if (uniqueFileNames.size !== selectedFiles.length) {
+      form.setFieldError(field.name, translate('forms.dropZone.reject.duplicateFileNames'));
+      setDuplicateError(true);
+    } else {
+      form.setFieldValue(field.name, selectedFiles);
+      setDuplicateError(false);
+    }
+  };
 
   const handleRejectText = (
     rejectedFile: { name: string; type: string | undefined; size: number; },
@@ -68,11 +83,11 @@ export const DropZoneFormField = ({
     let message = main;
     if (rejectedFile.type && !acceptedFiles.includes(rejectedFile.type)) {
       const notSupported = translate('forms.dropZone.reject.notSupported');
-      message += `${notSupported} `;
+      message += ` ${notSupported} `;
     }
     if (rejectedFile.size > maxFileSize) {
       const exceedSizeLimit = translate('forms.dropZone.reject.exceedSizeLimit', { size: convertBytesToMbsOrKbs(maxFileSize) });
-      message += `${exceedSizeLimit} `;
+      message += ` ${exceedSizeLimit} `;
     }
     return message;
   };
@@ -88,7 +103,7 @@ export const DropZoneFormField = ({
           filesLimit={filesLimit || 100}
           acceptedFiles={acceptedFiles}
           maxFileSize={maxFileSize || MAX_FILE_SIZE}
-          onChange={(selectedFiles: File[]) => form.setFieldValue(field.name, selectedFiles)}
+          onChange={handleChange}
           dropzoneText={dropZoneText || translate('forms.dropZone.main')}
           showFileNamesInPreview={true}
           showPreviews={showPreviews}
