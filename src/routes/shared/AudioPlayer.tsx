@@ -107,6 +107,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         cursor: 'pointer',
       }
     },
+    playbackButton: {
+      width: 70,
+    },
     buttonSelected: {
       backgroundColor: theme.palette.grey[300],
     },
@@ -1237,7 +1240,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     >
       <SvgIcon component={TiArrowLoop} />
     </Button>
-    <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} >
+    <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} className={classes.playbackButton} >
       {playbackSpeed < 1 ?
         '0.5⨉'
         :
