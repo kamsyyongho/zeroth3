@@ -2,7 +2,7 @@ import { Avatar, Button, CardContent, CardHeader, Grid, Typography } from '@mate
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import CancelIcon from '@material-ui/icons/Cancel';
 import RemoveIcon from '@material-ui/icons/Remove';
@@ -11,6 +11,7 @@ import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, Time, Word } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
+import { TimePickerRootProps } from '../EditorPage';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -30,24 +31,7 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-
-/** 
- * An out-of-scope value used to allow the keyboard listener to have an
- * updated Time value. The listener will not have the correct values from
- * within the component function
- */
-let wordTimeFromPlayerTracker: Time | undefined;
-
-/** props that need to passed to the time picker that will come from the main editor page */
-export interface WordTimePickerRootProps {
-  wordTimeFromPlayer?: Time;
-  createWordTimeSection: (wordToAddTimeTo: Word, wordKey: string) => void;
-  deleteWordTimeSection: (segmentIdToDelete: string) => void;
-  updateWordTimeSection: (wordToAddTimeTo: Word, wordKey: string) => void;
-  setDisabledTimes: (disabledTimes: Time[]) => void;
-}
-
-interface WordTimePickerProps extends WordTimePickerRootProps {
+interface WordTimePickerProps extends TimePickerRootProps {
   segments: Segment[];
   segmentIndex: number;
   wordToCreateTimeFor: Word;
@@ -65,10 +49,10 @@ const wordKey = 'TEMP_WORD_KEY';
 export function WordTimePicker(props: WordTimePickerProps) {
   const {
     wordToCreateTimeFor,
-    wordTimeFromPlayer,
+    timeFromPlayer,
     setDisabledTimes,
-    createWordTimeSection,
-    updateWordTimeSection,
+    createTimeSection,
+    updateTimeSection,
     segments,
     segmentIndex,
     onSuccess,
@@ -91,7 +75,7 @@ export function WordTimePicker(props: WordTimePickerProps) {
       let start = 0;
       let end: number | undefined = segment.start;
       if (disabledTimes.length) {
-        start = segments[segmentIndex].length;
+        start = segment.start + segments[segmentIndex].length;
         // end for the second section will be set to the audio duration in the player
         end = undefined;
       }
@@ -104,12 +88,16 @@ export function WordTimePicker(props: WordTimePickerProps) {
     return disabledTimes;
   };
 
-  const createSegment = () => {
+  const createWordSegmentBoundaries = () => {
     const segmentTime: Time = {
       start: segment.start,
     };
+    if (word.time?.start && word.time?.end) {
+      segmentTime.start = word.time.start;
+      segmentTime.end = word.time.end;
+    }
     const updatedWord = { ...wordToCreateTimeFor, time: segmentTime };
-    createWordTimeSection(updatedWord, wordKey);
+    createTimeSection(updatedWord, wordKey);
   };
 
   const handleCreate = (incomingWordTime?: Time) => {
@@ -138,12 +126,12 @@ export function WordTimePicker(props: WordTimePickerProps) {
     }
   };
 
-  // to limit the audio boundaries to be within the segment, 
-  // create initial segment, and listen for esc key press
+  // to limit the audio boundaries to be within the word segment, 
+  // create initial word segment, and listen for esc key press
   React.useEffect(() => {
     const disabledTimes = getInvalidAudioTimes();
     setDisabledTimes(disabledTimes);
-    createSegment();
+    createWordSegmentBoundaries();
     document.addEventListener("keydown", escapeKeyListener);
   }, []);
 
@@ -151,22 +139,19 @@ export function WordTimePicker(props: WordTimePickerProps) {
   React.useEffect(() => {
     return () => {
       document.removeEventListener("keydown", escapeKeyListener);
-      wordTimeFromPlayerTracker = undefined;
     };
   }, []);
 
-  // to limit the audio boundaries to be within the segment
+  // to update the internal time when it changes in the player
   React.useEffect(() => {
-    if (wordTimeFromPlayer && wordTimeFromPlayer.start && wordTimeFromPlayer.end) {
-      setWord({ ...word, time: wordTimeFromPlayer });
-      wordTimeFromPlayerTracker = wordTimeFromPlayer;
+    if (timeFromPlayer && timeFromPlayer.start && timeFromPlayer.end) {
+      setWord({ ...word, time: timeFromPlayer });
     }
-  }, [wordTimeFromPlayer]);
+  }, [timeFromPlayer]);
 
 
 
   const classes = useStyles();
-  const theme = useTheme();
 
 
   const changeSegmentTime = (isStartTime: boolean, increment: boolean) => {
@@ -186,7 +171,7 @@ export function WordTimePicker(props: WordTimePickerProps) {
       end,
     };
     const updatedWord = { ...word, time: updatedTime };
-    updateWordTimeSection(updatedWord, wordKey);
+    updateTimeSection(updatedWord, wordKey);
   };
 
 
