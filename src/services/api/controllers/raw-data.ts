@@ -1,12 +1,12 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { RawDataQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
-  getRawDataResult,
+  getRawDataQueueResult,
   ProblemKind,
   ServerError,
   uploadRawDataResult,
 } from '../types';
-import { RawDataAdditionalProps } from '../types/raw-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -23,15 +23,14 @@ export class RawData extends ParentApi {
   }
 
   /**
-   * Gets raw audio data
+   * Gets the progress of the uploaded raw audio data queue
    * @param projectId
    */
-  async getRawData(projectId: string): Promise<getRawDataResult> {
+  async getRawDataQueue(projectId: string): Promise<getRawDataQueueResult> {
     // make the api call
-    const response = await this.apisauce.get<
-      RawDataAdditionalProps,
-      ServerError
-    >(this.getPathWithOrganization(`/projects/${projectId}/raw-data`));
+    const response = await this.apisauce.get<RawDataQueue, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -44,8 +43,8 @@ export class RawData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const results = response.data as RawDataAdditionalProps;
-      return { kind: 'ok', results };
+      const queue = response.data as RawDataQueue;
+      return { kind: 'ok', queue };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -78,9 +77,7 @@ export class RawData extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      this.getPathWithOrganization(
-        this.getPathWithOrganization(`/projects/${projectId}/raw-data`)
-      ),
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data`),
       request,
       config
     );
