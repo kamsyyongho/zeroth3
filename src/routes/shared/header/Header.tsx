@@ -118,15 +118,18 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   const getUploadQueue = async () => {
     if (api?.rawData) {
-      const response = await api.rawData.getRawDataQueue('b024defd-cc2d-4b35-baa4-6c24d8cb49e0');
+      //!
+      //TODO
+      //* DON'T HARDCODE THIS!!!
+      const response = await api.rawData.getRawDataQueue('39410dab-a39b-4284-99cb-8292d02f6c18');
       if (response.kind === 'ok') {
         const { queue } = response;
         const { totalCount, currentProjectCount } = queue;
-        if (!totalCount || totalCount === currentProjectCount) {
+        if (currentProjectCount || totalCount === currentProjectCount) {
           setGlobalState({ uploadQueueEmpty: true });
           clearNotificationTimeout();
-          if (!totalCount) {
-            enqueueSnackbar(`${translate('common.uploaded')}: ${currentProjectCount} / ${totalCount}`, {
+          if (!currentProjectCount) {
+            enqueueSnackbar(`${translate('common.uploaded')}: ${totalCount} / ${currentProjectCount}`, {
               ...DEFAULT_NOTIFICATION_OPTIONS,
               content: (key, message) => {
                 return (
@@ -137,8 +140,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           }
         } else {
           // must be a number from 0 to 100
-          const progress = currentProjectCount / totalCount * 100;
-          enqueueSnackbar(`${translate('common.uploading')}: ${currentProjectCount} / ${totalCount}`, {
+          const progress = totalCount / currentProjectCount * 100;
+          enqueueSnackbar(`${translate('common.uploading')}: ${totalCount} / ${currentProjectCount}`, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
             content: (key, message) => {
               return (

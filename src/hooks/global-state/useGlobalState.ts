@@ -3,6 +3,7 @@ import { Organization } from '../../types';
 
 export interface GlobalState {
   organizations?: Organization[];
+  uploadQueueEmpty?: boolean;
 }
 
 /**
