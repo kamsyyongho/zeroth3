@@ -86,6 +86,11 @@ export interface UpdateSpeakerRequest {
   speaker: string;
 }
 
+export interface UpdateSegmentTimeRequest {
+  length: number;
+  start: number;
+}
+
 export type UpdateSegmentsRequest = Segment[];
 
 /////////////
@@ -141,3 +146,5 @@ export type splitWordInSegmentResult =
 export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;

@@ -159,6 +159,7 @@ export enum KEY_COMMANDS {
   'merge-segments-forward' = 'merge-segments-forward',
   'toggle-popups' = 'toggle-popups',
   'create-word' = 'create-word',
+  'edit-segment-time' = 'edit-segment-time',
 }
 
 export enum REMOVAL_DIRECTION {

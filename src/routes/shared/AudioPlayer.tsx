@@ -238,11 +238,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const checkIfValidSegmentArea = (startTime: number, endTime: number) => {
-    if (!validTimeBondaries) return false;
-    if(validTimeBondaries.start && validTimeBondaries.end && (startTime >= validTimeBondaries.start && endTime <= validTimeBondaries.end)){
-      return true
+    if (!validTimeBondaries) return true;
+    if (validTimeBondaries.start && validTimeBondaries.end && (startTime >= validTimeBondaries.start && endTime <= validTimeBondaries.end)) {
+      return true;
     }
-    return false
+    return false;
   };
 
   const seekToTime = (timeToSeekTo: number) => {
@@ -406,10 +406,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         }
         break;
       default:
-        // only currently focussed words are editable
-        if (id && editable && !SEGMENT_IDS_ARRAY.includes(id)) {
-          seekToTime(startTime);
-        }
         break;
     }
   };
@@ -948,7 +944,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (startTime === 0) {
         startTime = startTime + ZERO_TIME_SLOP;
       }
-      let endTime = time.start + STARTING_WORD_LOOP_LENGTH;
+      let endTime = time?.end as number;
+      if (typeof endTime !== 'number') {
+        endTime = time.start + STARTING_WORD_LOOP_LENGTH;
+      }
       if (endTime > duration) {
         endTime = duration;
       }
@@ -1107,8 +1106,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       };
 
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
-        console.warn('error', error);
-        console.warn('peaksInstance', peaksInstance);
         setReady(!error);
         if (error) {
           handleError(error);

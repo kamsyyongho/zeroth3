@@ -47,6 +47,8 @@ const customTheme = {
   },
   audioPlayer: {
     waveform: '#2f99cb',
+    segmentRange: green[200],
+    wordRange: pink[200],
     loop: grey[800],
     disabled: grey[300],
   },
@@ -73,6 +75,8 @@ export interface CustomTheme extends Theme {
   };
   audioPlayer: {
     waveform: string;
+    segmentRange: string;
+    wordRange: string;
     loop: string;
     disabled: string;
   };
@@ -96,6 +100,8 @@ interface CustomThemeOptions extends ThemeOptions {
   };
   audioPlayer?: {
     waveform?: string;
+    segmentRange?: string;
+    wordRange?: string;
     loop?: string;
     disabled?: string;
   };

@@ -10,6 +10,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { generateWordKeyString } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
@@ -22,7 +23,6 @@ import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
-import { PlayingWordAndSegment } from '../../types/editor.types';
 
 
 export interface ModelConfigsById {
@@ -56,6 +56,15 @@ export interface ParentMethodResponse {
   type: PARENT_METHOD_TYPES,
 }
 
+/** props that need to pass to the time pickers */
+export interface TimePickerRootProps {
+  timeFromPlayer?: Time;
+  createTimeSection: (wordToAddTimeTo: Word, wordKey: string, isWord?: boolean) => void;
+  deleteTimeSection: (wordKey: string, isWord?: boolean) => void;
+  updateTimeSection: (wordToAddTimeTo: Word, wordKey: string, isWord?: boolean) => void;
+  setDisabledTimes: (disabledTimes: Time[]) => void;
+}
+
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
 
 
@@ -79,7 +88,7 @@ export function EditorPage() {
   const [segmentIdToDelete, setSegmentIdToDelete] = React.useState<string | undefined>();
   const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
   const [segmentIndexToAssignSpeakerTo, setSegmentIndexToAssignSpeakerTo] = React.useState<number | undefined>();
-  const [wordTimeFromPlayer, setWordTimeFromPlayer] = React.useState<Time | undefined>();
+  const [timeFromPlayer, setTimeFromPlayer] = React.useState<Time | undefined>();
   const [editorReady, setEditorReady] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   const [wordConfidenceThreshold, setWordConfidenceThreshold] = React.useState(0.8);
@@ -239,6 +248,36 @@ export function EditorPage() {
     }
   };
 
+  const submitSegmentTimeUpdate = async (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => {
+    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
+      setSaveSegmentsLoading(true);
+      const response = await api.voiceData.updateSegmentTime(projectId, voiceData.id, segmentId, start, length);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
+        const updatedSegments = [...segments];
+        updatedSegments.splice(segmentIndex, 1, updatedSegment);
+        setSegments(updatedSegments);
+        onSuccess(updatedSegment);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentTimeUpdate - failed to update segment time`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
   const submitSegmentMerge = async (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => {
     if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
@@ -284,7 +323,6 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-
 
         //cut out and replace the old segment
         const splitSegments = [...segments];
@@ -371,14 +409,14 @@ export function EditorPage() {
       end: endTime,
     };
     const text = wordAlignment.word.replace('|', '');
-    const color = theme.editor.highlight;
+    const color = theme.audioPlayer.wordRange;
     const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
       color,
       time,
       text,
     };
     const segmentText = segment.transcript;
-    const segmentColor = theme.editor.changes;
+    const segmentColor = theme.audioPlayer.segmentRange;
     const segmentStartTime = segment.start;
     const segmentEndTime = segmentStartTime + segment.length;
     const segmentTime: Time = {
@@ -524,12 +562,16 @@ export function EditorPage() {
 
   const handleEditorResponseHandled = () => setResponseToPassToEditor(undefined);
 
-  const createWordTimeSection = (wordToAddTimeTo: Word, wordKey: string) => {
+  const createTimeSection = (wordToAddTimeTo: Word, wordKey: string) => {
     setWordToCreateTimeFor({ ...wordToAddTimeTo, wordKey });
   };
 
-  const updateWordTimeSection = (wordToAddTimeTo: Word, wordKey: string) => {
+  const updateTimeSection = (wordToAddTimeTo: Word, wordKey: string) => {
     setWordToUpdateTimeFor({ ...wordToAddTimeTo, wordKey });
+  };
+
+  const deleteTimeSection = (wordKey: string) => {
+    setSegmentIdToDelete(wordKey);
   };
 
   const handleCommandHandled = () => setEditorCommand(undefined);
@@ -551,15 +593,13 @@ export function EditorPage() {
 
   const handleAudioSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
 
-  const deleteWordTimeSection = (wordKey: string) => {
-    setSegmentIdToDelete(wordKey);
-  };
-
   const handleSectionChange = (time: Time, wordKey: string) => {
-    setWordTimeFromPlayer(time);
+    setTimeFromPlayer(time);
   };
 
   const toggleDebugMode = () => setDebugMode((prevValue) => !prevValue);
+
+  const handleTimeChangeFromSegmentSplitTimePicker = (newTime: number) => setTimeToSeekTo(newTime);
 
 
   // once we've loaded new segments
@@ -635,7 +675,7 @@ export function EditorPage() {
             minHeight: 250,
           }}>
             {segmentsLoading ? <BulletList /> :
-              <Editor
+              !!segments.length && (<Editor
                 key={voiceData.id}
                 responseFromParent={responseToPassToEditor}
                 onParentResponseHandled={handleEditorResponseHandled}
@@ -646,24 +686,27 @@ export function EditorPage() {
                 onReady={setEditorReady}
                 popupsOpen={editorOptionsVisible}
                 debugMode={debugMode}
+                playbackTime={playbackTime}
                 onPopupToggle={setEditorOptionsVisible}
                 wordConfidenceThreshold={wordConfidenceThreshold}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
                 onWordClick={handleWordClick}
                 updateSegment={submitSegmentUpdate}
+                updateSegmentTime={submitSegmentTimeUpdate}
                 splitSegment={submitSegmentSplit}
                 mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
-                wordTimePickerProps={{
+                changeSplitSegmentTime={handleTimeChangeFromSegmentSplitTimePicker}
+                timePickerRootProps={{
                   setDisabledTimes: handleDisabledTimesSet,
-                  createWordTimeSection: createWordTimeSection,
-                  updateWordTimeSection: updateWordTimeSection,
-                  deleteWordTimeSection: deleteWordTimeSection,
-                  wordTimeFromPlayer,
+                  createTimeSection: createTimeSection,
+                  updateTimeSection: updateTimeSection,
+                  deleteTimeSection: deleteTimeSection,
+                  timeFromPlayer: timeFromPlayer,
                 }}
-              />
+              />)
             }
           </div>
           {!!voiceData.length && <ErrorBoundary
