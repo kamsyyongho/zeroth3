@@ -46,6 +46,12 @@ export interface SplitSegmentQuery {
   'split-index': number;
 }
 
+export interface SplitSegmentByTimeQuery {
+  /** time within the segment */
+  'time': number;
+  'word-split-index': number;
+}
+
 export interface UpdateStatusRequest {
   status: CONTENT_STATUS;
 }
@@ -120,6 +126,10 @@ export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
 export type updateSegmentsResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type splitSegmentResult =
+  | { kind: 'ok'; segments: [Segment, Segment] }
+  | GeneralApiProblem;
+
+export type splitSegmentByTimeResult =
   | { kind: 'ok'; segments: [Segment, Segment] }
   | GeneralApiProblem;
 

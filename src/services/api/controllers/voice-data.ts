@@ -24,6 +24,8 @@ import {
   ServerError,
   SetFreeTextTranscriptRequest,
   setFreeTextTranscriptResult,
+  SplitSegmentByTimeQuery,
+  splitSegmentByTimeResult,
   SplitSegmentQuery,
   splitSegmentResult,
   SplitWordInSegmentRequest,
@@ -321,6 +323,53 @@ export class VoiceData extends ParentApi {
       // query params on a post are the third (3) parameter
       this.getPathWithOrganization(
         `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`
+      ),
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segments = response.data as [Segment, Segment];
+      return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Splits a segment that only has one word alignment item
+   * - splits based off of the index within the word and the time within the segment
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param time - within the segment
+   * @param wordStringSplitIndex - the string index to split the word at
+   */
+  async splitSegmentByTime(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    time: number,
+    wordStringSplitIndex: number
+  ): Promise<splitSegmentByTimeResult> {
+    const params: SplitSegmentByTimeQuery = {
+      time: time,
+      'word-split-index': wordStringSplitIndex,
+    };
+    const response = await this.apisauce.post<[Segment, Segment], ServerError>(
+      // query params on a post are the third (3) parameter
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-by-time`
       ),
       null,
       { params }

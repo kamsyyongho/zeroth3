@@ -23,7 +23,7 @@ export class RawData extends ParentApi {
   }
 
   /**
-   * Gets the progress of the uploaded raw audio data queue
+   * Gets the number of items in the project's upload queue
    * @param projectId
    */
   async getRawDataQueue(projectId: string): Promise<getRawDataQueueResult> {

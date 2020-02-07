@@ -17,7 +17,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
 import ToggleIcon from 'material-ui-toggle-icon';
 import { useSnackbar } from 'notistack';
-import Peaks, { PeaksInstance, PeaksOptions, Segment, SegmentAddOptions } from 'peaks.js';
+import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, Segment, SegmentAddOptions } from 'peaks.js';
 import React from 'react';
 import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
 import PropagateLoader from 'react-spinners/PropagateLoader';
@@ -62,6 +62,7 @@ export enum PLAYER_SEGMENT_IDS {
   'WORD' = 'WORD',
   'SEGMENT' = 'SEGMENT',
   'SEGMENT_EDIT' = 'SEGMENT_EDIT',
+  'SEGMENT_SPLIT' = 'SEGMENT_SPLIT',
 }
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
@@ -129,6 +130,9 @@ interface AudioPlayerProps {
   currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
+  segmentSplitTimeBoundary?: Required<Time>;
+  segmentSplitTime?: number;
+  onSegmentSplitTimeChanged: (time: number) => void;
   onAutoSeekToggle: (value: boolean) => void;
   onTimeChange: (timeInSeconds: number) => void;
   onSectionChange: (time: Time, wordKey: string) => void;
@@ -155,6 +159,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
+    segmentSplitTimeBoundary,
+    segmentSplitTime,
+    onSegmentSplitTimeChanged,
     onSegmentDelete,
     onSegmentCreate,
     onSegmentUpdate,
@@ -476,6 +483,31 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  const handlePointEnter = (point: Point) => {
+    const { id } = point;
+    switch (id) {
+      case PLAYER_SEGMENT_IDS.SEGMENT_SPLIT:
+        if (validTimeBondaries?.start) {
+          seekToTime(validTimeBondaries.start);
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handlePointChangeEnd = (point: Point) => {
+    const { id, time } = point;
+    onSegmentSplitTimeChanged(time);
+    switch (id) {
+      case PLAYER_SEGMENT_IDS.SEGMENT_SPLIT:
+        onSegmentSplitTimeChanged(time);
+        break;
+      default:
+        break;
+    }
+  };
+
   /**
    * toggle player state via the `VideoJsPlayer`
    * - toggleing via other methods does not resume play
@@ -564,11 +596,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           onSectionChange(time, segmentToAdd.id);
         }
       }
-      if (!isDisabledSegment) {
-        const loopTime: Required<Time> = {
-          start: segmentToAdd.startTime,
-          end: segmentToAdd.endTime,
-        };
+      if (!isDisabledSegment || isEditingSegmentTime) {
         onSegmentCreate();
         seekToTime(segmentToAdd.startTime);
       }
@@ -807,6 +835,29 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  const deleteAllPoints = () => {
+    if (!PeaksPlayer?.points) return;
+    PeaksPlayer.points.removeAll();
+  };
+
+  const createPoint = (pointTime: number) => {
+    if (!PeaksPlayer?.points || typeof pointTime !== 'number') return;
+    try {
+      const pointOptions: PointAddOptions = {
+        id: PLAYER_SEGMENT_IDS.SEGMENT_SPLIT,
+        editable: true,
+        time: pointTime,
+        labelText: '',
+        color: theme.audioPlayer.loop,
+      };
+      PeaksPlayer.points.removeAll();
+      PeaksPlayer.points.add(pointOptions);
+      onSegmentSplitTimeChanged(pointTime);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const makeAllSegmentsUneditable = () => {
     if (!PeaksPlayer?.segments) return;
     try {
@@ -836,9 +887,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         disableLoop = false;
       }
       PeaksPlayer.segments.removeById(segmentIdToDelete);
-      const currentTimeString = currentTime.toFixed(2);
-      const currentTimeFixed = Number(currentTimeString);
-      onSegmentDelete(currentTimeFixed);
+      onSegmentDelete();
     } catch (error) {
       handleError(error);
     }
@@ -864,9 +913,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
       disableLoop = false;
-      const currentTimeString = currentTime.toFixed(2);
-      const currentTimeFixed = Number(currentTimeString);
-      onSegmentDelete(currentTimeFixed);
+      onSegmentDelete();
     } catch (error) {
       handleError(error);
     }
@@ -1002,7 +1049,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    if (!isLoop) {
+    // don't update playing segments if the loop is active or when it should be disabled
+    if (!isLoop && !disableLoop) {
       parseCurrentlyPlayingWordSegment();
     }
   }, [currentPlayingWordPlayerSegment]);
@@ -1034,6 +1082,32 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
     }
   }, [wordToUpdateTimeFor]);
+
+  // update a the for segment split time select
+  React.useEffect(() => {
+    if (segmentSplitTime !== undefined) {
+      createPoint(segmentSplitTime);
+    } else {
+      deleteAllPoints();
+    }
+  }, [segmentSplitTime]);
+
+  // create a point for segment split time select and set the valid segment times
+  React.useEffect(() => {
+    if (segmentSplitTimeBoundary !== undefined) {
+      if (typeof segmentSplitTimeBoundary?.start !== 'number' || typeof segmentSplitTimeBoundary?.end !== 'number') {
+        return;
+      }
+      validTimeBondaries = segmentSplitTimeBoundary;
+      const { start, end } = segmentSplitTimeBoundary;
+      const length = end - start;
+      const midpointTime = start + (length / 2);
+      createPoint(midpointTime);
+    } else {
+      deleteAllPoints();
+      validTimeBondaries = undefined;
+    }
+  }, [segmentSplitTimeBoundary]);
 
   React.useEffect(() => {
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
@@ -1149,7 +1223,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.enter', handleSegmentEnter);
       PeaksPlayer.on('segments.dragstart', handleSegmentDragStart);
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
-
+      PeaksPlayer.on('points.enter', handlePointEnter);
+      PeaksPlayer.on('points.dragend', handlePointChangeEnd);
 
     };
 

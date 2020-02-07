@@ -20,7 +20,7 @@ import { SegmentBlock } from './components/SegmentBlock';
 import { SegmentSplitPicker } from './components/SegmentSplitPicker';
 import { SegmentTimePicker } from './components/SegmentTimePicker';
 import { WordTimePicker } from './components/WordTimePicker';
-import { ParentMethodResponse, PARENT_METHOD_TYPES, TimePickerRootProps } from './EditorPage';
+import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
 import './styles/editor.css';
 
 
@@ -214,8 +214,8 @@ interface EditorProps {
   splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void,) => Promise<void>;
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void,) => Promise<void>;
   mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
-  changeSplitSegmentTime: (time: number) => void;
   timePickerRootProps: TimePickerRootProps;
+  splitTimePickerRootProps: SplitTimePickerRootProps;
 }
 
 export function Editor(props: EditorProps) {
@@ -242,8 +242,8 @@ export function Editor(props: EditorProps) {
     splitSegment,
     splitSegmentByTime,
     mergeSegments,
-    changeSplitSegmentTime,
     timePickerRootProps,
+    splitTimePickerRootProps,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -2037,9 +2037,7 @@ return (
             onClose={closeSegmentSplitTimePicker}
             onSuccess={splitSegmentPickerSuccess}
             onInvalidTime={displayInvalidTimeMessage}
-            currentTime={playbackTime}
-            changeSplitSegmentTime={changeSplitSegmentTime}
-            setDisabledTimes={timePickerRootProps.setDisabledTimes}
+            {...splitTimePickerRootProps}
           />}
         </Card>
       </Draggable>

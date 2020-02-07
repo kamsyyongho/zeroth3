@@ -13,6 +13,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, Time, Word } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 import { TimePickerRootProps } from '../EditorPage';
+import { PLAYER_SEGMENT_IDS } from '../../shared/AudioPlayer';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -43,7 +44,7 @@ interface SegmentTimePickerProps extends TimePickerRootProps {
 /** how much to change the time when pressing the popper buttons */
 const DEFAULT_TIME_INCREMENT = 0.01;
 
-const wordKey = 'SEGMENT_EDIT';
+const wordKey = PLAYER_SEGMENT_IDS.SEGMENT_EDIT;
 
 
 export function SegmentTimePicker(props: SegmentTimePickerProps) {

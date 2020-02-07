@@ -61,13 +61,22 @@ export interface ParentMethodResponse {
   type: PARENT_METHOD_TYPES,
 }
 
-/** props that need to pass to the time pickers */
+/** props that need to be passed to the time pickers */
 export interface TimePickerRootProps {
   timeFromPlayer?: Time;
   createTimeSection: (wordToAddTimeTo: Word, wordKey: string, isWord?: boolean) => void;
   deleteTimeSection: (wordKey: string, isWord?: boolean) => void;
   updateTimeSection: (wordToAddTimeTo: Word, wordKey: string, isWord?: boolean) => void;
   setDisabledTimes: (disabledTimes: Time[]) => void;
+}
+
+/** props that need to be passed to the split time picker */
+export interface SplitTimePickerRootProps {
+  segmentSplitTime?: number;
+  onCreateSegmentSplitTimeBoundary: (segmentTimeBoundary: Required<Time>) => void;
+  onSegmentSplitTimeBoundaryCreated: () => void;
+  onSegmentSplitTimeChanged: (time: number) => void;
+  onSegmentSplitTimeDelete: () => void;
 }
 
 
@@ -88,6 +97,8 @@ export function EditorPage() {
   const [currentPlayingWordPlayerSegment, setCurrentlyPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
+  const [segmentSplitTimeBoundary, setSegmentSplitTimeBoundary] = React.useState<Required<Time> | undefined>();
+  const [segmentSplitTime, setSegmentSplitTime] = React.useState<number | undefined>();
   const [segmentIdToDelete, setSegmentIdToDelete] = React.useState<string | undefined>();
   const [deleteAllWordSegments, setDeleteAllWordSegments] = React.useState<boolean | undefined>();
   const [segmentIndexToAssignSpeakerTo, setSegmentIndexToAssignSpeakerTo] = React.useState<number | undefined>();
@@ -655,6 +666,17 @@ export function EditorPage() {
     setWordToCreateTimeFor(undefined);
   };
 
+  const handleCreateSegmentSplitTimeBoundary = (segmentTimeBoundary: Required<Time>) => setSegmentSplitTimeBoundary(segmentTimeBoundary);
+
+  const handleSegmentSplitTimeBoundaryCreated = () => setSegmentSplitTimeBoundary(undefined);
+
+  const handleSegmentSplitTimeChanged = (time: number) => setSegmentSplitTime(time);
+
+  const handleSegmentSplitTimeDelete = () => {
+    setSegmentSplitTime(undefined);
+    setSegmentSplitTimeBoundary(undefined);
+  };
+
   const handleAudioSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
 
   const handleSectionChange = (time: Time, wordKey: string) => {
@@ -662,8 +684,6 @@ export function EditorPage() {
   };
 
   const toggleDebugMode = () => setDebugMode((prevValue) => !prevValue);
-
-  const handleTimeChangeFromSegmentSplitTimePicker = (newTime: number) => setTimeToSeekTo(newTime);
 
   const resetVariables = () => {
     internalSegmentsTracker = [];
@@ -674,6 +694,7 @@ export function EditorPage() {
     setCanPlayAudio(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
     setCurrentlyPlayingWordPlayerSegment(undefined);
+    setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
   };
 
@@ -771,13 +792,19 @@ export function EditorPage() {
                 mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
-                changeSplitSegmentTime={handleTimeChangeFromSegmentSplitTimePicker}
                 timePickerRootProps={{
                   setDisabledTimes: handleDisabledTimesSet,
                   createTimeSection: createTimeSection,
                   updateTimeSection: updateTimeSection,
                   deleteTimeSection: deleteTimeSection,
                   timeFromPlayer: timeFromPlayer,
+                }}
+                splitTimePickerRootProps={{
+                  segmentSplitTime,
+                  onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
+                  onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
+                  onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
+                  onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
                 }}
               />)
             }
@@ -807,6 +834,9 @@ export function EditorPage() {
               onTimeChange={handlePlaybackTimeChange}
               onSectionChange={handleSectionChange}
               onReady={handlePlayerRendered}
+              segmentSplitTimeBoundary={segmentSplitTimeBoundary}
+              segmentSplitTime={segmentSplitTime}
+              onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
             />
           </ErrorBoundary>}
         </Paper>
