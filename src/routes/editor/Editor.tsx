@@ -17,15 +17,17 @@ import { generateWordKeyString, getRandomColor, WordKeyStore } from '../../util/
 import { EDITOR_CONTROLS } from './components/EditorControls';
 import { EntityContent } from './components/EntityContent';
 import { SegmentBlock } from './components/SegmentBlock';
-import { WordTimePicker, WordTimePickerRootProps } from './components/WordTimePicker';
-import { ParentMethodResponse, PARENT_METHOD_TYPES } from './EditorPage';
+import { SegmentSplitPicker } from './components/SegmentSplitPicker';
+import { SegmentTimePicker } from './components/SegmentTimePicker';
+import { WordTimePicker } from './components/WordTimePicker';
+import { ParentMethodResponse, PARENT_METHOD_TYPES, TimePickerRootProps } from './EditorPage';
 import './styles/editor.css';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     backdrop: {
-      zIndex: theme.zIndex.drawer + 1,
+      zIndex: theme.zIndex.drawer - 1,
       color: theme.shadows[1],
       borderTopLeftRadius: 4,
       borderTopRightRadius: 4,
@@ -126,16 +128,12 @@ let prevPlayingEntityKey = -1;
 // used to force updating of the segment
 let newWordWasCreated = false;
 
-
 // Custom overrides for "code" style.
 const buildStyleMap = (theme: CustomTheme) => {
   return {
     [INLINE_STYLE_TYPE.PLAYING]: {
       color: theme.editor.playing,
       boxShadow: `0px 0px 0px 1px ${theme.editor.playing}`,
-      // fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
-      // fontSize: 16,
-      // padding: 2
     },
   }
 }
@@ -167,7 +165,7 @@ function customKeyBindingFunction(event: React.KeyboardEvent): string {
     return KEY_COMMANDS['toggle-popups'];
   }
   if (event.key === "Alt" && event.shiftKey) {
-    return KEY_COMMANDS['create-word'];
+    return KEY_COMMANDS['edit-segment-time'];
   }
   return getDefaultKeyBinding(event) as DraftEditorCommand;
 }
@@ -177,6 +175,17 @@ interface WordPickerOptions {
   word: Word;
   segmentIndex: number;
   entityKeyAfterCursor?: number;
+  isWordUpdate?: boolean;
+}
+interface SegmentPickerOptions {
+  segmentWord: Word;
+  segment: Segment;
+  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
+}
+
+interface SegmentSplitOptions {
+  segmentIndex: number;
+  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
 }
 
 interface EditorProps {
@@ -196,13 +205,17 @@ interface EditorProps {
   loading?: boolean;
   segments: Segment[];
   wordConfidenceThreshold: number;
+  playbackTime: number;
   playingLocation?: SegmentAndWordIndex;
-  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
   assignSpeaker: (segmentIndex: number) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
-  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => Promise<void>;
+  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void,) => Promise<void>;
+  splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void,) => Promise<void>;
   mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
-  wordTimePickerProps: WordTimePickerRootProps;
+  changeSplitSegmentTime: (time: number) => void;
+  timePickerRootProps: TimePickerRootProps;
 }
 
 export function Editor(props: EditorProps) {
@@ -216,17 +229,21 @@ export function Editor(props: EditorProps) {
     onPopupToggle,
     onWordTimeCreationClose,
     wordConfidenceThreshold,
+    playbackTime,
     popupsOpen,
     debugMode,
     loading,
     segments,
     playingLocation,
     updateSegment,
+    updateSegmentTime,
     assignSpeaker,
     onWordClick,
     splitSegment,
+    splitSegmentByTime,
     mergeSegments,
-    wordTimePickerProps,
+    changeSplitSegmentTime,
+    timePickerRootProps,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -243,6 +260,8 @@ export function Editor(props: EditorProps) {
   const [currentWordConfidenceThreshold, setCurrentWordConfidenceThreshold] = React.useState(wordConfidenceThreshold);
   const [overlayStyle, setOverlayStyle] = React.useState<React.CSSProperties | undefined>();
   const [wordTimePickerOptions, setWordTimePickerOptions] = React.useState<WordPickerOptions | undefined>();
+  const [segmentPickerOptions, setSegmentPickerOptions] = React.useState<SegmentPickerOptions | undefined>();
+  const [segmentSplitOptions, setSegmentSplitOptions] = React.useState<SegmentSplitOptions | undefined>();
   const [readOnlyEditorState, setReadOnlyEditorState] = React.useState<EditorState | undefined>();
   const [showPopups, setShowPopups] = React.useState(!!popupsOpen);
   const [debug, setDebug] = React.useState(!!debugMode);
@@ -378,6 +397,10 @@ const generateDecorators = () => new CompositeDecorator([
       newBlock.data = data;
       let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join(SPLIT_CHARACTER).trim();
       transcript = transcript.split("• ").join(' ').replace(SPLIT_CHARACTER_REGEX, '').trim();
+      const onlyOneWord = segment.wordAlignments.length < 2;
+      if(onlyOneWord){
+        transcript = segment.wordAlignments[0].word.replace('|', '');
+      }
       newBlock.text = transcript;
       let offsetPosition = 0;
       const entityRanges: RawDraftEntityRange[] = segment.wordAlignments.map((wordAlignment, wordIndex) => {
@@ -537,6 +560,13 @@ const generateDecorators = () => new CompositeDecorator([
     return updatedEditorState;
   };
 
+  const getEditorStateWithAllStylingRemoved = () => {
+    // to remove the playing style from all content
+    const selectAllState = getSelectionOfAll();
+    const editorStateWithNoStyling = removeStyleFromSelection(selectAllState, INLINE_STYLE_TYPE.PLAYING);
+    return editorStateWithNoStyling;
+  }
+
   const updateWordForCurrentPlayingLocation = (wordLocation: SegmentAndWordIndex) => {
     const targetSelectionArea = getTargetSelection(wordLocation);
 
@@ -545,8 +575,7 @@ const generateDecorators = () => new CompositeDecorator([
       if (targetSelectionArea) {
         const originalSelectionState = editorState.getSelection();
         // to remove the playing style from all content
-        const selectAllState = getSelectionOfAll();
-        const editorStateWithNoStyling = removeStyleFromSelection(selectAllState, INLINE_STYLE_TYPE.PLAYING);
+        const editorStateWithNoStyling = getEditorStateWithAllStylingRemoved();
 
         const newSelection = originalSelectionState.merge(targetSelectionArea) as SelectionState;
         // select the target area and update style
@@ -847,13 +876,6 @@ const generateDecorators = () => new CompositeDecorator([
         });
         return;
       }
-      console.log('targetBlock', targetBlock);
-      console.log('updatedSegment', updatedSegment);
-      // // update with the new segment Id
-      // replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
-
-      // setBlockSegmentId(blockKey, updatedSegment.id);
-      // setSegmentIdBlockKey(updatedSegment.id, blockKey);
       const contentState = incomingEditorState.getCurrentContent();
       const updatedContentState = updateBlockSegmentData(contentState, blockKey, updatedSegment);
 
@@ -861,6 +883,9 @@ const generateDecorators = () => new CompositeDecorator([
       const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
       const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
       setEditorState(allowUndoEditorState);
+
+      console.log('blockSegment', blockSegment);
+      console.log('updatedSegment', updatedSegment);
 
       // to account for the previous blocks and keys changing after success
       const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(allowUndoEditorState);
@@ -912,7 +937,7 @@ const generateDecorators = () => new CompositeDecorator([
   /**
    * builds the callback to the manually split blocks with the updated segment Ids response
    */
-  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, wordSplitIndex: number, incomingEditorState: EditorState) => {
+  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
     const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
       const [updatedSegment, newSegment] = updatedSegments;
       const blockKey = targetBlock.key;
@@ -1085,12 +1110,41 @@ const generateDecorators = () => new CompositeDecorator([
       cursorOffset,
       selectionCharacterDetails,
     } = cursorContent;
-    if (isNoSelection) {
+    if (isNoSelection && !entity) {
       displayMessage(translate('editor.validation.noSelection'));
       return;
     }
+    if (isNoSelection && entity) {
+      const {data} = entity;
+      const {segment} = blockObject.data;
+      if(!segment){
+        return;
+      }
+      const color = getRandomColor();
+      const time: Time = {
+        start: segment.start + data.wordAlignment.start,
+        end: segment.start + data.wordAlignment.start + data.wordAlignment.length,
+      }
+      const wordToCreateTimeFor: Word = {
+        color,
+        text: data.wordAlignment.word.replace('|', ''),
+        time,
+      };
+      const blockSegmentId = blockObject.data?.segment?.id;
+      const segmentIndex = getIndexOfSegmentId(blockSegmentId as string);
+      if (typeof segmentIndex === 'number') {
+        const wordPickerOptions: WordPickerOptions = {
+          word: wordToCreateTimeFor,
+          segmentIndex,
+          isWordUpdate: true,
+        };
+        setWordTimePickerOptions(wordPickerOptions);
+        setReadOnlyEditorState(incomingEditorState);
+      }
+      return;
+    }
     // if same block with non-entity selection
-    else if (!isNoSelection && !entity) {
+    if (!isNoSelection && !entity) {
       // to ensure our selection doesn't include any entities or invalid characters
       const noEntityWhithinSelection = selectionCharacterDetails.every((characterDetail) => {
         const noEntity = !characterDetail.properties?.entity;
@@ -1106,8 +1160,8 @@ const generateDecorators = () => new CompositeDecorator([
           mutability: MUTABILITY_TYPE.MUTABLE,
           data: {}
         };
-        const blockSegmentIndex = blockObject.data?.segment?.id;
-        const segmentIndex = getIndexOfSegmentId(blockSegmentIndex as string);
+        const blockSegmentId = blockObject.data?.segment?.id;
+        const segmentIndex = getIndexOfSegmentId(blockSegmentId as string);
         if (typeof segmentIndex === 'number') {
           //!
           //TODO
@@ -1141,6 +1195,221 @@ const generateDecorators = () => new CompositeDecorator([
       }
     }
   };
+
+  const prepareSegmentTimePicker = (incomingEditorState?: EditorState) => {
+    if(!incomingEditorState){
+      incomingEditorState = editorState;
+    }
+    if(!focussed && editorStateBeforeBlur){;
+      incomingEditorState = editorStateBeforeBlur;
+    }
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+
+    const {segment} = cursorContent.blockObject.data;
+    if(segment){
+      const start = segment.start;
+      const end = start + segment.length;
+      const color = getRandomColor();
+      const time: Time = {
+        start,
+        end,
+      }
+      const segmentWord: Word = {
+        color,
+        time,
+        text: '',
+      };
+      const segmentPickerOptions: SegmentPickerOptions = {
+        segmentWord,
+        segment,
+        cursorContent,
+      };
+      setSegmentPickerOptions(segmentPickerOptions);
+      setReadOnlyEditorState(incomingEditorState);
+    }
+  };
+
+  const prepareSegmentForSplit = (cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>, incomingEditorState?: EditorState, splitByTime?: {time: number; wordStringSplitIndex: number;}) => {
+    if(!incomingEditorState){
+      incomingEditorState = editorState;
+    }
+    const {
+      entity,
+      characterDetailsBeforeCursor,
+      cursorOffset,
+      blockObject,
+    } = cursorContent;
+
+  let validEntity = entity;
+
+  // to keep track of how far we had to travel and how many 
+  // characters to erase if we need to find a valid entity
+  let dinstanceFromCursor = 0;
+
+  // no entity at cursor - we must find the nearest entity
+  if (!validEntity) {
+    // ensure that we are at a valid split point
+    const characterAtCursor = blockObject.text[cursorOffset];
+    if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+      displayMessage(translate('editor.validation.invalidSplitLocation'));
+      return;
+    }
+    const characterListToCheck = blockObject.characterList.slice(cursorOffset);
+    const charactersToCheck = blockObject.text.slice(cursorOffset);
+    let splitEntityKeyString: string | null = null;
+    for (let i = 0; i < characterListToCheck.length; i++) {
+      const characterProperties = characterListToCheck[i];
+      const character = charactersToCheck[i];
+      if (characterProperties.entity) {
+        splitEntityKeyString = characterProperties.entity;
+        dinstanceFromCursor = i;
+        break;
+      }
+      // we have invalid content between the cursor and the next valid word
+      if (!SPLITTABLE_CHARACTERS.includes(character)) {
+        break;
+      }
+    }
+    const splitEntityKey = Number(splitEntityKeyString);
+    // we hit the end before finding a valid entity
+    if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
+      displayMessage(translate('editor.validation.invalidSplitLocation'));
+      return;
+    }
+    const splitEntity = getEntityByKey(splitEntityKeyString);
+
+    validEntity = { ...splitEntity };
+  }
+
+  // to check that we still have a valid entity to use
+  if (validEntity) {
+    // use the entity data to get split location
+    const { wordKey } = validEntity.data;
+    const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
+    const blockSegment = blockObject.data.segment;
+    if (!blockSegment) {
+      return;
+    }
+    const blockSegmentIndex = getIndexOfSegmentId(blockSegment.id);
+    if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
+
+    let contentStateToSplit = incomingEditorState.getCurrentContent();
+      let characterBeforeOffset = cursorOffset;
+
+      const deleteEndOffset = cursorOffset + dinstanceFromCursor;
+      const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
+      // remove any split characters that may have existed before
+      // if space, determine if the next character to the 
+      // left is a split character otherwise determine how
+      // many empty space characters to remove
+      if (shouldTrimBefore) {
+        let numberOfCharactersToRemove = 1;
+        if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
+          const { text } = blockObject;
+          const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
+          for (let i = startingOffsetToCheck; i >= 0; i--) {
+            const character = text[i];
+            if (character === ' ') {
+              numberOfCharactersToRemove++;
+            } else if (character === SPLIT_CHARACTER) {
+              numberOfCharactersToRemove++;
+              break;
+            } else {
+              break;
+            }
+          }
+        }
+        characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
+      }
+      // to remove if we have valid reason to
+      // remove any empty space between the cursor and any found entity
+      // remove any empty space before the cursor
+      if (shouldTrimBefore || dinstanceFromCursor) {
+        const rangeToRemove = new SelectionState({
+          anchorKey: blockObject.key,
+          anchorOffset: characterBeforeOffset,
+          focusKey: blockObject.key,
+          focusOffset: deleteEndOffset,
+        });
+        const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
+        contentStateToSplit = contentStateWithRemovedCharaters;
+      }
+
+      // handle the split
+      const selectionToSplit = new SelectionState({
+        anchorKey: blockObject.key,
+        anchorOffset: characterBeforeOffset,
+        focusKey: blockObject.key,
+        focusOffset: characterBeforeOffset,
+      });
+      const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
+      // reset the undo stack
+      const editorStateAfterSplit = EditorState.createWithContent(splitContentState, generateDecorators());
+      // get the newly created block
+      const newBlock = splitContentState.getBlockAfter(blockObject.key);
+      const newBlockKey = newBlock.getKey();
+      const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
+
+      // set cursor postiion
+      const newBlockCursorPosition = new SelectionState({
+        anchorKey: newBlockKey,
+        anchorOffset: 0,
+        focusKey: newBlockKey,
+        focusOffset: 0,
+      });
+      const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
+      setEditorState(editorStateWithCursorMoved);
+
+      const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, editorStateWithCursorMoved);
+
+      // update the word id bank and segment id array
+      insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
+
+      if(splitByTime?.time && splitByTime?.wordStringSplitIndex){
+        splitSegmentByTime(blockSegment.id, segmentIndex, splitByTime.time, splitByTime.wordStringSplitIndex, splitCallback);
+      } else {
+        splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
+      }
+      return;
+    }
+  }
+  }
+
+  const openSegmentSplitTimePicker = (incomingSegmentSplitOptions: SegmentSplitOptions, incomingEditorState?: EditorState) => {
+    if(!incomingEditorState){
+      incomingEditorState = editorState;
+    }
+    setSegmentSplitOptions(incomingSegmentSplitOptions);
+    setReadOnlyEditorState(incomingEditorState);
+  }
+
+  const closeSegmentSplitTimePicker = () => {
+    setReadOnlyEditorState(undefined);
+    setSegmentSplitOptions(undefined);
+  }
+
+  const splitSegmentPickerSuccess = (time: number) => {
+    if(!segmentSplitOptions){
+      return;
+    }
+    const {cursorContent, segmentIndex} = segmentSplitOptions;
+    const segment = segments[segmentIndex];
+    const {start, length} = segment;
+    const end = start + length;
+    const adjustedTime = time - start;
+    console.log('adjustedTime', adjustedTime);
+    console.log('segment', segment);
+    if(adjustedTime > 0 && time > start && time < end){
+      const segmentSplitInfo = {
+        time: adjustedTime,
+        wordStringSplitIndex: cursorContent.cursorOffset,
+      }
+      console.log('segmentSplitInfo', segmentSplitInfo);
+      prepareSegmentForSplit(cursorContent, editorState, segmentSplitInfo);
+      closeSegmentSplitTimePicker();
+    }
+  }
+
 
   const toggleDebugMode = (newValue: boolean) => {
     setDebug(newValue);
@@ -1190,8 +1459,8 @@ const generateDecorators = () => new CompositeDecorator([
       case KEY_COMMANDS['merge-segments-back']:
         handleSegmentMergeCommand(incomingEditorState);
         return HANDLE_VALUES.handled;
-      case KEY_COMMANDS['create-word']:
-        createWordTime(incomingEditorState);
+      case KEY_COMMANDS['edit-segment-time']:
+        prepareSegmentTimePicker(incomingEditorState);
         return HANDLE_VALUES.handled;
       default:
         break;
@@ -1305,7 +1574,7 @@ const generateDecorators = () => new CompositeDecorator([
             setEditorState(editorStateWithNoUndo);
 
             const updateCallback = buildUpdateSegmentCallback(currentStateOfPreviousBlockObject, editorStateWithNoUndo);
-            updateSegment(segment.id, [wordAlignment], segmentIndex, updateCallback);
+            updateSegment(segment.id, [wordAlignment], wordAlignment.word, segmentIndex, updateCallback);
             return false;
           }
         }
@@ -1356,7 +1625,7 @@ const generateDecorators = () => new CompositeDecorator([
 
             const segmentIndex = getIndexOfSegmentId(segment.id) as number;
             const updateCallback = buildUpdateSegmentCallback(currentStateOfPreviousBlockObject, editorStateWithNoUndo);
-            updateSegment(segment.id, wordAlignments, segmentIndex, updateCallback);
+            updateSegment(segment.id, wordAlignments, text, segmentIndex,updateCallback);
             return false;
           }
         }
@@ -1374,6 +1643,38 @@ const generateDecorators = () => new CompositeDecorator([
     setEditorState(removedEntityEditorState);
     setWordTimePickerOptions(undefined);
     onWordTimeCreationClose();
+  }
+
+  const closeSegmentTimePicker = () => {
+    if(readOnlyEditorState){
+      setEditorState(readOnlyEditorState);
+    } else {
+      setEditorState(cloneEditorState(editorState));
+    }
+    setSegmentPickerOptions(undefined);
+    setReadOnlyEditorState(undefined);
+    onWordTimeCreationClose();
+  }
+
+  const handleSegmentTimeUpdate = (segmentWord: Word, segment: Segment) => {
+    const segmentIndex = getIndexOfSegmentId(segment.id);
+    const {time} = segmentWord;
+    if(segmentPickerOptions &&
+      typeof segmentIndex === 'number' &&
+    typeof time?.start === 'number' &&
+    typeof time?.end === 'number'){
+      let {start, end} = time;
+      // set to 2 sig figs
+      start = Number(start.toFixed(2));
+      end = Number(end.toFixed(2));
+      const length = end - start;
+
+      const {cursorContent} = segmentPickerOptions;
+      const updateSegmentCallback = buildUpdateSegmentCallback(cursorContent.blockObject, editorState);
+
+      updateSegmentTime(segment.id, segmentIndex, start, length, updateSegmentCallback);
+      closeSegmentTimePicker();
+    }
   }
 
   const handleWordTimeCreation = (wordToCreate: Word, segment: Segment) => {
@@ -1487,7 +1788,6 @@ const generateDecorators = () => new CompositeDecorator([
 
   const handleChange = (incomingEditorState: EditorState) => {
     if (readOnlyEditorState) {
-      setEditorState(cloneEditorState(readOnlyEditorState));
       return;
     }
     let canUpdate = true;
@@ -1501,6 +1801,7 @@ const generateDecorators = () => new CompositeDecorator([
     if (!loading && canUpdate) {
       // update location since we are still in same block
       setPreviousSelectionState(incomingEditorState.getSelection());
+      setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
       setEditorState(incomingEditorState);
     }
   };
@@ -1511,13 +1812,11 @@ const handleSegmentSplitCommand = (incomingEditorState?: EditorState) => {
   }
   const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
   const {
-    entity,
+    blockObject,
     isEndOfBlock,
     isStartOfBlock,
     characterDetailsBeforeCursor,
     characterDetailsAtCursor,
-    cursorOffset,
-    blockObject,
   } = cursorContent;
 
   // check if we are at a valid location for splitting segments
@@ -1530,139 +1829,23 @@ const handleSegmentSplitCommand = (incomingEditorState?: EditorState) => {
   const afterEntityId = characterDetailsAtCursor.properties?.entity;
   const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
 
+  // open segment time selector
   if (isWithinSameEntity) {
-    displayMessage(translate('editor.validation.invalidSplitLocation'));
+    if(blockObject.data?.segment && blockObject.data.segment?.wordAlignments?.length < 2){
+      const splitSegmentIndex = getIndexOfSegmentId(blockObject.data.segment.id);
+      if(typeof splitSegmentIndex === 'number'){
+        const splitOptions = {
+          segmentIndex: splitSegmentIndex,
+          cursorContent,
+        }
+        openSegmentSplitTimePicker(splitOptions, incomingEditorState);
+      }
+    } else {
+      displayMessage(translate('editor.validation.invalidSplitLocation'));
+    }
     return;
   }
-
-  let validEntity = entity;
-
-  // to keep track of how far we had to travel and how many 
-  // characters to erase if we need to find a valid entity
-  let dinstanceFromCursor = 0;
-
-  // no entity at cursor - we must find the nearest entity
-  if (!validEntity) {
-    // ensure that we are at a valid split point
-    const characterAtCursor = blockObject.text[cursorOffset];
-    if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
-      displayMessage(translate('editor.validation.invalidSplitLocation'));
-      return;
-    }
-    const characterListToCheck = blockObject.characterList.slice(cursorOffset);
-    const charactersToCheck = blockObject.text.slice(cursorOffset);
-    let splitEntityKeyString: string | null = null;
-    for (let i = 0; i < characterListToCheck.length; i++) {
-      const characterProperties = characterListToCheck[i];
-      const character = charactersToCheck[i];
-      if (characterProperties.entity) {
-        splitEntityKeyString = characterProperties.entity;
-        dinstanceFromCursor = i;
-        break;
-      }
-      // we have invalid content between the cursor and the next valid word
-      if (!SPLITTABLE_CHARACTERS.includes(character)) {
-        break;
-      }
-    }
-    const splitEntityKey = Number(splitEntityKeyString);
-    // we hit the end before finding a valid entity
-    if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
-      displayMessage(translate('editor.validation.invalidSplitLocation'));
-      return;
-    }
-    const splitEntity = getEntityByKey(splitEntityKeyString);
-
-    validEntity = { ...splitEntity };
-  }
-
-  // to check that we still have a valid entity to use
-  if (validEntity) {
-    // use the entity data to get split location
-    const { wordKey } = validEntity.data;
-    const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
-    const blockSegment = blockObject.data.segment;
-    if (!blockSegment) {
-      return;
-    }
-    const blockSegmentIndex = getIndexOfSegmentId(blockSegment.id);
-    if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
-      let contentStateToSplit = incomingEditorState.getCurrentContent();
-      let characterBeforeOffset = cursorOffset;
-
-      const deleteEndOffset = cursorOffset + dinstanceFromCursor;
-      const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
-      // remove any split characters that may have existed before
-      // if space, determine if the next character to the 
-      // left is a split character otherwise determine how
-      // many empty space characters to remove
-      if (shouldTrimBefore) {
-        let numberOfCharactersToRemove = 1;
-        if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
-          const { text } = blockObject;
-          const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
-          for (let i = startingOffsetToCheck; i >= 0; i--) {
-            const character = text[i];
-            if (character === ' ') {
-              numberOfCharactersToRemove++;
-            } else if (character === SPLIT_CHARACTER) {
-              numberOfCharactersToRemove++;
-              break;
-            } else {
-              break;
-            }
-          }
-        }
-        characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
-      }
-      // to remove if we have valid reason to
-      // remove any empty space between the cursor and any found entity
-      // remove any empty space before the cursor
-      if (shouldTrimBefore || dinstanceFromCursor) {
-        const rangeToRemove = new SelectionState({
-          anchorKey: blockObject.key,
-          anchorOffset: characterBeforeOffset,
-          focusKey: blockObject.key,
-          focusOffset: deleteEndOffset,
-        });
-        const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
-        contentStateToSplit = contentStateWithRemovedCharaters;
-      }
-
-      // handle the split
-      const selectionToSplit = new SelectionState({
-        anchorKey: blockObject.key,
-        anchorOffset: characterBeforeOffset,
-        focusKey: blockObject.key,
-        focusOffset: characterBeforeOffset,
-      });
-      const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
-      // reset the undo stack
-      const editorStateAfterSplit = EditorState.createWithContent(splitContentState, generateDecorators());
-      // get the newly created block
-      const newBlock = splitContentState.getBlockAfter(blockObject.key);
-      const newBlockKey = newBlock.getKey();
-      const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
-
-      // set cursor postiion
-      const newBlockCursorPosition = new SelectionState({
-        anchorKey: newBlockKey,
-        anchorOffset: 0,
-        focusKey: newBlockKey,
-        focusOffset: 0,
-      });
-      const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
-      setEditorState(editorStateWithCursorMoved);
-
-      const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
-
-      // update the word id bank and segment id array
-      insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
-
-      splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
-      return;
-    }
-  }
+  prepareSegmentForSplit(cursorContent, incomingEditorState)
 };
 
 const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
@@ -1681,8 +1864,10 @@ const handleFocus = () => {
 };
 
 const handleBlur = () => {
-  setFocussed(false);
-  setEditorStateBeforeBlur(cloneEditorState());
+  if(focussed){
+    setFocussed(false);
+    setEditorStateBeforeBlur(cloneEditorState());
+  }
 };
 
 const handleClickInsideEditor = () => {
@@ -1747,6 +1932,9 @@ React.useEffect(() => {
       case EDITOR_CONTROLS.createWord:
         createWordTime();
         break;
+      case EDITOR_CONTROLS.editSegmentTime:
+        prepareSegmentTimePicker();
+        break;
     
       default:
         break;
@@ -1798,13 +1986,6 @@ React.useEffect(() => {
   };
 }, []);
 
-//!
-//TODO
-// don't let user to input bullet character
-//!
-//TODO
-// space when at the end of an entity breaks out of it
-
 return (
   <div
     ref={containerRef}
@@ -1838,7 +2019,27 @@ return (
             onClose={closeWordTimePicker}
             onSuccess={handleWordTimeCreation}
             onInvalidTime={displayInvalidTimeMessage}
-            {...wordTimePickerProps}
+            {...timePickerRootProps}
+          />}
+          {segmentPickerOptions && 
+            <SegmentTimePicker
+            segment={segmentPickerOptions.segment}
+            segmentToCreateTimeFor={segmentPickerOptions.segmentWord}
+            onClose={closeSegmentTimePicker}
+            onSuccess={handleSegmentTimeUpdate}
+            onInvalidTime={displayInvalidTimeMessage}
+            {...timePickerRootProps}
+          />}
+          {segmentSplitOptions && 
+            <SegmentSplitPicker
+            segments={segments}
+            segmentIndex={segmentSplitOptions.segmentIndex}
+            onClose={closeSegmentSplitTimePicker}
+            onSuccess={splitSegmentPickerSuccess}
+            onInvalidTime={displayInvalidTimeMessage}
+            currentTime={playbackTime}
+            changeSplitSegmentTime={changeSplitSegmentTime}
+            setDisabledTimes={timePickerRootProps.setDisabledTimes}
           />}
         </Card>
       </Draggable>
@@ -1857,7 +2058,6 @@ return (
         handleKeyCommand={handleKeyCommand}
       />
     }
-
   </div>
 );
 };

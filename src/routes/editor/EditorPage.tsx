@@ -224,14 +224,14 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentUpdate = async (segmentId: string, wordAlignments: WordAlignment[], segmentIndex: number, onSuccess: (segment: Segment) => void) => {
+  const submitSegmentUpdate = async (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-        const updatedSegment: Segment = { ...segments[segmentIndex], wordAlignments: [...wordAlignments] };
+        const updatedSegment: Segment = { ...segments[segmentIndex], wordAlignments: [...wordAlignments], transcript };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
@@ -345,6 +345,43 @@ export function EditorPage() {
         log({
           file: `EditorPage.tsx`,
           caller: `submitSegmentSplit - failed to split segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setSaveSegmentsLoading(false);
+    }
+  };
+
+  const submitSegmentSplitByTime = async (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
+      setSaveSegmentsLoading(true);
+      const response = await api.voiceData.splitSegmentByTime(projectId, voiceData.id, segmentId, time, wordStringSplitIndex);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+
+        //cut out and replace the old segment
+        const splitSegments = [...segments];
+        const [firstSegment, secondSegment] = response.segments;
+        const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
+        splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
+
+        // reset our new default baseline
+        setSegments(splitSegments);
+        setInitialSegments(splitSegments);
+        // update the editor
+        onSuccess(response.segments);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentSplitByTime - failed to split segment by time`,
           value: response,
           important: true,
         });
@@ -730,6 +767,7 @@ export function EditorPage() {
                 updateSegment={submitSegmentUpdate}
                 updateSegmentTime={submitSegmentTimeUpdate}
                 splitSegment={submitSegmentSplit}
+                splitSegmentByTime={submitSegmentSplitByTime}
                 mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
