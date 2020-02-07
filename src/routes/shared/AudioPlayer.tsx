@@ -1098,10 +1098,17 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof segmentSplitTimeBoundary?.start !== 'number' || typeof segmentSplitTimeBoundary?.end !== 'number') {
         return;
       }
-      validTimeBondaries = segmentSplitTimeBoundary;
-      const { start, end } = segmentSplitTimeBoundary;
+      let { start } = segmentSplitTimeBoundary;
+      const { end } = segmentSplitTimeBoundary;
       const length = end - start;
       const midpointTime = start + (length / 2);
+      if (start === 0) {
+        start = start + ZERO_TIME_SLOP;
+      }
+      validTimeBondaries = {
+        start,
+        end,
+      };
       createPoint(midpointTime);
     } else {
       deleteAllPoints();
