@@ -46,6 +46,8 @@ const SEEK_SLOP = 0.00001;
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
 
 let internalSegmentsTracker: Segment[] = [];
+/** used to debounce navigation when we change time after word click */
+let wordWasClicked = false;
 
 export enum PARENT_METHOD_TYPES {
   speaker
@@ -384,7 +386,9 @@ export function EditorPage() {
       const word = segment.wordAlignments[wordIndex];
       const segmentTime = segment.start;
       const wordTime = word.start;
-      const totalTime = segmentTime + wordTime;
+      let totalTime = segmentTime + wordTime;
+      // set to 2 sig figs
+      totalTime = Number(totalTime.toFixed(2));
       return totalTime;
     } catch (error) {
       log({
@@ -405,7 +409,7 @@ export function EditorPage() {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
     let segmentsToUse = segments;
-    if(!segmentsToUse.length){
+    if (!segmentsToUse.length) {
       segmentsToUse = [...internalSegmentsTracker];
     }
     const segment = segmentsToUse[segmentIndex];
@@ -449,7 +453,7 @@ export function EditorPage() {
   const calculatePlayingLocation = (time: number): SegmentAndWordIndex | undefined => {
     try {
       let segmentsToUse = segments;
-      if(!segmentsToUse.length){
+      if (!segmentsToUse.length) {
         segmentsToUse = [...internalSegmentsTracker];
       }
       if (isNaN(time) || !segmentsToUse.length) return;
@@ -501,13 +505,18 @@ export function EditorPage() {
    * @params time
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
-    setPlaybackTime(time);
-    const playingLocation = calculatePlayingLocation(time);
-    // to only update if the word has changed
-    // compare strings generated from the tuples because we can't compare the tuples to each other
-    if (playingLocation && (initialSegmentLoad ||
-      generateWordKeyString(playingLocation) !== generateWordKeyString(currentPlayingLocation))) {
-      buildPlayingAudioPlayerSegment(playingLocation);
+    // prevents seeking again if we changed because of clicking a word
+    if (wordWasClicked) {
+      wordWasClicked = false;
+    } else {
+      setPlaybackTime(time);
+      const playingLocation = calculatePlayingLocation(time);
+      // to only update if the word has changed
+      // compare strings generated from the tuples because we can't compare the tuples to each other
+      if (playingLocation && (initialSegmentLoad ||
+        generateWordKeyString(playingLocation) !== generateWordKeyString(currentPlayingLocation))) {
+        buildPlayingAudioPlayerSegment(playingLocation);
+      }
     }
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
@@ -520,6 +529,7 @@ export function EditorPage() {
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
+      wordWasClicked = true;
       const wordTime = calculateWordTime(segmentIndex, wordIndex);
       buildPlayingAudioPlayerSegment(wordLocation);
       setTimeToSeekTo(wordTime + SEEK_SLOP);
@@ -594,14 +604,19 @@ export function EditorPage() {
    */
   const handleSegmentStatusEditChange = () => setWordsClosed(undefined);
 
-  const handleSegmentDelete = () => {
+  const handleSegmentDelete = (time?: number) => {
     setSegmentIdToDelete(undefined);
     setDeleteAllWordSegments(undefined);
+    if (typeof time === 'number') {
+      handlePlaybackTimeChange(time);
+    }
   };
 
   const handlePlayingAudioSegmentCreate = () => setCurrentlyPlayingWordPlayerSegment(undefined);
 
-  const handleAudioSegmentCreate = () => setWordToCreateTimeFor(undefined);
+  const handleAudioSegmentCreate = () => {
+    setWordToCreateTimeFor(undefined);
+  };
 
   const handleAudioSegmentUpdate = () => setWordToUpdateTimeFor(undefined);
 
@@ -613,6 +628,17 @@ export function EditorPage() {
 
   const handleTimeChangeFromSegmentSplitTimePicker = (newTime: number) => setTimeToSeekTo(newTime);
 
+  const resetVariables = () => {
+    internalSegmentsTracker = [];
+    wordWasClicked = false;
+    setSegmentsLoading(true);
+    setSegments([]);
+    setPlaybackTime(0);
+    setCanPlayAudio(false);
+    setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
+    setCurrentlyPlayingWordPlayerSegment(undefined);
+    handleWordTimeCreationClose();
+  };
 
   // once we've loaded new segments
   React.useEffect(() => {
@@ -625,22 +651,17 @@ export function EditorPage() {
   // subsequent fetches
   React.useEffect(() => {
     if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
-      internalSegmentsTracker = [];
-      setSegmentsLoading(true);
-      setSegments([]);
-      setPlaybackTime(0);
-      setCanPlayAudio(false);
-      setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
-      setCurrentlyPlayingWordPlayerSegment(undefined);
-      handleWordTimeCreationClose();
+      resetVariables();
       getAssignedData();
-      
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
-  // initial fetch
+  // initial fetch and dismount logic
   React.useEffect(() => {
     getAssignedData();
+    return () => {
+      resetVariables();
+    };
   }, []);
 
   if (voiceDataLoading) {
