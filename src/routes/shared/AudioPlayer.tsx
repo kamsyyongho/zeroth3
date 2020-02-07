@@ -1110,6 +1110,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         end,
       };
       createPoint(midpointTime);
+      seekToTime(start);
     } else {
       deleteAllPoints();
       validTimeBondaries = undefined;
