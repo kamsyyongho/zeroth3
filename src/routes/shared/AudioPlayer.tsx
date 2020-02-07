@@ -49,19 +49,21 @@ let mediaElement: HTMLAudioElement | null = null;
 let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
 let internaDisabledTimesTracker: Time[] | undefined;
-let validTimeBondaries: Time | undefined;
-let loopValidTimeBoundaries: Time | undefined;
+let validTimeBondaries: Required<Time> | undefined;
+let loopValidTimeBoundaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
+let disableLoop = false;
 
-enum SEGMENT_IDS {
+export enum PLAYER_SEGMENT_IDS {
   'LOOP' = 'LOOP',
   'DISABLED_0' = 'DISABLED_0',
   'DISABLED_1' = 'DISABLED_1',
   'WORD' = 'WORD',
   'SEGMENT' = 'SEGMENT',
+  'SEGMENT_EDIT' = 'SEGMENT_EDIT',
 }
-const SEGMENT_IDS_ARRAY = Object.keys(SEGMENT_IDS);
+const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
 /**
@@ -282,6 +284,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setPeaksReady(true);
   };
 
+  const handleTimeChange = (time: number) => {
+    if (onTimeChange && typeof onTimeChange === 'function') {
+      onTimeChange(time);
+    }
+  };
+
   const getCurrentTimeDisplay = (currentTime: number) => {
     const currentTimeString = currentTime.toFixed(2);
     const decimalIndex = currentTimeString.indexOf('.');
@@ -297,9 +305,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTimeString);
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      if (onTimeChange && typeof onTimeChange === 'function') {
-        onTimeChange(currentTimeFixed);
-      }
+      handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);
     }
@@ -345,6 +351,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setWaiting(false);
   };
 
+
   function handleSeek() {
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
@@ -353,9 +360,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTime.toFixed(2));
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      if (onTimeChange && typeof onTimeChange === 'function') {
-        onTimeChange(currentTimeFixed);
-      }
+      handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);
     }
@@ -398,10 +403,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handleSegmentExit = (segment: Segment) => {
     const { id, startTime, endTime, editable } = segment;
     switch (id) {
-      case SEGMENT_IDS.SEGMENT:
-      case SEGMENT_IDS.WORD:
+      case PLAYER_SEGMENT_IDS.SEGMENT:
+      case PLAYER_SEGMENT_IDS.WORD:
         break;
-      case SEGMENT_IDS.LOOP:
+      case PLAYER_SEGMENT_IDS.LOOP:
+      case PLAYER_SEGMENT_IDS.SEGMENT_EDIT:
         // referencing the media element to get most up-to-date state
         if (mediaElement && !mediaElement.paused && mediaElement.currentTime > endTime) {
           seekToTime(startTime);
@@ -415,10 +421,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handleSegmentEnter = (segment: Segment) => {
     const { id, endTime } = segment;
     switch (id) {
-      case SEGMENT_IDS.DISABLED_0:
+      case PLAYER_SEGMENT_IDS.DISABLED_0:
         seekToTime(endTime);
         break;
-      case SEGMENT_IDS.DISABLED_1:
+      case PLAYER_SEGMENT_IDS.DISABLED_1:
         if (internaDisabledTimesTracker && internaDisabledTimesTracker[0]?.end) {
           seekToTime(internaDisabledTimesTracker[0].end);
         }
@@ -428,19 +434,20 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
-  const handleSegmentChange = (segment: Segment) => {
+  const handleSegmentChangeEnd = (segment: Segment) => {
     const { id, startTime, endTime } = segment;
-    const time: Time = {
+    const time: Required<Time> = {
       start: startTime,
       end: endTime,
     };
     const isValidSection = checkIfValidSegmentArea(startTime, endTime);
     switch (id) {
-      case SEGMENT_IDS.LOOP:
+      case PLAYER_SEGMENT_IDS.LOOP:
+      case PLAYER_SEGMENT_IDS.SEGMENT_EDIT:
         validTimeBondaries = time;
         break;
-      case SEGMENT_IDS.DISABLED_0:
-      case SEGMENT_IDS.DISABLED_1:
+      case PLAYER_SEGMENT_IDS.DISABLED_0:
+      case PLAYER_SEGMENT_IDS.DISABLED_1:
         break;
       default:
         if (id && isValidSection) {
@@ -526,9 +533,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const createSegment = (segmentToAdd: SegmentAddOptions, isDisabledSegment = false) => {
     if (!PeaksPlayer?.segments) return;
     try {
+      const isEditingSegmentTime = segmentToAdd.id === PLAYER_SEGMENT_IDS.SEGMENT_EDIT;
       const existingSegments = PeaksPlayer.segments.getSegments();
-      const updatedSegments = existingSegments.map((segment) => {
-        return {
+      const updatedSegments: SegmentAddOptions[] = [];
+      for (let i = 0; i < existingSegments.length; i++) {
+        const segment = existingSegments[i];
+        const updatedSegment = {
           startTime: segment.startTime,
           endTime: segment.endTime,
           id: segment.id,
@@ -536,7 +546,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
           labelText: segment.labelText,
           editable: false,
         } as SegmentAddOptions;
-      });
+        if (!isEditingSegmentTime) {
+          updatedSegments.push(updatedSegment);
+        } else if (segment.id !== PLAYER_SEGMENT_IDS.LOOP) {
+          updatedSegments.push(updatedSegment);
+        }
+      }
       updatedSegments.push(segmentToAdd);
       PeaksPlayer.segments.removeAll();
       PeaksPlayer.segments.add(updatedSegments);
@@ -550,11 +565,20 @@ export function AudioPlayer(props: AudioPlayerProps) {
         }
       }
       if (!isDisabledSegment) {
+        const loopTime: Required<Time> = {
+          start: segmentToAdd.startTime,
+          end: segmentToAdd.endTime,
+        };
         onSegmentCreate();
         seekToTime(segmentToAdd.startTime);
       }
+      // turn off loop
       isLoop = false;
       loopValidTimeBoundaries = undefined;
+      setLoop(false);
+      if (isEditingSegmentTime) {
+        disableLoop = true;
+      }
     } catch (error) {
       handleError(error);
     }
@@ -567,8 +591,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       let wordPlaybackSegmentExists = false;
       let segmentPlaybackSegmentExists = false;
       const updatedSegments = existingSegments.map((segment) => {
-        const isWordMatch = segment.id === SEGMENT_IDS.WORD;
-        const isSegmentMatch = segment.id === SEGMENT_IDS.SEGMENT;
+        const isWordMatch = segment.id === PLAYER_SEGMENT_IDS.WORD;
+        const isSegmentMatch = segment.id === PLAYER_SEGMENT_IDS.SEGMENT;
         if (isWordMatch) {
           wordPlaybackSegmentExists = true;
           return currentPlayingWordSegment;
@@ -641,7 +665,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           editable: false,
           // to simulate the word segment not existing
           color: segmentsSameLength ? segmentInfo.color : wordInfo.color,
-          id: SEGMENT_IDS.WORD,
+          id: PLAYER_SEGMENT_IDS.WORD,
           labelText: wordInfo.text,
         };
         const segmentSegmentToAdd: SegmentAddOptions = {
@@ -649,7 +673,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           endTime: segmentEndTime,
           editable: false,
           color: segmentInfo.color,
-          id: SEGMENT_IDS.SEGMENT,
+          id: PLAYER_SEGMENT_IDS.SEGMENT,
           labelText: segmentInfo.text,
         };
         createPlaybackSegments(wordSegmentToAdd, segmentSegmentToAdd);
@@ -661,7 +685,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
    * creates or removes the loop segment
    */
   function handleLoopClick() {
-    if (!PeaksPlayer?.segments ||
+    if (disableLoop ||
+      !PeaksPlayer?.segments ||
       !peaksReady ||
       !duration ||
       !mediaElement ||
@@ -669,9 +694,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
       (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
     ) return;
     try {
-      const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
+      const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
       if (isLoop) {
-        PeaksPlayer.segments.removeById(SEGMENT_IDS.LOOP);
+        PeaksPlayer.segments.removeById(PLAYER_SEGMENT_IDS.LOOP);
         loopValidTimeBoundaries = undefined;
         setLoop(false);
         parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
@@ -690,7 +715,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           startTime,
           endTime,
           editable: true,
-          id: SEGMENT_IDS.LOOP,
+          id: PLAYER_SEGMENT_IDS.LOOP,
           color,
         };
         // only have the loop segment visible
@@ -807,8 +832,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const deleteSegment = (segmentIdToDelete: string) => {
     if (!PeaksPlayer?.segments) return;
     try {
+      if (segmentIdToDelete === PLAYER_SEGMENT_IDS.SEGMENT_EDIT) {
+        disableLoop = false;
+      }
       PeaksPlayer.segments.removeById(segmentIdToDelete);
-      onSegmentDelete();
+      const currentTimeString = currentTime.toFixed(2);
+      const currentTimeFixed = Number(currentTimeString);
+      onSegmentDelete(currentTimeFixed);
     } catch (error) {
       handleError(error);
     }
@@ -817,7 +847,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const deleteAllSegments = () => {
     if (!PeaksPlayer?.segments) return;
     try {
-      const loopSegment = PeaksPlayer.segments.getSegment(SEGMENT_IDS.LOOP);
+      const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
       PeaksPlayer.segments.removeAll();
       if (loopSegment) {
         const loopSegmentOptions: SegmentAddOptions = {
@@ -830,10 +860,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
         };
         PeaksPlayer.segments.add(loopSegmentOptions);
       }
-      onSegmentDelete();
       // reset internal trackers
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
+      disableLoop = false;
+      const currentTimeString = currentTime.toFixed(2);
+      const currentTimeFixed = Number(currentTimeString);
+      onSegmentDelete(currentTimeFixed);
     } catch (error) {
       handleError(error);
     }
@@ -924,7 +957,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
             endTime,
             editable: false,
             color,
-            id: index ? SEGMENT_IDS.DISABLED_1 : SEGMENT_IDS.DISABLED_0,
+            id: index ? PLAYER_SEGMENT_IDS.DISABLED_1 : PLAYER_SEGMENT_IDS.DISABLED_0,
           };
           createSegment(disabledSegment, true);
         }
@@ -1003,7 +1036,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [wordToUpdateTimeFor]);
 
   React.useEffect(() => {
-
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
@@ -1116,7 +1148,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.exit', handleSegmentExit);
       PeaksPlayer.on('segments.enter', handleSegmentEnter);
       PeaksPlayer.on('segments.dragstart', handleSegmentDragStart);
-      PeaksPlayer.on('segments.dragend', handleSegmentChange);
+      PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
 
 
     };
