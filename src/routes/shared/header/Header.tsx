@@ -73,6 +73,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { organizations, uploadQueueEmpty } = globalState;
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
+  const [isWaitingForQueue, setIsWaitingForQueue] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
@@ -110,10 +111,17 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const clearNotificationTimeout = () => {
+    setIsWaitingForQueue(false);
     if (uploadQueueCheckTimeoutId) {
       clearTimeout(uploadQueueCheckTimeoutId);
       uploadQueueCheckTimeoutId = undefined;
     }
+  };
+
+  const customNotification = (key: string | number | undefined, message: React.ReactNode) => {
+    return (
+      <UploadProgressNotification key={key} message={message} onClose={clearNotificationTimeout} />
+    );
   };
 
   const getUploadQueue = async () => {
@@ -124,32 +132,22 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       const response = await api.rawData.getRawDataQueue('39410dab-a39b-4284-99cb-8292d02f6c18');
       if (response.kind === 'ok') {
         const { queue } = response;
-        const { totalCount, currentProjectCount } = queue;
-        if (currentProjectCount || totalCount === currentProjectCount) {
+        const { projectUnprocessed } = queue;
+        if (projectUnprocessed < 1) {
           setGlobalState({ uploadQueueEmpty: true });
           clearNotificationTimeout();
-          if (!currentProjectCount) {
-            enqueueSnackbar(`${translate('common.uploaded')}: ${totalCount} / ${currentProjectCount}`, {
+          if (isWaitingForQueue) {
+            enqueueSnackbar(translate('common.uploaded'), {
               ...DEFAULT_NOTIFICATION_OPTIONS,
-              content: (key, message) => {
-                return (
-                  <UploadProgressNotification key={key} message={message} progress={100} onClose={clearNotificationTimeout} />
-                );
-              }
+              content: customNotification,
             });
           }
         } else {
-          // must be a number from 0 to 100
-          const progress = totalCount / currentProjectCount * 100;
-          enqueueSnackbar(`${translate('common.uploading')}: ${totalCount} / ${currentProjectCount}`, {
+          setIsWaitingForQueue(true);
+          enqueueSnackbar(`${translate('common.uploading')}: ${projectUnprocessed}`, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
-            content: (key, message) => {
-              return (
-                <UploadProgressNotification key={key} message={message} progress={progress} onClose={clearNotificationTimeout} />
-              );
-            }
+            content: customNotification,
           });
-
           // check again after a few seconds
           uploadQueueCheckTimeoutId = setTimeout(() => {
             getUploadQueue();

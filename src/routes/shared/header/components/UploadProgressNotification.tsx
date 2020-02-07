@@ -61,20 +61,27 @@ const useStyles = makeStyles((theme) =>
 interface UploadProgressNotificationProps {
   key: string | number | undefined;
   message: React.ReactNode;
-  progress: number;
+  progress?: number;
+  complete?: boolean;
   onClose?: () => void;
 }
 
 export const UploadProgressNotification = React.forwardRef((props: UploadProgressNotificationProps, ref) => {
-  const { key, message, progress, onClose } = props;
+  const { key, message, progress, complete, onClose } = props;
   const { closeSnackbar } = useSnackbar();
   const [expanded, setExpanded] = React.useState(true);
 
   const theme = useTheme();
   const classes = useStyles();
 
-  const complete = progress === 100;
-  const iconStyle: React.CSSProperties | undefined = complete ? { color: theme.palette.common.white } : undefined;
+  const showProgress = typeof progress === 'number';
+
+  let isComplete = !!complete;
+  if(showProgress){
+    isComplete = progress === 100;
+  }
+
+  const iconStyle: React.CSSProperties | undefined = isComplete ? { color: theme.palette.common.white } : undefined;
 
 
   const handleExpandClick = () => {
@@ -90,13 +97,13 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
 
   return (
     <Card className={classes.card} ref={ref}>
-      <CardActions classes={{ root: (clsx(classes.actionRoot, complete ? classes.actionUploadFinished : classes.actionUploading)) }}>
+      <CardActions classes={{ root: (clsx(classes.actionRoot, isComplete ? classes.actionUploadFinished : classes.actionUploading)) }}>
         <Grid container wrap='nowrap' justify='space-between' alignItems='center' alignContent='center' >
           <Grid container item justify='flex-start' >
-            <Typography variant="subtitle2" className={clsx(classes.typography, complete && classes.uploadFinishedText)}>{message}</Typography>
+            <Typography variant="subtitle2" className={clsx(classes.typography, isComplete && classes.uploadFinishedText)}>{message}</Typography>
           </Grid>
           <Grid container item justify='flex-end' spacing={1} className={classes.icons} >
-            <Grid item>
+            {showProgress && <Grid item>
               <IconButton
                 aria-label="Show more"
                 className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
@@ -104,7 +111,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
               >
                 <ExpandLessIcon style={iconStyle} />
               </IconButton>
-            </Grid>
+            </Grid>}
             <Grid item>
               <IconButton className={classes.expand} onClick={handleDismiss}>
                 <CloseIcon style={iconStyle} />
@@ -113,11 +120,11 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
           </Grid>
         </Grid>
       </CardActions>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
+      {showProgress && <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Paper className={classes.collapse}>
-          <ProgressBar value={progress} maxWidth={400} minWidth={300} />
+          <ProgressBar value={progress ?? 0} maxWidth={400} minWidth={300} />
         </Paper>
-      </Collapse>
+      </Collapse>}
     </Card>
   );
 });

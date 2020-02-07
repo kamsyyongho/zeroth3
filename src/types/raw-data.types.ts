@@ -1,4 +1,6 @@
 export interface RawDataQueue {
-  currentProjectCount: number;
-  totalCount: number;
+  /** remaining / not yet decoded for the project */
+  projectUnprocessed: number;
+  /** queue across **all** organizations */
+  globalQueue: number;
 }
