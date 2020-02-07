@@ -72,7 +72,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
   const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id, disabled: !acousticModel.progress }));
+  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id, disabled: acousticModel.progress < 100 }));
 
   // validation translated text
   const requiredTranslationText = translate("forms.validation.required");

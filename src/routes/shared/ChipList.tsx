@@ -31,6 +31,7 @@ export const ChipList = ({ values, light, ...props }: ChipListProps) => {
         <Grid item key={value} >
           <Chip
             label={value}
+            size='small'
             className={light ? classes.light : classes.default}
             {...props} />
         </Grid>

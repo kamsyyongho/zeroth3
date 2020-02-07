@@ -1,4 +1,4 @@
-import { Box, CardHeader, Grid } from '@material-ui/core';
+import { Box, CardHeader, Chip, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
@@ -16,7 +16,7 @@ const MIN_CARD_WIDTH = 300;
 const MAX_CARD_WIDTH = MIN_CARD_WIDTH * 2;
 const MAX_TITLE_WIDTH = MAX_CARD_WIDTH - 250;
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     root: {
       minWidth: MIN_CARD_WIDTH,
@@ -29,6 +29,11 @@ const useStyles = makeStyles((theme) =>
     },
     category: {
       marginRight: theme.spacing(1),
+    },
+    trainingAlertChip: {
+      backgroundColor: theme.error,
+      color: theme.palette.primary.contrastText,
+      fontWeight: 'bold',
     },
   }),
 );
@@ -111,6 +116,21 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
             {model.sampleRate}{' Hz'}
           </Typography>
         </Grid>
+        {model.progress < 100 && <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <Chip
+            key={model.id}
+            label={translate('models.tabs.acousticModel.trainingInProgress')}
+            size='small'
+            className={classes.trainingAlertChip}
+          />
+        </Grid>}
       </CardContent>
     </Grid>
   </Box>);

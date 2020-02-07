@@ -238,6 +238,7 @@ export const ko: ResourceLanguage = {
           delete: 'Delete acoustic model',
           delete_plural: 'Delete {{count}} acoustic models',
           noResults: 'No acoustic models',
+          trainingInProgress: 'Training in progress',
         },
         languageModel: {
           header: '언어 모델',

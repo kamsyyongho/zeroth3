@@ -3,7 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
@@ -21,14 +21,6 @@ import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
-
-const useStyles = makeStyles((theme) =>
-  createStyles({
-    hidden: {
-      visibility: 'hidden',
-    },
-  }),
-);
 
 interface SubgraphFormDialogProps {
   open: boolean;
@@ -48,7 +40,6 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const [isError, setIsError] = React.useState(false);
   const isEdit = !!subGraphToEdit;
 
-  const classes = useStyles();
   const theme = useTheme();
 
   const handleClose = () => {

@@ -50,6 +50,7 @@ export const ChipSelectFormField = ({ field, form, label, options, labelsByValue
               <Chip
               key={value}
               label={labelsByValue[value]} 
+              size='small'
               className={light ? classes.light : classes.default}
               />
             ))}
