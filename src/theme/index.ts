@@ -42,7 +42,9 @@ const customTheme = {
     playing: '#077db5',
     highlight: pink.A200,
     LowConfidence: '#ffe190',
+    LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2%)`,
     entity: grey[300],
+    entityGradient: `linear-gradient(to right, #000 0%, ${grey[300]} 2%)`,
     changes: green[400],
   },
   audioPlayer: {
@@ -70,7 +72,9 @@ export interface CustomTheme extends Theme {
     playing: string;
     highlight: string;
     LowConfidence: string;
+    LowConfidenceGradient: string;
     entity: string;
+    entityGradient: string;
     changes: string;
   };
   audioPlayer: {
@@ -95,7 +99,9 @@ interface CustomThemeOptions extends ThemeOptions {
     playing?: string;
     highlight?: string;
     LowConfidence?: string;
+    LowConfidenceGradient?: string;
     entity?: string;
+    entityGradient?: string;
     changes?: string;
   };
   audioPlayer?: {

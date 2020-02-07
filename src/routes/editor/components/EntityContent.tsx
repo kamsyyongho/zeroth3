@@ -30,8 +30,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       maxWidth: 'none',
     },
     immutable: {
-      backgroundColor: theme.editor.entity,
-      padding: '2px 0'
+      backgroundImage: theme.editor.entityGradient,
+      padding: '2px 0',
     },
   }),
 );
@@ -71,7 +71,7 @@ export const EntityContent = (props: EntityContentProps) => {
   const entityClassName = getEntityClassName(mutability, classes);
   let style = {};
   if (LC) {
-    style = { backgroundColor: theme.editor.LowConfidence };
+    style = { backgroundImage: theme.editor.LowConfidenceGradient };
   }
   if (type === ENTITY_TYPE.TEMP) {
     style = { ...style, backgroundColor: theme.editor.highlight };
