@@ -1882,6 +1882,9 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  /** to prevent any pasting of text */
+  const handlePastedText = () => HANDLE_VALUES.handled;
+
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
@@ -2064,7 +2067,7 @@ export function Editor(props: EditorProps) {
           onBlur={handleBlur}
           handleReturn={handleReturnPress}
           handleKeyCommand={handleKeyCommand}
-          handlePastedText={() => HANDLE_VALUES.handled}
+          handlePastedText={handlePastedText}
         />
       }
     </div>
