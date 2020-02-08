@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme) =>
     },
     logo: {
       fontSize: 120,
+      height: 24,
       color: theme.palette.primary.contrastText,
     }
   }),
