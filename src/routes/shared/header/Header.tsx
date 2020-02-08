@@ -7,7 +7,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import { OptionsObject, useSnackbar } from 'notistack';
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
@@ -49,10 +49,6 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-/** in ms */
-const DEFAULT_POLLING_TIMEOUT = 5000;
-// const DEFAULT_POLLING_TIMEOUT = 10000;
-let uploadQueueCheckTimeoutId: NodeJS.Timeout | undefined;
 const QUEUE_NOTIFICATION_KEY = 0;
 const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
   persist: true,
@@ -70,13 +66,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organizations, uploadQueueEmpty } = globalState;
+  const { organizations, currentProject, uploadQueueEmpty } = globalState;
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
-  const [isWaitingForQueue, setIsWaitingForQueue] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
+  const [currentProjectId, setCurrentProjectId] = React.useState<string | undefined>();
 
   const classes = useStyles();
 
@@ -110,48 +106,33 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     setOrganizationsLoading(false);
   };
 
-  const clearNotificationTimeout = () => {
-    setIsWaitingForQueue(false);
-    if (uploadQueueCheckTimeoutId) {
-      clearTimeout(uploadQueueCheckTimeoutId);
-      uploadQueueCheckTimeoutId = undefined;
-    }
+  const onComplete = () => {
+    setGlobalState({ uploadQueueEmpty: true });
   };
 
-  const customNotification = (key: string | number | undefined, message: React.ReactNode) => {
+  const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>) => {
     return (
-      <UploadProgressNotification key={key} message={message} onClose={clearNotificationTimeout} />
+      <UploadProgressNotification key={key} message={message} onComplete={onComplete} callback={callback} />
     );
   };
 
-  const getUploadQueue = async () => {
+  const getUploadQueue = async (projectId: string, isGetter = false) => {
     if (api?.rawData) {
-      //!
-      //TODO
-      //* DON'T HARDCODE THIS!!!
-      const response = await api.rawData.getRawDataQueue('39410dab-a39b-4284-99cb-8292d02f6c18');
+      const response = await api.rawData.getRawDataQueue(projectId);
       if (response.kind === 'ok') {
         const { queue } = response;
         const { projectUnprocessed } = queue;
         if (projectUnprocessed < 1) {
-          setGlobalState({ uploadQueueEmpty: true });
-          clearNotificationTimeout();
-          if (isWaitingForQueue) {
-            enqueueSnackbar(translate('common.uploaded'), {
-              ...DEFAULT_NOTIFICATION_OPTIONS,
-              content: customNotification,
-            });
-          }
+          onComplete();
         } else {
-          setIsWaitingForQueue(true);
-          enqueueSnackbar(`${translate('common.uploading')}: ${projectUnprocessed}`, {
+          const text = `${translate('common.uploading')}: ${projectUnprocessed}`;
+          enqueueSnackbar(text, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
-            content: customNotification,
+            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true)),
           });
-          // check again after a few seconds
-          uploadQueueCheckTimeoutId = setTimeout(() => {
-            getUploadQueue();
-          }, DEFAULT_POLLING_TIMEOUT);
+        }
+        if (isGetter) {
+          return projectUnprocessed;
         }
       } else {
         log({
@@ -174,9 +155,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     } else {
       setOrganizationsLoading(false);
     }
-    return () => {
-      clearNotificationTimeout();
-    };
   }, []);
 
   // to get the currently selected organization's info
@@ -192,12 +170,21 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     }
   }, [organizations]);
 
+  React.useEffect(() => {
+    if (organization) {
+      setGlobalState({ currentOrganization: organization });
+    }
+  }, [organization]);
+
   // to check for current upload progress
   React.useEffect(() => {
-    if (!uploadQueueEmpty) {
-      getUploadQueue();
+    if (currentProject && !uploadQueueEmpty) {
+      if (currentProjectId !== currentProject.id) {
+        setCurrentProjectId(currentProject.id);
+      }
+      getUploadQueue(currentProject.id);
     }
-  }, [uploadQueueEmpty]);
+  }, [currentProject, uploadQueueEmpty]);
 
 
   // to show a notification when the organization name should be changed
@@ -257,11 +244,12 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             </Button>
             <Button
               startIcon={<ICONS.Projects />}
+              endIcon={<ICONS.ArrowDown />}
               color={"inherit"}
               className={classes.projectButton}
               onClick={showProjectsDialog}
             >
-              {translate('path.projects')}
+              {currentProject?.name ? currentProject?.name : translate('path.projects')}
             </Button>
           </Grid>
           <Grid

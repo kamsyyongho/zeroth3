@@ -12,6 +12,7 @@ import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
 import React from 'react';
+import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ProgressBar } from '../../ProgressBar';
 
 const useStyles = makeStyles((theme) =>
@@ -64,24 +65,65 @@ interface UploadProgressNotificationProps {
   progress?: number;
   complete?: boolean;
   onClose?: () => void;
+  onComplete?: () => void;
+  callback?: () => Promise<number | undefined>;
 }
 
+/** in ms */
+const DEFAULT_POLLING_TIMEOUT = 5000;
+let uploadQueueCheckTimeoutId: NodeJS.Timeout | undefined;
+
 export const UploadProgressNotification = React.forwardRef((props: UploadProgressNotificationProps, ref) => {
-  const { key, message, progress, complete, onClose } = props;
+  const { key, progress, message, complete, onClose, onComplete, callback } = props;
   const { closeSnackbar } = useSnackbar();
+  const { translate } = React.useContext(I18nContext);
   const [expanded, setExpanded] = React.useState(true);
+  const [isComplete, setIsComplete] = React.useState(!!complete || progress === 100);
+  const [text, setText] = React.useState<string>(message as string);
 
   const theme = useTheme();
   const classes = useStyles();
 
   const showProgress = typeof progress === 'number';
 
-  let isComplete = !!complete;
-  if(showProgress){
-    isComplete = progress === 100;
-  }
 
   const iconStyle: React.CSSProperties | undefined = isComplete ? { color: theme.palette.common.white } : undefined;
+
+  const clearNotificationTimeout = () => {
+    // setIsWaitingForQueue(false);
+    if (uploadQueueCheckTimeoutId) {
+      clearTimeout(uploadQueueCheckTimeoutId);
+      uploadQueueCheckTimeoutId = undefined;
+    }
+  };
+
+  const checkUploadQueue = async () => {
+    if (typeof callback === 'function') {
+      // check again after a few seconds
+      const queue = await callback();
+      if (queue === 0) {
+        setIsComplete(true);
+        setText(translate('common.uploaded'));
+        clearNotificationTimeout();
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      } else {
+        setText(`${translate('common.uploading')}: ${queue}`);
+        uploadQueueCheckTimeoutId = setTimeout(() => {
+          checkUploadQueue();
+        }, DEFAULT_POLLING_TIMEOUT);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    uploadQueueCheckTimeoutId = setTimeout(() => {
+      checkUploadQueue();
+    }, DEFAULT_POLLING_TIMEOUT);
+    return () => clearNotificationTimeout();
+  }, []);
+
 
 
   const handleExpandClick = () => {
@@ -92,6 +134,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
     if (typeof onClose === 'function') {
       onClose();
     }
+    clearNotificationTimeout();
     closeSnackbar(key);
   };
 
@@ -100,7 +143,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
       <CardActions classes={{ root: (clsx(classes.actionRoot, isComplete ? classes.actionUploadFinished : classes.actionUploading)) }}>
         <Grid container wrap='nowrap' justify='space-between' alignItems='center' alignContent='center' >
           <Grid container item justify='flex-start' >
-            <Typography variant="subtitle2" className={clsx(classes.typography, isComplete && classes.uploadFinishedText)}>{message}</Typography>
+            <Typography variant="subtitle2" className={clsx(classes.typography, isComplete && classes.uploadFinishedText)}>{text}</Typography>
           </Grid>
           <Grid container item justify='flex-end' spacing={1} className={classes.icons} >
             {showProgress && <Grid item>
