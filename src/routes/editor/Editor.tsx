@@ -200,12 +200,12 @@ interface EditorProps {
   onReady: (ready: boolean) => void;
   onPopupToggle: (optionsVisible: boolean) => void;
   onWordTimeCreationClose: () => void;
+  onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   popupsOpen?: boolean;
   debugMode?: boolean;
   loading?: boolean;
   segments: Segment[];
   wordConfidenceThreshold: number;
-  playbackTime: number;
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
@@ -229,7 +229,7 @@ export function Editor(props: EditorProps) {
     onPopupToggle,
     onWordTimeCreationClose,
     wordConfidenceThreshold,
-    playbackTime,
+    onUpdateUndoRedoStack,
     popupsOpen,
     debugMode,
     loading,
@@ -480,13 +480,18 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     const contentState = editorState.getCurrentContent();
     rebuildEntityMapFromContentState(contentState);
+    const undoStack = editorState.getUndoStack();
+    const redoStack = editorState.getRedoStack();
+    const canUndo = undoStack.size > 0;
+    const canRedo = redoStack.size > 0;
+    onUpdateUndoRedoStack(canUndo, canRedo);
     log({
       file: `Editor.tsx`,
       caller: `convertToRaw(editorState)`,
       value: {
         rawContent: convertToRaw(contentState),
-        wordKeyMap: wordKeyBank.getKeyMap(),
-        locationMap: wordKeyBank.getLocationMap(),
+        undoStack,
+        redoStack,
       },
       important: false,
       trace: false,
@@ -1401,7 +1406,6 @@ export function Editor(props: EditorProps) {
         time: adjustedTime,
         wordStringSplitIndex: cursorContent.cursorOffset,
       };
-      console.log('segmentSplitInfo', segmentSplitInfo);
       prepareSegmentForSplit(cursorContent, editorState, segmentSplitInfo);
       closeSegmentSplitTimePicker();
     }
@@ -1913,6 +1917,7 @@ export function Editor(props: EditorProps) {
       if (readOnlyEditorState) {
         return;
       }
+      let updatedEditorState: EditorState | null = null;
       switch (editorCommand) {
         case EDITOR_CONTROLS.save:
           updateSegmentOnChange(undefined, undefined, true);
@@ -1932,9 +1937,17 @@ export function Editor(props: EditorProps) {
         case EDITOR_CONTROLS.editSegmentTime:
           prepareSegmentTimePicker();
           break;
-
+        case EDITOR_CONTROLS.undo: ;
+          updatedEditorState = EditorState.undo(editorState);
+          break;
+        case EDITOR_CONTROLS.redo:
+          updatedEditorState = EditorState.redo(editorState);
+          break;
         default:
           break;
+      }
+      if (updatedEditorState) {
+        handleChange(updatedEditorState);
       }
     }
   }, [editorCommand]);
@@ -2051,6 +2064,7 @@ export function Editor(props: EditorProps) {
           onBlur={handleBlur}
           handleReturn={handleReturnPress}
           handleKeyCommand={handleKeyCommand}
+          handlePastedText={() => HANDLE_VALUES.handled}
         />
       }
     </div>

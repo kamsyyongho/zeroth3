@@ -188,12 +188,8 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Undo />;
           tooltipText = osText('undo');
           props = {
-            onClick: () => {
-              //!
-              //TODO
-              //do nothing
-            },
-            disabled: true,
+            onClick: () => onCommandClick(EDITOR_CONTROLS.undo),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
           };
           break;
         case EDITOR_CONTROLS.redo:
@@ -201,12 +197,8 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Redo />;
           tooltipText = osText('redo');
           props = {
-            onClick: () => {
-              //!
-              //TODO
-              //do nothing
-            },
-            disabled: true,
+            onClick: () => onCommandClick(EDITOR_CONTROLS.redo),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
           };
           break;
         case EDITOR_CONTROLS.merge:

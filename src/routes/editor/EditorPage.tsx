@@ -116,6 +116,8 @@ export function EditorPage() {
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
+  const [canUndo, setCanUndo] = React.useState(false);
+  const [canRedo, setCanRedo] = React.useState(false);
   const [projectId, setProjectId] = React.useState<string | undefined>();
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>();
   const [segments, setSegments] = React.useState<Segment[]>([]);
@@ -414,6 +416,12 @@ export function EditorPage() {
   const getDisabledControls = () => {
     const disabledControls: EDITOR_CONTROLS[] = [];
     const mergeDisabled = segments.length < 2;
+    if (!canUndo) {
+      disabledControls.push(EDITOR_CONTROLS.undo);
+    }
+    if (!canRedo) {
+      disabledControls.push(EDITOR_CONTROLS.redo);
+    }
     if (mergeDisabled) {
       disabledControls.push(EDITOR_CONTROLS.merge);
     }
@@ -685,6 +693,11 @@ export function EditorPage() {
 
   const toggleDebugMode = () => setDebugMode((prevValue) => !prevValue);
 
+  const onUpdateUndoRedoStack = (canUndo: boolean, canRedo: boolean) => {
+    setCanUndo(canUndo);
+    setCanRedo(canRedo);
+  };
+
   const resetVariables = () => {
     internalSegmentsTracker = [];
     wordWasClicked = false;
@@ -692,6 +705,8 @@ export function EditorPage() {
     setSegments([]);
     setPlaybackTime(0);
     setCanPlayAudio(false);
+    setCanUndo(false);
+    setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
     setCurrentlyPlayingWordPlayerSegment(undefined);
     setSegmentSplitTimeBoundary(undefined);
@@ -779,11 +794,11 @@ export function EditorPage() {
                 onReady={setEditorReady}
                 popupsOpen={editorOptionsVisible}
                 debugMode={debugMode}
-                playbackTime={playbackTime}
                 onPopupToggle={setEditorOptionsVisible}
                 wordConfidenceThreshold={wordConfidenceThreshold}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
+                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
                 updateSegment={submitSegmentUpdate}
                 updateSegmentTime={submitSegmentTimeUpdate}
