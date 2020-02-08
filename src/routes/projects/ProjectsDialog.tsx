@@ -37,6 +37,9 @@ export interface CheckedProjectsById {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
     card: {
       minWidth: 450,
     },
@@ -282,6 +285,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       disableEscapeKeyDown={projectsLoading}
       open={open}
       onClose={handleClose}
+      className={createOpen ? classes.hidden : undefined}
       aria-labelledby="projects-dialog"
     >
       <DialogContent>
