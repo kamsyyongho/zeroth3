@@ -9,6 +9,7 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import React from 'react';
 import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { ICONS } from '../../../theme/icons';
 import { Segment, Time } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 import { SplitTimePickerRootProps } from '../EditorPage';
@@ -205,7 +206,7 @@ export function SegmentSplitPicker(props: SegmentSplitPickerProps) {
             <Button
               variant='outlined'
               color='primary'
-              startIcon={<AddIcon />}
+              startIcon={<ICONS.Split />}
               onClick={checkValuesBeforeSubmit}
             >
               {translate('editor.split')}
