@@ -1,5 +1,8 @@
-/** used to set/get the organization id to/from localState */
-export const ORGANIZATION_ID_KEY = 'ORGANIZATION_ID';
+/** used to set/get items to/from localState */
+export enum LOCAL_STORAGE_KEYS {
+  'ORGANIZATION_ID' = 'ORGANIZATION_ID',
+  'PROJECT_ID' = 'PROJECT_ID',
+}
 
 export interface BooleanById {
   [id: string]: boolean;

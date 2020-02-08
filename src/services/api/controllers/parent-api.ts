@@ -1,6 +1,6 @@
 import { ApisauceInstance } from 'apisauce';
 import { noop } from '../../../constants';
-import { ORGANIZATION_ID_KEY } from '../../../types';
+import { LOCAL_STORAGE_KEYS } from '../../../types';
 
 /**
  * Manages all of the parent api instances and methods.
@@ -33,7 +33,9 @@ export class ParentApi {
    * @param path the api path we are making a request to
    */
   private buildPathStringWithOrganizationInfo(path: string): string {
-    const organizationId = localStorage.getItem(ORGANIZATION_ID_KEY);
+    const organizationId = localStorage.getItem(
+      LOCAL_STORAGE_KEYS.ORGANIZATION_ID
+    );
     if (typeof organizationId === 'string') {
       return `/organizations/${organizationId}${path}`;
     } else {

@@ -15,7 +15,7 @@ interface ProjectListProps {
   checkedProjects: CheckedProjectsById;
   setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>;
   onUpdate: (project: Project, isEdit?: boolean) => void;
-  onItemClick: (projectId: string) => void;
+  onItemClick: (project: Project) => void;
   selectedProjectId?: string;
 }
 

@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { Organization } from '../../types';
+import { useEffect, useState } from 'react';
+import { Organization, Project } from '../../types';
+import { LOCAL_STORAGE_KEYS } from '../../types/misc.types';
 
 export interface GlobalState {
   organizations?: Organization[];
+  currentOrganization?: Organization;
+  currentProject?: Project;
   uploadQueueEmpty?: boolean;
 }
 
@@ -11,6 +14,7 @@ export interface GlobalState {
  */
 export function useGlobalState() {
   const [state, setState] = useState<GlobalState>({});
+  const { currentProject, currentOrganization } = state;
 
   /**
    * updates the current state values with new new state
@@ -34,6 +38,21 @@ export function useGlobalState() {
     });
     setState(newState);
   }
+
+  useEffect(() => {
+    if (currentProject?.id) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_ID, currentProject.id);
+    }
+  }, [currentProject]);
+
+  useEffect(() => {
+    if (currentOrganization?.id) {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEYS.ORGANIZATION_ID,
+        currentOrganization.id
+      );
+    }
+  }, [currentOrganization]);
 
   return { globalState: state, setGlobalState, deleteStateValues };
 }

@@ -28,7 +28,7 @@ interface ProjectListItemProps {
   canModify: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
-  onItemClick: (projectId: string) => void;
+  onItemClick: (project: Project) => void;
   handleEditOpen: (projectId: string) => void;
   handleEditClose: (projectId: string) => void;
   handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void;
@@ -59,7 +59,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
 
   const validDate = new Date(project.validFrom);
 
-  const onClick = () => onItemClick(project.id);
+  const onClick = () => onItemClick(project);
 
   return (<React.Fragment key={project.id}>
     <ProjectDialog

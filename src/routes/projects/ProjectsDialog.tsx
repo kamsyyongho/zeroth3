@@ -15,10 +15,11 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
+import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
@@ -54,18 +55,19 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const { open, onClose } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { setGlobalState } = React.useContext(GlobalStateContext);
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
-  const [initialLoad, setInitialLoad] = React.useState(false);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [searching, setSearching] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
-  const [selectedProjectId, setSelectedProjectId] = React.useState<string | undefined>();
+  const [selectedProject, setSelectedProject] = React.useState<Project | undefined>();
 
   const classes = useStyles();
   const theme = useTheme();
@@ -75,7 +77,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const handleClose = () => {
-    setSelectedProjectId(undefined);
+    setSelectedProject(undefined);
     setfilteredProjects([]);
     setSearching(false);
     onClose();
@@ -84,12 +86,10 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const handleCreateOpen = () => setCreateOpen(true);
   const handleCreateClose = () => setCreateOpen(false);
 
-  const handleProjectClick = (projectId: string) => {
-    if (projectId === selectedProjectId) {
-      setSelectedProjectId(undefined);
-    } else {
-      setSelectedProjectId(projectId);
-    }
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    history.push(`${PATHS.project.function && PATHS.project.function(project.id as string)}`);
+    handleClose();
   };
 
   const getProjects = async () => {
@@ -111,11 +111,30 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-    if (open && (!initialLoad || !projects.length)) {
+    if (!projects.length) {
       getProjects();
-      setInitialLoad(true);
     }
-  }, [open]);
+  }, []);
+
+
+  // to get the currently selected organization's info
+  React.useEffect(() => {
+    if (projects && projects.length && user.currentProjectId) {
+      for (let i = 0; i < projects.length; i++) {
+        const project = projects[i];
+        if (project.id === user.currentProjectId) {
+          setSelectedProject(project);
+          break;
+        }
+      }
+    }
+  }, [projects]);
+
+  React.useEffect(() => {
+    if (selectedProject) {
+      setGlobalState({ currentProject: selectedProject });
+    }
+  }, [selectedProject]);
 
 
   let projectsToDelete: string[] = [];
@@ -288,7 +307,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
                 checkedProjects={checkedProjects}
                 setCheckedProjects={setCheckedProjects}
                 onUpdate={handleProjectListUpdate}
-                selectedProjectId={selectedProjectId}
+                selectedProjectId={selectedProject?.id}
                 onItemClick={handleProjectClick}
               />
             }
@@ -315,9 +334,9 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           onClick={handleClose}
           color="primary"
           variant='outlined'
-          disabled={selectedProjectId === undefined}
+          disabled={selectedProject?.id === undefined}
           component={Link}
-          to={`${PATHS.project.function && PATHS.project.function(selectedProjectId as string)}`}
+          to={`${PATHS.project.function && PATHS.project.function(selectedProject?.id as string)}`}
         >
           {translate('common.open')}
         </Button>
