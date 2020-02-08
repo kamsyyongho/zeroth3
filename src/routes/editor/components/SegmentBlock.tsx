@@ -145,16 +145,25 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       <VisibilitySensor
         offset={DEFAULT_OFFSET}
       >
-        {({ isVisible }) =>
-          <Tooltip
+        {({ isVisible }) => {
+          let isOpen = false;
+          let title: React.ReactNode = '';
+          if (isVisible) {
+            isOpen = showPopups;
+            if (displayTextChangedHover) {
+              title = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
+            }
+          }
+          return (<Tooltip
             placement='right-start'
-            title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
-            open={showPopups && isVisible}
+            title={title}
+            open={isOpen}
             arrow={false}
             classes={{ tooltip: classes.tooltipContent }}
           >
             {speakerButton}
-          </Tooltip>
+          </Tooltip>);
+        }
         }
       </VisibilitySensor>
     </Grid>

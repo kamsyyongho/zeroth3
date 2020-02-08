@@ -5,15 +5,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import CancelIcon from '@material-ui/icons/Cancel';
-import EditIcon from '@material-ui/icons/Edit';
+import DoneIcon from '@material-ui/icons/Done';
 import RemoveIcon from '@material-ui/icons/Remove';
 import React from 'react';
 import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, Time, Word } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
-import { TimePickerRootProps } from '../EditorPage';
 import { PLAYER_SEGMENT_IDS } from '../../shared/AudioPlayer';
+import { TimePickerRootProps } from '../EditorPage';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -228,7 +228,7 @@ export function SegmentTimePicker(props: SegmentTimePickerProps) {
             <Button
               variant='outlined'
               color='primary'
-              startIcon={<EditIcon />}
+              startIcon={<DoneIcon />}
               onClick={() => handleCreate()}
             >
               {translate('common.edit')}
