@@ -43,8 +43,8 @@ const customTheme = {
     highlight: pink.A200,
     LowConfidence: '#ffe190',
     LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2%)`,
-    entity: grey[300],
-    entityGradient: `linear-gradient(to right, #000 0%, ${grey[300]} 2%)`,
+    entity: grey[200],
+    entityGradient: `linear-gradient(to right, #000 0%, ${grey[200]} 2%)`,
     changes: green[400],
   },
   audioPlayer: {
