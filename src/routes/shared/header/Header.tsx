@@ -67,7 +67,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organizations, currentProject, uploadQueueEmpty } = globalState;
+  const { currentOrganization, organizations, currentProject, uploadQueueEmpty } = globalState;
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -187,6 +187,15 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     }
   }, [currentProject, uploadQueueEmpty]);
 
+  // to close any showing notifications
+  React.useEffect(() => {
+    closeSnackbar(QUEUE_NOTIFICATION_KEY);
+  }, [currentProject]);
+
+  // to reset projects and project list
+  React.useEffect(() => {
+    setGlobalState({ currentProject: undefined });
+  }, [currentOrganization]);
 
   // to show a notification when the organization name should be changed
   React.useEffect(() => {

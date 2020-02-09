@@ -59,7 +59,9 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { user, hasPermission } = React.useContext(KeycloakContext);
-  const { setGlobalState } = React.useContext(GlobalStateContext);
+  const { currentProjectId } = user;
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const { currentOrganization } = globalState;
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = React.useState<Project[]>([]);
@@ -80,7 +82,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const handleClose = () => {
-    setSelectedProject(undefined);
     setfilteredProjects([]);
     setSearching(false);
     onClose();
@@ -90,9 +91,14 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const handleCreateClose = () => setCreateOpen(false);
 
   const handleProjectClick = (project: Project) => {
-    setSelectedProject(project);
-    history.push(`${PATHS.project.function && PATHS.project.function(project.id as string)}`);
-    handleClose();
+    if (project) {
+      setSelectedProject(project);
+      setGlobalState({ currentProject: project });
+      setTimeout(() => {
+        history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+        handleClose();
+      }, 0);
+    }
   };
 
   const getProjects = async () => {
@@ -114,30 +120,25 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-    if (!projects.length) {
+    if (currentOrganization && !projects.length) {
       getProjects();
     }
-  }, []);
+  }, [currentOrganization]);
 
 
   // to get the currently selected organization's info
   React.useEffect(() => {
-    if (projects && projects.length && user.currentProjectId) {
+    if (projects && projects.length && currentProjectId) {
       for (let i = 0; i < projects.length; i++) {
         const project = projects[i];
-        if (project.id === user.currentProjectId) {
+        if (project.id === currentProjectId) {
           setSelectedProject(project);
+          setGlobalState({ currentProject: project });
           break;
         }
       }
     }
   }, [projects]);
-
-  React.useEffect(() => {
-    if (selectedProject) {
-      setGlobalState({ currentProject: selectedProject });
-    }
-  }, [selectedProject]);
 
 
   let projectsToDelete: string[] = [];
