@@ -7,6 +7,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LaunchIcon from '@material-ui/icons/Launch';
@@ -343,6 +344,7 @@ export function TDPTable(props: TDPTableProps) {
         active={orderBy === column.id as TDPTableColumns}
         direction={orderDirection}
         onClick={() => changeSort(column.id as TDPTableColumns)}
+        IconComponent={ArrowDropDownIcon}
       >
         {column.render('Header')}
       </TableSortLabel>
