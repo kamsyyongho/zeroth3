@@ -14,9 +14,22 @@ export interface Path {
   title?: string;
   Icon?: (props: SvgIconProps) => JSX.Element;
   function?: (param: string, ...restParams: string[]) => string;
+  hasDivider?: boolean;
 }
 
-export const PATHS: { [x: string]: Path } = {
+interface Paths {
+  [x: string]: Path;
+  home: Path;
+  profile: Path;
+  IAM: Path;
+  project: Path;
+  modelConfig: Path;
+  models: Path;
+  modelTraining: Path;
+  editor: Path;
+}
+
+export const PATHS: { [x: string]: Path; } = {
   home: {
     to: '/',
     title: 'home',
@@ -43,9 +56,15 @@ export const PATHS: { [x: string]: Path } = {
     title: 'models',
     Icon: props => <ICONS.Models {...props} />,
   },
+  modelTraining: {
+    to: '/training',
+    title: 'modelTraining',
+    Icon: props => <ICONS.Training {...props} />,
+  },
   editor: {
     to: '/editor',
     title: 'editor',
     Icon: props => <ICONS.Editor {...props} />,
+    hasDivider: true,
   },
 };

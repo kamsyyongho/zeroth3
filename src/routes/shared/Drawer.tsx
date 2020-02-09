@@ -1,3 +1,4 @@
+import { Divider } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -21,6 +22,10 @@ const useStyles = makeStyles((theme) =>
       paddingLeft: 0,
       paddingRight: 0,
       paddingTop: 75,
+    },
+    divider: {
+      marginLeft: '10%',
+      marginRight: '10%'
     },
   }),
 );
@@ -60,7 +65,7 @@ export const AppDrawer = (props: AppDrawerProps) => {
 
     if (shouldRender) {
       const path = PATHS[key];
-      const { to, title, Icon } = path;
+      const { to, title, Icon, hasDivider } = path;
       if (title && to) {
         let isCurrentPath = false;
         if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
@@ -68,12 +73,16 @@ export const AppDrawer = (props: AppDrawerProps) => {
         } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
           isCurrentPath = true;
         }
-        drawerItems.push(<ListItem button key={index} onClick={() => navigateToPage(to, isCurrentPath)} >
-          {Icon && <ListItemIcon >
-            <Icon color={isCurrentPath ? 'primary' : undefined} />
-          </ListItemIcon>}
-          <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
-        </ListItem>);
+
+        drawerItems.push(<React.Fragment key={index} >
+          {hasDivider && <Divider className={classes.divider} />}
+          <ListItem button onClick={() => navigateToPage(to, isCurrentPath)} >
+            {Icon && <ListItemIcon >
+              <Icon color={isCurrentPath ? 'primary' : undefined} />
+            </ListItemIcon>}
+            <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
+          </ListItem>
+        </React.Fragment>);
       }
     }
   });
