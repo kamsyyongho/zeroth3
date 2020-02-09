@@ -23,7 +23,7 @@ interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
   email?: string;
   name?: string;
   preferred_username?: string;
-  organization_ids?: string[];
+  organization_id?: string[];
 }
 
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
@@ -87,7 +87,7 @@ export const useKeycloak = () => {
     }
     if (keycloak?.tokenParsed) {
       user = {
-        organizationIds: keycloak.tokenParsed.organization_ids,
+        organizationIds: keycloak.tokenParsed.organization_id,
         familyName: keycloak.tokenParsed.family_name,
         givenName: keycloak.tokenParsed.given_name,
         email: keycloak.tokenParsed.email,
