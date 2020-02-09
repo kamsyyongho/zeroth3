@@ -144,6 +144,15 @@ export function TDPTable(props: TDPTableProps) {
     return (modelConfigsById[id] && modelConfigsById[id].name) || '';
   };
 
+  const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => canModify && !onlyAssignedData && <IconButton
+    color='primary'
+    size='medium'
+    aria-label="open"
+    onClick={() => handleRowClick(cellData.cell.row.original)}
+  >
+    <LaunchIcon />
+  </IconButton>;
+
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
@@ -162,14 +171,6 @@ export function TDPTable(props: TDPTableProps) {
       alignContent='center'
       alignItems='center'
       justify='flex-start'>
-      {canModify && !onlyAssignedData && <IconButton
-        color='primary'
-        size='medium'
-        aria-label="open"
-        onClick={() => handleRowClick(cellData.cell.row.original)}
-      >
-        <LaunchIcon />
-      </IconButton>}
       <TruncateMarkup lines={numberOfLines}>
         <Typography style={transcriptStyle}>{transcript}</Typography>
       </TruncateMarkup>
