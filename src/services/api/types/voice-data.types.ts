@@ -40,6 +40,12 @@ export interface SearchDataRequest {
   page?: number;
   status?: CONTENT_STATUS;
   transcript?: string;
+  /**
+   * in the form of `field.order` with order being `desc` or `asc`
+   * - the field values are `VoiceData` keys
+   * @example `sort-by: startAt.desc`
+   */
+  'sort-by'?: string;
 }
 
 export interface SplitSegmentQuery {
@@ -48,7 +54,7 @@ export interface SplitSegmentQuery {
 
 export interface SplitSegmentByTimeQuery {
   /** time within the segment */
-  'time': number;
+  time: number;
   'word-split-index': number;
 }
 

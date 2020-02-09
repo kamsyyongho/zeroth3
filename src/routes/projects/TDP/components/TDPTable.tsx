@@ -1,4 +1,4 @@
-import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { TableFooter, TablePagination, TableSortLabel, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -22,7 +22,7 @@ import { NavigationPropsContext } from '../../../../hooks/navigation-props/Navig
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { FilterParams, PATHS, VoiceData, VoiceDataResults } from '../../../../types';
+import { FilterParams, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { BooleanById } from '../../../../types/misc.types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
@@ -31,7 +31,6 @@ import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
 
-const TRANSCRIPT_ACCESSOR = 'transcript';
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
 
@@ -104,11 +103,31 @@ export function TDPTable(props: TDPTableProps) {
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [expandedRowsByIndex, setExpandedRowsByIndex] = React.useState<BooleanById>({});
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
+  const [sortBy, setSortBy] = React.useState<string | undefined>();
+  const [orderDirection, setOrderDirection] = React.useState<ORDER | undefined>();
+  const [orderBy, setOrderBy] = React.useState<TDPTableColumns | undefined>();
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+
+  const changeSort = (sortColumn: TDPTableColumns) => {
+    let newOrderDirection = orderDirection;
+    let newOrderBy = orderBy;
+    if (orderBy === sortColumn) {
+      newOrderDirection = orderDirection === ORDER.asc ? ORDER.desc : ORDER.asc;
+    } else {
+      newOrderDirection = ORDER.asc;
+      newOrderBy = sortColumn;
+    }
+    const newSortBy = `${newOrderBy}.${newOrderDirection}`;
+    setOrderDirection(newOrderDirection);
+    setOrderBy(newOrderBy);
+    setSortBy(newSortBy);
+    // to close any expanded rows
+    setExpandedRowsByIndex({});
+  };
 
   /**
    * navigates to the the editor
@@ -210,32 +229,32 @@ export function TDPTable(props: TDPTableProps) {
     () => [
       {
         Header: translate('forms.transcript'),
-        accessor: TRANSCRIPT_ACCESSOR,
+        accessor: TDPTableColumns['transcript'],
         Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
       },
       {
         Header: translate('modelConfig.header'),
-        accessor: 'modelConfigId',
+        accessor: TDPTableColumns['modelConfigId'],
         Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
       },
       {
         Header: translate('common.length'),
-        accessor: 'length',
+        accessor: TDPTableColumns['length'],
         Cell: (cellData: CellProps<VoiceData>) => formatSecondsDuration(cellData.cell.value),
       },
       {
         Header: translate('common.date'),
-        accessor: 'startAt',
+        accessor: TDPTableColumns['startAt'],
         Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
       {
         Header: translate('forms.status'),
-        accessor: 'status',
+        accessor: TDPTableColumns['status'],
         Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
       {
         Header: translate('TDP.highRiskSegments'),
-        accessor: 'highRiskSegments',
+        accessor: TDPTableColumns['highRiskSegments'],
         Cell: (cellData: CellProps<VoiceData>) => renderHighRiskSegmentsAndExpandButton(cellData),
       },
     ],
@@ -312,14 +331,20 @@ export function TDPTable(props: TDPTableProps) {
     if (initialLoad) {
       setInitialLoad(false);
     } else {
-      getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize });
+      getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
     }
-  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions]);
+  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
     <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-      {column.render('Header')}
+      <TableSortLabel
+        active={orderBy === column.id as TDPTableColumns}
+        direction={orderDirection}
+        onClick={() => changeSort(column.id as TDPTableColumns)}
+      >
+        {column.render('Header')}
+      </TableSortLabel>
     </TableCell>);
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
@@ -357,7 +382,7 @@ export function TDPTable(props: TDPTableProps) {
             className={classes.tableRow}
           >
             {row.cells.map((cell, cellIndex) => {
-              const isTranscript = cell.column.id === TRANSCRIPT_ACCESSOR;
+              const isTranscript = cell.column.id === TDPTableColumns['transcript'];
               const isExpandedTranscript = expanded && isTranscript;
               let className = classes.tableBorder;
               let style: React.CSSProperties = {};

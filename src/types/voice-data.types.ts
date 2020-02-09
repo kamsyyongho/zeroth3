@@ -72,3 +72,12 @@ export interface WordAlignment {
   start: number;
   word: string;
 }
+
+export enum TDPTableColumns {
+  'transcript' = 'transcript',
+  'modelConfigId' = 'modelConfigId',
+  'length' = 'length',
+  'startAt' = 'startAt',
+  'status' = 'status',
+  'highRiskSegments' = 'highRiskSegments',
+}

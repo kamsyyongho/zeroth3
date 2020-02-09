@@ -1,3 +1,8 @@
+export enum ORDER {
+  'asc' = 'asc',
+  'desc' = 'desc',
+}
+
 export interface Sort {
   empty: boolean;
   sorted: boolean;
