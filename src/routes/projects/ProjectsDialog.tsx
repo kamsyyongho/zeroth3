@@ -24,7 +24,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
 import { deleteProjectResult } from '../../services/api/types/projects.types';
-import { PATHS, Project, SNACKBAR_VARIANTS } from '../../types';
+import { LOCAL_STORAGE_KEYS, PATHS, Project, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { SearchBar } from '../shared/SearchBar';
@@ -134,9 +134,11 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         if (project.id === currentProjectId) {
           setSelectedProject(project);
           setGlobalState({ currentProject: project });
-          break;
+          return;
         }
       }
+      // if we didn't find any matching projects
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
     }
   }, [projects]);
 

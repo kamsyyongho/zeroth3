@@ -15,7 +15,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { ICONS } from '../../../theme/icons';
 import { IMAGES } from '../../../theme/images';
-import { Organization, PATHS } from '../../../types';
+import { LOCAL_STORAGE_KEYS, Organization, PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
@@ -195,6 +195,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   // to reset projects and project list
   React.useEffect(() => {
     setGlobalState({ currentProject: undefined });
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
   }, [currentOrganization]);
 
   // to show a notification when the organization name should be changed
