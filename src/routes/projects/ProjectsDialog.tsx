@@ -15,7 +15,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
 import React from 'react';
 import { BulletList } from 'react-content-loader';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
@@ -334,16 +334,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           color="primary"
         >
           {translate('common.cancel')}
-        </Button>
-        <Button
-          onClick={handleClose}
-          color="primary"
-          variant='outlined'
-          disabled={selectedProject?.id === undefined}
-          component={Link}
-          to={`${PATHS.project.function && PATHS.project.function(selectedProject?.id as string)}`}
-        >
-          {translate('common.open')}
         </Button>
       </DialogActions>
     </Dialog>
