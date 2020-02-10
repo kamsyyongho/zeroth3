@@ -65,7 +65,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     name: yup.string().required(requiredTranslationText).trim(),
     selectedTopGraphId: yup.string().typeError(numberText).nullable().required(requiredTranslationText),
     isPublic: yup.boolean(),
-    isImmutable: yup.boolean(),
+    isMutable: yup.boolean(),
     shouldUploadFile: yup.boolean(),
     files: yup.array<File>().when('shouldUploadFile', {
       is: true,
@@ -84,7 +84,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     text: "",
     selectedTopGraphId: (topGraphs && topGraphs[0] && topGraphs[0].id) || null,
     isPublic: true,
-    isImmutable: false,
+    isMutable: false,
     shouldUploadFile: false,
     files: [],
   };
@@ -105,16 +105,16 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const { name, text, selectedTopGraphId, isImmutable, isPublic } = values;
+      const { name, text, selectedTopGraphId, isMutable, isPublic } = values;
       let response: postSubGraphResult;
       if (isEdit && subGraphToEdit) {
-        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), selectedTopGraphId, isPublic, isImmutable);
+        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
       } else {
         if (shouldUploadFile) {
           // only send the first file, because our limit is 1 file only
-          response = await api.models.uploadSubGraphFile(name.trim(), files[0], selectedTopGraphId, isPublic, isImmutable);
+          response = await api.models.uploadSubGraphFile(name.trim(), files[0], selectedTopGraphId, isPublic, !isMutable);
         } else {
-          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, isPublic, isImmutable);
+          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
         }
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -174,7 +174,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                 />
                 <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
                 <Field name='isPublic' component={SwitchFormField} label={translate("forms.privacySetting")} text={(value: boolean) => translate(value ? "forms.private" : "forms.public")} errorOverride={isError} />
-                <Field name='isImmutable' component={SwitchFormField} label={translate("forms.mutability")} text={(value: boolean) => translate(value ? "forms.immutable" : "forms.mutable")} errorOverride={isError} />
+                <Field name='isMutable' component={SwitchFormField} label={translate("forms.mutability")} text={(value: boolean) => translate(value ? "forms.mutable" : "forms.immutable")} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
