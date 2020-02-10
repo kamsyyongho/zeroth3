@@ -33,8 +33,10 @@ const useStyles = makeStyles((theme) =>
       marginRight: theme.spacing(1),
     },
     infoBox: {
-      margin: theme.spacing(1),
-      minHeight: 175,
+      minHeight: 180,
+    },
+    boxSpacing: {
+      marginRight: theme.spacing(1),
     },
     apiHeading: {
       minWidth: 75,
@@ -152,8 +154,8 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       component={Box}
       border={1}
       borderColor={theme.table.border}
-      sm={5}
-      className={classes.infoBox}
+      xs={5}
+      className={clsx(classes.infoBox, classes.boxSpacing)}
     >
       <Grid
         container
@@ -206,7 +208,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       component={Box}
       border={1}
       borderColor={theme.table.border}
-      sm={5}
+      xs={5}
       className={classes.infoBox}
     >
       <Grid
