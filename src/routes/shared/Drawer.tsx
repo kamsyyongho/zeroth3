@@ -8,6 +8,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PERMISSIONS } from '../../constants';
+import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { PATHS } from '../../types';
@@ -27,6 +28,9 @@ const useStyles = makeStyles((theme) =>
       marginLeft: '10%',
       marginRight: '10%'
     },
+    tooltip: {
+      marginLeft: 275,
+    },
   }),
 );
 
@@ -39,6 +43,8 @@ export const AppDrawer = (props: AppDrawerProps) => {
   const { open, setOpen } = props;
   const { hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
+  const { globalState } = React.useContext(GlobalStateContext);
+  const { currentProject } = globalState;
   const location = useLocation();
   const history = useHistory();
   const classes = useStyles();
@@ -59,7 +65,9 @@ export const AppDrawer = (props: AppDrawerProps) => {
   Object.keys(PATHS).forEach((key, index) => {
     // to only display links for pages we are allowed to go to
     let shouldRender = true;
-    if ((key === 'models' && !canSeeModels) || (key === 'IAM' && !canSeeTranscribers && !canSeeUsers)) {
+    if ((key === 'models' && !canSeeModels) ||
+      (key === 'modelTraning' && !canSeeModels) ||
+      (key === 'IAM' && !canSeeTranscribers && !canSeeUsers)) {
       shouldRender = false;
     }
 
@@ -73,16 +81,21 @@ export const AppDrawer = (props: AppDrawerProps) => {
         } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
           isCurrentPath = true;
         }
+        let needsSelectedProject = false;
+        if (!currentProject) {
+          needsSelectedProject = key === 'modelTraining';
+        }
 
-        drawerItems.push(<React.Fragment key={index} >
-          {hasDivider && <Divider className={classes.divider} />}
-          <ListItem button onClick={() => navigateToPage(to, isCurrentPath)} >
-            {Icon && <ListItemIcon >
-              <Icon color={isCurrentPath ? 'primary' : undefined} />
-            </ListItemIcon>}
-            <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
-          </ListItem>
-        </React.Fragment>);
+        drawerItems.push(
+          <React.Fragment key={index} >
+            {hasDivider && <Divider className={classes.divider} />}
+            <ListItem button disabled={needsSelectedProject} onClick={() => navigateToPage(to, isCurrentPath)} >
+              {Icon && <ListItemIcon >
+                <Icon color={isCurrentPath ? 'primary' : undefined} />
+              </ListItemIcon>}
+              <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
+            </ListItem>
+          </React.Fragment>);
       }
     }
   });
