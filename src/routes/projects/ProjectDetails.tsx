@@ -6,13 +6,16 @@ import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { ProblemKind } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
-import { ModelConfig, PATHS, Project } from '../../types';
+import { AcousticModel, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
+import { ModelConfigDialog } from '../model-config/ModelConfigDialog';
 import { NotFound } from '../shared/NotFound';
 import { ProjectTableTabs } from './ProjectTableTabs';
 
@@ -67,16 +70,32 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const history = useHistory();
+  const { hasPermission } = React.useContext(KeycloakContext);
   const { setProps } = React.useContext(NavigationPropsContext);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
-  const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [project, setProject] = React.useState<Project | undefined>();
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
+  const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
+  const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
+  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
+  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
+  const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
+  const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
+  const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
+  const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
+  const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
+
+  const openDialog = () => setDialogOpen(true);
+  const closeDialog = () => setDialogOpen(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
+
+  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   /**
    * navigates to the the model config page
@@ -131,6 +150,70 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setModelConfigsLoading(false);
       }
     };
+    const getTopGraphs = async () => {
+      if (api?.models) {
+        const response = await api.models.getTopGraphs();
+        if (response.kind === 'ok') {
+          setTopGraphs(response.topGraphs);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getTopGraphs - failed to get topgraphs`,
+            value: response,
+            important: true,
+          });
+        }
+        setTopGraphsLoading(false);
+      }
+    };
+    const getSubGraphs = async () => {
+      if (api?.models) {
+        const response = await api.models.getSubGraphs();
+        if (response.kind === 'ok') {
+          setSubGraphs(response.subGraphs);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getSubGraphs - failed to get subgraphs`,
+            value: response,
+            important: true,
+          });
+        }
+        setSubGraphsLoading(false);
+      }
+    };
+    const getLanguageModels = async () => {
+      if (api?.models) {
+        const response = await api.models.getLanguageModels();
+        if (response.kind === 'ok') {
+          setLanguageModels(response.languageModels);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getLanguageModels - failed to get language models`,
+            value: response,
+            important: true,
+          });
+        }
+        setLanguageModelsLoading(false);
+      }
+    };
+    const getAcousticModels = async () => {
+      if (api?.models) {
+        const response = await api.models.getAcousticModels();
+        if (response.kind === 'ok') {
+          setAcousticModels(response.acousticModels);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getAcousticModels - failed to get acoustic models`,
+            value: response,
+            important: true,
+          });
+        }
+        setAcousticModelsLoading(false);
+      }
+    };
     if (!projectId) {
       setIsValidId(false);
       setProjectLoading(false);
@@ -144,7 +227,35 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getProject();
       getModelConfigs();
     }
+    if (canModify) {
+      getTopGraphs();
+      getSubGraphs();
+      getLanguageModels();
+      getAcousticModels();
+    }
   }, [api, projectId]);
+
+
+  const handleModelConfigUpdate = (modelConfig: ModelConfig) => {
+    setModelConfigs(prevConfigs => {
+      prevConfigs.push(modelConfig);
+      return prevConfigs;
+    });
+  };
+
+  const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
+    setSubGraphs((prevSubGraphs) => {
+      prevSubGraphs.push(newSubGraph);
+      return prevSubGraphs;
+    });
+  };
+
+  const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
+    setLanguageModels((prevLanguageModels) => {
+      prevLanguageModels.push(newLanguageModel);
+      return prevLanguageModels;
+    });
+  };
 
   const renderApiInfo = () => {
     return (<Grid
@@ -259,6 +370,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           <Button
             color='primary'
             variant='outlined'
+            onClick={openDialog}
           >
             {translate('modelConfig.create')}
           </Button>
@@ -291,7 +403,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             spacing={2}
           >
             {renderApiInfo()}
-            {renderModelConfigArea()}
+            {canModify && renderModelConfigArea()}
           </Grid>
         }
       </CardContent>
@@ -303,7 +415,23 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {projectLoading ? <BulletList /> :
         renderContent()
       }
-      {project && isValidProject && <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />}
+      {project && isValidProject &&
+        <>
+          <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />
+          <ModelConfigDialog
+            projectId={projectId}
+            open={dialogOpen}
+            onClose={closeDialog}
+            onSuccess={handleModelConfigUpdate}
+            topGraphs={topGraphs}
+            subGraphs={subGraphs}
+            languageModels={languageModels}
+            acousticModels={acousticModels}
+            handleSubGraphListUpdate={handleSubGraphListUpdate}
+            handleLanguageModelCreate={handleLanguageModelCreate}
+          />
+        </>
+      }
     </Container >
   );
-}
+};
