@@ -20,8 +20,8 @@ import { TextFormField } from '../shared/form-fields/TextFormField';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    cardContent: {
-      maxWidth: 700,
+    cardAction: {
+      justifyContent: 'flex-end',
     },
     switchSpacing: {
       marginTop: theme.spacing(2),
@@ -86,7 +86,6 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
       setLoading(true);
       setIsError(false);
       const response = await api.models.transferLearning(name.trim(), selectedAcousticModelId, selectedDataSetId, selectedTrainingMethod as TRAINING_METHODS, shared);
-
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -124,7 +123,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
           transcriberHelperText = translate('SET.numberTranscribers', { count: dataSetsById[formikProps.values.selectedDataSetId].transcribers.length });
         }
         return (<>
-          <CardContent className={classes.cardContent} >
+          <CardContent >
             <Form>
               <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
               <Field
@@ -163,7 +162,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
               </div>
             </Form>
           </CardContent>
-          <CardActions>
+          <CardActions className={classes.cardAction} >
             <Button
               disabled={!formikProps.isValid || isError || loading}
               onClick={formikProps.submitForm}
