@@ -241,6 +241,8 @@ export const en: ResourceLanguage = {
       thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       noResults: 'No model configurations',
+      manage: 'Manage configuration',
+      helpText: 'Please create a model configuration before uploading data.',
     },
     models: {
       header: 'Model Management',

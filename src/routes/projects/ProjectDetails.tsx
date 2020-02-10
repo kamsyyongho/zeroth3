@@ -1,6 +1,7 @@
-import { Card, CardContent, CardHeader, Container, TextField, Typography } from '@material-ui/core';
+import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
@@ -9,6 +10,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { ProblemKind } from '../../services/api/types';
+import { CustomTheme } from '../../theme/index';
 import { ModelConfig, PATHS, Project } from '../../types';
 import log from '../../util/log/logger';
 import { NotFound } from '../shared/NotFound';
@@ -30,6 +32,31 @@ const useStyles = makeStyles((theme) =>
       marginLeft: theme.spacing(1),
       marginRight: theme.spacing(1),
     },
+    infoBox: {
+      margin: theme.spacing(1),
+      minHeight: 175,
+    },
+    apiHeading: {
+      minWidth: 75,
+      margin: theme.spacing(1),
+    },
+    apiInfo: {
+      minWidth: 250,
+      backgroundColor: theme.palette.grey[200],
+    },
+    modelConfigTextHeading: {
+      fontFamily: 'Muli',
+      fontWeight: 'bold',
+      color: theme.palette.primary.main,
+    },
+    modelConfigTextContent: {
+      fontFamily: 'Lato',
+      fontWeight: 600,
+      fontSize: 14,
+    },
+    modelConfigTextGrid: {
+      margin: theme.spacing(1),
+    },
   }),
 );
 
@@ -47,12 +74,14 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
 
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
 
   /**
    * navigates to the the model config page
    * - passes the project to prevent the need for unnecessary loads
    */
-  const handleModelConfigClick = (project: Project) => {
+  const handleModelConfigClick = () => {
+    if (!project) return;
     // to store props that will be used on the next page
     const propsToSet = { project };
     setProps(propsToSet);
@@ -115,6 +144,128 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     }
   }, [api, projectId]);
 
+  const renderApiInfo = () => {
+    return (<Grid
+      container
+      item
+      direction='column'
+      component={Box}
+      border={1}
+      borderColor={theme.table.border}
+      sm={5}
+      className={classes.infoBox}
+    >
+      <Grid
+        container
+        item
+        direction='row'
+        justify='flex-start'
+        alignItems='center'
+        alignContent='center'
+      >
+        <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
+        <TextField
+          id="api-key"
+          defaultValue={project?.apiKey ?? ""}
+          className={clsx(classes.textField, classes.apiInfo)}
+          margin="normal"
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+        />
+      </Grid>
+      <Grid
+        container
+        item
+        justify='flex-start'
+        alignItems='center'
+        alignContent='center'
+      >
+        <Typography align='left' className={classes.apiHeading} >{translate('projects.apiSecret')}</Typography>
+        <TextField
+          id="api-secret"
+          defaultValue={project?.apiSecret ?? ""}
+          className={clsx(classes.textField, classes.apiInfo)}
+          margin="normal"
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+        />
+      </Grid>
+    </Grid>
+    );
+  };
+
+  const renderModelConfigArea = () => {
+    return (<Grid
+      container
+      item
+      direction='row'
+      component={Box}
+      border={1}
+      borderColor={theme.table.border}
+      sm={5}
+      className={classes.infoBox}
+    >
+      <Grid
+        container
+        item
+        direction='column'
+        justify='flex-start'
+        alignItems='flex-start'
+        alignContent='flex-start'
+        xs={6}
+        spacing={1}
+      >
+        <Grid
+          item
+          className={classes.modelConfigTextGrid}
+        >
+          <Typography align='left' className={classes.modelConfigTextHeading} >{translate('modelConfig.header')}</Typography>
+        </Grid>
+        <Grid
+          item
+          className={classes.modelConfigTextGrid}
+        >
+          <Typography align='left' className={classes.modelConfigTextContent} >{translate('modelConfig.helpText')}</Typography>
+        </Grid>
+      </Grid>
+      <Grid
+        container
+        item
+        direction='column'
+        justify='center'
+        alignItems='center'
+        alignContent='center'
+        xs={6}
+        spacing={2}
+      >
+        <Grid item
+        >
+          <Button
+            color='primary'
+            variant='contained'
+            onClick={handleModelConfigClick}
+          >
+            {translate('modelConfig.manage')}
+          </Button>
+        </Grid>
+        <Grid item
+        >
+          <Button
+            color='primary'
+            variant='outlined'
+          >
+            {translate('modelConfig.create')}
+          </Button>
+        </Grid>
+      </Grid>
+    </Grid >
+    );
+  };
+
   const renderContent = () => {
     if (!isValidId) {
       return <NotFound text={translate('common.invalidId')} />;
@@ -125,40 +276,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
 
     return (<Card elevation={0} className={classes.card} >
       <CardHeader
-        action={<Button
-          onClick={() => handleModelConfigClick(project)}
-          variant="contained"
-          color="primary">
-          {translate('modelConfig.header')}
-        </Button>}
         title={<Typography variant='h2'>{project.name}</Typography>}
       />
       <CardContent className={classes.cardContent} >
         {projectLoading ? <BulletList /> :
-          <>
-            <TextField
-              id="api-key"
-              label={translate('projects.apiKey')}
-              defaultValue={project.apiKey}
-              className={classes.textField}
-              margin="normal"
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="filled"
-            />
-            <TextField
-              id="api-secret"
-              label={translate('projects.apiSecret')}
-              defaultValue={project.apiSecret}
-              className={classes.textField}
-              margin="normal"
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="filled"
-            />
-          </>
+          <Grid
+            container
+            direction='row'
+            justify='center'
+            alignItems='flex-start'
+            alignContent='center'
+            spacing={2}
+          >
+            {renderApiInfo()}
+            {renderModelConfigArea()}
+          </Grid>
         }
       </CardContent>
     </Card>);
