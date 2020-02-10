@@ -53,6 +53,7 @@ export const en: ResourceLanguage = {
       projects: 'Projects',
       models: 'Models',
       editor: 'Editor',
+      modelTraining: 'Model Training',
     },
     menu: {
       login: 'Login',
@@ -159,6 +160,7 @@ export const en: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      noProjectSelected: 'No project selected',
       notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
@@ -187,6 +189,19 @@ export const en: ResourceLanguage = {
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
       addTranscriber: 'Add transcriber',
+    },
+    modelTraining: {
+      header: 'Model Training',
+      model: 'Model',
+      trainingData: 'Training data',
+      trainingMethod: 'Training method',
+      shareSettings: 'Share settings',
+      shared: 'Shared',
+      notShared: 'Not shared',
+      startTraining: 'Start training',
+      methods: {
+        transferLearning: 'Transfer learning',
+      },
     },
     editor: {
       editor: 'Editor',
