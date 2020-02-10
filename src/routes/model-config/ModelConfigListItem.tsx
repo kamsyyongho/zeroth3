@@ -252,7 +252,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                   >
                     {`${translate('forms.sub')}:`}
                   </Typography>
-                  {languageModel.subGraphs.map((subGraph, index) => <Chip key={index}
+                  {languageModel.subGraphs.map((subGraph, index) => <Chip key={index} size='small'
                     label={subGraph.name}
                     className={classes.chip}
                   />)}
