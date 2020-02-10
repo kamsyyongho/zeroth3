@@ -195,7 +195,9 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   // to reset projects and project list
   React.useEffect(() => {
     setGlobalState({ currentProject: undefined });
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+    if (currentOrganization && organization && currentOrganization.id !== organization.id) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+    }
   }, [currentOrganization]);
 
   // to show a notification when the organization name should be changed
