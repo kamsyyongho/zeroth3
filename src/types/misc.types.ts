@@ -12,6 +12,14 @@ export interface BooleanByIndex {
   [index: number]: boolean;
 }
 
+export interface GenericById<T> {
+  [id: string]: T;
+}
+
+export interface GenericByIndex<T> {
+  [id: string]: T;
+}
+
 export enum HUES {
   'red' = 'red',
   'orange' = 'orange',

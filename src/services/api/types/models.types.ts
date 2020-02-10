@@ -1,4 +1,10 @@
-import { AcousticModel, LanguageModel, SubGraph, TopGraph } from '../../../types';
+import {
+  AcousticModel,
+  LanguageModel,
+  SubGraph,
+  TopGraph,
+  TRAINING_METHODS,
+} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -14,6 +20,13 @@ export interface LanguageModelRequest {
   description: string;
   topGraphId: string;
   subGraphIds: string[];
+}
+
+export interface TransferLearningRequest {
+  name: string;
+  dataSetId: string;
+  trainingMethod: TRAINING_METHODS;
+  shared: boolean;
 }
 
 export interface SubGraphRequest {
@@ -73,3 +86,5 @@ export type updateSubGraphResult =
   | GeneralApiProblem;
 
 export type deleteSubGraphResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type transferLearningResult = { kind: 'ok' } | GeneralApiProblem;

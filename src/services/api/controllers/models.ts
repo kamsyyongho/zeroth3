@@ -1,7 +1,34 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { AcousticModel, LanguageModel, SubGraph, TopGraph } from '../../../types';
+import {
+  AcousticModel,
+  LanguageModel,
+  SubGraph,
+  TopGraph,
+  TRAINING_METHODS,
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { AcousticModelEditRequest, deleteLanguageModelResult, deleteSubGraphResult, getAcousticModelsResult, getLanguageModelsResult, getSubGraphsResult, getTopGraphsResult, LanguageModelRequest, postLanguageModelResult, postSubGraphResult, ProblemKind, refreshAndGetAcousticModelsResult, refreshAndGetTopGraphResult, ServerError, SubGraphRequest, updateAcousticModelResult, updateLanguageModelResult, updateSubGraphResult } from '../types';
+import {
+  AcousticModelEditRequest,
+  deleteLanguageModelResult,
+  deleteSubGraphResult,
+  getAcousticModelsResult,
+  getLanguageModelsResult,
+  getSubGraphsResult,
+  getTopGraphsResult,
+  LanguageModelRequest,
+  postLanguageModelResult,
+  postSubGraphResult,
+  ProblemKind,
+  refreshAndGetAcousticModelsResult,
+  refreshAndGetTopGraphResult,
+  ServerError,
+  SubGraphRequest,
+  TransferLearningRequest,
+  transferLearningResult,
+  updateAcousticModelResult,
+  updateLanguageModelResult,
+  updateSubGraphResult,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -13,10 +40,7 @@ export class Models extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param logout parent method coming from keycloak
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
@@ -500,7 +524,7 @@ export class Models extends ParentApi {
     file: File,
     topGraphId: string,
     isPublic: boolean,
-    isImmutable: boolean,
+    isImmutable: boolean
   ): Promise<postSubGraphResult> {
     // compile data
     // needs name
@@ -545,5 +569,50 @@ export class Models extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  /**
+   * Begins training a model based on the selected method
+   * @param name
+   * @param acousticModelId
+   * @param dataSetId
+   * @param trainingMethod
+   * @param shared
+   */
+  async transferLearning(
+    name: string,
+    acousticModelId: string,
+    dataSetId: string,
+    trainingMethod: TRAINING_METHODS,
+    shared: boolean
+  ): Promise<transferLearningResult> {
+    // compile data
+    const request: TransferLearningRequest = {
+      name,
+      dataSetId,
+      trainingMethod,
+      shared,
+    };
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(
+        `/models/acoustic/${acousticModelId}/transfer`
+      ),
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 }

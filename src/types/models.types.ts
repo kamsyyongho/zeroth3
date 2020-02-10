@@ -25,3 +25,11 @@ export interface SubGraph extends TopGraph {
   progress: number;
   topGraphId: string;
 }
+
+export enum TRAINING_METHODS {
+  'transferLearning' = 'transferLearning',
+}
+
+export const TRAINING_METHOD_VALUES: string[] = Object.keys(
+  TRAINING_METHODS
+).map(method => method);

@@ -13,6 +13,7 @@ import "./i18n"; // to immediately initialize i18n
 import { EditorPage } from './routes/editor/EditorPage';
 import { IAM } from './routes/IAM/IAM';
 import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
+import { ModelTraining } from './routes/model-training/ModelTraining';
 import { Models } from './routes/models/Models';
 import { Profile } from './routes/profile/Profile';
 import { ProjectDetails } from './routes/projects/ProjectDetails';
@@ -60,6 +61,7 @@ function App() {
           <Route path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
+          <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
           <Route component={NotFound} />
         </Switch>
       </Router>
