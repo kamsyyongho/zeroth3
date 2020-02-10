@@ -1,6 +1,6 @@
 import { Button, Grid } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 const useStyles = makeStyles((theme) =>

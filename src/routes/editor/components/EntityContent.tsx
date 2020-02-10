@@ -1,7 +1,7 @@
 import { Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import { ContentState, DraftEntityMutability } from 'draft-js';
-import React from 'react';
+import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { ENTITY_TYPE, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
 

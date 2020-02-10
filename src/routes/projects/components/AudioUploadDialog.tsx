@@ -8,11 +8,10 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import BackupIcon from '@material-ui/icons/Backup';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React, { useGlobal } from 'reactn';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
 import { ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
@@ -36,7 +35,7 @@ const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const { open, projectId, modelConfigs, onClose, onSuccess } = props;
   const { enqueueSnackbar } = useSnackbar();
-  const { setGlobalState } = React.useContext(GlobalStateContext);
+  const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
@@ -109,7 +108,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       if (response.kind === 'ok') {
         // to trigger polling for upload progress
         // this logic is in the header component
-        setGlobalState({ uploadQueueEmpty: false });
+        setUploadQueueEmpty(false);
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess();

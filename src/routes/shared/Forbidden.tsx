@@ -1,6 +1,6 @@
 import { Button, Grid, Typography } from '@material-ui/core';
-import React from 'react';
 import { Link } from 'react-router-dom';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { PATHS } from '../../types/path.types';
 

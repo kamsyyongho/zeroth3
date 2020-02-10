@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import { SvgIconProps } from '@material-ui/core';
-import React from 'react';
+import React from 'reactn';
 import { ICONS } from '../theme/icons';
 
 /**

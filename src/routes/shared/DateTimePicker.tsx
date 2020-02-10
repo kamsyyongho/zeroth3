@@ -1,5 +1,5 @@
 import { DateTimePicker as MuiDateTimePicker, DateTimePickerProps as MuiDateTimePickerProps } from '@material-ui/pickers';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 interface DateTimePickerProps extends MuiDateTimePickerProps {

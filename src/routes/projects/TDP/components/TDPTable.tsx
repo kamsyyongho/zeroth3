@@ -11,11 +11,11 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LaunchIcon from '@material-ui/icons/Launch';
-import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import TruncateMarkup from 'react-truncate-markup';
+import React from 'reactn';
 import { PERMISSIONS } from '../../../../constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
@@ -443,7 +443,7 @@ export function TDPTable(props: TDPTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter component="div">
+    <TableFooter>
       {loading && (
         <PulseLoader
           sizeUnit={"px"}

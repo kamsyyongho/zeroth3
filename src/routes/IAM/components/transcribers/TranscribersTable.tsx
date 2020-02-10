@@ -5,9 +5,9 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import React from 'react';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
 import { Pagination } from '../../../shared/Pagination';
@@ -163,7 +163,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter component="div">
+    <TableFooter>
       {loading && (
         <PulseLoader
           sizeUnit={"px"}

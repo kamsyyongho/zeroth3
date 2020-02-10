@@ -5,8 +5,8 @@ import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convert
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import { useSnackbar, VariantType } from 'notistack';
-import React from 'react';
 import Draggable from 'react-draggable';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';

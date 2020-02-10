@@ -3,14 +3,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme, makeStyles, createStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
@@ -22,7 +23,6 @@ import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormF
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
-import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) =>
   createStyles({

@@ -8,12 +8,11 @@ import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
-import React from "react";
 import { List } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
@@ -63,8 +62,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export function Profile() {
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organizations } = globalState;
+  const [organizations, setOrganizations] = useGlobal('organizations');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
@@ -94,7 +92,7 @@ export function Profile() {
       setOrganizationsLoading(true);
       const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setGlobalState({ organizations: response.organizations });
+        setOrganizations(response.organizations);
       } else {
         log({
           file: `Profile.tsx`,

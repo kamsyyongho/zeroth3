@@ -2,7 +2,7 @@ import { Divider } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../ProjectsDialog';

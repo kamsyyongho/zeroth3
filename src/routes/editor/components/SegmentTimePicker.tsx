@@ -7,7 +7,7 @@ import AddIcon from '@material-ui/icons/Add';
 import CancelIcon from '@material-ui/icons/Cancel';
 import DoneIcon from '@material-ui/icons/Done';
 import RemoveIcon from '@material-ui/icons/Remove';
-import React from 'react';
+import React from 'reactn';
 import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, Time, Word } from '../../../types';

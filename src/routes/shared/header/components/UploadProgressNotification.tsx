@@ -11,7 +11,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ProgressBar } from '../../ProgressBar';
 

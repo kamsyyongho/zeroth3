@@ -4,7 +4,6 @@ import React from "react";
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router, Switch } from "react-router-dom";
 import { useApi } from './hooks/api/useApi';
-import { useGlobalState } from './hooks/global-state/useGlobalState';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
 import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
@@ -30,7 +29,6 @@ function App() {
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
   const navigationProps = useNavigationProps();
-  const globalState = useGlobalState();
 
   React.useEffect(() => {
     initKeycloak();
@@ -48,7 +46,7 @@ function App() {
   }
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} globalState={globalState} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} >
       <Router history={history}>
         <ErrorBoundary FallbackComponent={PageErrorFallback}>
           <Header />

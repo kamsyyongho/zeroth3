@@ -1,7 +1,7 @@
 import Chip, { ChipProps } from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React from 'reactn';
 
 interface ChipListProps extends ChipProps {
   values: string[];

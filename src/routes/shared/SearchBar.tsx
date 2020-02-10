@@ -4,7 +4,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import matchSorter from 'match-sorter';
-import React from 'react';
+import React from 'reactn';
 import { ICONS } from '../../theme/icons';
 
 const useStyles = makeStyles((theme: Theme) =>

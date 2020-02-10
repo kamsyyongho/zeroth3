@@ -13,13 +13,12 @@ import AddIcon from '@material-ui/icons/Add';
 import CachedIcon from '@material-ui/icons/Cached';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import { BulletList } from 'react-content-loader';
 import { useHistory } from 'react-router-dom';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
@@ -60,10 +59,10 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const { translate } = React.useContext(I18nContext);
   const { user, hasPermission } = React.useContext(KeycloakContext);
   const { currentProjectId } = user;
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { currentOrganization } = globalState;
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
+  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
+  const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
@@ -93,7 +92,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const handleProjectClick = (project: Project) => {
     if (project) {
       setSelectedProject(project);
-      setGlobalState({ currentProject: project });
+      setCurrentProject(project);
       setTimeout(() => {
         history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
         handleClose();
@@ -133,7 +132,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         const project = projects[i];
         if (project.id === currentProjectId) {
           setSelectedProject(project);
-          setGlobalState({ currentProject: project });
+          setCurrentProject(project);
           return;
         }
       }

@@ -2,7 +2,7 @@ import { FormControlLabel, Grid, Switch, Typography } from '@material-ui/core';
 import { FormControlLabelProps } from '@material-ui/core/FormControlLabel';
 import { SwitchProps } from '@material-ui/core/Switch';
 import { TypographyProps } from '@material-ui/core/Typography';
-import React from 'react';
+import React from 'reactn';
 
 interface DualLabelSwitchProps {
   startIcon?: JSX.Element;

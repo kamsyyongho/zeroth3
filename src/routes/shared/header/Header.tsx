@@ -6,11 +6,10 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import { OptionsObject, useSnackbar } from 'notistack';
-import React from 'react';
 import { Link } from 'react-router-dom';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { ICONS } from '../../../theme/icons';
@@ -67,8 +66,10 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { currentOrganization, organizations, currentProject, uploadQueueEmpty } = globalState;
+  const [organizations, setOrganizations] = useGlobal('organizations');
+  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
+  const [currentProject, setCurrentProject] = useGlobal('currentProject');
+  const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
@@ -96,7 +97,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       setOrganizationsLoading(true);
       const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setGlobalState({ organizations: response.organizations });
+        setOrganizations(response.organizations);
       } else {
         log({
           file: `Header.tsx`,
@@ -110,7 +111,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const onComplete = () => {
-    setGlobalState({ uploadQueueEmpty: true });
+    setUploadQueueEmpty(true);
   };
 
   const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>) => {
@@ -189,7 +190,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   React.useEffect(() => {
     if (organization) {
-      setGlobalState({ currentOrganization: organization });
+      setCurrentOrganization(organization);
     }
   }, [organization]);
 
@@ -217,7 +218,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   // to reset projects and project list
   React.useEffect(() => {
-    setGlobalState({ currentProject: undefined });
+    setCurrentProject(undefined);
     if (currentOrganization && organization && currentOrganization.id !== organization.id) {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
     }

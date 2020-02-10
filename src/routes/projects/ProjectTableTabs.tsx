@@ -2,7 +2,7 @@ import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { BooleanById, ModelConfig, Project } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
@@ -52,7 +52,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
    * - the child component refetches all data everytime the counter changes
    */
   const handleSetCreate = () => {
-    if(tabsThatShouldRender.has(TAB_INDEX.SET)){
+    if (tabsThatShouldRender.has(TAB_INDEX.SET)) {
       setRefreshCounterForSet(refreshCounterForSet + 1);
     }
   };
