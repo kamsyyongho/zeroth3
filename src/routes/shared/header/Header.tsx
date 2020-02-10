@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import { Button, Toolbar } from '@material-ui/core';
+import { Button, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -60,6 +60,7 @@ const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
   },
   key: QUEUE_NOTIFICATION_KEY,
 };
+let noProjectSelectedTimeout: NodeJS.Timeout | undefined;
 
 export const Header: React.FunctionComponent<{}> = (props) => {
   const { user, hasPermission } = React.useContext(KeycloakContext);
@@ -69,6 +70,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const { currentOrganization, organizations, currentProject, uploadQueueEmpty } = globalState;
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
+  const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
@@ -149,6 +151,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
+  const clearProjectTimeout = () => {
+    if (noProjectSelectedTimeout) {
+      clearTimeout(noProjectSelectedTimeout);
+      noProjectSelectedTimeout = undefined;
+    }
+  };
+
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
     if (user.currentOrganizationId && !organizations) {
@@ -156,6 +165,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     } else {
       setOrganizationsLoading(false);
     }
+    noProjectSelectedTimeout = setTimeout(() => {
+      setNoProjectSelected(true);
+      clearProjectTimeout();
+    }, 5000);
+    return () => {
+      clearProjectTimeout();
+    };
   }, []);
 
   // to get the currently selected organization's info
@@ -176,6 +192,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       setGlobalState({ currentOrganization: organization });
     }
   }, [organization]);
+
+  React.useEffect(() => {
+    if (currentProjectId) {
+      clearProjectTimeout();
+      setNoProjectSelected(false);
+    }
+  }, [currentProjectId]);
 
   // to check for current upload progress
   React.useEffect(() => {
@@ -255,15 +278,22 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             <Button onClick={closeDrawer} component={Link} to={PATHS.home.to as string} className={classes.logoButton} >
               {IMAGES.Logo.svg && IMAGES.Logo.svg({ className: classes.logo })}
             </Button>
-            <Button
-              startIcon={<ICONS.Projects />}
-              endIcon={<ICONS.ArrowDown />}
-              color={"inherit"}
-              className={classes.projectButton}
-              onClick={showProjectsDialog}
+            <Tooltip
+              placement='bottom'
+              title={noProjectSelected ? <Typography variant='h6' >{translate('projects.noProjectSelected')}</Typography> : ''}
+              arrow={true}
+              open={noProjectSelected}
             >
-              {currentProject?.name ? currentProject?.name : translate('path.projects')}
-            </Button>
+              <Button
+                startIcon={<ICONS.Projects />}
+                endIcon={<ICONS.ArrowDown />}
+                color={"inherit"}
+                className={classes.projectButton}
+                onClick={showProjectsDialog}
+              >
+                {currentProject?.name ? currentProject?.name : translate('path.projects')}
+              </Button>
+            </Tooltip>
           </Grid>
           <Grid
             item
