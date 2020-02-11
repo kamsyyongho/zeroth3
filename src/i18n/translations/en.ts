@@ -277,5 +277,16 @@ export const en: ResourceLanguage = {
     audioPlayer: {
       noUrl: 'No audio URL',
     },
+    home: {
+      header: 'Welcome to Zeroth',
+      textBlocks: {
+        ['1']: 'Zeroth를 유용하게 사용하시려면 ',
+        ['2']:
+          '왼쪽 메뉴에서 음향모델과 언어모델을 확인해주세요. 모델이 없을 시, 프로젝트 생성이 제한될 수 있습니다.',
+        ['3']:
+          '프로젝트를 생성하신 후 전사를 시작해보세요. 상단의 프로젝트를 클릭하시면 프로젝트를 생성할 수 있습니다.',
+        ['4']: '사용에 궁금하신 점이 있으시면 연락주세요. 감사합니다.',
+      },
+    },
   },
 };

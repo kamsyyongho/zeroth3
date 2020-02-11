@@ -10,6 +10,7 @@ import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
 import { EditorPage } from './routes/editor/EditorPage';
 import { IAM } from './routes/IAM/IAM';
+import { Home } from './routes/main/Home';
 import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
 import { ModelTraining } from './routes/model-training/ModelTraining';
 import { Models } from './routes/models/Models';
@@ -67,7 +68,7 @@ function App() {
           <Header />
         </ErrorBoundary>
         <Switch>
-          <Route exact path={PATHS.home.to} component={withErrorBoundary(() => <div />, PageErrorFallback)} />
+          <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
           <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
           <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
           <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
