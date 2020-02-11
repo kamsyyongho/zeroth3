@@ -110,13 +110,12 @@ export class Api {
    * @param keycloak the keycloak instance
    * @param logout the keycloak logout method
    */
-  setup(
-    keycloak: KeycloakInstance,
-    logout: () => void,
-    organizationId?: string
-  ): boolean {
+  setup(keycloak: KeycloakInstance, logout: () => void): boolean {
     this.keycloak = keycloak;
-    this.logout = logout;
+    this.logout = () => {
+      localStorage.clear();
+      logout();
+    };
     // construct the apisauce instance
     this.apisauce = create({
       baseURL: this.config.baseURL,
