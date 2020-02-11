@@ -1,4 +1,4 @@
-import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { TablePagination, Typography } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -163,7 +163,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter>
+    <div>
       {loading && (
         <PulseLoader
           sizeUnit={"px"}
@@ -172,7 +172,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
           loading={true}
         />
       )}
-    </TableFooter>
+    </div>
     {!!transcribersStats.length && <TablePagination
       rowsPerPageOptions={[5, 10, 25, 50, 100]}
       component="div"
