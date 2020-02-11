@@ -157,7 +157,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
           action={canModify && <Button
             color="primary"
-            variant='contained'
+            variant='outlined'
             onClick={openCreateDialog}
             startIcon={<AddIcon />}
           >
