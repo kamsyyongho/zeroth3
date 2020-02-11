@@ -1,8 +1,8 @@
 
 import { createBrowserHistory } from 'history';
-import React from "react";
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router, Switch } from "react-router-dom";
+import React, { addCallback } from "reactn";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
@@ -20,7 +20,7 @@ import { Header } from './routes/shared/header/Header';
 import { NotFound } from './routes/shared/NotFound';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
-import { PATHS } from './types';
+import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 
 const history = createBrowserHistory();
 
@@ -32,6 +32,22 @@ function App() {
 
   React.useEffect(() => {
     initKeycloak();
+    // update local storage on change
+    const globalCallback = addCallback(globalState => {
+      if (globalState.currentProject?.id) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_ID, globalState.currentProject.id);
+      }
+      if (globalState.currentOrganization?.id) {
+        localStorage.setItem(
+          LOCAL_STORAGE_KEYS.ORGANIZATION_ID,
+          globalState.currentOrganization.id
+        );
+      }
+    });
+    return () => {
+      // remove the callbacks
+      globalCallback();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -44,6 +60,7 @@ function App() {
   if (!keycloakInitialized || !apiInitialized) {
     return (<SiteLoadingIndicator />);
   }
+
 
   return (
     <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} >

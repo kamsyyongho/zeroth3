@@ -104,7 +104,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const handleModelConfigClick = () => {
     if (!project) return;
     // to store props that will be used on the next page
-    const propsToSet = { project };
+    const propsToSet = { project, modelConfigs, topGraphs, subGraphs, languageModels, acousticModels };
     setProps(propsToSet);
     PATHS.modelConfig.function && history.push(PATHS.modelConfig.function(project.id));
   };
