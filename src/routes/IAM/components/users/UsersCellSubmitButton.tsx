@@ -191,6 +191,10 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (rolesToAdd.length) addRoles(rolesToAdd);
   };
 
+  if (!currentSet.size) {
+    return null;
+  }
+
   return (
     <Button
       className={!rolesChanged ? classes.hidden : undefined}
