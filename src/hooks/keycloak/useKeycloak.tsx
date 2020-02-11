@@ -109,13 +109,23 @@ export const useKeycloak = () => {
    * checks if the user has the required permissions
    */
   const hasPermission = (permittedRoles: ROLES[]) => {
-    const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
-    for (let i = 0; i < roles.length; i++) {
-      if (permittedRolesStrings.includes(roles[i])) {
-        return true;
-      }
-    }
-    return false;
+    //!
+    //TODO
+    //* FOR TESTING
+    //!
+    //TODO
+    //* FOR TESTING
+    //!
+    //TODO
+    //* FOR TESTING
+    return true;
+    // const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
+    // for (let i = 0; i < roles.length; i++) {
+    //   if (permittedRolesStrings.includes(roles[i])) {
+    //     return true;
+    //   }
+    // }
+    // return false;
   };
 
   // get or set the organization from/to localStorage
