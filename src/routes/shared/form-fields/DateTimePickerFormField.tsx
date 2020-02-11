@@ -18,12 +18,12 @@ export const DateTimePickerFormField = (props: DateTimePickerFormFieldProps) => 
     ampm = true,
     ...restProps
   } = props;
-  const { dateTimeFormat } = React.useContext(I18nContext);
+  const { dateTimeFormats } = React.useContext(I18nContext);
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
   return (
     <DateTimePicker
-      format={dateTimeFormat}
+      format={dateTimeFormats.dateTime}
       ampm={ampm}
       margin={margin}
       value={field.value}

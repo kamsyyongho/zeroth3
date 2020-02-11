@@ -2,7 +2,7 @@ import enUSLocale from "date-fns/locale/en-US";
 import { i18n, TOptions } from 'i18next';
 import { createContext } from "react";
 import { noop } from '../../constants';
-import { extendLocaleType, PickerLocale } from './useI18n';
+import { DateTimeFormats, extendLocaleType, PickerLocale } from './useI18n';
 
 export interface ParsedI18n {
   /**
@@ -13,8 +13,8 @@ export interface ParsedI18n {
   osText: (key: string) => string,
   toggleLanguage: () => void;
   language: string;
-  dateTimeFormat: string;
-  formatDate: (date: number | Date) => string;
+  dateTimeFormats: DateTimeFormats;
+  formatDate: (date: number | Date, dateTimeFormat?: 'dateTime' | 'date' | 'time') => string;
   pickerLocale: PickerLocale;
 }
 
@@ -25,7 +25,7 @@ const defaultContext: ParsedI18n = {
   osText: () => '',
   toggleLanguage: noop,
   language: "en",
-  dateTimeFormat: "",
+  dateTimeFormats: {} as DateTimeFormats,
   formatDate: noop,
   pickerLocale: extendLocaleType(enUSLocale),
 };
