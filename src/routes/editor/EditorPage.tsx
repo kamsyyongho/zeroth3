@@ -430,7 +430,7 @@ export function EditorPage() {
     if (mergeDisabled) {
       disabledControls.push(EDITOR_CONTROLS.merge);
     }
-    const splitDisabled = !segments.some(segment => segment.wordAlignments.length > 1);
+    const splitDisabled = !segments.some(segment => segment.wordAlignments.length > 0);
     if (splitDisabled) {
       disabledControls.push(EDITOR_CONTROLS.split);
     }
