@@ -37,8 +37,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     tooltipContent: {
       maxWidth: 'none',
     },
-    badge: {
+    changedTextBadge: {
       backgroundColor: theme.editor.changes,
+    },
+    highRistkBadge: {
+      marginLeft: theme.spacing(1),
     },
     timeButton: {
       padding: 0,
@@ -80,7 +83,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
-  const { id, transcript, decoderTranscript, start, speaker } = segment;
+  const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
   const displayTextChangedHover = ((transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
   const handleSpeakerPress = () => {
@@ -119,29 +122,42 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       justify='flex-start'
       className={classes.infoGrid}
     >
-      <Badge
-        invisible={!displayTextChangedHover}
-        variant="dot"
-        color='error'
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        classes={{
-          colorError: classes.badge,
-        }}
+      <Button
+        disabled
+        className={classes.timeButton}
       >
-        <Button
-          disabled
-          className={classes.timeButton}
+        <Badge
+          invisible={!displayTextChangedHover}
+          variant="dot"
+          color='error'
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          classes={{
+            colorError: classes.changedTextBadge,
+          }}
         >
-          <Typography
-            contentEditable={false} // prevents the editor from placing the cursor within the content
+          <Badge
+            invisible={!highRisk}
+            variant="dot"
+            color='error'
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            classes={{
+              colorError: classes.highRistkBadge,
+            }}
           >
-            {displayTime}
-          </Typography>
-        </Button>
-      </Badge>
+            <Typography
+              contentEditable={false} // prevents the editor from placing the cursor within the content
+            >
+              {displayTime}
+            </Typography>
+          </Badge>
+        </Badge>
+      </Button>
       <VisibilitySensor
         offset={DEFAULT_OFFSET}
       >
