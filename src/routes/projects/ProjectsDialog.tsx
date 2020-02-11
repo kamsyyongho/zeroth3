@@ -84,6 +84,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const handleClose = () => {
     setfilteredProjects([]);
     setSearching(false);
+    setShowEdit(false);
     onClose();
   };
 
@@ -287,7 +288,13 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   </Grid>);
 
   const renderHeaderTitle = () => {
-    return (<Grid wrap='nowrap' container >
+    return (<Grid
+      container
+      justify='flex-start'
+      alignContent='center'
+      alignItems='center'
+      wrap='nowrap'
+    >
       {showEdit && <Grid item>
         <IconButton
           aria-label="settings-button"
