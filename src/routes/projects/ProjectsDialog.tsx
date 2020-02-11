@@ -1,4 +1,4 @@
-import { Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -10,12 +10,10 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
-import CachedIcon from '@material-ui/icons/Cached';
-import DeleteIcon from '@material-ui/icons/Delete';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import { useHistory } from 'react-router-dom';
-import MoonLoader from 'react-spinners/MoonLoader';
 import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
@@ -23,6 +21,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ServerError } from '../../services/api/types';
 import { deleteProjectResult } from '../../services/api/types/projects.types';
+import { ICONS } from '../../theme/icons';
 import { LOCAL_STORAGE_KEYS, PATHS, Project, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -71,6 +70,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [searching, setSearching] = React.useState(false);
+  const [showEdit, setShowEdit] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
   const [selectedProject, setSelectedProject] = React.useState<Project | undefined>();
 
@@ -89,6 +89,9 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
 
   const handleCreateOpen = () => setCreateOpen(true);
   const handleCreateClose = () => setCreateOpen(false);
+
+  const handleSettingsOpen = () => setShowEdit(true);
+  const handleSettingsClose = () => setShowEdit(false);
 
   const handleProjectClick = (project: Project) => {
     if (project) {
@@ -175,6 +178,11 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       if (idsToDelete.includes(project.id)) {
         projectsCopy.splice(i, 1);
       }
+      // clear state if we deleted the current project
+      if (project.id === currentProject?.id) {
+        setCurrentProject(undefined);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+      }
     }
     projectsToDelete = [];
     setCheckedProjects({});
@@ -239,6 +247,14 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     setDeleteLoading(false);
   };
 
+  const handleProjectDeleteCheck = (projectId: string, value: boolean, triggerDelete = false): void => {
+    setCheckedProjects((prevCheckedProjects) => {
+      return { ...prevCheckedProjects, [projectId]: value };
+    });
+    if (triggerDelete) {
+      confirmDelete();
+    }
+  };
 
   const renderCardHeaderAction = () => (<Grid
     container
@@ -247,31 +263,15 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     alignContent='center'
     alignItems='center'
   >
-    {!!projects.length && <Grid item >
-      <IconButton
-        aria-label="delete-button"
-        size="small"
-        disabled={!projectsToDelete.length || deleteLoading}
-        color="secondary"
-        onClick={confirmDelete}
-      >
-        {deleteLoading ? <MoonLoader
-          sizeUnit={"px"}
-          size={15}
-          color={theme.palette.common.white}
-          loading={true}
-        /> : <DeleteIcon />}
-      </IconButton>
-    </Grid>}
     <Grid item >
       <IconButton
-        aria-label="create-button"
+        aria-label="settings-button"
         size="small"
         color="primary"
         disabled={projectsLoading}
-        onClick={getProjects}
+        onClick={handleSettingsOpen}
       >
-        <CachedIcon />
+        <ICONS.Settings />
       </IconButton>
     </Grid>
     <Grid item >
@@ -286,6 +286,27 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     </Grid>
   </Grid>);
 
+  const renderHeaderTitle = () => {
+    return (<Grid wrap='nowrap' container >
+      {showEdit && <Grid item>
+        <IconButton
+          aria-label="settings-button"
+          size="small"
+          color="primary"
+          disabled={projectsLoading}
+          onClick={handleSettingsClose}
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+      </Grid>}
+      <Grid item>
+        <Typography align='center' variant='h6' >
+          {translate("projects.header")}
+        </Typography>
+      </Grid>
+    </Grid>);
+  };
+
   return (
     <Dialog
       fullScreen={fullScreen}
@@ -299,8 +320,8 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       <DialogContent>
         <Card elevation={0} className={classes.card}>
           <CardHeader
-            action={canModify && !projectsLoading && renderCardHeaderAction()}
-            title={translate("projects.header")}
+            action={canModify && !projectsLoading && !showEdit && renderCardHeaderAction()}
+            title={renderHeaderTitle()}
           />
           <CardHeader
             style={{ padding: 0, margin: 0 }}
@@ -316,8 +337,10 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
                 projects={searching ? filteredProjects : projects}
                 searching={searching}
                 canModify={canModify}
+                canDelete={projects.length > 1}
+                showEdit={showEdit}
                 checkedProjects={checkedProjects}
-                setCheckedProjects={setCheckedProjects}
+                setCheckedProjects={handleProjectDeleteCheck}
                 onUpdate={handleProjectListUpdate}
                 selectedProjectId={selectedProject?.id}
                 onItemClick={handleProjectClick}

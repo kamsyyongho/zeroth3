@@ -12,8 +12,10 @@ interface ProjectListProps {
   projects: Project[];
   searching: boolean;
   canModify: boolean;
+  canDelete: boolean;
+  showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
-  setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>;
+  setCheckedProjects: (projectId: string, value: boolean, triggerDelete?: boolean) => void;
   onUpdate: (project: Project, isEdit?: boolean) => void;
   onItemClick: (project: Project) => void;
   selectedProjectId?: string;
@@ -28,6 +30,8 @@ export function ProjectList(props: ProjectListProps) {
     projects,
     searching,
     canModify,
+    canDelete,
+    showEdit,
     checkedProjects,
     setCheckedProjects,
     onUpdate,
@@ -49,12 +53,6 @@ export function ProjectList(props: ProjectListProps) {
     handleEditClose(updatedProject.id);
   };
 
-  const handleProjectCheck = (projectId: string, value: boolean): void => {
-    setCheckedProjects((prevCheckedProjects) => {
-      return { ...prevCheckedProjects, [projectId]: value };
-    });
-  };
-
   const renderProjects = () => projects.map((project, index) => {
     const selected = project.id === selectedProjectId;
     return (<React.Fragment key={index}>
@@ -64,13 +62,15 @@ export function ProjectList(props: ProjectListProps) {
         selected={selected}
         project={project}
         canModify={canModify}
+        canDelete={canDelete}
+        showEdit={showEdit}
         handleEditClose={handleEditClose}
         handleEditOpen={handleEditOpen}
         editOpen={editOpen}
         onItemClick={onItemClick}
         checkedProjects={checkedProjects}
         handleEditSuccess={handleEditSuccess}
-        handleProjectCheck={handleProjectCheck}
+        handleProjectCheck={setCheckedProjects}
       />
       <Divider />
     </React.Fragment>

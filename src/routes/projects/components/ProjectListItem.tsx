@@ -1,4 +1,3 @@
-import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -8,6 +7,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { ICONS } from '../../../theme/icons';
 import { CustomTheme } from '../../../theme/index';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../ProjectsDialog';
@@ -26,13 +26,15 @@ interface ProjectListItemProps {
   project: Project;
   selected: boolean;
   canModify: boolean;
+  canDelete: boolean;
+  showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
   onItemClick: (project: Project) => void;
   handleEditOpen: (projectId: string) => void;
   handleEditClose: (projectId: string) => void;
   handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void;
-  handleProjectCheck: (projectId: string, value: boolean) => void;
+  handleProjectCheck: (projectId: string, value: boolean, triggerDelete?: boolean) => void;
 }
 
 
@@ -40,6 +42,8 @@ export function ProjectListItem(props: ProjectListItemProps) {
   const {
     project,
     canModify,
+    canDelete,
+    showEdit,
     editOpen,
     handleEditClose,
     handleEditOpen,
@@ -69,10 +73,12 @@ export function ProjectListItem(props: ProjectListItemProps) {
       projectToEdit={project}
     />
     <ListItem dense button onClick={onClick} className={selected ? classes.selected : undefined}>
-      <ListItemText primary={project.name} secondary={formatDate(validDate)} />
-      {canModify && <ListItemSecondaryAction>
+      <ListItemText primary={project.name} secondary={formatDate(validDate, 'date')} />
+      {canModify && showEdit && <ListItemSecondaryAction>
         <ListItemIcon>
-          <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleProjectCheck(project.id, event.target.checked)} />
+          <IconButton aria-label="edit" disabled={!canDelete} onClick={() => handleProjectCheck(project.id, true, true)}>
+            <ICONS.Trash />
+          </IconButton>
         </ListItemIcon>
         <ListItemIcon>
           <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
