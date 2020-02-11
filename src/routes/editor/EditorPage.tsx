@@ -765,10 +765,7 @@ export function EditorPage() {
 
   return (
     <>
-      {readOnly ? (<StarRating
-        voiceData={voiceData}
-        projectId={projectId}
-      />) : (<EditorControls
+      {!readOnly && <EditorControls
         onCommandClick={setEditorCommand}
         onConfirm={onConfirmClick}
         disabledControls={disabledControls}
@@ -779,10 +776,14 @@ export function EditorPage() {
         onThresholdChange={setWordConfidenceThreshold}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
-      />)}
+      />}
       <Container
         className={classes.container}
       >
+        {readOnly && <StarRating
+          voiceData={voiceData}
+          projectId={projectId}
+        />}
         <Paper
           style={{ marginTop: 25 }}
           elevation={5}

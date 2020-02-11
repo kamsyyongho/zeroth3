@@ -17,7 +17,10 @@ import log from '../../../util/log/logger';
 const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
-      margin: theme.spacing(3),
+      marginTop: theme.spacing(3),
+    },
+    hidden: {
+      visibility: 'hidden',
     },
   }),
 );
@@ -49,7 +52,7 @@ export const StarRating = (props: StarRatingProps) => {
     setCurrentVoiceData(updatedVoiceData);
   };
 
-  const clearRating = () => setRating(voiceData.transcriptionRating);
+  const clearRating = () => setRating(currentVoiceData.transcriptionRating);
 
   const handleChange = (event: React.ChangeEvent<{}>, value: number | null) => setRating(value);
 
@@ -101,7 +104,7 @@ export const StarRating = (props: StarRatingProps) => {
         max={5}
         onChange={handleChange}
       />
-      {ratingChanged && <>
+      <div className={!ratingChanged ? classes.hidden : undefined}>
         <IconButton
           disabled={loading}
           color='primary'
@@ -125,7 +128,7 @@ export const StarRating = (props: StarRatingProps) => {
         >
           <ClearIcon />
         </IconButton>
-      </>}
+      </div>
     </Grid>
   );
 };
