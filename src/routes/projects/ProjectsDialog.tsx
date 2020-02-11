@@ -67,6 +67,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [searching, setSearching] = React.useState(false);
@@ -321,7 +322,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       disableEscapeKeyDown={projectsLoading}
       open={open}
       onClose={handleClose}
-      className={createOpen ? classes.hidden : undefined}
+      className={(createOpen || editDialogOpen) ? classes.hidden : undefined}
       aria-labelledby="projects-dialog"
     >
       <DialogContent>
@@ -347,6 +348,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
                 showEdit={showEdit}
                 checkedProjects={checkedProjects}
                 setCheckedProjects={handleProjectDeleteCheck}
+                setEditDialogOpen={setEditDialogOpen}
                 onUpdate={handleProjectListUpdate}
                 selectedProjectId={selectedProject?.id}
                 onItemClick={handleProjectClick}

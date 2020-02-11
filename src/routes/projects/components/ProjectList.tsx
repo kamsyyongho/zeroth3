@@ -17,6 +17,7 @@ interface ProjectListProps {
   setCheckedProjects: (projectId: string, value: boolean, triggerDelete?: boolean) => void;
   onUpdate: (project: Project, isEdit?: boolean) => void;
   onItemClick: (project: Project) => void;
+  setEditDialogOpen: (value: boolean) => void;
   selectedProjectId?: string;
 }
 
@@ -34,15 +35,18 @@ export function ProjectList(props: ProjectListProps) {
     setCheckedProjects,
     onUpdate,
     onItemClick,
+    setEditDialogOpen,
     selectedProjectId,
   } = props;
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
   const { translate } = React.useContext(I18nContext);
 
   const handleEditOpen = (projectId: string) => setEditOpen(prevOpen => {
+    setEditDialogOpen(true);
     return { ...prevOpen, [projectId]: true };
   });
   const handleEditClose = (projectId: string) => setEditOpen(prevOpen => {
+    setEditDialogOpen(false);
     return { ...prevOpen, [projectId]: false };
   });
 
