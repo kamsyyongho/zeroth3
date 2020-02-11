@@ -1,4 +1,4 @@
-import { TableFooter, TablePagination, TableSortLabel, Typography } from '@material-ui/core';
+import { Backdrop, TablePagination, TableSortLabel, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -22,8 +22,7 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { CONTENT_STATUS, FilterParams, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
-import { BooleanById } from '../../../../types/misc.types';
+import { BooleanById, CONTENT_STATUS, FilterParams, LOCAL_STORAGE_KEYS, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
 import { ModelConfigsById } from '../TDP';
@@ -79,7 +78,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
-    }
+    },
+    backdrop: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: theme.shadows[1],
+    },
   }));
 
 export function TDPTable(props: TDPTableProps) {
@@ -299,6 +302,7 @@ export function TDPTable(props: TDPTableProps) {
       // This means we'll also have to provide our own
       // pageCount.
       pageCount: voiceDataResults.totalPages,
+
     },
     useFilters,
     usePagination,
@@ -448,19 +452,19 @@ export function TDPTable(props: TDPTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter>
-      {loading && (
+    {loading && (
+      <Backdrop className={classes.backdrop} open={loading}>
         <PulseLoader
           sizeUnit={"px"}
           size={25}
-          color={theme.palette.primary.main}
+          color={theme.palette.primary.light}
           loading={true}
         />
-      )}
-    </TableFooter>
+      </Backdrop>
+    )}
     {!!voiceData.length && <TablePagination
       className={classes.tableHeader}
-      rowsPerPageOptions={[5, 10, 25, 50, 100]}
+      rowsPerPageOptions={[5, 10, 25, 50]}
       component="div"
       count={voiceDataResults.totalElements}
       rowsPerPage={pageSize}
@@ -475,7 +479,9 @@ export function TDPTable(props: TDPTableProps) {
         gotoPage(newPage);
       }}
       onChangeRowsPerPage={e => {
-        setPageSize(Number(e.target.value));
+        const numberOfRows: string = e.target.value;
+        localStorage.setItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE, numberOfRows);
+        setPageSize(Number(numberOfRows));
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}

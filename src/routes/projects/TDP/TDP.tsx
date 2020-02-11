@@ -10,7 +10,7 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { FilterParams, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import { FilterParams, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -62,28 +62,21 @@ export function TDP(props: TDPProps) {
   const classes = useStyles();
 
   const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const initialPageSize = React.useMemo(() => {
+    const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE);
+    if (rowsPerPageString) {
+      const rowsPerPage = Number(rowsPerPageString);
+      if (!isNaN(rowsPerPage)) {
+        return rowsPerPage;
+      }
+    }
+    return null;
+  }, []);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.searchData(projectId, options);
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      //* REMOVE THIS
-
-      // if (onlyAssignedData) {
-      //   response = await api.voiceData.getAssignedData();
-      // } else {
-      //   response = await api.voiceData.searchData(projectId, options);
-      // }
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
       } else {
@@ -100,7 +93,11 @@ export function TDP(props: TDPProps) {
   }, [api, onlyAssignedData, projectId]);
 
   React.useEffect(() => {
-    getVoiceData();
+    const options: SearchDataRequest = {};
+    if (initialPageSize) {
+      options.size = initialPageSize;
+    }
+    getVoiceData(options);
   }, []);
 
   /**

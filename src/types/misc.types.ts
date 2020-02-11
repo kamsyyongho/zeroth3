@@ -2,6 +2,7 @@
 export enum LOCAL_STORAGE_KEYS {
   'ORGANIZATION_ID' = 'ORGANIZATION_ID',
   'PROJECT_ID' = 'PROJECT_ID',
+  'TABLE_ROWS_PER_PAGE' = 'TABLE_ROWS_PER_PAGE',
 }
 
 export interface BooleanById {
