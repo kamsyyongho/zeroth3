@@ -1,4 +1,4 @@
-import orange from '@material-ui/core/colors/orange';
+import yellow from '@material-ui/core/colors/yellow';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import StarIcon from '@material-ui/icons/Star';
@@ -11,7 +11,7 @@ import { roundHalf } from '../../util/misc';
 const useStyles = makeStyles(theme =>
   createStyles({
     icon: {
-      color: orange[500],
+      color: yellow[800],
     }
   }));
 
