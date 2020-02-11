@@ -190,6 +190,7 @@ interface SegmentSplitOptions {
 
 interface EditorProps {
   height?: number;
+  readOnly?: boolean;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -221,6 +222,7 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const {
     height,
+    readOnly,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -1882,8 +1884,8 @@ export function Editor(props: EditorProps) {
     }
   };
 
-  /** to prevent any pasting of text */
-  const handlePastedText = () => HANDLE_VALUES.handled;
+  /** prevents changing of the editor state */
+  const preventEditorChange = () => HANDLE_VALUES.handled;
 
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
@@ -2062,12 +2064,12 @@ export function Editor(props: EditorProps) {
           customStyleMap={buildStyleMap(theme)}
           keyBindingFn={customKeyBindingFunction}
           blockRendererFn={customBlockRenderer}
-          onChange={handleChange}
+          onChange={readOnly ? preventEditorChange : handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          handleReturn={handleReturnPress}
-          handleKeyCommand={handleKeyCommand}
-          handlePastedText={handlePastedText}
+          handleReturn={readOnly ? preventEditorChange : handleReturnPress}
+          handleKeyCommand={readOnly ? preventEditorChange : handleKeyCommand}
+          handlePastedText={preventEditorChange}
         />
       }
     </div>

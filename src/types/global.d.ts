@@ -9,6 +9,6 @@ declare module 'reactn/default' {
     currentProject?: Project;
     uploadQueueEmpty?: boolean;
     projectInitialized?: boolean;
-    navigationProps?: { [x: string]: any };
+    navigationProps?: any;
   }
 }

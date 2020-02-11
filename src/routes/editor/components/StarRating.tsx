@@ -1,9 +1,9 @@
 import { Grid } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import ClearIcon from '@material-ui/icons/Clear';
-import Rating from 'material-ui-rating';
+import Rating from '@material-ui/lab/Rating';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
@@ -14,7 +14,13 @@ import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../types';
 import log from '../../../util/log/logger';
 
-
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    container: {
+      margin: theme.spacing(3),
+    },
+  }),
+);
 interface StarRatingProps {
   projectId: string;
   voiceData: VoiceData;
@@ -27,24 +33,25 @@ export const StarRating = (props: StarRatingProps) => {
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const [rating, setRating] = React.useState<number | null | undefined>(voiceData.transcriptionRating);
+  const [rating, setRating] = React.useState<number | null>(voiceData.transcriptionRating || null);
   const [loading, setLoading] = React.useState(false);
+  const [currentVoiceData, setCurrentVoiceData] = React.useState(voiceData);
 
-  const ratingChanged = rating !== voiceData.transcriptionRating;
+  const ratingChanged = rating !== currentVoiceData.transcriptionRating;
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const canRate = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const onSuccess = () => {
-    //!
-    //TODO
-    //* DO SOMETHING WITH THIS DATA
     const updatedVoiceData = { ...voiceData, transcriptionRating: rating };
+    setCurrentVoiceData(updatedVoiceData);
   };
 
   const clearRating = () => setRating(voiceData.transcriptionRating);
 
+  const handleChange = (event: React.ChangeEvent<{}>, value: number | null) => setRating(value);
 
   const updateRating = async () => {
     if (api?.voiceData && ratingChanged && !loading && typeof rating === 'number') {
@@ -86,12 +93,13 @@ export const StarRating = (props: StarRatingProps) => {
       alignContent='center'
       alignItems='center'
       justify='flex-start'
+      className={classes.container}
     >
       <Rating
         readOnly={!canRate}
-        value={rating || undefined}
+        value={rating}
         max={5}
-        onChange={(value: number) => setRating(value)}
+        onChange={handleChange}
       />
       {ratingChanged && <>
         <IconButton

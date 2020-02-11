@@ -15,14 +15,14 @@ import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import TruncateMarkup from 'react-truncate-markup';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../../../constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { FilterParams, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
+import { CONTENT_STATUS, FilterParams, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { BooleanById } from '../../../../types/misc.types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
@@ -100,6 +100,7 @@ export function TDPTable(props: TDPTableProps) {
   const { width } = useWindowSize();
   const history = useHistory();
   const [initialLoad, setInitialLoad] = React.useState(true);
+  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [expandedRowsByIndex, setExpandedRowsByIndex] = React.useState<BooleanById>({});
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
   const [sortBy, setSortBy] = React.useState<string | undefined>();
@@ -130,13 +131,12 @@ export function TDPTable(props: TDPTableProps) {
 
   /**
    * navigates to the the editor
+   * - passes required props to trigger read-only editor state
    * @param voiceData 
    */
   const handleRowClick = (voiceData: VoiceData) => {
-    //!
-    //TODO
-    //* PASS voiceData TO NEXT PAGE
-    PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceData.id));
+    setNavigationProps({ voiceData, projectId });
+    PATHS.editor.to && history.push(PATHS.editor.to);
   };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
@@ -144,14 +144,19 @@ export function TDPTable(props: TDPTableProps) {
     return (modelConfigsById[id] && modelConfigsById[id].name) || '';
   };
 
-  const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => canModify && !onlyAssignedData && <IconButton
-    color='primary'
-    size='medium'
-    aria-label="open"
-    onClick={() => handleRowClick(cellData.cell.row.original)}
-  >
-    <LaunchIcon />
-  </IconButton>;
+  const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => {
+    const voiceData = cellData.cell.row.original;
+    // eslint-disable-next-line react/prop-types
+    const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
+    return (canModify && !onlyAssignedData && confirmed && <IconButton
+      color='primary'
+      size='medium'
+      aria-label="open"
+      onClick={() => handleRowClick(voiceData)}
+    >
+      <LaunchIcon />
+    </IconButton>);
+  };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
@@ -171,6 +176,7 @@ export function TDPTable(props: TDPTableProps) {
       alignContent='center'
       alignItems='center'
       justify='flex-start'>
+      {renderLaunchIconButton(cellData)}
       <TruncateMarkup lines={numberOfLines}>
         <Typography style={transcriptStyle}>{transcript}</Typography>
       </TruncateMarkup>

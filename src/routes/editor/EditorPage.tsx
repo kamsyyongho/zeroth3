@@ -4,7 +4,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
-import React from "reactn";
+import React, { useGlobal } from "reactn";
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
@@ -85,6 +85,7 @@ export function EditorPage() {
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -110,7 +111,6 @@ export function EditorPage() {
   const [editorOptionsVisible, setEditorOptionsVisible] = React.useState(false);
   const [debugMode, setDebugMode] = React.useState(false);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
-  const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [noAssignedData, setNoAssignedData] = React.useState(false);
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
@@ -118,10 +118,18 @@ export function EditorPage() {
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
-  const [projectId, setProjectId] = React.useState<string | undefined>();
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>();
+  const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
-  const [initialSegments, setInitialSegments] = React.useState<Segment[]>([]);
+
+  // get the passed project if we got here via the details page
+  interface NavigationPropsToGet {
+    voiceData: VoiceData;
+    projectId: string;
+  }
+  const typedNavigationProps: NavigationPropsToGet = navigationProps ?? {};
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(typedNavigationProps.voiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>(typedNavigationProps.projectId);
+  const [readOnly, setReadOnly] = React.useState(!!typedNavigationProps.voiceData);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -185,25 +193,25 @@ export function EditorPage() {
     };
   };
 
-  React.useEffect(() => {
-    const getSegments = async () => {
-      if (api?.voiceData && projectId && voiceData) {
-        setSegmentsLoading(true);
-        const response = await api.voiceData.getSegments(projectId, voiceData.id);
-        if (response.kind === 'ok') {
-          setInitialSegments(response.segments);
-          setSegments(response.segments);
-        } else {
-          log({
-            file: `EditorPage.tsx`,
-            caller: `getSegments - failed to get segments`,
-            value: response,
-            important: true,
-          });
-        }
-        setSegmentsLoading(false);
+  const getSegments = async () => {
+    if (api?.voiceData && projectId && voiceData) {
+      setSegmentsLoading(true);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id);
+      if (response.kind === 'ok') {
+        setSegments(response.segments);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
       }
-    };
+      setSegmentsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
     getSegments();
   }, [voiceData, projectId]);
 
@@ -316,7 +324,6 @@ export function EditorPage() {
         onSuccess(response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
-        setInitialSegments(mergedSegments);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -351,7 +358,6 @@ export function EditorPage() {
 
         // reset our new default baseline
         setSegments(splitSegments);
-        setInitialSegments(splitSegments);
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -388,7 +394,6 @@ export function EditorPage() {
 
         // reset our new default baseline
         setSegments(splitSegments);
-        setInitialSegments(splitSegments);
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -711,6 +716,7 @@ export function EditorPage() {
     setCurrentlyPlayingWordPlayerSegment(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
+    setNavigationProps({});
   };
 
   // once we've loaded new segments
@@ -731,7 +737,11 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
-    getAssignedData();
+    if (readOnly) {
+      getSegments();
+    } else {
+      getAssignedData();
+    }
     return () => {
       resetVariables();
     };
@@ -741,7 +751,7 @@ export function EditorPage() {
     return <SiteLoadingIndicator />;
   }
 
-  if (initialFetchDone && noAssignedData && !noRemainingContent) {
+  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} />;
   }
 
@@ -755,7 +765,10 @@ export function EditorPage() {
 
   return (
     <>
-      <EditorControls
+      {readOnly ? (<StarRating
+        voiceData={voiceData}
+        projectId={projectId}
+      />) : (<EditorControls
         onCommandClick={setEditorCommand}
         onConfirm={onConfirmClick}
         disabledControls={disabledControls}
@@ -766,10 +779,6 @@ export function EditorPage() {
         onThresholdChange={setWordConfidenceThreshold}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
-      />
-      {alreadyConfirmed && (<StarRating
-        voiceData={voiceData}
-        projectId={projectId}
       />)}
       <Container
         className={classes.container}
@@ -785,6 +794,7 @@ export function EditorPage() {
             {segmentsLoading ? <BulletList /> :
               !!segments.length && (<Editor
                 key={voiceData.id}
+                readOnly={readOnly}
                 responseFromParent={responseToPassToEditor}
                 onParentResponseHandled={handleEditorResponseHandled}
                 editorCommand={editorCommand}
