@@ -1452,6 +1452,11 @@ export function Editor(props: EditorProps) {
         }
         break;
       case KEY_COMMANDS.backspace:
+        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+        if (cursorContent?.isStartOfBlock && cursorContent?.isNoSelection) {
+          return HANDLE_VALUES.handled;
+        }
+        break;
       case KEY_COMMANDS['backspace-word']:
       case KEY_COMMANDS['backspace-to-start-of-line']:
         cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -1884,8 +1889,28 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  /** removes all styling if touching the edge of an entity */
+  const handleBeforeInput = (chars: string, incomingEditorState: EditorState, eventTimeStamp: number) => {
+    const selectionState = incomingEditorState.getSelection();
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const {
+      entity,
+      characterDetailsBeforeCursor,
+    } = cursorContent;
+    const entityBeforeCursor = characterDetailsBeforeCursor.properties?.entity;
+    if (!entity || (entity && !entityBeforeCursor)) {
+      const contentState = incomingEditorState.getCurrentContent();
+      const contentWithNoStyling = Modifier.insertText(contentState, selectionState, chars);
+      const editorStateWithNoInlineStyles = EditorState.push(incomingEditorState, contentWithNoStyling, EDITOR_CHANGE_TYPE['insert-characters']);
+      setEditorState(editorStateWithNoInlineStyles);
+      return HANDLE_VALUES.handled;
+    }
+
+    return HANDLE_VALUES['not-handled'];
+  };
+
   /** prevents changing of the editor state */
-  const preventEditorChange = () => HANDLE_VALUES.handled;
+  const editorChangeNoop = () => HANDLE_VALUES.handled;
 
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
@@ -2064,12 +2089,13 @@ export function Editor(props: EditorProps) {
           customStyleMap={buildStyleMap(theme)}
           keyBindingFn={customKeyBindingFunction}
           blockRendererFn={customBlockRenderer}
-          onChange={readOnly ? preventEditorChange : handleChange}
+          onChange={readOnly ? editorChangeNoop : handleChange}
+          handleBeforeInput={readOnly ? editorChangeNoop : handleBeforeInput}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          handleReturn={readOnly ? preventEditorChange : handleReturnPress}
-          handleKeyCommand={readOnly ? preventEditorChange : handleKeyCommand}
-          handlePastedText={preventEditorChange}
+          handleReturn={readOnly ? editorChangeNoop : handleReturnPress}
+          handleKeyCommand={readOnly ? editorChangeNoop : handleKeyCommand}
+          handlePastedText={editorChangeNoop}
         />
       }
     </div>
