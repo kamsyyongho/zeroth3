@@ -35,6 +35,7 @@ export const IMAGES = {
    * The tutorial images
    */
   HomePage: {
+    /** an image of the site's drawer */
     drawer: {
       jpg: {
         ['1x']: require('./images/home-1.jpg'),
@@ -42,6 +43,7 @@ export const IMAGES = {
         ['3x']: require('./images/home-1@3x.jpg'),
       }
     },
+    /** an image of the site's header */
     header: {
       jpg: {
         ['1x']: require('./images/home-2.jpg'),

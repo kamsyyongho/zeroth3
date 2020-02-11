@@ -25,6 +25,8 @@ import { ReactComponent as Menu } from './icons/menu.svg';
 import { ReactComponent as Merge } from './icons/merge.svg';
 import { ReactComponent as Models } from './icons/models.svg';
 import { ReactComponent as More } from './icons/more.svg';
+import { ReactComponent as Number1 } from './icons/number_1.svg';
+import { ReactComponent as Number2 } from './icons/number_2.svg';
 import { OrganizationSvgIcon as Organization } from './icons/OrganizationSvgIcon';
 import { ProfileSvgIcon as Profile } from './icons/ProfileSvgIcon';
 import { ReactComponent as Projects } from './icons/projects.svg';
@@ -161,11 +163,11 @@ export const ICONS = {
   /**  
    * The number 1 in a blue circle
    */
-  Number1: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
+  Number1: (props: SvgIconProps) => <SvgIcon {...props}><Number1 /></SvgIcon>,
   /**  
    * The number 2 in a blue circle
    */
-  Number2: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
+  Number2: (props: SvgIconProps) => <SvgIcon {...props}><Number2 /></SvgIcon>,
   /**
    * Used in the the editor. An icon of two arrows merging into one.
    */
