@@ -685,7 +685,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (segmentEndTime > duration && duration > 0) {
         segmentEndTime = duration;
       }
-      if (endTime > startTime || segmentEndTime > segmentStartTime) {
+      if (endTime > startTime && segmentEndTime > segmentStartTime) {
         const segmentsSameLength = endTime === segmentEndTime && startTime === segmentStartTime;
         const wordSegmentToAdd: SegmentAddOptions = {
           startTime,
