@@ -10,6 +10,9 @@ interface IMAGES {
     png?: {
       [x: string]: string;
     };
+    jpg?: {
+      [x: string]: string;
+    };
   };
 }
 
@@ -26,6 +29,25 @@ export const IMAGES = {
       ['1x']: require('./images/logo.png'),
       ['2x']: require('./images/logo@2x.png'),
       ['3x']: require('./images/logo@3x.png'),
-    }
+    },
+  },
+  /**
+   * The tutorial images
+   */
+  HomePage: {
+    drawer: {
+      jpg: {
+        ['1x']: require('./images/home-1.jpg'),
+        ['2x']: require('./images/home-1@2x.jpg'),
+        ['3x']: require('./images/home-1@3x.jpg'),
+      }
+    },
+    header: {
+      jpg: {
+        ['1x']: require('./images/home-2.jpg'),
+        ['2x']: require('./images/home-2@2x.jpg'),
+        ['3x']: require('./images/home-2@3x.jpg'),
+      }
+    },
   },
 };

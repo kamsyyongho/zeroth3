@@ -158,6 +158,14 @@ export const ICONS = {
    * A menu / hamburger symbol
    */
   Menu: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
+  /**  
+   * The number 1 in a blue circle
+   */
+  Number1: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
+  /**  
+   * The number 2 in a blue circle
+   */
+  Number2: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
   /**
    * Used in the the editor. An icon of two arrows merging into one.
    */
