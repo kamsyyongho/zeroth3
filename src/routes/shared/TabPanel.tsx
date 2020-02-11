@@ -1,5 +1,5 @@
 import { Container } from "@material-ui/core";
-import React from "react";
+import React from "reactn";
 
 interface TabPanelProps {
   children?: React.ReactNode;

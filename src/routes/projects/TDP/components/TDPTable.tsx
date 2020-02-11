@@ -19,7 +19,6 @@ import React from 'reactn';
 import { PERMISSIONS } from '../../../../constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
@@ -100,7 +99,6 @@ export function TDPTable(props: TDPTableProps) {
   const { hasPermission } = React.useContext(KeycloakContext);
   const { width } = useWindowSize();
   const history = useHistory();
-  const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [expandedRowsByIndex, setExpandedRowsByIndex] = React.useState<BooleanById>({});
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
@@ -135,8 +133,9 @@ export function TDPTable(props: TDPTableProps) {
    * @param voiceData 
    */
   const handleRowClick = (voiceData: VoiceData) => {
-    // to store props that will be used on the next page
-    setProps({ projectName, voiceData });
+    //!
+    //TODO
+    //* PASS voiceData TO NEXT PAGE
     PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceData.id));
   };
 

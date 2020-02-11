@@ -1,7 +1,7 @@
 import { Box, FormControl, FormHelperText } from '@material-ui/core';
 import { FieldProps, getIn } from "formik";
 import { DropzoneArea, DropzoneAreaProps } from 'material-ui-dropzone';
-import React from "react";
+import React from "reactn";
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 /**

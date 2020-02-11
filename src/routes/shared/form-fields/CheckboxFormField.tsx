@@ -1,14 +1,14 @@
-import { FormControl, FormControlLabel, FormLabel, FormHelperText } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormHelperText, FormLabel } from '@material-ui/core';
 import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox';
 import { FieldProps, getIn } from "formik";
-import React from "react";
+import React from "reactn";
 
 interface CheckboxFormFieldProps extends FieldProps {
-  errorOverride?: boolean
-  fullWidth?: boolean
-  label?: string
-  color?: CheckboxProps['color']
-  text?: ((value: boolean) => string) | string
+  errorOverride?: boolean;
+  fullWidth?: boolean;
+  label?: string;
+  color?: CheckboxProps['color'];
+  text?: ((value: boolean) => string) | string;
 }
 
 export const CheckboxFormField = ({ field, form, label, text, color, errorOverride, fullWidth, ...props }: CheckboxFormFieldProps) => {

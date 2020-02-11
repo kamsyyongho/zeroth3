@@ -6,7 +6,6 @@ import React, { addCallback } from "reactn";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
-import { useNavigationProps } from './hooks/navigation-props/useNavigationProps';
 import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
 import { EditorPage } from './routes/editor/EditorPage';
@@ -28,7 +27,6 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
-  const navigationProps = useNavigationProps();
 
   React.useEffect(() => {
     initKeycloak();
@@ -63,7 +61,7 @@ function App() {
 
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} navigationProps={navigationProps} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
       <Router history={history}>
         <ErrorBoundary FallbackComponent={PageErrorFallback}>
           <Header />

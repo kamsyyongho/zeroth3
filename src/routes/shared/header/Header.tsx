@@ -129,6 +129,9 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         if (projectUnprocessed < 1) {
           onComplete();
         } else {
+          //!
+          //TODO
+          //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
           const text = `${translate('common.uploading')}: ${projectUnprocessed}`;
           enqueueSnackbar(text, {
             ...DEFAULT_NOTIFICATION_OPTIONS,

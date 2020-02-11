@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon';
-import React from "react";
+import React from "reactn";
 import { ReactComponent as Logo } from './images/logo.svg';
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix

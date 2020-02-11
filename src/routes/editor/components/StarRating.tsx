@@ -11,7 +11,6 @@ import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../types';
 import log from '../../../util/log/logger';
 
@@ -24,7 +23,6 @@ interface StarRatingProps {
 export const StarRating = (props: StarRatingProps) => {
   const { projectId, voiceData } = props;
   const { translate } = React.useContext(I18nContext);
-  const { setProps } = React.useContext(NavigationPropsContext);
   const { hasPermission } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -39,8 +37,10 @@ export const StarRating = (props: StarRatingProps) => {
   const canRate = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
 
   const onSuccess = () => {
+    //!
+    //TODO
+    //* DO SOMETHING WITH THIS DATA
     const updatedVoiceData = { ...voiceData, transcriptionRating: rating };
-    setProps({ voiceData: updatedVoiceData }, true);
   };
 
   const clearRating = () => setRating(voiceData.transcriptionRating);

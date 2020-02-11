@@ -1,8 +1,8 @@
 import { Chip, FormControl, FormHelperText, InputLabel, MenuItem, Select } from "@material-ui/core";
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { FieldProps, getIn } from "formik";
-import React from "react";
+import React from "reactn";
 import { SelectFormFieldOption, SelectFormFieldOptions } from './SelectFormField';
-import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 
 const useStyles = makeStyles((theme) =>
@@ -19,17 +19,17 @@ const useStyles = makeStyles((theme) =>
 );
 
 interface LabelsByValue {
-  [x: string]: string
+  [x: string]: string;
 }
 
 interface ChipSelectFormFieldProps extends FieldProps {
-  errorOverride?: boolean
-  fullWidth?: boolean
-  label?: string
+  errorOverride?: boolean;
+  fullWidth?: boolean;
+  label?: string;
   /** if we need to use the lighter primary text */
   light?: boolean;
-  labelsByValue: LabelsByValue
-  options: SelectFormFieldOptions
+  labelsByValue: LabelsByValue;
+  options: SelectFormFieldOptions;
 }
 
 export const ChipSelectFormField = ({ field, form, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
@@ -48,10 +48,10 @@ export const ChipSelectFormField = ({ field, form, label, options, labelsByValue
           <>
             {(selected as string[]).map(value => (
               <Chip
-              key={value}
-              label={labelsByValue[value]} 
-              size='small'
-              className={light ? classes.light : classes.default}
+                key={value}
+                label={labelsByValue[value]}
+                size='small'
+                className={light ? classes.light : classes.default}
               />
             ))}
           </>

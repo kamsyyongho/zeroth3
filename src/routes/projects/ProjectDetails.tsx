@@ -2,15 +2,14 @@ import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typogra
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
+import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { ProblemKind } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
 import { AcousticModel, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
@@ -71,7 +70,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const api = React.useContext(ApiContext);
   const history = useHistory();
   const { hasPermission } = React.useContext(KeycloakContext);
-  const { setProps } = React.useContext(NavigationPropsContext);
+  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -105,7 +104,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     if (!project) return;
     // to store props that will be used on the next page
     const propsToSet = { project, modelConfigs, topGraphs, subGraphs, languageModels, acousticModels };
-    setProps(propsToSet);
+    setNavigationProps(propsToSet);
     PATHS.modelConfig.function && history.push(PATHS.modelConfig.function(project.id));
   };
 

@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import { useTheme } from '@material-ui/core/styles';
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon';
-import React from "react";
+import React from "reactn";
 import { ReactComponent as Account } from './icons/account.svg';
 import { ReactComponent as ArrowDown } from './icons/arrow-down.svg';
 import { ReactComponent as ArrowLeftDouble } from './icons/arrow-left-double.svg';

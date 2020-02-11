@@ -1,8 +1,8 @@
 import { Card } from '@material-ui/core';
 import CardContent from '@material-ui/core/CardContent';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from "react";
 import { BulletList } from 'react-content-loader';
+import React from "reactn";
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../services/api/types/api-problem.types';

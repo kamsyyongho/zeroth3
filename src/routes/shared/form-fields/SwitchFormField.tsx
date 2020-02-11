@@ -1,14 +1,14 @@
-import { FormControl, FormControlLabel, FormLabel, FormHelperText, Switch } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormHelperText, FormLabel, Switch } from '@material-ui/core';
 import { SwitchProps } from '@material-ui/core/Switch';
 import { FieldProps, getIn } from "formik";
-import React from "react";
+import React from "reactn";
 
 interface SwitchFormFieldProps extends FieldProps {
-  errorOverride?: boolean
-  fullWidth?: boolean
-  label?: string
-  color?: SwitchProps['color']
-  text?: ((value: boolean) => string) | string
+  errorOverride?: boolean;
+  fullWidth?: boolean;
+  label?: string;
+  color?: SwitchProps['color'];
+  text?: ((value: boolean) => string) | string;
 }
 
 export const SwitchFormField = ({ field, form, label, text, color, errorOverride, fullWidth, ...props }: SwitchFormFieldProps) => {

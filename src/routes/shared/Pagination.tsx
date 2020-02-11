@@ -35,20 +35,20 @@ export function Pagination(props: PaginationProps) {
     onChangePage
   } = props;
 
-  const handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    onChangePage(event as any, 0);
+  const handleFirstPageButtonClick = (event: any) => {
+    onChangePage(event, 0);
   };
 
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    onChangePage(event as any, page - 1);
+  const handleBackButtonClick = (event: any) => {
+    onChangePage(event, page - 1);
   };
 
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    onChangePage(event as any, page + 1);
+  const handleNextButtonClick = (event: any) => {
+    onChangePage(event, page + 1);
   };
 
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    onChangePage(event as any, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
+  const handleLastPageButtonClick = (event: any) => {
+    onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   };
 
   const handlePageChange = (event: any) => {

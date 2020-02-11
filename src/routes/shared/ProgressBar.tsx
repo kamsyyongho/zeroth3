@@ -1,5 +1,5 @@
 import { LinearProgress } from "@material-ui/core";
-import React from "react";
+import React from "reactn";
 
 interface ProgressBarProps {
   /** from `0` to `100` */
