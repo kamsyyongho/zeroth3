@@ -4,7 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
 import { BulletList } from 'react-content-loader';
-import React from "reactn";
+import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../../constants/permission.constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -51,6 +51,7 @@ export function TDP(props: TDPProps) {
   const { translate } = React.useContext(I18nContext);
   const { hasPermission } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
@@ -92,13 +93,29 @@ export function TDP(props: TDPProps) {
     }
   }, [api, onlyAssignedData, projectId]);
 
-  React.useEffect(() => {
+  const getVoiceDataWithDefautOptions = () => {
     const options: SearchDataRequest = {};
     if (initialPageSize) {
       options.size = initialPageSize;
     }
     getVoiceData(options);
+  };
+
+  React.useEffect(() => {
+    // if the flag was already set when we first load the page
+    if (projectTdpDataShouldRefresh) {
+      setProjectTdpDataShouldRefresh(false);
+    }
+    getVoiceDataWithDefautOptions();
   }, []);
+
+  React.useEffect(() => {
+    // if the flag triggers after we are already on the page
+    if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+      setProjectTdpDataShouldRefresh(false);
+      getVoiceDataWithDefautOptions();
+    }
+  }, [projectTdpDataShouldRefresh]);
 
   /**
    * Updates a single item after updating

@@ -12,7 +12,6 @@ interface ProjectListProps {
   projects: Project[];
   searching: boolean;
   canModify: boolean;
-  canDelete: boolean;
   showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
   setCheckedProjects: (projectId: string, value: boolean, triggerDelete?: boolean) => void;

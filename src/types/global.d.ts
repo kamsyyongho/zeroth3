@@ -9,6 +9,7 @@ declare module 'reactn/default' {
     currentProject?: Project;
     uploadQueueEmpty?: boolean;
     projectInitialized?: boolean;
+    projectTdpDataShouldRefresh?: boolean;
     navigationProps?: any;
   }
 }

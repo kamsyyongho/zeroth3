@@ -11,7 +11,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ProgressBar } from '../../ProgressBar';
 
@@ -77,6 +77,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
   const { key, progress, message, complete, onClose, onComplete, callback } = props;
   const { closeSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [expanded, setExpanded] = React.useState(true);
   const [isComplete, setIsComplete] = React.useState(!!complete || progress === 100);
   const [text, setText] = React.useState<string>(message as string);
@@ -108,6 +109,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
         if (typeof onComplete === 'function') {
           onComplete();
         }
+        setProjectTdpDataShouldRefresh(true);
       } else {
         setText(`${translate('common.uploading')}: ${queue}`);
         uploadQueueCheckTimeoutId = setTimeout(() => {
@@ -155,6 +157,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
                 <ExpandLessIcon style={iconStyle} />
               </IconButton>
             </Grid>}
+
             <Grid item>
               <IconButton className={classes.expand} onClick={handleDismiss}>
                 <CloseIcon style={iconStyle} />
