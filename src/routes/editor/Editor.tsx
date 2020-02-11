@@ -1874,7 +1874,7 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
-    if (readOnlyEditorState) {
+    if (readOnlyEditorState || readOnly) {
       return;
     }
     const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>();
@@ -1919,7 +1919,7 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     if (editorCommand) {
       onCommandHandled();
-      if (readOnlyEditorState) {
+      if (readOnlyEditorState || readOnly) {
         return;
       }
       let updatedEditorState: EditorState | null = null;
