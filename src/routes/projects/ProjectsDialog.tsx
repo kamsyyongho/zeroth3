@@ -344,7 +344,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
                 projects={searching ? filteredProjects : projects}
                 searching={searching}
                 canModify={canModify}
-                canDelete={projects.length > 1}
                 showEdit={showEdit}
                 checkedProjects={checkedProjects}
                 setCheckedProjects={handleProjectDeleteCheck}

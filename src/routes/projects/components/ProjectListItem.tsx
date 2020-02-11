@@ -26,7 +26,6 @@ interface ProjectListItemProps {
   project: Project;
   selected: boolean;
   canModify: boolean;
-  canDelete: boolean;
   showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
@@ -42,7 +41,6 @@ export function ProjectListItem(props: ProjectListItemProps) {
   const {
     project,
     canModify,
-    canDelete,
     showEdit,
     editOpen,
     handleEditClose,
@@ -76,7 +74,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
       <ListItemText primary={project.name} secondary={formatDate(validDate, 'date')} />
       {canModify && showEdit && <ListItemSecondaryAction>
         <ListItemIcon>
-          <IconButton aria-label="edit" disabled={!canDelete} onClick={() => handleProjectCheck(project.id, true, true)}>
+          <IconButton aria-label="delete" onClick={() => handleProjectCheck(project.id, true, true)}>
             <ICONS.Trash />
           </IconButton>
         </ListItemIcon>

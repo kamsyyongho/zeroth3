@@ -30,7 +30,6 @@ export function ProjectList(props: ProjectListProps) {
     projects,
     searching,
     canModify,
-    canDelete,
     showEdit,
     checkedProjects,
     setCheckedProjects,
@@ -62,7 +61,6 @@ export function ProjectList(props: ProjectListProps) {
         selected={selected}
         project={project}
         canModify={canModify}
-        canDelete={canDelete}
         showEdit={showEdit}
         handleEditClose={handleEditClose}
         handleEditOpen={handleEditOpen}
