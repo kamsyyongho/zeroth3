@@ -9,6 +9,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import SendIcon from '@material-ui/icons/Send';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -19,6 +20,7 @@ import { removeTranscriberFromDataSetResult } from '../../../../services/api/typ
 import { DataSet, SnackbarError, SNACKBAR_VARIANTS, Transcriber, TranscriberStats } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { differencesBetweenSets, isEqualSet } from '../../../../util/misc';
+import { InviteFormDialog } from '../../../IAM/components/users/InviteFormDialog';
 import { SearchBar } from '../../../shared/SearchBar';
 import { TranscribersList } from './TranscribersList';
 
@@ -34,6 +36,9 @@ const useStyles = makeStyles((theme) =>
     cardHeader: {
       padding: 0,
       margin: 0,
+    },
+    hidden: {
+      visibility: 'hidden',
     },
   }),
 );
@@ -65,6 +70,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [filteredTranscribers, setfilteredTranscribers] = React.useState<TranscriberStats[]>([]);
   const [searching, setSearching] = React.useState(false);
+  const [inviteOpen, setInviteOpen] = React.useState(false);
 
   /**
    * initial values from the incoming data
@@ -99,12 +105,18 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
 
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-
   const handleClose = () => {
     selectedTranscriberIdsSet.clear();
     setfilteredTranscribers([]);
     setSearching(false);
     onClose();
+  };
+
+  const handleInviteOpen = () => {
+    setInviteOpen(true);
+  };
+  const handleInviteClose = () => {
+    setInviteOpen(false);
   };
 
   /**
@@ -236,7 +248,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
   };
 
 
-  return (
+  return (<>
     <Dialog
       fullScreen={fullScreen}
       disableBackdropClick={transcribersLoading}
@@ -244,6 +256,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="transcribers-dialog"
+      className={inviteOpen ? classes.hidden : undefined}
     >
       <DialogTitle>{translate("transcribers.header")}</DialogTitle>
       <DialogContent>
@@ -255,6 +268,13 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
               keys={['email']}
               onSearch={handleTranscriberSearch}
             />}
+            action={<Button
+              variant="contained"
+              color="primary"
+              onClick={handleInviteOpen}
+              startIcon={<SendIcon />}
+            >{translate("IAM.invite")}
+            </Button>}
           />
           <CardContent className={classes.cardContent} >
             {transcribersLoading ? <BulletList /> :
@@ -294,5 +314,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
         </Button>
       </DialogActions>
     </Dialog>
+    <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
+  </>
   );
 }
