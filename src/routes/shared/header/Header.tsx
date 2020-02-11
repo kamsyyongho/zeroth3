@@ -59,7 +59,6 @@ const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
   },
   key: QUEUE_NOTIFICATION_KEY,
 };
-let noProjectSelectedTimeout: NodeJS.Timeout | undefined;
 
 export const Header: React.FunctionComponent<{}> = (props) => {
   const { user, hasPermission } = React.useContext(KeycloakContext);
@@ -70,6 +69,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
+  const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
@@ -155,13 +155,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
-  const clearProjectTimeout = () => {
-    if (noProjectSelectedTimeout) {
-      clearTimeout(noProjectSelectedTimeout);
-      noProjectSelectedTimeout = undefined;
-    }
-  };
-
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
     if (user.currentOrganizationId && !organizations) {
@@ -169,13 +162,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     } else {
       setOrganizationsLoading(false);
     }
-    noProjectSelectedTimeout = setTimeout(() => {
-      setNoProjectSelected(true);
-      clearProjectTimeout();
-    }, 5000);
-    return () => {
-      clearProjectTimeout();
-    };
   }, []);
 
   // to get the currently selected organization's info
@@ -196,13 +182,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       setCurrentOrganization(organization);
     }
   }, [organization]);
-
-  React.useEffect(() => {
-    if (currentProjectId) {
-      clearProjectTimeout();
-      setNoProjectSelected(false);
-    }
-  }, [currentProjectId]);
 
   // to check for current upload progress
   React.useEffect(() => {
@@ -250,6 +229,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     }
   }, [canRename, shouldRenameOrganization]);
 
+  React.useEffect(() => {
+    if (projectInitialized) {
+      setNoProjectSelected(!currentProject);
+    }
+  }, [projectInitialized, currentProject]);
 
   return (
     <AppBar

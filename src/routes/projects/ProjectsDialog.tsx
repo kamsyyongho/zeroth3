@@ -63,6 +63,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
+  const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
@@ -113,6 +114,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           value: response,
           important: true,
         });
+        setProjectInitialized(true);
       }
       setProjectsLoading(false);
     }
@@ -125,7 +127,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   }, [currentOrganization]);
 
 
-  // to get the currently selected organization's info
+  // to get the currently selected project
   React.useEffect(() => {
     if (projects && projects.length && currentProjectId) {
       for (let i = 0; i < projects.length; i++) {
@@ -133,11 +135,15 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
         if (project.id === currentProjectId) {
           setSelectedProject(project);
           setCurrentProject(project);
+          setProjectInitialized(true);
           return;
         }
       }
       // if we didn't find any matching projects
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+      setProjectInitialized(true);
+    } else if (!currentProjectId) {
+      setProjectInitialized(true);
     }
   }, [projects]);
 
