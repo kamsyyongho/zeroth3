@@ -1,4 +1,4 @@
-import { Backdrop, TablePagination, TableSortLabel, Typography } from '@material-ui/core';
+import { Backdrop, TablePagination, TableSortLabel, Tooltip, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -151,14 +151,23 @@ export function TDPTable(props: TDPTableProps) {
     const voiceData = cellData.cell.row.original;
     // eslint-disable-next-line react/prop-types
     const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
-    return (canModify && !onlyAssignedData && confirmed && <IconButton
-      color='primary'
-      size='medium'
-      aria-label="open"
-      onClick={() => handleRowClick(voiceData)}
-    >
-      <LaunchIcon />
-    </IconButton>);
+    if (canModify && !onlyAssignedData && confirmed) {
+      return (<Tooltip
+        placement='top'
+        title={<Typography variant='body1' >{translate('TDP.openToRate')}</Typography>}
+        arrow={true}
+      >
+        <IconButton
+          color='primary'
+          size='medium'
+          aria-label="open"
+          onClick={() => handleRowClick(voiceData)}
+        >
+          <LaunchIcon />
+        </IconButton>
+      </Tooltip>);
+    }
+    return null;
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {

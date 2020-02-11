@@ -182,6 +182,7 @@ export const ko: ResourceLanguage = {
       websocketCloseStatus: 'Websocket close status',
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: 'Transferred bytes',
+      openToRate: 'Open to rate',
     },
     SET: {
       SET: 'SET',
