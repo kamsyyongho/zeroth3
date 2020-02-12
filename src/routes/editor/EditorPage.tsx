@@ -85,7 +85,6 @@ export function EditorPage() {
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -121,15 +120,15 @@ export function EditorPage() {
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
 
-  // get the passed project if we got here via the details page
+  // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
-    voiceData: VoiceData;
-    projectId: string;
+    voiceData?: VoiceData;
+    projectId?: string;
   }
-  const typedNavigationProps: NavigationPropsToGet = navigationProps ?? {};
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(typedNavigationProps.voiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>(typedNavigationProps.projectId);
-  const [readOnly, setReadOnly] = React.useState(!!typedNavigationProps.voiceData);
+  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
+  const [readOnly, setReadOnly] = React.useState(!!navigationProps?.voiceData);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();

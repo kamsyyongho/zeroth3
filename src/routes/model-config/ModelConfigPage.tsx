@@ -38,7 +38,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const { projectId } = match.params;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const { hasPermission } = React.useContext(KeycloakContext);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
@@ -49,22 +48,22 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
 
-  // get the passed project if we got here via the details page
+  // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
-    project: Project;
-    modelConfigs: ModelConfig[];
-    topGraphs: TopGraph[];
-    subGraphs: SubGraph[];
-    languageModels: LanguageModel[];
-    acousticModels: AcousticModel[];
+    project?: Project;
+    modelConfigs?: ModelConfig[];
+    topGraphs?: TopGraph[];
+    subGraphs?: SubGraph[];
+    languageModels?: LanguageModel[];
+    acousticModels?: AcousticModel[];
   }
-  const typedNavigationProps = navigationProps ?? {} as NavigationPropsToGet;
-  const [project, setProject] = React.useState<Project | undefined>(typedNavigationProps.project);
-  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>(typedNavigationProps.modelConfigs || []);
-  const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>(typedNavigationProps.topGraphs || []);
-  const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>(typedNavigationProps.subGraphs || []);
-  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(typedNavigationProps.languageModels || []);
-  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>(typedNavigationProps.acousticModels || []);
+  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps?: NavigationPropsToGet; }>('navigationProps');
+  const [project, setProject] = React.useState<Project | undefined>(navigationProps?.project);
+  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>(navigationProps?.modelConfigs || []);
+  const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>(navigationProps?.topGraphs || []);
+  const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>(navigationProps?.subGraphs || []);
+  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
+  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>(navigationProps?.acousticModels || []);
 
   const classes = useStyles();
 
