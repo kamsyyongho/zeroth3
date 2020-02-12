@@ -15,6 +15,7 @@ import {
   getLanguageModelsResult,
   getSubGraphsResult,
   getTopGraphsResult,
+  getTrainingMethodsResult,
   LanguageModelRequest,
   postLanguageModelResult,
   postSubGraphResult,
@@ -583,14 +584,12 @@ export class Models extends ParentApi {
     name: string,
     acousticModelId: string,
     dataSetId: string,
-    trainingMethod: TRAINING_METHODS,
     shared: boolean
   ): Promise<transferLearningResult> {
     // compile data
     const request: TransferLearningRequest = {
       name,
       dataSetId,
-      trainingMethod,
       shared,
     };
     // make the api call
@@ -614,5 +613,33 @@ export class Models extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+
+  /**
+   * Gets the list of available training methods
+   */
+  async getTrainingMethods(): Promise<getTrainingMethodsResult> {
+    // make the api call
+    const response: ApiResponse<
+      TRAINING_METHODS[],
+      ServerError
+    > = await this.apisauce.get(`/training-methods`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const trainingMethods = response.data as TRAINING_METHODS[];
+      return { kind: 'ok', trainingMethods };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

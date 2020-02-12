@@ -11,8 +11,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHOD_VALUES } from '../../types';
-import { TRAINING_METHODS } from '../../types/models.types';
+import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { SwitchFormField } from '../shared/form-fields/SwitchFormField';
@@ -31,6 +30,7 @@ const useStyles = makeStyles((theme) =>
 interface ModelTrainingFormProps {
   dataSets: DataSet[];
   acousticModels: AcousticModel[];
+  trainingMethods: TRAINING_METHODS[];
   dataSetsById: GenericById<DataSet>;
   acousticModelsById: GenericById<AcousticModel>;
 }
@@ -39,6 +39,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const {
     acousticModels,
     dataSetsById,
+    trainingMethods,
     acousticModelsById,
     dataSets
   } = props;
@@ -60,7 +61,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     return { label: acousticModel.name, value: acousticModel.id, disabled };
   });
   const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => ({ label: dataSets.name, value: dataSets.id }));
-  const trainingMethodFormSelectOptions: SelectFormFieldOptions = TRAINING_METHOD_VALUES.map((method) => ({ label: translate(`modelTraining.methods.${method}`), value: method }));
+  const trainingMethodFormSelectOptions: SelectFormFieldOptions = trainingMethods.map((method) => ({ label: method, value: method }));
 
   // validation translated text
   const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('forms.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
@@ -93,7 +94,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(name.trim(), selectedAcousticModelId, selectedDataSetId, selectedTrainingMethod as TRAINING_METHODS, shared);
+      const response = await api.models.transferLearning(name.trim(), selectedAcousticModelId, selectedDataSetId, shared);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;

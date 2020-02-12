@@ -203,9 +203,6 @@ export const en: ResourceLanguage = {
       shared: 'Shared',
       notShared: 'Not shared',
       startTraining: 'Start training',
-      methods: {
-        transferLearning: 'Transfer learning',
-      },
     },
     editor: {
       editor: 'Editor',

@@ -10,7 +10,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
-import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { Forbidden } from '../shared/Forbidden';
 import { ModelTrainingForm } from './ModelTrainingForm';
@@ -44,6 +44,8 @@ export function ModelTraining() {
   const [dataSetsById, setDataSetsById] = React.useState<GenericById<DataSet>>({});
   const [dataSetsLoading, setDataSetsLoading] = React.useState(true);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
+  const [trainingMethodsLoading, setTrainingMethodsLoading] = React.useState(true);
+  const [trainingMethods, setTrainingMethods] = React.useState<TRAINING_METHODS[]>([]);
 
   const classes = useStyles();
 
@@ -105,6 +107,31 @@ export function ModelTraining() {
     }
   };
 
+  const getTrainingMethods = async () => {
+    if (api?.models) {
+      const response = await api.models.getTrainingMethods();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        setTrainingMethods(response.trainingMethods);
+      } else {
+        log({
+          file: `ModelTraining.tsx`,
+          caller: `getDataSets - failed to get data sets`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setTrainingMethodsLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     if (currentProject?.id && canSeeModels) {
       setProjectId(currentProject.id);
@@ -116,6 +143,7 @@ export function ModelTraining() {
       setInitialLoad(true);
       getAcousticModels();
       getDataSets(projectId);
+      getTrainingMethods();
     }
   }, [projectId, initialLoad, canSeeModels]);
 
@@ -132,13 +160,14 @@ export function ModelTraining() {
             className: classes.font,
           }}
         />
-        {(acousticModelsLoading || dataSetsLoading) ?
+        {(acousticModelsLoading || dataSetsLoading || trainingMethodsLoading) ?
           (<BulletList />) :
           (<ModelTrainingForm
             acousticModels={acousticModels}
             dataSets={dataSets}
             acousticModelsById={acousticModelsById}
             dataSetsById={dataSetsById}
+            trainingMethods={trainingMethods}
           />)
         }
       </Card>

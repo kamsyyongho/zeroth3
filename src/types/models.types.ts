@@ -27,7 +27,7 @@ export interface SubGraph extends TopGraph {
 }
 
 export enum TRAINING_METHODS {
-  'transferLearning' = 'transferLearning',
+  'TRANSFER_LEARNING' = 'TRANSFER_LEARNING',
 }
 
 export const TRAINING_METHOD_VALUES: string[] = Object.keys(

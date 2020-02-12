@@ -25,7 +25,6 @@ export interface LanguageModelRequest {
 export interface TransferLearningRequest {
   name: string;
   dataSetId: string;
-  trainingMethod: TRAINING_METHODS;
   shared: boolean;
 }
 
@@ -88,3 +87,7 @@ export type updateSubGraphResult =
 export type deleteSubGraphResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type transferLearningResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type getTrainingMethodsResult =
+  | { kind: 'ok'; trainingMethods: TRAINING_METHODS[] }
+  | GeneralApiProblem;
