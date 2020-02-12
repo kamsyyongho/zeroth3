@@ -64,7 +64,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const trainingMethodFormSelectOptions: SelectFormFieldOptions = trainingMethods.map((method) => ({ label: method, value: method }));
 
   // validation translated text
-  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('forms.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
+  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 

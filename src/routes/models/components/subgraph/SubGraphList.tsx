@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Typography } from '@material-ui/core';
+import { Box, Chip, Container, Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -18,7 +18,7 @@ import { SubGraph, TopGraph } from '../../../../types';
 import { CheckedSubGraphById } from '../ModelTabs';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     container: {
       padding: 0,
@@ -32,10 +32,16 @@ const useStyles = makeStyles((theme) =>
     subGraphRoot: {
       minWidth: 300,
       margin: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
     },
     text: {
       overflowWrap: 'break-word'
-    }
+    },
+    trainingAlertChip: {
+      backgroundColor: theme.error,
+      color: theme.palette.primary.contrastText,
+      fontWeight: 'bold',
+    },
   }),
 );
 
@@ -101,6 +107,13 @@ export function SubGraphList(props: SubGraphListProps) {
               <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
                 <EditIcon />
               </IconButton></>)} />
+            {subGraph.progress < 100 && <CardContent >
+              <Chip
+                label={translate('models.tabs.acousticModel.trainingInProgress')}
+                size='small'
+                className={classes.trainingAlertChip}
+              />
+            </CardContent>}
           </Grid>
         </Box>
       );

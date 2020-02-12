@@ -68,12 +68,20 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   }, [topGraphs]);
 
   // to handle the chip multi-select input values
-  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => ({ label: subGraph.name, value: subGraph.id, disabled: !subGraph.progress }));
+  let allSubGraphsStillTraining = true;
+  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => {
+    const disabled = subGraph.progress < 100;
+    if (!disabled) {
+      allSubGraphsStillTraining = false;
+    }
+    return { label: subGraph.name, value: subGraph.id, disabled };
+  });
   const subGraphsById: SubGraphsById = {};
   subGraphs.forEach(subGraph => subGraphsById[subGraph.id] = subGraph.name);
 
 
   // validation translated text
+  const noAvailableSubGraphText = (subGraphFormSelectOptions.length && allSubGraphsStillTraining) ? translate('models.validation.allSubGraphsStillTraining', { count: subGraphFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const numberText = translate("forms.validation.number");
   const descriptionText = translate("forms.description");
@@ -176,7 +184,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                   labelsByValue={subGraphsById}
                   options={subGraphFormSelectOptions}
                   label={translate("forms.sub")}
-                  errorOverride={isError}
+                  errorOverride={isError || noAvailableSubGraphText}
+                  helperText={noAvailableSubGraphText}
                   light
                 />
                 <Button

@@ -82,7 +82,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
 
   // validation translated text
-  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('forms.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
+  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });

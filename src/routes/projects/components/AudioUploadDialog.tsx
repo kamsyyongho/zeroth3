@@ -52,14 +52,19 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const formSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => ({ label: modelConfig.name, value: modelConfig.id }));
-    return tempFormSelectOptions;
-  }, [modelConfigs]);
+  let allModelConfigsStillTraining = true;
+  const formSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => {
+    const disabled = modelConfig.progress < 100;
+    if (!disabled) {
+      allModelConfigsStillTraining = false;
+    }
+    return { label: modelConfig.name, value: modelConfig.id, disabled };
+  });
 
   const validFilesCheck = (files: File[]) => !!files.length && files.every(file => file instanceof File);
 
   // validation translated text
+  const noAvailableModelConfigText = (modelConfigs.length && allModelConfigsStillTraining) ? translate('models.validation.allModelConfigsStillTraining', { count: modelConfigs.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
@@ -156,8 +161,14 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field name='selectedModelConfigId' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.modelConfig")} errorOverride={isError} />
+                <Field
+                  name='selectedModelConfigId'
+                  component={SelectFormField}
+                  options={formSelectOptions}
+                  label={translate("forms.modelConfig")}
+                  errorOverride={isError || noAvailableModelConfigText}
+                  helperText={noAvailableModelConfigText}
+                />
                 <Field
                   showPreviews
                   maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}

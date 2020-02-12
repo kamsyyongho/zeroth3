@@ -93,22 +93,19 @@ export const ko: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
-        allAcousticModelsStillTraining: 'Acoustic model still training',
-        allAcousticModelsStillTraining_plural:
-          'All acoustic models still training',
-      },
-      dropZone: {
-        main: 'Drag and drop a file or click',
-        text: 'Drag and drop a text file or click',
-        audio: 'Drag and drop an audio file or click',
-        main_plural: 'Drag and drop files or click',
-        text_plural: 'Drag and drop text files or click',
-        audio_plural: 'Drag and drop audio files or click',
-        reject: {
-          main: 'File {{name}} was rejected.',
-          notSupported: 'File type not supported.',
-          exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
-          duplicateFileNames: 'File names must be unique',
+        dropZone: {
+          main: 'Drag and drop a file or click',
+          text: 'Drag and drop a text file or click',
+          audio: 'Drag and drop an audio file or click',
+          main_plural: 'Drag and drop files or click',
+          text_plural: 'Drag and drop text files or click',
+          audio_plural: 'Drag and drop audio files or click',
+          reject: {
+            main: 'File {{name}} was rejected.',
+            notSupported: 'File type not supported.',
+            exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
+            duplicateFileNames: 'File names must be unique',
+          },
         },
       },
       numberFiles: 'Number of files to upload: {{count}}',
@@ -266,6 +263,16 @@ export const ko: ResourceLanguage = {
           delete_plural: '{{count}} 언어 모델 삭제',
           noResults: '언어 모델이 없습니다.',
         },
+      },
+      validation: {
+        allAcousticModelsStillTraining: 'Acoustic model still training',
+        allAcousticModelsStillTraining_plural:
+          'All acoustic models still training',
+        allSubGraphsStillTraining: 'Sub graph still training',
+        allSubGraphsStillTraining_plural: 'All sub graphs still training',
+        allModelConfigsStillTraining: 'Model configuration still training',
+        allModelConfigsStillTraining_plural:
+          'All modelConfigurations still training',
       },
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',

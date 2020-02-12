@@ -25,6 +25,7 @@ interface LabelsByValue {
 interface ChipSelectFormFieldProps extends FieldProps {
   errorOverride?: boolean;
   fullWidth?: boolean;
+  helperText?: string;
   label?: string;
   /** if we need to use the lighter primary text */
   light?: boolean;
@@ -32,7 +33,7 @@ interface ChipSelectFormFieldProps extends FieldProps {
   options: SelectFormFieldOptions;
 }
 
-export const ChipSelectFormField = ({ field, form, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
+export const ChipSelectFormField = ({ field, form, helperText, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
@@ -58,12 +59,12 @@ export const ChipSelectFormField = ({ field, form, label, options, labelsByValue
         )}
         {...field} {...props}>
         {options.map((op: SelectFormFieldOption) => (
-          <MenuItem key={op.value} value={op.value}>
+          <MenuItem key={op.value} value={op.value} disabled={op.disabled} >
             {op.label}
           </MenuItem>
         ))}
       </Select>
-      <FormHelperText>{errorText}</FormHelperText>
+      <FormHelperText>{errorText || helperText}</FormHelperText>
     </FormControl>
   );
 };

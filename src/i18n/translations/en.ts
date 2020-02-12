@@ -91,9 +91,6 @@ export const en: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
-        allAcousticModelsStillTraining: 'Acoustic model still training',
-        allAcousticModelsStillTraining_plural:
-          'All acoustic models still training',
       },
       dropZone: {
         main: 'Drag and drop a file or click',
@@ -265,6 +262,16 @@ export const en: ResourceLanguage = {
           delete_plural: 'Delete {{count}} language models',
           noResults: 'No language models',
         },
+      },
+      validation: {
+        allAcousticModelsStillTraining: 'Acoustic model still training',
+        allAcousticModelsStillTraining_plural:
+          'All acoustic models still training',
+        allSubGraphsStillTraining: 'Sub graph still training',
+        allSubGraphsStillTraining_plural: 'All sub graphs still training',
+        allModelConfigsStillTraining: 'Model configuration still training',
+        allModelConfigsStillTraining_plural:
+          'All modelConfigurations still training',
       },
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',

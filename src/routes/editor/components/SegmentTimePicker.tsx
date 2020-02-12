@@ -132,15 +132,6 @@ export function SegmentTimePicker(props: SegmentTimePickerProps) {
     updateTimeSection(updatedWord, wordKey);
   };
 
-
-  const handleStartChangeTime = (increment: boolean) => {
-    changeSegmentTime(true, increment);
-  };
-
-  const handleEndChangeTime = (increment: boolean) => {
-    changeSegmentTime(false, increment);
-  };
-
   const getTimeDisplay = (time?: number) => {
     if (typeof time !== 'number') return DEFAULT_EMPTY_TIME;
     const timeString = time.toFixed(2);
