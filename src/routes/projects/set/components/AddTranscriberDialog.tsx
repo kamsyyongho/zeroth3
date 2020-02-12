@@ -1,4 +1,4 @@
-import { Typography } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -258,7 +258,20 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
       aria-labelledby="transcribers-dialog"
       className={inviteOpen ? classes.hidden : undefined}
     >
-      <DialogTitle>{translate("transcribers.header")}</DialogTitle>
+      <DialogTitle>
+        <Grid container direction='row' justify='space-between' wrap='nowrap' >
+          <Typography variant='h5' >
+            {translate("transcribers.header")}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleInviteOpen}
+            startIcon={<SendIcon />}
+          >{translate("IAM.invite")}
+          </Button>
+        </Grid>
+      </DialogTitle>
       <DialogContent>
         <Card elevation={0} className={classes.card}>
           <CardHeader
@@ -268,13 +281,6 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
               keys={['email']}
               onSearch={handleTranscriberSearch}
             />}
-            action={<Button
-              variant="contained"
-              color="primary"
-              onClick={handleInviteOpen}
-              startIcon={<SendIcon />}
-            >{translate("IAM.invite")}
-            </Button>}
           />
           <CardContent className={classes.cardContent} >
             {transcribersLoading ? <BulletList /> :
