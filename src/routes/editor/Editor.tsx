@@ -349,6 +349,7 @@ export function Editor(props: EditorProps) {
         editable: true,
         props: {
           showPopups,
+          readOnly,
           assignSpeakerForSegment,
         },
       };

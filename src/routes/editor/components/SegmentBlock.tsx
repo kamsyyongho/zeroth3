@@ -66,6 +66,7 @@ const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
 
 interface SegmentBlockSubProps {
   showPopups: boolean;
+  readOnly?: boolean;
   /** opens the assign speaker dialog for the segment */
   assignSpeakerForSegment: (segmentId: string) => void;
 }
@@ -79,12 +80,12 @@ interface SegmentBlockProps extends EditorBlock {
 export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
   const { blockProps, block } = props;
-  const { showPopups, assignSpeakerForSegment } = blockProps;
+  const { showPopups, readOnly, assignSpeakerForSegment } = blockProps;
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
-  const displayTextChangedHover = ((transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
+  const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
