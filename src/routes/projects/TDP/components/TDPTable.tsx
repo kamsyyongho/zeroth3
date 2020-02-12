@@ -99,7 +99,7 @@ export function TDPTable(props: TDPTableProps) {
   } = props;
   const voiceData = voiceDataResults.content;
   const { translate, formatDate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { width } = useWindowSize();
   const history = useHistory();
   const [initialLoad, setInitialLoad] = React.useState(true);
@@ -113,7 +113,7 @@ export function TDPTable(props: TDPTableProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const changeSort = (sortColumn: TDPTableColumns) => {
     let newOrderDirection = orderDirection;

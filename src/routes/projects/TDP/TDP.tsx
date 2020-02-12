@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) =>
 export function TDP(props: TDPProps) {
   const { projectId, project, modelConfigs = [] as ModelConfig[], onSetCreate } = props;
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
@@ -62,7 +62,7 @@ export function TDP(props: TDPProps) {
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
   const initialPageSize = React.useMemo(() => {
     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE);
     if (rowsPerPageString) {

@@ -57,7 +57,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const { open, onClose } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
-  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission, roles } = React.useContext(KeycloakContext);
   const { currentProjectId } = user;
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
@@ -81,7 +81,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
 
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const handleClose = () => {
     setfilteredProjects([]);

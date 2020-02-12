@@ -60,8 +60,12 @@ const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
   key: QUEUE_NOTIFICATION_KEY,
 };
 
+/**
+ * Handles initial data fetching and site management
+ * @param props 
+ */
 export const Header: React.FunctionComponent<{}> = (props) => {
-  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission, initializeUserRoles, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
@@ -151,8 +155,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       }
     }
   };
-
-  const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
+  const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.organization), [roles]);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
   React.useEffect(() => {
@@ -180,6 +183,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   React.useEffect(() => {
     if (organization) {
       setCurrentOrganization(organization);
+      const roleNames = organization.roles.map(role => role.name);
+      initializeUserRoles(roleNames);
     }
   }, [organization]);
 

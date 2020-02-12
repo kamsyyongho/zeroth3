@@ -40,7 +40,7 @@ interface AppDrawerProps {
 
 export const AppDrawer = (props: AppDrawerProps) => {
   const { open, setOpen } = props;
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const location = useLocation();
@@ -55,9 +55,9 @@ export const AppDrawer = (props: AppDrawerProps) => {
     }
   };
 
-  const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
-  const canSeeUsers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
-  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canSeeModels: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
+  const canSeeUsers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
+  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const drawerItems: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {

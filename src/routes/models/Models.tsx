@@ -34,11 +34,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function Models() {
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
 
   const classes = useStyles();
 
-  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
 
   if (!canSeeModels) {
     return <Forbidden />;

@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 export function Profile() {
-  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const [organizations, setOrganizations] = useGlobal('organizations');
   const api = React.useContext(ApiContext);
@@ -83,7 +83,7 @@ export function Profile() {
   const confirmReset = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
 
-  const hasRenamePermissions = hasPermission(PERMISSIONS.organization);
+  const hasRenamePermissions = hasPermission(roles, PERMISSIONS.organization);
 
   const { givenName, familyName, preferredUsername, email, currentOrganizationId } = user;
 

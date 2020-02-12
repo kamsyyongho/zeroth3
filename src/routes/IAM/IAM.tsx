@@ -34,13 +34,13 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function IAM() {
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
 
   const classes = useStyles();
 
 
-  const usersAccess = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
-  const transcribersAccess = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const usersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
+  const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   if (!transcribersAccess && !usersAccess) {
     return <Forbidden />;

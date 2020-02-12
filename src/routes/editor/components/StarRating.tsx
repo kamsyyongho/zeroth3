@@ -32,7 +32,7 @@ interface StarRatingProps {
 export const StarRating = (props: StarRatingProps) => {
   const { projectId, voiceData } = props;
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -45,7 +45,7 @@ export const StarRating = (props: StarRatingProps) => {
   const theme = useTheme();
   const classes = useStyles();
 
-  const canRate = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const onSuccess = () => {
     const updatedVoiceData = { ...voiceData, transcriptionRating: rating };

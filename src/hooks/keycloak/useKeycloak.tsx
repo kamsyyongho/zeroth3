@@ -34,7 +34,10 @@ export const useKeycloak = () => {
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
+  const [roles, setRoles] = useState<ROLES[]>([]);
   const [keycloak, setKeycloak] = useState(rawKeycloak);
+
+
 
   const init = () => {
     return new Promise<boolean>((resolve, reject) => {
@@ -79,12 +82,8 @@ export const useKeycloak = () => {
     keycloak.logout(logoutOptions);
   };
 
-  let roles: string[] = [];
   let user: KeycloakUser = {};
   try {
-    if (keycloak?.tokenParsed?.realm_access) {
-      roles = keycloak.tokenParsed.realm_access.roles;
-    }
     if (keycloak?.tokenParsed) {
       user = {
         organizationIds: keycloak.tokenParsed.organization_id,
@@ -108,25 +107,23 @@ export const useKeycloak = () => {
   /**
    * checks if the user has the required permissions
    */
-  const hasPermission = (permittedRoles: ROLES[]) => {
-    //!
-    //TODO
-    //* FOR TESTING
-    //!
-    //TODO
-    //* FOR TESTING
-    //!
-    //TODO
-    //* FOR TESTING
-    return true;
-    // const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
-    // for (let i = 0; i < roles.length; i++) {
-    //   if (permittedRolesStrings.includes(roles[i])) {
-    //     return true;
-    //   }
-    // }
-    // return false;
+  const hasPermission = (roles: ROLES[], permittedRoles: ROLES[]) => {
+    const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
+    for (let i = 0; i < roles.length; i++) {
+      if (permittedRolesStrings.includes(roles[i])) {
+        return true;
+      }
+    }
+    return false;
   };
+
+  /**
+   * sets the user roles for the current organization
+   */
+  const initializeUserRoles = (rolesForOrganization: ROLES[] = []) => {
+    setRoles(rolesForOrganization);
+  };
+
 
   // get or set the organization from/to localStorage
   if (user.organizationIds) {
@@ -148,7 +145,7 @@ export const useKeycloak = () => {
     user.currentProjectId = currentProjectId;
   }
 
-  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user, hasPermission };
+  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, user, roles, hasPermission, initializeUserRoles };
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
 };

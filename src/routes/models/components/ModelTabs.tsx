@@ -33,7 +33,7 @@ export type CheckedSubGraphById = BooleanById;
 export function ModelTabs() {
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([] as TopGraph[]);
@@ -49,7 +49,7 @@ export function ModelTabs() {
   /** used to prevent tabs from rendering before they should be displayed */
   const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);

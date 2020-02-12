@@ -38,7 +38,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const { projectId } = match.params;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -67,7 +67,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig, isEdit?: boolean) => {
     if (isEdit) {

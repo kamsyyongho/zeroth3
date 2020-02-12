@@ -69,7 +69,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const history = useHistory();
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
@@ -94,7 +94,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   /**
    * navigates to the the model config page

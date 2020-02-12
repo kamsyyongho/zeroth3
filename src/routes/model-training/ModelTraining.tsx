@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function ModelTraining() {
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
@@ -47,7 +47,7 @@ export function ModelTraining() {
 
   const classes = useStyles();
 
-  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
 
   const getAcousticModels = async () => {
     if (api?.models) {
