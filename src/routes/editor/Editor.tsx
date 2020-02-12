@@ -1,6 +1,7 @@
 import { Backdrop } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
@@ -26,6 +27,11 @@ import './styles/editor.css';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
+    draggable: {
+      "&:hover": {
+        cursor: 'all-scroll',
+      },
+    },
     backdrop: {
       zIndex: theme.zIndex.drawer - 1,
       color: theme.shadows[1],
@@ -2052,7 +2058,7 @@ export function Editor(props: EditorProps) {
           offsetParent={containerRef.current ?? undefined}
           scale={1}
         >
-          <Card className="box">
+          <Card className={clsx(classes.draggable, 'box')}>
             {wordTimePickerOptions && <WordTimePicker
               segments={segments}
               segmentIndex={wordTimePickerOptions.segmentIndex}

@@ -1,12 +1,10 @@
-import { Avatar, Button, CardContent, CardHeader, Grid, Typography } from '@material-ui/core';
+import { Avatar, Button, CardHeader } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
 import CancelIcon from '@material-ui/icons/Cancel';
 import DoneIcon from '@material-ui/icons/Done';
-import RemoveIcon from '@material-ui/icons/Remove';
 import React from 'reactn';
 import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -150,43 +148,6 @@ export function SegmentTimePicker(props: SegmentTimePickerProps) {
     const decimals = timeString.substring(decimalIndex);
     const formattedTime = formatSecondsDuration(time);
     return formattedTime + decimals;
-  };
-
-  const renderTimeChecker = (title: string, onChange: (increment: boolean) => void, time?: number) => {
-    return (
-      <Card elevation={0} >
-        <CardHeader
-          title={title}
-          className={classes.timeContent}
-        />
-        <CardContent
-          className={classes.timeContent}
-        >
-          <Grid
-            container
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='center'
-          >
-            <IconButton
-              color={'primary'}
-              onClick={() => onChange(false)}
-            >
-              <RemoveIcon />
-            </IconButton>
-            <Typography>{getTimeDisplay(time)}</Typography>
-            <IconButton
-              color={'primary'}
-              onClick={() => onChange(true)}
-            >
-              <AddIcon />
-            </IconButton>
-          </Grid>
-        </CardContent>
-      </Card>
-    );
   };
 
   const getTimeDuration = () => {
