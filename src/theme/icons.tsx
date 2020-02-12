@@ -48,7 +48,7 @@ import { ReactComponent as Undo } from './icons/undo.svg';
 const getColor = (props: SvgIconProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const theme = useTheme();
-  let color = '#000';
+  let color = theme.palette.common.black;
   if (props.style?.color) {
     color = props.style.color;
   } else {
