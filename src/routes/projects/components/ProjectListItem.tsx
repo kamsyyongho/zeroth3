@@ -1,3 +1,4 @@
+import { Grow } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -72,18 +73,24 @@ export function ProjectListItem(props: ProjectListItemProps) {
     />
     <ListItem dense button onClick={onClick} className={selected ? classes.selected : undefined}>
       <ListItemText primary={project.name} secondary={formatDate(validDate, 'date')} />
-      {canModify && showEdit && <ListItemSecondaryAction>
-        <ListItemIcon>
-          <IconButton aria-label="delete" onClick={() => handleProjectCheck(project.id, true, true)}>
-            <ICONS.Trash />
-          </IconButton>
-        </ListItemIcon>
-        <ListItemIcon>
-          <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
-            <EditIcon />
-          </IconButton>
-        </ListItemIcon>
-      </ListItemSecondaryAction>}
+      {canModify &&
+        <ListItemSecondaryAction>
+          <Grow in={showEdit}>
+            <ListItemIcon>
+              <IconButton aria-label="delete" onClick={() => handleProjectCheck(project.id, true, true)}>
+                <ICONS.Trash />
+              </IconButton>
+            </ListItemIcon>
+          </Grow>
+          <Grow in={showEdit}>
+            <ListItemIcon>
+              <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
+                <EditIcon />
+              </IconButton>
+            </ListItemIcon>
+          </Grow>
+        </ListItemSecondaryAction>
+      }
     </ListItem>
   </React.Fragment>);
 };

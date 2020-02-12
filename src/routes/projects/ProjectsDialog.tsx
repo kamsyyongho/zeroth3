@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@material-ui/core';
+import { Grid, Grow, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -265,27 +265,31 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     alignContent='center'
     alignItems='center'
   >
-    <Grid item >
-      <IconButton
-        aria-label="settings-button"
-        size="small"
-        color="primary"
-        disabled={projectsLoading}
-        onClick={handleSettingsOpen}
-      >
-        <ICONS.Settings />
-      </IconButton>
-    </Grid>
-    <Grid item >
-      <IconButton
-        aria-label="create-button"
-        size="small"
-        color="primary"
-        onClick={handleCreateOpen}
-      >
-        <AddIcon />
-      </IconButton>
-    </Grid>
+    <Grow in={!showEdit}>
+      <Grid item >
+        <IconButton
+          aria-label="settings-button"
+          size="small"
+          color="primary"
+          disabled={projectsLoading}
+          onClick={handleSettingsOpen}
+        >
+          <ICONS.Settings />
+        </IconButton>
+      </Grid>
+    </Grow>
+    <Grow in={!showEdit}>
+      <Grid item >
+        <IconButton
+          aria-label="create-button"
+          size="small"
+          color="primary"
+          onClick={handleCreateOpen}
+        >
+          <AddIcon />
+        </IconButton>
+      </Grid>
+    </Grow>
   </Grid>);
 
   const renderHeaderTitle = () => {
@@ -296,17 +300,20 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       alignItems='center'
       wrap='nowrap'
     >
-      {showEdit && <Grid item>
-        <IconButton
-          aria-label="settings-button"
-          size="small"
-          color="primary"
-          disabled={projectsLoading}
-          onClick={handleSettingsClose}
-        >
-          <ChevronLeftIcon />
-        </IconButton>
-      </Grid>}
+      {showEdit && <Grow in={showEdit}>
+        <Grid item>
+          <IconButton
+            aria-label="settings-button"
+            size="small"
+            color="primary"
+            disabled={projectsLoading}
+            onClick={handleSettingsClose}
+          >
+            <ChevronLeftIcon />
+          </IconButton>
+        </Grid>
+      </Grow>
+      }
       <Grid item>
         <Typography align='center' variant='h6' >
           {translate("projects.header")}
@@ -328,7 +335,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       <DialogContent>
         <Card elevation={0} className={classes.card}>
           <CardHeader
-            action={canModify && !projectsLoading && !showEdit && renderCardHeaderAction()}
+            action={canModify && !projectsLoading && renderCardHeaderAction()}
             title={renderHeaderTitle()}
           />
           <CardHeader
