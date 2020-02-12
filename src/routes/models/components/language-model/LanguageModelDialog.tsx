@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme) =>
 
 interface LanguageModelDialogProps {
   open: boolean;
+  hideBackdrop?: boolean;
   modelToEdit?: LanguageModel;
   onClose: (modelId?: string) => void;
   onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
@@ -47,7 +48,7 @@ interface SubGraphsById {
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
-  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
+  const { open, hideBackdrop, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -152,7 +153,12 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="language-model-dialog"
-      className={clsx(subOpen && classes.hidden)}
+      classes={{
+        container: clsx(subOpen && classes.hidden)
+      }}
+      BackdropProps={{
+        className: clsx(hideBackdrop && classes.hidden),
+      }}
     >
       <DialogTitle id="language-model-dialog">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -212,6 +218,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         onClose={() => setSubOpen(false)}
         onSuccess={handleSubGraphListUpdate}
         topGraphs={topGraphs}
+        hideBackdrop
       />
     </Dialog>
   );

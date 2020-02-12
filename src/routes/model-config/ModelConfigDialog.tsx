@@ -167,7 +167,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="model-config-dialog"
-      className={clsx(languageOpen && classes.hidden)}
+      classes={{
+        container: clsx(languageOpen && classes.hidden)
+      }}
     >
       <DialogTitle id="model-config-dialog">{translate(`modelConfig.header`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -237,6 +239,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
         handleSubGraphListUpdate={handleSubGraphListUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
+        hideBackdrop
       />
     </Dialog>
   );

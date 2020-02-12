@@ -3,10 +3,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -22,8 +23,17 @@ import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-field
 import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
+
 interface SubgraphFormDialogProps {
   open: boolean;
+  hideBackdrop?: boolean;
   onClose: () => void;
   onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
   subGraphToEdit?: SubGraph;
@@ -32,7 +42,7 @@ interface SubgraphFormDialogProps {
 
 
 export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
-  const { open, onClose, onSuccess, subGraphToEdit, topGraphs } = props;
+  const { open, hideBackdrop, onClose, onSuccess, subGraphToEdit, topGraphs } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -41,6 +51,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const isEdit = !!subGraphToEdit;
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleClose = () => {
     setIsError(false);
@@ -150,6 +161,9 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="sub-graph-dialog"
+      BackdropProps={{
+        className: clsx(hideBackdrop && classes.hidden),
+      }}
     >
       <DialogTitle id="sub-graph-dialog">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
