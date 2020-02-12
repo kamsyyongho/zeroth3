@@ -70,6 +70,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
       onClose={() => handleEditClose(project.id)}
       onSuccess={handleEditSuccess}
       projectToEdit={project}
+      hideBackdrop
     />
     <ListItem dense button onClick={onClick} className={selected ? classes.selected : undefined}>
       <ListItemText primary={project.name} secondary={formatDate(validDate, 'date')} />

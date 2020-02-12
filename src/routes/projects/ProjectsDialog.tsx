@@ -11,6 +11,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import { useHistory } from 'react-router-dom';
@@ -329,8 +330,10 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       disableEscapeKeyDown={projectsLoading}
       open={open}
       onClose={handleClose}
-      className={(createOpen || editDialogOpen) ? classes.hidden : undefined}
       aria-labelledby="projects-dialog"
+      classes={{
+        container: clsx((createOpen || editDialogOpen) && classes.hidden)
+      }}
     >
       <DialogContent>
         <Card elevation={0} className={classes.card}>
@@ -362,7 +365,12 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
               />
             }
           </CardContent>
-          <ProjectDialog open={createOpen} onClose={handleCreateClose} onSuccess={handleProjectListUpdate} />
+          <ProjectDialog
+            open={createOpen}
+            onClose={handleCreateClose}
+            onSuccess={handleProjectListUpdate}
+            hideBackdrop
+          />
           <ConfirmationDialog
             destructive
             titleText={`${translate('projects.deleteProject', { count: projectsToDelete.length })}?`}
