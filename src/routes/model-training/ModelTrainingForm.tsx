@@ -11,7 +11,7 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
+import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { SwitchFormField } from '../shared/form-fields/SwitchFormField';
@@ -29,18 +29,18 @@ const useStyles = makeStyles((theme) =>
 );
 interface ModelTrainingFormProps {
   dataSets: DataSet[];
-  acousticModels: AcousticModel[];
+  modelConfigs: ModelConfig[];
   trainingMethods: TRAINING_METHODS[];
   dataSetsById: GenericById<DataSet>;
-  acousticModelsById: GenericById<AcousticModel>;
+  modelConfigsById: GenericById<ModelConfig>;
 }
 
 export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const {
-    acousticModels,
+    modelConfigs,
     dataSetsById,
     trainingMethods,
-    acousticModelsById,
+    modelConfigsById,
     dataSets
   } = props;
   const { enqueueSnackbar } = useSnackbar();
@@ -52,25 +52,25 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-  let allAcousticModelsStillTraining = true;
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => {
-    const disabled = acousticModel.progress < 100;
+  let allModelConfigsStillTraining = true;
+  const modelConfigFormSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => {
+    const disabled = modelConfig.progress < 100;
     if (!disabled) {
-      allAcousticModelsStillTraining = false;
+      allModelConfigsStillTraining = false;
     }
-    return { label: acousticModel.name, value: acousticModel.id, disabled };
+    return { label: modelConfig.name, value: modelConfig.id, disabled };
   });
   const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => ({ label: dataSets.name, value: dataSets.id }));
   const trainingMethodFormSelectOptions: SelectFormFieldOptions = trainingMethods.map((method) => ({ label: method, value: method }));
 
   // validation translated text
-  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
+  const noAvailableModelConfigText = (modelConfigFormSelectOptions.length && allModelConfigsStillTraining) ? translate('models.validation.allModelConfigsStillTraining', { count: modelConfigFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
+    selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
     selectedDataSetId: yup.string().nullable().required(requiredTranslationText),
     selectedTrainingMethod: yup.string().nullable().required(requiredTranslationText),
     shared: yup.boolean().required(requiredTranslationText),
@@ -78,7 +78,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     name: "",
-    selectedAcousticModelId: null,
+    selectedModelConfigId: null,
     selectedDataSetId: null,
     selectedTrainingMethod: null,
     shared: true,
@@ -86,15 +86,15 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
 
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, selectedAcousticModelId, selectedDataSetId, selectedTrainingMethod, shared } = values;
-    if (selectedAcousticModelId === null ||
+    const { name, selectedModelConfigId, selectedDataSetId, selectedTrainingMethod, shared } = values;
+    if (selectedModelConfigId === null ||
       selectedDataSetId === null ||
       selectedTrainingMethod === null
     ) return;
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(name.trim(), selectedAcousticModelId, selectedDataSetId, shared);
+      const response = await api.models.transferLearning(name.trim(), selectedModelConfigId, selectedDataSetId, shared);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -124,8 +124,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
       {(formikProps) => {
         let modelHelperText = ' ';
-        if (formikProps.values.selectedAcousticModelId) {
-          modelHelperText = acousticModelsById[formikProps.values.selectedAcousticModelId].description || ' ';
+        if (formikProps.values.selectedModelConfigId) {
+          modelHelperText = modelConfigsById[formikProps.values.selectedModelConfigId].description || ' ';
         }
         let transcriberHelperText = ' ';
         if (formikProps.values.selectedDataSetId && dataSetsById[formikProps.values.selectedDataSetId].transcribers.length) {
@@ -136,12 +136,12 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
             <Form>
               <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
               <Field
-                name='selectedAcousticModelId'
+                name='selectedModelConfigId'
                 component={SelectFormField}
-                options={acousticModelFormSelectOptions}
-                label={translate("forms.acousticModel")}
-                errorOverride={isError || noAvailableAcousticModelText}
-                helperText={noAvailableAcousticModelText || modelHelperText}
+                options={modelConfigFormSelectOptions}
+                label={translate("forms.modelConfig")}
+                errorOverride={isError || noAvailableModelConfigText}
+                helperText={noAvailableModelConfigText || modelHelperText}
               />
               <Field
                 name='selectedDataSetId'

@@ -10,7 +10,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
-import { AcousticModel, DataSet, GenericById, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
+import { AcousticModel, DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { Forbidden } from '../shared/Forbidden';
 import { ModelTrainingForm } from './ModelTrainingForm';
@@ -40,8 +40,10 @@ export function ModelTraining() {
   const [initialLoad, setInitialLoad] = React.useState(false);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
-  const [acousticModelsById, setAcousticModelsById] = React.useState<GenericById<AcousticModel>>({});
+  const [modelConfigsById, setModelConfigsById] = React.useState<GenericById<ModelConfig>>({});
   const [dataSetsById, setDataSetsById] = React.useState<GenericById<DataSet>>({});
+  const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
+  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
   const [dataSetsLoading, setDataSetsLoading] = React.useState(true);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [trainingMethodsLoading, setTrainingMethodsLoading] = React.useState(true);
@@ -51,31 +53,23 @@ export function ModelTraining() {
 
   const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
 
-  const getAcousticModels = async () => {
-    if (api?.models) {
-      const response = await api.models.getAcousticModels();
-      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+  const getModelConfigs = async (projectId: string) => {
+    if (api?.modelConfig) {
+      const response = await api.modelConfig.getModelConfigs(projectId);
       if (response.kind === 'ok') {
-        snackbarError = undefined;
-        const acousticModelsById: GenericById<AcousticModel> = {};
-        response.acousticModels.forEach(model => acousticModelsById[model.id] = model);
-        setAcousticModelsById(acousticModelsById);
-        setAcousticModels(response.acousticModels);
+        const modelConfigsById: GenericById<ModelConfig> = {};
+        response.modelConfigs.forEach(modelConfig => modelConfigsById[modelConfig.id] = modelConfig);
+        setModelConfigsById(modelConfigsById);
+        setModelConfigs(response.modelConfigs);
       } else {
         log({
           file: `ModelTraining.tsx`,
-          caller: `getAcousticModels - failed to get model configs`,
+          caller: `getModelConfigs - failed to get model configs`,
           value: response,
           important: true,
         });
-        snackbarError.isError = true;
-        const { serverError } = response;
-        if (serverError) {
-          snackbarError.errorText = serverError.message || "";
-        }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-      setAcousticModelsLoading(false);
+      setModelConfigsLoading(false);
     }
   };
 
@@ -141,7 +135,7 @@ export function ModelTraining() {
   React.useEffect(() => {
     if (projectId && !initialLoad && canSeeModels) {
       setInitialLoad(true);
-      getAcousticModels();
+      getModelConfigs(projectId);
       getDataSets(projectId);
       getTrainingMethods();
     }
@@ -160,12 +154,12 @@ export function ModelTraining() {
             className: classes.font,
           }}
         />
-        {(acousticModelsLoading || dataSetsLoading || trainingMethodsLoading) ?
+        {(modelConfigsLoading || dataSetsLoading || trainingMethodsLoading) ?
           (<BulletList />) :
           (<ModelTrainingForm
-            acousticModels={acousticModels}
+            modelConfigs={modelConfigs}
             dataSets={dataSets}
-            acousticModelsById={acousticModelsById}
+            modelConfigsById={modelConfigsById}
             dataSetsById={dataSetsById}
             trainingMethods={trainingMethods}
           />)

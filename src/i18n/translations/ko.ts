@@ -289,7 +289,7 @@ export const ko: ResourceLanguage = {
     home: {
       header: 'Welcome to Zeroth',
       textBlocks: {
-        ['1']: 'Zeroth를 유용하게 사용하시려면 ',
+        ['1']: 'Zeroth를 유용하게 사용하시려면',
         ['2']:
           '왼쪽 메뉴에서 음향모델과 언어모델을 확인해주세요. 모델이 없을 시, 프로젝트 생성이 제한될 수 있습니다.',
         ['3']:

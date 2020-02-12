@@ -1,35 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import {
-  AcousticModel,
-  LanguageModel,
-  SubGraph,
-  TopGraph,
-  TRAINING_METHODS,
-} from '../../../types';
+import { AcousticModel, LanguageModel, SubGraph, TopGraph, TRAINING_METHODS } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  AcousticModelEditRequest,
-  deleteLanguageModelResult,
-  deleteSubGraphResult,
-  getAcousticModelsResult,
-  getLanguageModelsResult,
-  getSubGraphsResult,
-  getTopGraphsResult,
-  getTrainingMethodsResult,
-  LanguageModelRequest,
-  postLanguageModelResult,
-  postSubGraphResult,
-  ProblemKind,
-  refreshAndGetAcousticModelsResult,
-  refreshAndGetTopGraphResult,
-  ServerError,
-  SubGraphRequest,
-  TransferLearningRequest,
-  transferLearningResult,
-  updateAcousticModelResult,
-  updateLanguageModelResult,
-  updateSubGraphResult,
-} from '../types';
+import { AcousticModelEditRequest, deleteLanguageModelResult, deleteSubGraphResult, getAcousticModelsResult, getLanguageModelsResult, getSubGraphsResult, getTopGraphsResult, getTrainingMethodsResult, LanguageModelRequest, postLanguageModelResult, postSubGraphResult, ProblemKind, refreshAndGetAcousticModelsResult, refreshAndGetTopGraphResult, ServerError, SubGraphRequest, TransferLearningRequest, transferLearningResult, updateAcousticModelResult, updateLanguageModelResult, updateSubGraphResult } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -575,20 +547,20 @@ export class Models extends ParentApi {
   /**
    * Begins training a model based on the selected method
    * @param name
-   * @param acousticModelId
+   * @param modelConfigId
    * @param dataSetId
-   * @param trainingMethod
    * @param shared
    */
   async transferLearning(
     name: string,
-    acousticModelId: string,
+    modelConfigId: string,
     dataSetId: string,
     shared: boolean
   ): Promise<transferLearningResult> {
     // compile data
     const request: TransferLearningRequest = {
       name,
+      modelConfigId,
       dataSetId,
       shared,
     };
@@ -597,9 +569,7 @@ export class Models extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      this.getPathWithOrganization(
-        `/models/acoustic/${acousticModelId}/transfer`
-      ),
+      this.getPathWithOrganization(`/transfer`),
       request
     );
     // the typical ways to die when calling an api
