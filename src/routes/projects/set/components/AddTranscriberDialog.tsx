@@ -10,6 +10,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SendIcon from '@material-ui/icons/Send';
+import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -256,7 +257,9 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="transcribers-dialog"
-      className={inviteOpen ? classes.hidden : undefined}
+      classes={{
+        container: clsx(inviteOpen && classes.hidden)
+      }}
     >
       <DialogTitle>
         <Grid container direction='row' justify='space-between' wrap='nowrap' >
@@ -320,7 +323,7 @@ export function AddTranscriberDialog(props: AddTranscriberDialogProps) {
         </Button>
       </DialogActions>
     </Dialog>
-    <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
+    <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} hideBackdrop />
   </>
   );
 }
