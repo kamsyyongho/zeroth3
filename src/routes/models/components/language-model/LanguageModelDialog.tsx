@@ -184,7 +184,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                   labelsByValue={subGraphsById}
                   options={subGraphFormSelectOptions}
                   label={translate("forms.sub")}
-                  errorOverride={isError || noAvailableSubGraphText}
+                  errorOverride={isError}
                   helperText={noAvailableSubGraphText}
                   light
                 />
