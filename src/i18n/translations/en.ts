@@ -252,7 +252,6 @@ export const en: ResourceLanguage = {
           delete: 'Delete acoustic model',
           delete_plural: 'Delete {{count}} acoustic models',
           noResults: 'No acoustic models',
-          trainingInProgress: 'Training in progress',
         },
         languageModel: {
           header: 'Language Model',
@@ -273,6 +272,7 @@ export const en: ResourceLanguage = {
         allModelConfigsStillTraining_plural:
           'All modelConfigurations still training',
       },
+      trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',

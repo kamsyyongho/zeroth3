@@ -1,4 +1,4 @@
-import { Box, CardHeader, Chip, Grid } from '@material-ui/core';
+import { Box, CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
@@ -9,6 +9,7 @@ import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { AcousticModel } from '../../../../types';
+import { TrainingChip } from '../../../shared/TrainingChip';
 import { EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 
@@ -124,12 +125,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
           alignItems='center'
           justify='flex-start'
         >
-          <Chip
-            key={model.id}
-            label={translate('models.tabs.acousticModel.trainingInProgress')}
-            size='small'
-            className={classes.trainingAlertChip}
-          />
+          <TrainingChip />
         </Grid>}
       </CardContent>
     </Grid>

@@ -253,7 +253,6 @@ export const ko: ResourceLanguage = {
           delete: 'Delete acoustic model',
           delete_plural: 'Delete {{count}} acoustic models',
           noResults: 'No acoustic models',
-          trainingInProgress: 'Training in progress',
         },
         languageModel: {
           header: '언어 모델',
@@ -274,6 +273,7 @@ export const ko: ResourceLanguage = {
         allModelConfigsStillTraining_plural:
           'All modelConfigurations still training',
       },
+      trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',
