@@ -71,10 +71,18 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
+  let allAcousticModelsStillTraining = true;
+  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => {
+    const disabled = acousticModel.progress < 100;
+    if (!disabled) {
+      allAcousticModelsStillTraining = false;
+    }
+    return { label: acousticModel.name, value: acousticModel.id, disabled };
+  });
   const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id, disabled: acousticModel.progress < 100 }));
 
   // validation translated text
+  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('forms.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
@@ -178,8 +186,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='selectedAcousticModelId' component={SelectFormField}
-                  options={acousticModelFormSelectOptions} label={translate("forms.acousticModel")} errorOverride={isError} />
+                <Field
+                  name='selectedAcousticModelId'
+                  component={SelectFormField}
+                  options={acousticModelFormSelectOptions}
+                  label={translate("forms.acousticModel")}
+                  errorOverride={isError || noAvailableAcousticModelText}
+                  helperText={noAvailableAcousticModelText}
+                />
                 <Field name='selectedLanguageModelId' component={SelectFormField}
                   options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
                 <Button

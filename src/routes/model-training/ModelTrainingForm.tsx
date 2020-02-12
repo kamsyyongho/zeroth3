@@ -51,11 +51,19 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const classes = useStyles();
   const theme = useTheme();
 
+  let allAcousticModelsStillTraining = true;
+  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => {
+    const disabled = acousticModel.progress < 100;
+    if (!disabled) {
+      allAcousticModelsStillTraining = false;
+    }
+    return { label: acousticModel.name, value: acousticModel.id, disabled };
+  });
   const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => ({ label: dataSets.name, value: dataSets.id }));
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id, disabled: acousticModel.progress < 100 }));
   const trainingMethodFormSelectOptions: SelectFormFieldOptions = TRAINING_METHOD_VALUES.map((method) => ({ label: translate(`modelTraining.methods.${method}`), value: method }));
 
   // validation translated text
+  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('forms.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
@@ -131,8 +139,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 component={SelectFormField}
                 options={acousticModelFormSelectOptions}
                 label={translate("forms.acousticModel")}
-                errorOverride={isError}
-                helperText={modelHelperText}
+                errorOverride={isError || noAvailableAcousticModelText}
+                helperText={noAvailableAcousticModelText || modelHelperText}
               />
               <Field
                 name='selectedDataSetId'

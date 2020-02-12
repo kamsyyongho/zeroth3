@@ -93,6 +93,9 @@ export const ko: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
+        allAcousticModelsStillTraining: 'Acoustic model still training',
+        allAcousticModelsStillTraining_plural:
+          'All acoustic models still training',
       },
       dropZone: {
         main: 'Drag and drop a file or click',
