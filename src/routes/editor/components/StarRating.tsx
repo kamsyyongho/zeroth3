@@ -40,7 +40,14 @@ export const StarRating = (props: StarRatingProps) => {
   const [loading, setLoading] = React.useState(false);
   const [currentVoiceData, setCurrentVoiceData] = React.useState(voiceData);
 
-  const ratingChanged = rating !== currentVoiceData.transcriptionRating;
+  const ratingChanged = rating !== currentVoiceData.transcriptionRating && typeof rating === 'number';
+
+  // prevent clearing out rating if it had an original value
+  React.useEffect(() => {
+    if (currentVoiceData.transcriptionRating && typeof rating !== 'number') {
+      setRating(currentVoiceData.transcriptionRating);
+    }
+  }, [rating]);
 
   const theme = useTheme();
   const classes = useStyles();
