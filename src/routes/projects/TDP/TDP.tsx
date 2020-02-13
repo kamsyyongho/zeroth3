@@ -64,7 +64,7 @@ export function TDP(props: TDPProps) {
 
   const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
   const initialPageSize = React.useMemo(() => {
-    const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE);
+    const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE);
     if (rowsPerPageString) {
       const rowsPerPage = Number(rowsPerPageString);
       if (!isNaN(rowsPerPage)) {

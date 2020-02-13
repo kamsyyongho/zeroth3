@@ -489,7 +489,7 @@ export function TDPTable(props: TDPTableProps) {
       }}
       onChangeRowsPerPage={e => {
         const numberOfRows: string = e.target.value;
-        localStorage.setItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE, numberOfRows);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE, numberOfRows);
         setPageSize(Number(numberOfRows));
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
