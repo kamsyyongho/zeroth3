@@ -151,7 +151,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           alignItems='flex-start'
           justify='center'
           className={classes.headerNameGrid}
-          xs={3}
+          xs={4}
         >
 
           <Collapse in={!expanded}>
@@ -208,7 +208,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           alignContent='flex-end'
           alignItems='flex-end'
           justify='center'
-          xs={3}
+          xs={2}
         >
           <Grid item>
             <TrainingChip progress={progress} />

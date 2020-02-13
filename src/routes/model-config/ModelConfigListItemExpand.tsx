@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     root: {
       padding: theme.spacing(2),
+      width: '100%',
     },
     subTitle: {
       fontWeight: 500,
@@ -32,8 +33,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     modelTitle: {
       fontWeight: 600,
     },
+    form: {
+      width: '100%',
+    },
     divider: {
       backgroundColor: theme.table.border,
+      width: '100%',
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
@@ -186,12 +191,14 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   return (
     <Grid
       key={formCounter}
+      container
+      item
+      xs={12}
       wrap='nowrap'
       direction='column'
-      alignContent='center'
-      alignItems='center'
+      alignContent='flex-start'
+      alignItems='flex-start'
       justify='flex-start'
-      xs={12}
       className={classes.root}
     >
       <Formik key={formCounter} initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -201,7 +208,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
           }
           return (
             <>
-              <Form>
+              <Form className={classes.form} >
                 <Grid
                   container
                   item
@@ -209,11 +216,12 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
-                  <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${descriptionText}:`}</Typography>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.subTitle} >{`${descriptionText}:`}</Typography>
                   </Grid>
-                  <Grid item>
+                  <Grid item xs={10}>
                     <Field
                       name='description'
                       component={TextFormField}
@@ -228,11 +236,12 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
-                  <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
                   </Grid>
-                  <Grid item>
+                  <Grid item xs={4}>
                     <Field
                       name='thresholdHr'
                       component={TextFormField}
@@ -241,10 +250,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                       errorOverride={isError}
                     />
                   </Grid>
-                  <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${thresholdLrText}:`}</Typography>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.subTitle} >{`${thresholdLrText}:`}</Typography>
                   </Grid>
-                  <Grid item>
+                  <Grid item xs={4}>
                     <Field
                       name='thresholdLr'
                       component={TextFormField}
@@ -262,9 +271,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
-                  <Grid item>
-                    <Typography align='center' className={classes.modelTitle} >{`${translate("forms.languageModel")}:`}</Typography>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.languageModel")}:`}</Typography>
                   </Grid>
                   <Grid item>
                     <Field
@@ -292,21 +302,22 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
                   {configToEdit.languageModel.version && <>
                     <Grid item>
-                      <Typography align='center' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
+                      <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography align='center' >{configToEdit.languageModel.version}</Typography>
+                      <Typography align='left' >{configToEdit.languageModel.version}</Typography>
                     </Grid>
                   </>}
                   {configToEdit.languageModel.description && <>
                     <Grid item>
-                      <Typography align='center' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
+                      <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography align='center' >{configToEdit.languageModel.description}</Typography>
+                      <Typography align='left' >{configToEdit.languageModel.description}</Typography>
                     </Grid>
                   </>}
                 </Grid>
@@ -317,9 +328,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
                   <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
+                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
                   </Grid>
                   <Grid item>
                     <Chip
@@ -337,9 +349,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
                   <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
+                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
                   </Grid>
                   <Grid item >
                     <ChipList
@@ -356,11 +369,12 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
-                  <Grid item>
-                    <Typography align='center' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
                   </Grid>
-                  <Grid item>
+                  <Grid item xs={10}>
                     <Field
                       name='selectedAcousticModelId'
                       component={SelectFormField}
@@ -381,18 +395,18 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   >
                     {configToEdit.acousticModel.version && <>
                       <Grid item>
-                        <Typography align='center' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
+                        <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
                       </Grid>
                       <Grid item>
-                        <Typography align='center' >{configToEdit.acousticModel.version}</Typography>
+                        <Typography align='left' >{configToEdit.acousticModel.version}</Typography>
                       </Grid>
                     </>}
                     {configToEdit.acousticModel.description && <>
                       <Grid item>
-                        <Typography align='center' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
+                        <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
                       </Grid>
                       <Grid item>
-                        <Typography align='center' >{configToEdit.acousticModel.description}</Typography>
+                        <Typography align='left' >{configToEdit.acousticModel.description}</Typography>
                       </Grid>
                     </>}
                   </Grid>
@@ -404,9 +418,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
+                  xs={12}
                 >
                   <Grid item>
-                    <Typography align='center' className={classes.subTitle} >{`${translate("forms.sampleRate")}:`}</Typography>
+                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.sampleRate")}:`}</Typography>
                   </Grid>
                   <Grid item>
                     <ChipList max={1} light labels={[`${configToEdit.acousticModel.sampleRate} Hz`]} />
@@ -414,7 +429,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                 </Grid>}
               </Form>
               <Divider className={classes.divider} />
-              <Grid item justify='flex-end' >
+              <Grid container item justify='flex-end' >
                 <Button
                   disabled={!formikProps.isValid || isError || loading}
                   onClick={formikProps.submitForm}
