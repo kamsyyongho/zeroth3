@@ -123,6 +123,11 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     setExpanded(false);
   };
 
+  const handleCancel = () => {
+    setNameFormValue(modelConfig.name);
+    closeExpand();
+  };
+
   const confirmDelete = () => {
     handleActionClose();
     openConfirm();
@@ -131,8 +136,6 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameFormValue(event.target.value);
   };
-
-  const maxTitleWidth = width ? (width * 0.6) : 500;
 
   const renderItemMenu = () => (<Menu
     id="list-item-menu"
@@ -179,7 +182,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         >
 
           <Collapse in={!expanded}>
-            <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{name}</Typography>
+            <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
           </Collapse>
           <Collapse in={expanded}>
             <TextField
@@ -261,7 +264,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
             :
             <Button
               disabled={loading}
-              onClick={closeExpand}
+              onClick={handleCancel}
               color="primary"
               variant="outlined"
               className={clsx(expanded && classes.headerGrid)}
