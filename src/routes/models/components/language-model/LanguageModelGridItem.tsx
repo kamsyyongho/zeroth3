@@ -6,7 +6,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { LanguageModel, SubGraph, TopGraph } from '../../../../types';
@@ -141,7 +141,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
           >
             {`${translate('forms.sub')}:`}
           </Typography>
-          <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} light />
+          <ChipList labels={model.subGraphs.map(subGraph => subGraph.name)} light />
         </Grid>
       </CardContent>
     </Grid>

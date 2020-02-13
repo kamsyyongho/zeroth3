@@ -1,11 +1,12 @@
+import { Divider } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
@@ -22,6 +23,13 @@ const useStyles = makeStyles((theme) =>
       paddingRight: 0,
       paddingTop: 75,
     },
+    divider: {
+      marginLeft: '10%',
+      marginRight: '10%'
+    },
+    tooltip: {
+      marginLeft: 275,
+    },
   }),
 );
 
@@ -32,8 +40,9 @@ interface AppDrawerProps {
 
 export const AppDrawer = (props: AppDrawerProps) => {
   const { open, setOpen } = props;
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
+  const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const location = useLocation();
   const history = useHistory();
   const classes = useStyles();
@@ -46,21 +55,23 @@ export const AppDrawer = (props: AppDrawerProps) => {
     }
   };
 
-  const canSeeModels: boolean = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
-  const canSeeUsers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
-  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canSeeModels: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
+  const canSeeUsers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
+  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const drawerItems: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
     // to only display links for pages we are allowed to go to
     let shouldRender = true;
-    if ((key === 'models' && !canSeeModels) || (key === 'IAM' && !canSeeTranscribers && !canSeeUsers)) {
+    if ((key === 'models' && !canSeeModels) ||
+      (key === 'modelTraning' && !canSeeModels) ||
+      (key === 'IAM' && !canSeeTranscribers && !canSeeUsers)) {
       shouldRender = false;
     }
 
     if (shouldRender) {
       const path = PATHS[key];
-      const { to, title, Icon } = path;
+      const { to, title, Icon, hasDivider } = path;
       if (title && to) {
         let isCurrentPath = false;
         if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
@@ -68,12 +79,21 @@ export const AppDrawer = (props: AppDrawerProps) => {
         } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
           isCurrentPath = true;
         }
-        drawerItems.push(<ListItem button key={index} onClick={() => navigateToPage(to, isCurrentPath)} >
-        {Icon && <ListItemIcon >
-          <Icon color={isCurrentPath ? 'primary' : undefined} />
-          </ListItemIcon>}
-          <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
-        </ListItem>);
+        let needsSelectedProject = false;
+        if (!currentProject) {
+          needsSelectedProject = key === 'modelTraining';
+        }
+
+        drawerItems.push(
+          <React.Fragment key={index} >
+            {hasDivider && <Divider className={classes.divider} />}
+            <ListItem button disabled={needsSelectedProject} onClick={() => navigateToPage(to, isCurrentPath)} >
+              {Icon && <ListItemIcon >
+                <Icon color={isCurrentPath ? 'primary' : undefined} />
+              </ListItemIcon>}
+              <ListItemText primaryTypographyProps={{ color: isCurrentPath ? 'primary' : undefined }} primary={(translate(`path.${title}`))} />
+            </ListItem>
+          </React.Fragment>);
       }
     }
   });
@@ -95,7 +115,8 @@ export const AppDrawer = (props: AppDrawerProps) => {
     <Drawer
       open={open}
       onClose={toggleDrawer(false)}
-      style={{ zIndex: theme.zIndex.drawer - 500 }}
+      // this needs to be an inline style to remain under the navbar
+      style={{ zIndex: theme.zIndex.drawer }}
     >
       <div
         className={classes.contents}

@@ -3,7 +3,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';

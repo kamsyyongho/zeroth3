@@ -2,7 +2,7 @@ import { FormControlLabel, FormGroup, TableCell, Typography } from '@material-ui
 import Checkbox from '@material-ui/core/Checkbox';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
-import React from 'react';
+import React from 'reactn';
 import { CustomTheme } from '../../../../theme/index';
 import { TranscriberStats } from '../../../../types';
 import { RatingDisplay } from '../../../shared/RatingDisplay';

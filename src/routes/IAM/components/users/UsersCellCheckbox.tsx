@@ -1,7 +1,7 @@
 import { FormControlLabel, Typography } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
-import React from 'react';
 import { CellProps } from 'react-table';
+import React from 'reactn';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { User } from '../../../../types';
 

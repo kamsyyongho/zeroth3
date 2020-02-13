@@ -3,9 +3,9 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import clsx from 'clsx';
 import { ContentBlock, ContentState, EditorBlock } from 'draft-js';
-import React from 'react';
 import { MdPersonAdd, MdPersonPin } from 'react-icons/md';
 import VisibilitySensor from "react-visibility-sensor";
+import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { Segment, SegmentBlockData } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
@@ -37,8 +37,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     tooltipContent: {
       maxWidth: 'none',
     },
-    badge: {
+    changedTextBadge: {
       backgroundColor: theme.editor.changes,
+    },
+    highRistkBadge: {
+      marginLeft: theme.spacing(1),
     },
     timeButton: {
       padding: 0,
@@ -63,6 +66,7 @@ const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
 
 interface SegmentBlockSubProps {
   showPopups: boolean;
+  readOnly?: boolean;
   /** opens the assign speaker dialog for the segment */
   assignSpeakerForSegment: (segmentId: string) => void;
 }
@@ -76,12 +80,12 @@ interface SegmentBlockProps extends EditorBlock {
 export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
   const { blockProps, block } = props;
-  const { showPopups, assignSpeakerForSegment } = blockProps;
+  const { showPopups, readOnly, assignSpeakerForSegment } = blockProps;
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
-  const { id, transcript, decoderTranscript, start, speaker } = segment;
-  const displayTextChangedHover = ((transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
+  const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
+  const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
@@ -119,42 +123,64 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       justify='flex-start'
       className={classes.infoGrid}
     >
-      <Badge
-        invisible={!displayTextChangedHover}
-        variant="dot"
-        color='error'
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        classes={{
-          colorError: classes.badge,
-        }}
+      <Button
+        disabled
+        className={classes.timeButton}
       >
-        <Button
-          disabled
-          className={classes.timeButton}
+        <Badge
+          invisible={!displayTextChangedHover}
+          variant="dot"
+          color='error'
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          classes={{
+            colorError: classes.changedTextBadge,
+          }}
         >
-          <Typography
-            contentEditable={false} // prevents the editor from placing the cursor within the content
+          <Badge
+            invisible={!highRisk}
+            variant="dot"
+            color='error'
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            classes={{
+              colorError: classes.highRistkBadge,
+            }}
           >
-            {displayTime}
-          </Typography>
-        </Button>
-      </Badge>
+            <Typography
+              contentEditable={false} // prevents the editor from placing the cursor within the content
+            >
+              {displayTime}
+            </Typography>
+          </Badge>
+        </Badge>
+      </Button>
       <VisibilitySensor
         offset={DEFAULT_OFFSET}
       >
-        {({ isVisible }) =>
-          <Tooltip
+        {({ isVisible }) => {
+          let isOpen = false;
+          let title: React.ReactNode = '';
+          if (isVisible) {
+            isOpen = showPopups;
+            if (displayTextChangedHover) {
+              title = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
+            }
+          }
+          return (<Tooltip
             placement='right-start'
-            title={displayTextChangedHover ? <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography> : ''}
-            open={showPopups && isVisible}
+            title={title}
+            open={isOpen}
             arrow={false}
             classes={{ tooltip: classes.tooltipContent }}
           >
             {speakerButton}
-          </Tooltip>
+          </Tooltip>);
+        }
         }
       </VisibilitySensor>
     </Grid>

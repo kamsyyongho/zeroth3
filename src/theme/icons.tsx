@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import { useTheme } from '@material-ui/core/styles';
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon';
-import React from "react";
+import React from "reactn";
 import { ReactComponent as Account } from './icons/account.svg';
 import { ReactComponent as ArrowDown } from './icons/arrow-down.svg';
 import { ReactComponent as ArrowLeftDouble } from './icons/arrow-left-double.svg';
@@ -25,6 +25,8 @@ import { ReactComponent as Menu } from './icons/menu.svg';
 import { ReactComponent as Merge } from './icons/merge.svg';
 import { ReactComponent as Models } from './icons/models.svg';
 import { ReactComponent as More } from './icons/more.svg';
+import { ReactComponent as Number1 } from './icons/number_1.svg';
+import { ReactComponent as Number2 } from './icons/number_2.svg';
 import { OrganizationSvgIcon as Organization } from './icons/OrganizationSvgIcon';
 import { ProfileSvgIcon as Profile } from './icons/ProfileSvgIcon';
 import { ReactComponent as Projects } from './icons/projects.svg';
@@ -46,7 +48,7 @@ import { ReactComponent as Undo } from './icons/undo.svg';
 const getColor = (props: SvgIconProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const theme = useTheme();
-  let color = '#000';
+  let color = theme.palette.common.black;
   if (props.style?.color) {
     color = props.style.color;
   } else {
@@ -158,6 +160,14 @@ export const ICONS = {
    * A menu / hamburger symbol
    */
   Menu: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
+  /**  
+   * The number 1 in a blue circle
+   */
+  Number1: (props: SvgIconProps) => <SvgIcon {...props}><Number1 /></SvgIcon>,
+  /**  
+   * The number 2 in a blue circle
+   */
+  Number2: (props: SvgIconProps) => <SvgIcon {...props}><Number2 /></SvgIcon>,
   /**
    * Used in the the editor. An icon of two arrows merging into one.
    */

@@ -1,7 +1,7 @@
 
 import { DateTimePicker, DateTimePickerProps } from '@material-ui/pickers';
 import { FieldProps, getIn } from "formik";
-import React from "react";
+import React from "reactn";
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 interface DateTimePickerFormFieldProps extends FieldProps, DateTimePickerProps {
@@ -18,12 +18,12 @@ export const DateTimePickerFormField = (props: DateTimePickerFormFieldProps) => 
     ampm = true,
     ...restProps
   } = props;
-  const { dateTimeFormat } = React.useContext(I18nContext);
+  const { dateTimeFormats } = React.useContext(I18nContext);
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
   return (
     <DateTimePicker
-      format={dateTimeFormat}
+      format={dateTimeFormats.dateTime}
       ampm={ampm}
       margin={margin}
       value={field.value}

@@ -8,7 +8,7 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-import React from 'react';
+import React from 'reactn';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,19 +35,19 @@ export function Pagination(props: PaginationProps) {
     onChangePage
   } = props;
 
-  const handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleFirstPageButtonClick = (event: any) => {
     onChangePage(event, 0);
   };
 
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleBackButtonClick = (event: any) => {
     onChangePage(event, page - 1);
   };
 
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleNextButtonClick = (event: any) => {
     onChangePage(event, page + 1);
   };
 
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleLastPageButtonClick = (event: any) => {
     onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   };
 

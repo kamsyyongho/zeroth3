@@ -1,6 +1,7 @@
 import { ApiResponse, ApisauceInstance, create, HEADERS } from 'apisauce';
 import { AxiosRequestConfig } from 'axios';
 import { KeycloakInstance } from 'keycloak-js';
+import { LOCAL_STORAGE_KEYS } from '../../types';
 import log from '../../util/log/logger';
 import ENV from '../env/index';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
@@ -111,7 +112,10 @@ export class Api {
    */
   setup(keycloak: KeycloakInstance, logout: () => void): boolean {
     this.keycloak = keycloak;
-    this.logout = logout;
+    this.logout = () => {
+      localStorage.clear();
+      logout();
+    };
     // construct the apisauce instance
     this.apisauce = create({
       baseURL: this.config.baseURL,
@@ -254,6 +258,14 @@ export class Api {
     }
     return config;
   };
+
+  /**
+   * Changes the stored ID in the case that the user changes the organization
+   * @param organizationId
+   */
+  setOrganizationId(organizationId: string): void {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ORGANIZATION_ID, organizationId);
+  }
 
   /**
    * Gets the current header that is being used for API calls

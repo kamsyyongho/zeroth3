@@ -26,18 +26,19 @@ export interface Word {
   text: string;
 }
 
-//todo
-//!
-// delete
-export interface WordsbyRangeStartAndEndIndexes {
-  [x: string]: Word;
+/**
+ * for creating Peaks.js segments
+ * - these are **NOT** voice data segments
+ */
+export interface WordToCreateTimeFor extends Word {
+  wordKey?: string;
 }
 
-export interface WordToCreateTimeFor extends Word {
-  segmentStartTime: number;
-  segmentEndTime?: number;
-  wordKey: string;
-}
+/**
+ * For displaying the word and segment lengths in the audio player timeline
+ * - [`word information`, `segment information`]
+ */
+export type PlayingWordAndSegment = [WordToCreateTimeFor, WordToCreateTimeFor];
 
 export type SegmentAndWordIndex = [number, number];
 
@@ -158,6 +159,7 @@ export enum KEY_COMMANDS {
   'merge-segments-forward' = 'merge-segments-forward',
   'toggle-popups' = 'toggle-popups',
   'create-word' = 'create-word',
+  'edit-segment-time' = 'edit-segment-time',
 }
 
 export enum REMOVAL_DIRECTION {

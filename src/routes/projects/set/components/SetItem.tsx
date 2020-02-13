@@ -4,7 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';

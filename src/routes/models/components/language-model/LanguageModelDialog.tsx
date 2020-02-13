@@ -3,14 +3,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
@@ -23,8 +24,17 @@ import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fi
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
+
 interface LanguageModelDialogProps {
   open: boolean;
+  hideBackdrop?: boolean;
   modelToEdit?: LanguageModel;
   onClose: (modelId?: string) => void;
   onSuccess: (updatedModel: LanguageModel, isEdit?: boolean) => void;
@@ -38,7 +48,7 @@ interface SubGraphsById {
 }
 
 export function LanguageModelDialog(props: LanguageModelDialogProps) {
-  const { open, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
+  const { open, hideBackdrop, onClose, onSuccess, topGraphs, subGraphs, handleSubGraphListUpdate, modelToEdit } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -47,6 +57,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   const [isError, setIsError] = React.useState(false);
   const isEdit = !!modelToEdit;
 
+  const classes = useStyles();
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
@@ -57,12 +68,20 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
   }, [topGraphs]);
 
   // to handle the chip multi-select input values
-  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => ({ label: subGraph.name, value: subGraph.id }));
+  let allSubGraphsStillTraining = true;
+  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => {
+    const disabled = subGraph.progress < 100;
+    if (!disabled) {
+      allSubGraphsStillTraining = false;
+    }
+    return { label: subGraph.name, value: subGraph.id, disabled };
+  });
   const subGraphsById: SubGraphsById = {};
   subGraphs.forEach(subGraph => subGraphsById[subGraph.id] = subGraph.name);
 
 
   // validation translated text
+  const noAvailableSubGraphText = (subGraphFormSelectOptions.length && allSubGraphsStillTraining) ? translate('models.validation.allSubGraphsStillTraining', { count: subGraphFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const numberText = translate("forms.validation.number");
   const descriptionText = translate("forms.description");
@@ -86,7 +105,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
     initialValues = {
       ...initialValues,
       name: modelToEdit.name,
-      description: modelToEdit.description,
+      description: modelToEdit.description as string,
       selectedTopGraphId: modelToEdit.topGraph.id,
       selectedSubGraphIds: modelToEdit.subGraphs.map(subGraph => subGraph.id),
     };
@@ -142,6 +161,12 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="language-model-dialog"
+      classes={{
+        container: clsx(subOpen && classes.hidden)
+      }}
+      BackdropProps={{
+        className: clsx(hideBackdrop && classes.hidden),
+      }}
     >
       <DialogTitle id="language-model-dialog">{translate(`models.tabs.languageModel.${isEdit ? 'edit' : 'create'}`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -160,6 +185,7 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
                   options={subGraphFormSelectOptions}
                   label={translate("forms.sub")}
                   errorOverride={isError}
+                  helperText={noAvailableSubGraphText}
                   light
                 />
                 <Button
@@ -200,6 +226,8 @@ export function LanguageModelDialog(props: LanguageModelDialogProps) {
         open={subOpen}
         onClose={() => setSubOpen(false)}
         onSuccess={handleSubGraphListUpdate}
+        topGraphs={topGraphs}
+        hideBackdrop
       />
     </Dialog>
   );

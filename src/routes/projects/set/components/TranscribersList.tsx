@@ -2,7 +2,7 @@ import { TableBody, TableCell, Typography } from '@material-ui/core';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { TranscriberStats } from '../../../../types';
 import { TranscribersListItem } from './TranscribersListItem';

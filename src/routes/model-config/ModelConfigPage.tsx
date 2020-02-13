@@ -1,13 +1,12 @@
 import { Container } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from "react";
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
+import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../hooks/navigation-props/NavigationPropsContext';
 import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
@@ -39,8 +38,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const { projectId } = match.params;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const { getProps, clearProps } = React.useContext(NavigationPropsContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -50,23 +48,26 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
 
-  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
-
-  // get the passed project if we got here via the details page
+  // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
-    project: Project;
+    project?: Project;
+    modelConfigs?: ModelConfig[];
+    topGraphs?: TopGraph[];
+    subGraphs?: SubGraph[];
+    languageModels?: LanguageModel[];
+    acousticModels?: AcousticModel[];
   }
-  const navigationProps = React.useMemo(() => getProps<NavigationPropsToGet>(['project']), []);
-  const [project, setProject] = React.useState<Project | undefined>(navigationProps.project);
-
-  const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
-  const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
-  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
-  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
+  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps?: NavigationPropsToGet; }>('navigationProps');
+  const [project, setProject] = React.useState<Project | undefined>(navigationProps?.project);
+  const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>(navigationProps?.modelConfigs || []);
+  const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>(navigationProps?.topGraphs || []);
+  const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>(navigationProps?.subGraphs || []);
+  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
+  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>(navigationProps?.acousticModels || []);
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig, isEdit?: boolean) => {
     if (isEdit) {
@@ -78,12 +79,12 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             break;
           }
         }
-        return prevConfigs;
+        return [...prevConfigs];
       });
     } else {
       setModelConfigs(prevConfigs => {
         prevConfigs.push(modelConfig);
-        return prevConfigs;
+        return [...prevConfigs];
       });
     }
   };
@@ -232,22 +233,44 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         important: true,
       });
     } else {
-      getModelConfigs();
       // only get if we weren't passed anything from the previous page
+      if (!modelConfigs.length) {
+        getModelConfigs();
+      } else {
+        setModelConfigsLoading(false);
+      }
       if (!project) {
         getProject();
       } else {
         setProjectLoading(false);
-        // to remove the navigation props that were received from the previous page
-        clearProps();
       }
       if (canModify) {
-        getTopGraphs();
-        getSubGraphs();
-        getLanguageModels();
-        getAcousticModels();
+        if (!topGraphs.length) {
+          getTopGraphs();
+        } else {
+          setTopGraphsLoading(false);
+        }
+        if (!subGraphs.length) {
+          getSubGraphs();
+        } else {
+          setSubGraphsLoading(false);
+        }
+        if (!languageModels.length) {
+          getLanguageModels();
+        } else {
+          setLanguageModelsLoading(false);
+        }
+        if (!acousticModels.length) {
+          getAcousticModels();
+        } else {
+          setAcousticModelsLoading(false);
+        }
       }
     }
+    return () => {
+      // to remove the navigation props that were received from the previous page
+      setNavigationProps({});
+    };
   }, []);
 
   const renderContent = () => {

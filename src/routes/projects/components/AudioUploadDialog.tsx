@@ -8,8 +8,8 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import BackupIcon from '@material-ui/icons/Backup';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React, { useGlobal } from 'reactn';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -35,10 +35,12 @@ const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const { open, projectId, modelConfigs, onClose, onSuccess } = props;
   const { enqueueSnackbar } = useSnackbar();
+  const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const [duplicateError, setDuplicateError] = React.useState('');
 
   const theme = useTheme();
 
@@ -50,17 +52,29 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const formSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => ({ label: modelConfig.name, value: modelConfig.id }));
-    return tempFormSelectOptions;
-  }, [modelConfigs]);
+  let allModelConfigsStillTraining = true;
+  const formSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => {
+    const disabled = modelConfig.progress < 100;
+    if (!disabled) {
+      allModelConfigsStillTraining = false;
+    }
+    return { label: modelConfig.name, value: modelConfig.id, disabled };
+  });
 
   const validFilesCheck = (files: File[]) => !!files.length && files.every(file => file instanceof File);
 
   // validation translated text
+  const noAvailableModelConfigText = (modelConfigs.length && allModelConfigsStillTraining) ? translate('models.validation.allModelConfigsStillTraining', { count: modelConfigs.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
+  const handleDuplicateFileNames = (fileName: string, resetError = false) => {
+    if (resetError) {
+      setDuplicateError('');
+    } else {
+      setDuplicateError(`${translate('forms.dropZone.reject.duplicateFileNames')}: ${fileName}`);
+    }
+  };
 
   const testMaxTotalFileSize = (files: File[]) => {
     let fileSizeCounter = 0;
@@ -97,6 +111,9 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
+        // to trigger polling for upload progress
+        // this logic is in the header component
+        setUploadQueueEmpty(false);
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         onSuccess();
@@ -144,8 +161,14 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field name='selectedModelConfigId' component={SelectFormField}
-                  options={formSelectOptions} label={translate("forms.modelConfig")} errorOverride={isError} />
+                <Field
+                  name='selectedModelConfigId'
+                  component={SelectFormField}
+                  options={formSelectOptions}
+                  label={translate("forms.modelConfig")}
+                  errorOverride={isError || noAvailableModelConfigText}
+                  helperText={noAvailableModelConfigText}
+                />
                 <Field
                   showPreviews
                   maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
@@ -153,9 +176,10 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                   name='files'
                   dropZoneText={translate('forms.dropZone.audio_plural')}
                   component={DropZoneFormField}
+                  onDuplicateFileNames={handleDuplicateFileNames}
                   helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
-                  errorOverride={isError || !!formikProps.errors.files}
-                  errorTextOverride={formikProps.errors.files}
+                  errorOverride={isError || !!formikProps.errors.files || duplicateError}
+                  errorTextOverride={formikProps.errors.files || duplicateError}
                 />
               </Form>
             </DialogContent>

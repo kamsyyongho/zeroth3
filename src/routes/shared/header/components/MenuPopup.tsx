@@ -6,8 +6,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import React from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakUser } from '../../../../hooks/keycloak/useKeycloak';
@@ -62,7 +62,7 @@ function MenuPopup(props: MenuPopupProps) {
   return (
     <>
       <IconButton onClick={handleClick} color={"inherit"} edge='start' >
-        <ICONS.Profile style={{color: theme.palette.secondary.contrastText}} />
+        <ICONS.Profile style={{ color: theme.palette.secondary.contrastText }} />
       </IconButton>
       <Menu
         id="simple-menu"

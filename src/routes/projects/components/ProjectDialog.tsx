@@ -3,14 +3,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import * as yup from 'yup';
 import { VALIDATION } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
@@ -21,16 +22,24 @@ import log from '../../../util/log/logger';
 import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 
 interface ProjectDialogProps {
   open: boolean;
+  hideBackdrop?: boolean;
   onClose: (projectId?: string) => void;
   onSuccess: (project: Project, isEdit?: boolean) => void;
   projectToEdit?: Project;
 }
 
 export function ProjectDialog(props: ProjectDialogProps) {
-  const { open, onClose, onSuccess, projectToEdit } = props;
+  const { open, hideBackdrop, onClose, onSuccess, projectToEdit } = props;
   const isEdit = !!projectToEdit;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -39,6 +48,7 @@ export function ProjectDialog(props: ProjectDialogProps) {
   const [isError, setIsError] = React.useState(false);
 
   const theme = useTheme();
+  const classes = useStyles();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
@@ -111,6 +121,9 @@ export function ProjectDialog(props: ProjectDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="project-dialog"
+      BackdropProps={{
+        className: clsx(hideBackdrop && classes.hidden),
+      }}
     >
       <DialogTitle id="project-dialog">{translate(isEdit ? "projects.editProject" : "projects.createProject")}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>

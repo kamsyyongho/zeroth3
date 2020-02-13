@@ -1,21 +1,29 @@
 import { Grid } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import ClearIcon from '@material-ui/icons/Clear';
-import Rating from 'material-ui-rating';
+import Rating from '@material-ui/lab/Rating';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../../hooks/navigation-props/NavigationPropsContext';
 import { SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../types';
 import log from '../../../util/log/logger';
 
-
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    container: {
+      marginTop: theme.spacing(3),
+    },
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 interface StarRatingProps {
   projectId: string;
   voiceData: VoiceData;
@@ -24,27 +32,36 @@ interface StarRatingProps {
 export const StarRating = (props: StarRatingProps) => {
   const { projectId, voiceData } = props;
   const { translate } = React.useContext(I18nContext);
-  const { setProps } = React.useContext(NavigationPropsContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const [rating, setRating] = React.useState<number | null | undefined>(voiceData.transcriptionRating);
+  const [rating, setRating] = React.useState<number | null>(voiceData.transcriptionRating || null);
   const [loading, setLoading] = React.useState(false);
+  const [currentVoiceData, setCurrentVoiceData] = React.useState(voiceData);
 
-  const ratingChanged = rating !== voiceData.transcriptionRating;
+  const ratingChanged = rating !== currentVoiceData.transcriptionRating && typeof rating === 'number';
+
+  // prevent clearing out rating if it had an original value
+  React.useEffect(() => {
+    if (currentVoiceData.transcriptionRating && typeof rating !== 'number') {
+      setRating(currentVoiceData.transcriptionRating);
+    }
+  }, [rating]);
 
   const theme = useTheme();
+  const classes = useStyles();
 
-  const canRate = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const onSuccess = () => {
     const updatedVoiceData = { ...voiceData, transcriptionRating: rating };
-    setProps({ voiceData: updatedVoiceData }, true);
+    setCurrentVoiceData(updatedVoiceData);
   };
 
-  const clearRating = () => setRating(voiceData.transcriptionRating);
+  const clearRating = () => setRating(currentVoiceData.transcriptionRating);
 
+  const handleChange = (event: React.ChangeEvent<{}>, value: number | null) => setRating(value);
 
   const updateRating = async () => {
     if (api?.voiceData && ratingChanged && !loading && typeof rating === 'number') {
@@ -86,14 +103,15 @@ export const StarRating = (props: StarRatingProps) => {
       alignContent='center'
       alignItems='center'
       justify='flex-start'
+      className={classes.container}
     >
       <Rating
         readOnly={!canRate}
-        value={rating || undefined}
+        value={rating}
         max={5}
-        onChange={(value: number) => setRating(value)}
+        onChange={handleChange}
       />
-      {ratingChanged && <>
+      <div className={!ratingChanged ? classes.hidden : undefined}>
         <IconButton
           disabled={loading}
           color='primary'
@@ -117,7 +135,7 @@ export const StarRating = (props: StarRatingProps) => {
         >
           <ClearIcon />
         </IconButton>
-      </>}
+      </div>
     </Grid>
   );
 };

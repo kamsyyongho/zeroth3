@@ -2,13 +2,12 @@ import Button from '@material-ui/core/Button';
 import { useTheme } from '@material-ui/core/styles';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { CellProps } from 'react-table';
+import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { User } from '../../../../types';
-import { SnackbarError, SNACKBAR_VARIANTS } from '../../../../types';
+import { SnackbarError, SNACKBAR_VARIANTS, User } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 

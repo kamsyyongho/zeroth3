@@ -40,10 +40,22 @@ export interface SearchDataRequest {
   page?: number;
   status?: CONTENT_STATUS;
   transcript?: string;
+  /**
+   * in the form of `field.order` with order being `desc` or `asc`
+   * - the field values are `VoiceData` keys
+   * @example `sort-by: startAt.desc`
+   */
+  'sort-by'?: string;
 }
 
 export interface SplitSegmentQuery {
   'split-index': number;
+}
+
+export interface SplitSegmentByTimeQuery {
+  /** time within the segment */
+  time: number;
+  'word-split-index': number;
 }
 
 export interface UpdateStatusRequest {
@@ -86,6 +98,11 @@ export interface UpdateSpeakerRequest {
   speaker: string;
 }
 
+export interface UpdateSegmentTimeRequest {
+  length: number;
+  start: number;
+}
+
 export type UpdateSegmentsRequest = Segment[];
 
 /////////////
@@ -118,6 +135,10 @@ export type splitSegmentResult =
   | { kind: 'ok'; segments: [Segment, Segment] }
   | GeneralApiProblem;
 
+export type splitSegmentByTimeResult =
+  | { kind: 'ok'; segments: [Segment, Segment] }
+  | GeneralApiProblem;
+
 export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }
   | GeneralApiProblem;
@@ -141,3 +162,5 @@ export type splitWordInSegmentResult =
 export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;

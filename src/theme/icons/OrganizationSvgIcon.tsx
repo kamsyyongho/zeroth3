@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'reactn';
 
 /**
  * allows us to pass a custom color to the svg component

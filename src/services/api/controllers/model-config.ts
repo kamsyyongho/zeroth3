@@ -1,14 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  deleteModelConfigResult,
-  getModelConfigsResult,
-  ModelConfigRequest,
-  postModelConfigResult,
-  ProblemKind,
-  ServerError,
-} from '../types';
+import { deleteModelConfigResult, getModelConfigsResult, ModelConfigRequest, postModelConfigResult, ProblemKind, ServerError } from '../types';
 import { updateModelConfigResult } from '../types/model-config.types';
 import { ParentApi } from './parent-api';
 
@@ -19,9 +12,12 @@ export class ModelConfig extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
+  constructor(
+    apisauce: ApisauceInstance,
+    logout: () => void
+  ) {
     super(apisauce, logout);
   }
 
@@ -34,7 +30,9 @@ export class ModelConfig extends ParentApi {
     const response: ApiResponse<
       ModelConfigType[],
       ServerError
-    > = await this.apisauce.get(`/projects/${projectId}/model-config`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/projects/${projectId}/model-config`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -87,7 +85,7 @@ export class ModelConfig extends ParentApi {
       ModelConfigType,
       ServerError
     > = await this.apisauce.post(
-      `/projects/${projectId}/model-config`,
+      this.getPathWithOrganization(`/projects/${projectId}/model-config`),
       request
     );
     // the typical ways to die when calling an api
@@ -145,7 +143,9 @@ export class ModelConfig extends ParentApi {
       ModelConfigType,
       ServerError
     > = await this.apisauce.put(
-      `/projects/${projectId}/model-config/${modelConfigId}`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/model-config/${modelConfigId}`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -181,7 +181,9 @@ export class ModelConfig extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      `/projects/${projectId}/model-config/${modelConfigId}`
+      this.getPathWithOrganization(
+        `/projects/${projectId}/model-config/${modelConfigId}`
+      )
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

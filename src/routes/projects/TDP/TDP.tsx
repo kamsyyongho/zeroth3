@@ -3,14 +3,14 @@ import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
-import React from "react";
 import { BulletList } from 'react-content-loader';
+import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../../constants/permission.constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { FilterParams, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import { FilterParams, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -49,8 +49,9 @@ const useStyles = makeStyles((theme) =>
 export function TDP(props: TDPProps) {
   const { projectId, project, modelConfigs = [] as ModelConfig[], onSetCreate } = props;
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
@@ -61,29 +62,22 @@ export function TDP(props: TDPProps) {
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const initialPageSize = React.useMemo(() => {
+    const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE);
+    if (rowsPerPageString) {
+      const rowsPerPage = Number(rowsPerPageString);
+      if (!isNaN(rowsPerPage)) {
+        return rowsPerPage;
+      }
+    }
+    return null;
+  }, []);
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.searchData(projectId, options);
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      // TODO
-      //!
-      //* REMOVE THIS
-
-      // if (onlyAssignedData) {
-      //   response = await api.voiceData.getAssignedData();
-      // } else {
-      //   response = await api.voiceData.searchData(projectId, options);
-      // }
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
       } else {
@@ -99,9 +93,29 @@ export function TDP(props: TDPProps) {
     }
   }, [api, onlyAssignedData, projectId]);
 
+  const getVoiceDataWithDefautOptions = () => {
+    const options: SearchDataRequest = {};
+    if (initialPageSize) {
+      options.size = initialPageSize;
+    }
+    getVoiceData(options);
+  };
+
   React.useEffect(() => {
-    getVoiceData();
+    // if the flag was already set when we first load the page
+    if (projectTdpDataShouldRefresh) {
+      setProjectTdpDataShouldRefresh(false);
+    }
+    getVoiceDataWithDefautOptions();
   }, []);
+
+  React.useEffect(() => {
+    // if the flag triggers after we are already on the page
+    if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+      setProjectTdpDataShouldRefresh(false);
+      getVoiceDataWithDefautOptions();
+    }
+  }, [projectTdpDataShouldRefresh]);
 
   /**
    * Updates a single item after updating

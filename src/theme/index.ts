@@ -41,12 +41,16 @@ const customTheme = {
   editor: {
     playing: '#077db5',
     highlight: pink.A200,
-    LC: '#ffe190',
-    focussed: grey[400],
+    LowConfidence: '#ffe190',
+    LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2%)`,
+    entity: grey[200],
+    entityGradient: `linear-gradient(to right, #000 0%, ${grey[200]} 2%)`,
     changes: green[400],
   },
   audioPlayer: {
     waveform: '#2f99cb',
+    segmentRange: green[200],
+    wordRange: pink[200],
     loop: grey[800],
     disabled: grey[300],
   },
@@ -67,12 +71,16 @@ export interface CustomTheme extends Theme {
   editor: {
     playing: string;
     highlight: string;
-    LC: string;
-    focussed: string;
+    LowConfidence: string;
+    LowConfidenceGradient: string;
+    entity: string;
+    entityGradient: string;
     changes: string;
   };
   audioPlayer: {
     waveform: string;
+    segmentRange: string;
+    wordRange: string;
     loop: string;
     disabled: string;
   };
@@ -90,12 +98,16 @@ interface CustomThemeOptions extends ThemeOptions {
   editor?: {
     playing?: string;
     highlight?: string;
-    LC?: string;
-    focussed?: string;
+    LowConfidence?: string;
+    LowConfidenceGradient?: string;
+    entity?: string;
+    entityGradient?: string;
     changes?: string;
   };
   audioPlayer?: {
     waveform?: string;
+    segmentRange?: string;
+    wordRange?: string;
     loop?: string;
     disabled?: string;
   };

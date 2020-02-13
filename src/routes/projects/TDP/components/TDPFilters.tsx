@@ -8,8 +8,8 @@ import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Field, Formik } from 'formik';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import * as yup from 'yup';
 import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
@@ -43,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 export function TDPFilters(props: TDPFiltersProps) {
   const { updateVoiceData, modelConfigsById, loading } = props;
   const { translate } = React.useContext(I18nContext);
+  const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
@@ -54,7 +55,11 @@ export function TDPFilters(props: TDPFiltersProps) {
   }, [translate]);
 
   const modelConfigFormSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({ label: modelConfigsById[id].name, value: modelConfigsById[id].id }));
+    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(modelConfigsById).map((id) => ({
+      label: modelConfigsById[id].name,
+      value: modelConfigsById[id].id,
+      disabled: !modelConfigsById[id].progress,
+    }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
     return tempFormSelectOptions;
@@ -276,15 +281,26 @@ export function TDPFilters(props: TDPFiltersProps) {
                 <CardActions>
                   <Button
                     disabled={loading}
-                    onClick={() => formikProps.resetForm()}
+                    onClick={() => {
+                      if (submitPressed) {
+                        formikProps.resetForm();
+                        formikProps.submitForm();
+                        setSubmitPressed(false);
+                      } else {
+                        formikProps.resetForm();
+                      }
+                    }}
                     color="secondary"
                     variant="outlined"
                   >
-                    {translate('common.clear')}
+                    {translate('common.clearAll')}
                   </Button>
                   <Button
                     disabled={!formikProps.isValid || loading}
-                    onClick={formikProps.submitForm}
+                    onClick={() => {
+                      formikProps.submitForm();
+                      setSubmitPressed(true);
+                    }}
                     color="primary"
                     variant="contained"
                   >{loading &&

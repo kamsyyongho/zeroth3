@@ -2,7 +2,7 @@ import { Divider } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../ProjectsDialog';
@@ -12,10 +12,12 @@ interface ProjectListProps {
   projects: Project[];
   searching: boolean;
   canModify: boolean;
+  showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
-  setCheckedProjects: React.Dispatch<React.SetStateAction<CheckedProjectsById>>;
+  setCheckedProjects: (projectId: string, value: boolean, triggerDelete?: boolean) => void;
   onUpdate: (project: Project, isEdit?: boolean) => void;
-  onItemClick: (projectId: string) => void;
+  onItemClick: (project: Project) => void;
+  setEditDialogOpen: (value: boolean) => void;
   selectedProjectId?: string;
 }
 
@@ -28,31 +30,29 @@ export function ProjectList(props: ProjectListProps) {
     projects,
     searching,
     canModify,
+    showEdit,
     checkedProjects,
     setCheckedProjects,
     onUpdate,
     onItemClick,
+    setEditDialogOpen,
     selectedProjectId,
   } = props;
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
   const { translate } = React.useContext(I18nContext);
 
   const handleEditOpen = (projectId: string) => setEditOpen(prevOpen => {
+    setEditDialogOpen(true);
     return { ...prevOpen, [projectId]: true };
   });
   const handleEditClose = (projectId: string) => setEditOpen(prevOpen => {
+    setEditDialogOpen(false);
     return { ...prevOpen, [projectId]: false };
   });
 
   const handleEditSuccess = (updatedProject: Project, isEdit?: boolean) => {
     onUpdate(updatedProject, isEdit);
     handleEditClose(updatedProject.id);
-  };
-
-  const handleProjectCheck = (projectId: string, value: boolean): void => {
-    setCheckedProjects((prevCheckedProjects) => {
-      return { ...prevCheckedProjects, [projectId]: value };
-    });
   };
 
   const renderProjects = () => projects.map((project, index) => {
@@ -64,13 +64,14 @@ export function ProjectList(props: ProjectListProps) {
         selected={selected}
         project={project}
         canModify={canModify}
+        showEdit={showEdit}
         handleEditClose={handleEditClose}
         handleEditOpen={handleEditOpen}
         editOpen={editOpen}
         onItemClick={onItemClick}
         checkedProjects={checkedProjects}
         handleEditSuccess={handleEditSuccess}
-        handleProjectCheck={handleProjectCheck}
+        handleProjectCheck={setCheckedProjects}
       />
       <Divider />
     </React.Fragment>

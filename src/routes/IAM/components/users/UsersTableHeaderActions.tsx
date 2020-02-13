@@ -3,8 +3,8 @@ import Grid from '@material-ui/core/Grid';
 import { useTheme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SendIcon from '@material-ui/icons/Send';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { User } from '../../../../types';
 

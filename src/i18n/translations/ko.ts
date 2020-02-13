@@ -20,11 +20,14 @@ export const ko: ResourceLanguage = {
       success: '성공',
       failure: '실패',
       clear: 'Clear',
+      clearAll: 'Clear all',
       startAt: '시작 시간',
       endAt: '종료 시간',
       length: '길이',
       score: '점수',
       upload: '업로드',
+      uploaded: '업로드됨',
+      uploading: '업로드중',
       forbidden: '금지',
       view: '보기',
       date: '날짜',
@@ -35,6 +38,7 @@ export const ko: ResourceLanguage = {
       noData: 'No data',
       progress: 'Progress',
       refresh: 'Refresh',
+      close: 'Close',
     },
     table: {
       page: 'Page',
@@ -50,6 +54,7 @@ export const ko: ResourceLanguage = {
       projects: 'Projects',
       models: 'Models',
       editor: 'Editor',
+      modelTraining: 'Model Training',
     },
     menu: {
       login: '로그인',
@@ -89,18 +94,19 @@ export const ko: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
-      },
-      dropZone: {
-        main: 'Drag and drop a file or click',
-        text: 'Drag and drop a text file or click',
-        audio: 'Drag and drop an audio file or click',
-        main_plural: 'Drag and drop files or click',
-        text_plural: 'Drag and drop text files or click',
-        audio_plural: 'Drag and drop audio files or click',
-        reject: {
-          main: 'File {{name}} was rejected.',
-          notSupported: 'File type not supported.',
-          exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
+        dropZone: {
+          main: 'Drag and drop a file or click',
+          text: 'Drag and drop a text file or click',
+          audio: 'Drag and drop an audio file or click',
+          main_plural: 'Drag and drop files or click',
+          text_plural: 'Drag and drop text files or click',
+          audio_plural: 'Drag and drop audio files or click',
+          reject: {
+            main: 'File {{name}} was rejected.',
+            notSupported: 'File type not supported.',
+            exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
+            duplicateFileNames: 'File names must be unique',
+          },
         },
       },
       numberFiles: 'Number of files to upload: {{count}}',
@@ -119,6 +125,9 @@ export const ko: ResourceLanguage = {
       sub: 'Sub',
       modelConfig: 'Model configuration',
       privacySetting: 'Privacy setting',
+      mutability: 'Mutability',
+      mutable: 'Mutable',
+      immutable: 'Immutable',
       fileUpload: 'File upload',
       source: 'Source',
       private: 'Private',
@@ -154,6 +163,7 @@ export const ko: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      noProjectSelected: 'No project selected',
       notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
@@ -173,6 +183,7 @@ export const ko: ResourceLanguage = {
       websocketCloseStatus: 'Websocket close status',
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: 'Transferred bytes',
+      openToRate: 'Open to rate',
     },
     SET: {
       SET: 'SET',
@@ -182,6 +193,16 @@ export const ko: ResourceLanguage = {
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
       addTranscriber: 'Add transcriber',
+    },
+    modelTraining: {
+      header: 'Model Training',
+      model: 'Model',
+      trainingData: 'Training data',
+      trainingMethod: 'Training method',
+      shareSettings: 'Share settings',
+      shared: 'Shared',
+      notShared: 'Not shared',
+      startTraining: 'Start training',
     },
     editor: {
       editor: 'Editor',
@@ -195,6 +216,7 @@ export const ko: ResourceLanguage = {
       speaker: 'Speaker',
       toggleMore: 'Toggle more',
       createWord: 'Create word',
+      editSegmentTime: 'Edit segment time',
       wordConfidence: 'Word confidence',
       setWordConfidence: 'Set word confidence threshold',
       nothingToTranscribe: 'Nothing to transcribe',
@@ -220,6 +242,8 @@ export const ko: ResourceLanguage = {
       thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       noResults: 'No model configurations',
+      manage: 'Manage configuration',
+      helpText: 'Create a model configuration before uploading data.',
     },
     models: {
       header: 'Model Management',
@@ -240,6 +264,17 @@ export const ko: ResourceLanguage = {
           noResults: '언어 모델이 없습니다.',
         },
       },
+      validation: {
+        allAcousticModelsStillTraining: 'Acoustic model still training',
+        allAcousticModelsStillTraining_plural:
+          'All acoustic models still training',
+        allSubGraphsStillTraining: 'Sub graph still training',
+        allSubGraphsStillTraining_plural: 'All sub graphs still training',
+        allModelConfigsStillTraining: 'Model configuration still training',
+        allModelConfigsStillTraining_plural:
+          'All modelConfigurations still training',
+      },
+      trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',
@@ -251,6 +286,17 @@ export const ko: ResourceLanguage = {
     },
     audioPlayer: {
       noUrl: '오디오 URL이 없습니다',
+    },
+    home: {
+      header: 'Welcome to Zeroth',
+      textBlocks: {
+        ['1']: 'Zeroth를 유용하게 사용하시려면',
+        ['2']:
+          '왼쪽 메뉴에서 음향모델과 언어모델을 확인해주세요. 모델이 없을 시, 프로젝트 생성이 제한될 수 있습니다.',
+        ['3']:
+          '프로젝트를 생성하신 후 전사를 시작해보세요. 상단의 프로젝트를 클릭하시면 프로젝트를 생성할 수 있습니다.',
+        ['4']: '사용에 궁금하신 점이 있으시면 연락주세요. 감사합니다.',
+      },
     },
   },
 };

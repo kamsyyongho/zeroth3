@@ -1,7 +1,7 @@
 import Keycloak from 'keycloak-js';
 import { useState } from 'react';
 import ENV from '../../services/env';
-import { ROLES } from '../../types';
+import { LOCAL_STORAGE_KEYS, ROLES } from '../../types';
 import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
@@ -12,7 +12,9 @@ export interface KeycloakUser {
   email?: string;
   name?: string;
   preferredUsername?: string;
-  organizationId?: number;
+  organizationIds?: string[];
+  currentOrganizationId?: string;
+  currentProjectId?: string;
 }
 
 interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
@@ -21,7 +23,7 @@ interface CustomKeycloakTokenParsed extends Keycloak.KeycloakTokenParsed {
   email?: string;
   name?: string;
   preferred_username?: string;
-  organization_id?: number;
+  organization_id?: string[];
 }
 
 interface CustomKeycloakInstance extends Keycloak.KeycloakInstance {
@@ -32,7 +34,10 @@ export const useKeycloak = () => {
   const rawKeycloak: CustomKeycloakInstance = Keycloak(keycloakConfig);
 
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
+  const [roles, setRoles] = useState<ROLES[]>([]);
   const [keycloak, setKeycloak] = useState(rawKeycloak);
+
+
 
   const init = () => {
     return new Promise<boolean>((resolve, reject) => {
@@ -77,15 +82,11 @@ export const useKeycloak = () => {
     keycloak.logout(logoutOptions);
   };
 
-  let roles: string[] = [];
   let user: KeycloakUser = {};
   try {
-    if (keycloak?.tokenParsed?.realm_access) {
-      roles = keycloak.tokenParsed.realm_access.roles;
-    }
     if (keycloak?.tokenParsed) {
       user = {
-        organizationId: keycloak.tokenParsed.organization_id,
+        organizationIds: keycloak.tokenParsed.organization_id,
         familyName: keycloak.tokenParsed.family_name,
         givenName: keycloak.tokenParsed.given_name,
         email: keycloak.tokenParsed.email,
@@ -93,6 +94,7 @@ export const useKeycloak = () => {
         preferredUsername: keycloak.tokenParsed.preferred_username,
       };
     }
+
   } catch (error) {
     log({
       file: `useKeycloak.tsx`,
@@ -105,7 +107,7 @@ export const useKeycloak = () => {
   /**
    * checks if the user has the required permissions
    */
-  const hasPermission = (permittedRoles: ROLES[]) => {
+  const hasPermission = (roles: ROLES[], permittedRoles: ROLES[]) => {
     const permittedRolesStrings: string[] = permittedRoles.map(role => role as string);
     for (let i = 0; i < roles.length; i++) {
       if (permittedRolesStrings.includes(roles[i])) {
@@ -115,7 +117,35 @@ export const useKeycloak = () => {
     return false;
   };
 
-  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, roles, user, hasPermission };
+  /**
+   * sets the user roles for the current organization
+   */
+  const initializeUserRoles = (rolesForOrganization: ROLES[] = []) => {
+    setRoles(rolesForOrganization);
+  };
+
+
+  // get or set the organization from/to localStorage
+  if (user.organizationIds) {
+    const currentOrganizationId = localStorage.getItem(LOCAL_STORAGE_KEYS.ORGANIZATION_ID);
+    if (user.organizationIds.length) {
+      if (!currentOrganizationId ||
+        (currentOrganizationId && !user.organizationIds.includes(currentOrganizationId))) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ORGANIZATION_ID, user.organizationIds[0]);
+        user.currentOrganizationId = user.organizationIds[0];
+      } else if (currentOrganizationId) {
+        user.currentOrganizationId = currentOrganizationId;
+      }
+    }
+  }
+
+  // get or set the project from/to localStorage
+  const currentProjectId = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+  if (currentProjectId) {
+    user.currentProjectId = currentProjectId;
+  }
+
+  const parsedKeycloak: ParsedKeycloak = { keycloak, logout, user, roles, hasPermission, initializeUserRoles };
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
 };

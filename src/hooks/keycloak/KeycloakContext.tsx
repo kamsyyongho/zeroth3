@@ -1,8 +1,8 @@
 import { KeycloakInstance } from "keycloak-js";
 import { createContext } from "react";
 import { noop } from '../../constants';
-import { KeycloakUser } from './useKeycloak';
 import { ROLES } from '../../types';
+import { KeycloakUser } from './useKeycloak';
 
 export interface ParsedKeycloak {
   /**
@@ -16,12 +16,16 @@ export interface ParsedKeycloak {
   /**
    * current roles assigned to the user
    */
-  roles: string[];
+  roles: ROLES[];
   user: KeycloakUser;
   /**
    * checks if the user has the required permissions
    */
-  hasPermission: (permittedRoles: ROLES[]) => boolean;
+  hasPermission: (roles: ROLES[], permittedRoles: ROLES[]) => boolean;
+  /**
+   * sets the user roles for the current organization
+   */
+  initializeUserRoles: (userRolesForOrganization?: ROLES[]) => void;
 }
 
 const defaultContext: ParsedKeycloak = {
@@ -30,6 +34,7 @@ const defaultContext: ParsedKeycloak = {
   roles: [],
   user: {},
   hasPermission: noop,
+  initializeUserRoles: noop,
 };
 
 export const KeycloakContext = createContext(defaultContext);

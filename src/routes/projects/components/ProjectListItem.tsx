@@ -1,4 +1,4 @@
-import Checkbox from '@material-ui/core/Checkbox';
+import { Grow } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -6,8 +6,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import EditIcon from '@material-ui/icons/Edit';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { ICONS } from '../../../theme/icons';
 import { CustomTheme } from '../../../theme/index';
 import { Project } from '../../../types';
 import { CheckedProjectsById } from '../ProjectsDialog';
@@ -26,13 +27,14 @@ interface ProjectListItemProps {
   project: Project;
   selected: boolean;
   canModify: boolean;
+  showEdit?: boolean;
   checkedProjects: CheckedProjectsById;
   editOpen: EditOpenByProjectId;
-  onItemClick: (projectId: string) => void;
+  onItemClick: (project: Project) => void;
   handleEditOpen: (projectId: string) => void;
   handleEditClose: (projectId: string) => void;
   handleEditSuccess: (updatedProject: Project, isEdit?: boolean) => void;
-  handleProjectCheck: (projectId: string, value: boolean) => void;
+  handleProjectCheck: (projectId: string, value: boolean, triggerDelete?: boolean) => void;
 }
 
 
@@ -40,6 +42,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
   const {
     project,
     canModify,
+    showEdit,
     editOpen,
     handleEditClose,
     handleEditOpen,
@@ -59,7 +62,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
 
   const validDate = new Date(project.validFrom);
 
-  const onClick = () => onItemClick(project.id);
+  const onClick = () => onItemClick(project);
 
   return (<React.Fragment key={project.id}>
     <ProjectDialog
@@ -67,19 +70,28 @@ export function ProjectListItem(props: ProjectListItemProps) {
       onClose={() => handleEditClose(project.id)}
       onSuccess={handleEditSuccess}
       projectToEdit={project}
+      hideBackdrop
     />
     <ListItem dense button onClick={onClick} className={selected ? classes.selected : undefined}>
-      <ListItemText primary={project.name} secondary={formatDate(validDate)} />
-      {canModify && <ListItemSecondaryAction>
-        <ListItemIcon>
-          <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleProjectCheck(project.id, event.target.checked)} />
-        </ListItemIcon>
-        <ListItemIcon>
-          <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
-            <EditIcon />
-          </IconButton>
-        </ListItemIcon>
-      </ListItemSecondaryAction>}
+      <ListItemText primary={project.name} secondary={formatDate(validDate, 'date')} />
+      {canModify &&
+        <ListItemSecondaryAction>
+          <Grow in={showEdit}>
+            <ListItemIcon>
+              <IconButton aria-label="delete" onClick={() => handleProjectCheck(project.id, true, true)}>
+                <ICONS.Trash />
+              </IconButton>
+            </ListItemIcon>
+          </Grow>
+          <Grow in={showEdit}>
+            <ListItemIcon>
+              <IconButton aria-label="edit" onClick={() => handleEditOpen(project.id)}>
+                <EditIcon />
+              </IconButton>
+            </ListItemIcon>
+          </Grow>
+        </ListItemSecondaryAction>
+      }
     </ListItem>
   </React.Fragment>);
 };

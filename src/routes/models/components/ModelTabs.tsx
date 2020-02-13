@@ -3,7 +3,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import { useSnackbar } from 'notistack';
-import React from 'react';
+import React from 'reactn';
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -33,7 +33,7 @@ export type CheckedSubGraphById = BooleanById;
 export function ModelTabs() {
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([] as TopGraph[]);
@@ -49,7 +49,7 @@ export function ModelTabs() {
   /** used to prevent tabs from rendering before they should be displayed */
   const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -243,6 +243,7 @@ export function ModelTabs() {
             deleteLoading={deleteLoading}
             canDelete={!!subGraphsToDelete.length}
             subGraphs={subGraphs}
+            topGraphs={topGraphs}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
           />
         </>}

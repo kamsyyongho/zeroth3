@@ -1,7 +1,12 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { RawDataQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { getRawDataResult, ProblemKind, ServerError, uploadRawDataResult } from '../types';
-import { RawDataAdditionalProps } from '../types/raw-data.types';
+import {
+  getRawDataQueueResult,
+  ProblemKind,
+  ServerError,
+  uploadRawDataResult,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -11,22 +16,21 @@ export class RawData extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
   /**
-   * Gets raw audio data
+   * Gets the number of items in the project's upload queue
    * @param projectId
    */
-  async getRawData(projectId: string): Promise<getRawDataResult> {
+  async getRawDataQueue(projectId: string): Promise<getRawDataQueueResult> {
     // make the api call
-    const response = await this.apisauce.get<
-      RawDataAdditionalProps,
-      ServerError
-    >(`/projects/${projectId}/raw-data`);
+    const response = await this.apisauce.get<RawDataQueue, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -39,8 +43,8 @@ export class RawData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const results = response.data as RawDataAdditionalProps;
-      return { kind: 'ok', results };
+      const queue = response.data as RawDataQueue;
+      return { kind: 'ok', queue };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -73,7 +77,7 @@ export class RawData extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      `/projects/${projectId}/raw-data`,
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data`),
       request,
       config
     );

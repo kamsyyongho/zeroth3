@@ -24,6 +24,8 @@ import {
   ServerError,
   SetFreeTextTranscriptRequest,
   setFreeTextTranscriptResult,
+  SplitSegmentByTimeQuery,
+  splitSegmentByTimeResult,
   SplitSegmentQuery,
   splitSegmentResult,
   SplitWordInSegmentRequest,
@@ -34,6 +36,8 @@ import {
   updateSegmentResult,
   UpdateSegmentsRequest,
   updateSegmentsResult,
+  UpdateSegmentTimeRequest,
+  updateSegmentTimeResult,
   UpdateSpeakerRequest,
   updateSpeakerResult,
   UpdateStatusRequest,
@@ -48,7 +52,7 @@ export class VoiceData extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
@@ -72,6 +76,7 @@ export class VoiceData extends ParentApi {
    *status?: CONTENT_STATUS;
    *till?: Date;
    *transcript?: string;
+   *'sort-by'?: string;
    *}
    *```
    */
@@ -87,7 +92,7 @@ export class VoiceData extends ParentApi {
       size,
     };
     const response = await this.apisauce.get<VoiceDataResults, ServerError>(
-      `/projects/${projectId}/data`,
+      this.getPathWithOrganization(`/projects/${projectId}/data`),
       query
     );
     // the typical ways to die when calling an api
@@ -116,7 +121,7 @@ export class VoiceData extends ParentApi {
    */
   async getAssignedData(): Promise<getAssignedDataResult> {
     const response = await this.apisauce.get<IVoiceData, ServerError>(
-      `/data/assigned`
+      this.getPathWithOrganization(`/data/assigned`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -148,7 +153,9 @@ export class VoiceData extends ParentApi {
     dataId: string
   ): Promise<confirmDataResult> {
     const response = await this.apisauce.put<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/confirm`
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/confirm`
+      )
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -173,7 +180,7 @@ export class VoiceData extends ParentApi {
     const response = await this.apisauce.post<
       IVoiceData | undefined,
       ServerError
-    >(`/data/unconfirmed`);
+    >(this.getPathWithOrganization(`/data/unconfirmed`));
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -204,7 +211,9 @@ export class VoiceData extends ParentApi {
     dataId: string
   ): Promise<getSegmentsDataResult> {
     const response = await this.apisauce.get<Segment[], ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments`
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments`
+      )
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -244,7 +253,9 @@ export class VoiceData extends ParentApi {
     };
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -275,7 +286,9 @@ export class VoiceData extends ParentApi {
     const request: UpdateSegmentsRequest = segments;
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -309,7 +322,58 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.post<[Segment, Segment], ServerError>(
       // query params on a post are the third (3) parameter
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`
+      ),
+      null,
+      { params }
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const segments = response.data as [Segment, Segment];
+      return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Splits a segment that only has one word alignment item
+   * - splits based off of the index within the word and the time within the segment
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param time - within the segment
+   * @param wordStringSplitIndex - the string index to split the word at
+   */
+  async splitSegmentByTime(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    time: number,
+    wordStringSplitIndex: number
+  ): Promise<splitSegmentByTimeResult> {
+    // set to 2 sig figs
+    const adjustedTime = Number(time.toFixed(2));
+    const params: SplitSegmentByTimeQuery = {
+      time: adjustedTime,
+      'word-split-index': wordStringSplitIndex,
+    };
+    const response = await this.apisauce.post<[Segment, Segment], ServerError>(
+      // query params on a post are the third (3) parameter
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-by-time`
+      ),
       null,
       { params }
     );
@@ -352,7 +416,9 @@ export class VoiceData extends ParentApi {
       segmentIdB: secondSegmentId,
     };
     const response = await this.apisauce.post<Segment, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/merge`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/merge`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -390,7 +456,9 @@ export class VoiceData extends ParentApi {
       status,
     };
     const response = await this.apisauce.put<IVoiceData, ServerError>(
-      `/projects/${projectId}/data/${dataId}/status`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/status`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -428,7 +496,9 @@ export class VoiceData extends ParentApi {
       memo,
     };
     const response = await this.apisauce.patch<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/memo`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/memo`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -460,7 +530,9 @@ export class VoiceData extends ParentApi {
       rating,
     };
     const response = await this.apisauce.put<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/rate`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/rate`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -495,7 +567,9 @@ export class VoiceData extends ParentApi {
       freeText,
     };
     const response = await this.apisauce.post<Segment, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/free-text`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/free-text`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -538,7 +612,9 @@ export class VoiceData extends ParentApi {
       indexWordB: secondWordIndex,
     };
     const response = await this.apisauce.post<Segment, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/merge-word`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/merge-word`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -584,7 +660,9 @@ export class VoiceData extends ParentApi {
       wordAlignmentIndex,
     };
     const response = await this.apisauce.post<Segment, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-word`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-word`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -624,7 +702,47 @@ export class VoiceData extends ParentApi {
     };
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
-      `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`
+      ),
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+  /**
+   * Updates a segment's start time and length
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   * @param speaker
+   */
+  async updateSegmentTime(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+    start: number,
+    length: number
+  ): Promise<updateSegmentTimeResult> {
+    // compile data
+    const request: UpdateSegmentTimeRequest = {
+      length,
+      start,
+    };
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/time`
+      ),
       request
     );
     // the typical ways to die when calling an api

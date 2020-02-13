@@ -1,16 +1,7 @@
 import { ApisauceInstance } from 'apisauce';
 import { DataSet as IDataSet, FilterParams, Transcriber } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  AssignTranscribersToDataSetRequest,
-  assignTranscribersToDataSetResult,
-  getAllResult,
-  PostDataSetRequest,
-  postDataSetResult,
-  ProblemKind,
-  removeTranscriberFromDataSetResult,
-  ServerError,
-} from '../types';
+import { AssignTranscribersToDataSetRequest, assignTranscribersToDataSetResult, getAllResult, PostDataSetRequest, postDataSetResult, ProblemKind, removeTranscriberFromDataSetResult, ServerError } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -20,9 +11,12 @@ export class DataSet extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
-  constructor(apisauce: ApisauceInstance, logout: () => void) {
+  constructor(
+    apisauce: ApisauceInstance,
+    logout: () => void
+  ) {
     super(apisauce, logout);
   }
 
@@ -32,7 +26,7 @@ export class DataSet extends ParentApi {
    */
   async getAll(projectId: string): Promise<getAllResult> {
     const response = await this.apisauce.get<IDataSet[], ServerError>(
-      `/projects/${projectId}/data-sets`
+      this.getPathWithOrganization(`/projects/${projectId}/data-sets`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -70,7 +64,7 @@ export class DataSet extends ParentApi {
       filterParams,
     };
     const response = await this.apisauce.post<undefined, ServerError>(
-      `/projects/${projectId}/data-sets`,
+      this.getPathWithOrganization(`/projects/${projectId}/data-sets`),
       request
     );
     // the typical ways to die when calling an api
@@ -102,7 +96,9 @@ export class DataSet extends ParentApi {
       transcribers: transcriberIds,
     };
     const response = await this.apisauce.post<Transcriber, ServerError>(
-      `/projects/${projectId}/data-sets/${dataSetId}`,
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data-sets/${dataSetId}`
+      ),
       request
     );
     // the typical ways to die when calling an api
@@ -136,7 +132,9 @@ export class DataSet extends ParentApi {
     transcriberId: string
   ): Promise<removeTranscriberFromDataSetResult> {
     const response = await this.apisauce.delete<undefined, ServerError>(
-      `/projects/${projectId}/data-sets/${dataSetId}/transcribers/${transcriberId}`
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data-sets/${dataSetId}/transcribers/${transcriberId}`
+      )
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

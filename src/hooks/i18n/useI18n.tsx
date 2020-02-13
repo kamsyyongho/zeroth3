@@ -22,6 +22,12 @@ export interface PickerLocale extends Locale {
   code: string;
 }
 
+export interface DateTimeFormats {
+  dateTime: string;
+  date: string;
+  time: string;
+}
+
 enum LANGUAGES {
   en = 'en',
   ko = 'ko',
@@ -42,7 +48,7 @@ function getLanguageCode(locale: PickerLocale) {
   return shortLanguageCode;
 }
 
-function getDateTimeFormat(locale: Locale | PickerLocale) {
+function getDateTimeFormats(locale: Locale | PickerLocale): DateTimeFormats {
   const typedLocale = extendLocaleType(locale);
   const { formatLong } = typedLocale;
   const languageCode = getLanguageCode(typedLocale);
@@ -59,9 +65,16 @@ function getDateTimeFormat(locale: Locale | PickerLocale) {
       timeWidth = 'short';
       break;
   }
-  // build the string
-  const dateTimeString = `${formatLong.date({ width: dateWidth })} - ${formatLong.time({ width: timeWidth })}`;
-  return dateTimeString;
+  // build the strings
+  const date = formatLong.date({ width: dateWidth });
+  const time = formatLong.time({ width: timeWidth });
+  const dateTime = `${date} - ${time}`;
+  const formats: DateTimeFormats = {
+    dateTime,
+    date,
+    time,
+  };
+  return formats;
 }
 
 const isMacOs = () => navigator.userAgent.includes('Mac');
@@ -69,9 +82,9 @@ const isMacOs = () => navigator.userAgent.includes('Mac');
 export const useI18n = (): ParsedI18n => {
   const { t, i18n } = useTranslation();
   const defaultLocale = i18n.language === LANGUAGES.en ? extendLocaleType(enUS) : extendLocaleType(ko);
-  const defaultDateTimeFormat = getDateTimeFormat(defaultLocale);
+  const defaultDateTimeFormats = getDateTimeFormats(defaultLocale);
   const [pickerLocale, setPickerLocale] = useState<PickerLocale>(defaultLocale);
-  const [dateTimeFormat, setDateTimeFormat] = useState<string>(defaultDateTimeFormat);
+  const [dateTimeFormats, setDateTimeFormats] = useState<DateTimeFormats>(defaultDateTimeFormats);
   const [isMac, setIsMac] = useState<boolean>(isMacOs());
 
   /**
@@ -101,8 +114,8 @@ export const useI18n = (): ParsedI18n => {
   const toggleLanguage = () => {
     const locale = i18n.language === LANGUAGES.en ? extendLocaleType(ko) : extendLocaleType(enUS);
     setPickerLocale(locale);
-    const dateTimeFormat = getDateTimeFormat(locale);
-    setDateTimeFormat(dateTimeFormat);
+    const dateTimeFormats = getDateTimeFormats(locale);
+    setDateTimeFormats(dateTimeFormats);
     i18n.changeLanguage(i18n.language === LANGUAGES.en ? LANGUAGES.ko : LANGUAGES.en);
   };
 
@@ -110,7 +123,7 @@ export const useI18n = (): ParsedI18n => {
    * Supplies a date-time string for the current locale
    * @param date 
    */
-  const formatDate = (date: number | Date) => format(date, dateTimeFormat);
+  const formatDate = (date: number | Date, dateTimeFormat: 'dateTime' | 'date' | 'time' = 'dateTime') => format(date, dateTimeFormats[dateTimeFormat]);
 
   return {
     translate,
@@ -119,7 +132,7 @@ export const useI18n = (): ParsedI18n => {
     toggleLanguage,
     language: i18n.language,
     pickerLocale,
-    dateTimeFormat,
+    dateTimeFormats,
     formatDate,
   };
 };

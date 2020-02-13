@@ -10,7 +10,7 @@ export class User extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);

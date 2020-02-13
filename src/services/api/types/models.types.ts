@@ -3,6 +3,7 @@ import {
   LanguageModel,
   SubGraph,
   TopGraph,
+  TRAINING_METHODS,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -21,10 +22,19 @@ export interface LanguageModelRequest {
   subGraphIds: string[];
 }
 
+export interface TransferLearningRequest {
+  name: string;
+  modelConfigId: string;
+  dataSetId: string;
+  shared: boolean;
+}
+
 export interface SubGraphRequest {
   name: string;
   text: string;
+  topGraphId: string;
   public?: boolean;
+  immutable?: boolean;
 }
 
 /////////////
@@ -76,3 +86,9 @@ export type updateSubGraphResult =
   | GeneralApiProblem;
 
 export type deleteSubGraphResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type transferLearningResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type getTrainingMethodsResult =
+  | { kind: 'ok'; trainingMethods: TRAINING_METHODS[] }
+  | GeneralApiProblem;

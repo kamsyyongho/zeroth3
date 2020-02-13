@@ -5,10 +5,11 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { AcousticModel } from '../../../../types';
+import { TrainingChip } from '../../../shared/TrainingChip';
 import { EditOpenByModelId } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 
@@ -16,7 +17,7 @@ const MIN_CARD_WIDTH = 300;
 const MAX_CARD_WIDTH = MIN_CARD_WIDTH * 2;
 const MAX_TITLE_WIDTH = MAX_CARD_WIDTH - 250;
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     root: {
       minWidth: MIN_CARD_WIDTH,
@@ -29,6 +30,11 @@ const useStyles = makeStyles((theme) =>
     },
     category: {
       marginRight: theme.spacing(1),
+    },
+    trainingAlertChip: {
+      backgroundColor: theme.error,
+      color: theme.palette.primary.contrastText,
+      fontWeight: 'bold',
     },
   }),
 );
@@ -111,6 +117,16 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
             {model.sampleRate}{' Hz'}
           </Typography>
         </Grid>
+        {model.progress < 100 && <Grid
+          container
+          wrap='nowrap'
+          direction='row'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+        >
+          <TrainingChip progress={model.progress} />
+        </Grid>}
       </CardContent>
     </Grid>
   </Box>);

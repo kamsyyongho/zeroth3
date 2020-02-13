@@ -1,7 +1,7 @@
 import { Box, FormControl, FormHelperText } from '@material-ui/core';
 import { FieldProps, getIn } from "formik";
 import { DropzoneArea, DropzoneAreaProps } from 'material-ui-dropzone';
-import React from "react";
+import React from "reactn";
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 /**
@@ -35,6 +35,7 @@ interface DropZoneFormFieldProps extends FieldProps, DropzoneAreaProps {
   dropZoneText?: string;
   hidden?: boolean;
   fullWidth?: boolean;
+  onDuplicateFileNames?: (fileName: string, resetError?: boolean) => void;
 }
 
 export const DropZoneFormField = ({
@@ -50,14 +51,37 @@ export const DropZoneFormField = ({
   acceptedFiles,
   hidden,
   fullWidth,
+  onDuplicateFileNames,
   ...props
 }: DropZoneFormFieldProps) => {
+  const { translate } = React.useContext(I18nContext);
+
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
   const isError = !!errorText || !!errorOverride;
 
-  const { translate } = React.useContext(I18nContext);
+  const handleChange = (selectedFiles: File[]) => {
+    if (typeof onDuplicateFileNames === 'function') {
+      const uniqueFileNames: string[] = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        if (uniqueFileNames.includes(file.name)) {
+          onDuplicateFileNames(file.name);
+          form.setFieldError(field.name, `${translate('forms.dropZone.reject.duplicateFileNames')}: ${file.name}`);
+          break;
+        } else {
+          uniqueFileNames.push(file.name);
+        }
+      }
+      if (uniqueFileNames.length === selectedFiles.length) {
+        form.setFieldValue(field.name, selectedFiles);
+        onDuplicateFileNames('', true);
+      }
+    } else {
+      form.setFieldValue(field.name, selectedFiles);
+    }
+  };
 
   const handleRejectText = (
     rejectedFile: { name: string; type: string | undefined; size: number; },
@@ -68,11 +92,11 @@ export const DropZoneFormField = ({
     let message = main;
     if (rejectedFile.type && !acceptedFiles.includes(rejectedFile.type)) {
       const notSupported = translate('forms.dropZone.reject.notSupported');
-      message += `${notSupported} `;
+      message += ` ${notSupported} `;
     }
     if (rejectedFile.size > maxFileSize) {
       const exceedSizeLimit = translate('forms.dropZone.reject.exceedSizeLimit', { size: convertBytesToMbsOrKbs(maxFileSize) });
-      message += `${exceedSizeLimit} `;
+      message += ` ${exceedSizeLimit} `;
     }
     return message;
   };
@@ -88,7 +112,7 @@ export const DropZoneFormField = ({
           filesLimit={filesLimit || 100}
           acceptedFiles={acceptedFiles}
           maxFileSize={maxFileSize || MAX_FILE_SIZE}
-          onChange={(selectedFiles: File[]) => form.setFieldValue(field.name, selectedFiles)}
+          onChange={handleChange}
           dropzoneText={dropZoneText || translate('forms.dropZone.main')}
           showFileNamesInPreview={true}
           showPreviews={showPreviews}

@@ -1,6 +1,7 @@
 import randomColor from 'randomcolor';
 import { WORD_KEY_SEPARATOR } from '../constants/misc.constants';
 import { Segment, SegmentAndWordIndex } from '../types';
+import { DEFAULT_HUES, HUES } from '../types/misc.types';
 
 /**
  * Checks if the contents of two sets are equal.
@@ -83,22 +84,21 @@ export function getRandomInt(max: number) {
 /**
  * - used in the editor / audio player segments
  * @param options overrides the default
+ * @param huesToUse - default is `'red'`, `'orange'`, `'purple'`
  */
-export function getRandomColor(options?: RandomColorOptionsSingle) {
+export function getRandomColor(
+  options?: RandomColorOptionsSingle,
+  huesToUse?: HUES[]
+) {
   if (options) {
     return randomColor(options);
   }
-  const DEFAULT_HUES: string[] = [
-    'red',
-    'orange',
-    'purple',
-    'pink',
-    'green',
-    // 'yellow',
-    // 'blue',
-    // 'monochrome',
-  ];
-  const hue = DEFAULT_HUES[getRandomInt(DEFAULT_HUES.length)];
+  if (!huesToUse) {
+    huesToUse = DEFAULT_HUES;
+  }
+
+  const hues = Object.keys(huesToUse).map(hue => hue);
+  const hue = hues[getRandomInt(hues.length)];
   const defaultOptions: RandomColorOptionsSingle = {
     hue,
   };
@@ -153,7 +153,7 @@ export class WordKeyStore {
   };
 
   /**
-   * inserts a key at the specified location and 
+   * inserts a key at the specified location and
    * updates the locations for any keys down the line
    * that it displaces
    */
@@ -166,11 +166,8 @@ export class WordKeyStore {
     );
     let newLocation: SegmentAndWordIndex | undefined;
     while (currentWordKeyAtLocation !== undefined) {
-      if(!newLocation){
-        newLocation = [
-          wordLocation[0],
-          wordLocation[1] + 1,
-        ]
+      if (!newLocation) {
+        newLocation = [wordLocation[0], wordLocation[1] + 1];
       } else {
         newLocation = [newLocation[0], newLocation[1] + 1];
       }
@@ -179,6 +176,10 @@ export class WordKeyStore {
     }
     this.updateWordKeyLocations(wordKey, wordLocation, true);
   };
+
+  getLocationMap = () => [...this.wordKeyLocations];
+
+  getKeyMap = () => ({ ...this.keys });
 
   /** build the initial multi-dimentional array for the word keys */
   init = (segments: Segment[]) => {
@@ -208,13 +209,25 @@ export class WordKeyStore {
     return wordKey;
   };
 
+  /** Generates a key that for a word that will replace all existing keys in the segment
+   */
+  generateKeyAndClearSegment = (segmentIndex: number): number => {
+    const wordLocation: SegmentAndWordIndex = [segmentIndex, 0];
+    const wordKey = this.generateKey(wordLocation);
+    const tempWordKeyLocations = [...this.wordKeyLocations];
+    const numberOfWords = tempWordKeyLocations[segmentIndex].length;
+    tempWordKeyLocations[segmentIndex] = [wordKey];
+    this.wordKeyLocations = [...tempWordKeyLocations];
+    return wordKey;
+  };
+
   /** Generates a key that for a word that will be pushed the end of a segment
    */
   generateKeyForEndOfSegment = (segmentIndex: number): number => {
     const nextWordIndex = this.wordKeyLocations[segmentIndex].length;
     const nextWordLocation: SegmentAndWordIndex = [segmentIndex, nextWordIndex];
     return this.generateKey(nextWordLocation);
-  }
+  };
 
   /** Get the word location from the word key */
   getLocation = (wordKey: number): SegmentAndWordIndex => {

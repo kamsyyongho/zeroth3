@@ -21,7 +21,7 @@ export class Transcriber extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
@@ -34,7 +34,7 @@ export class Transcriber extends ParentApi {
     const response = await this.apisauce.get<
       TranscriberInterface[],
       ServerError
-    >(`/transcribers`);
+    >(this.getPathWithOrganization(`/transcribers`));
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -71,7 +71,7 @@ export class Transcriber extends ParentApi {
     const response = await this.apisauce.get<
       TrascriberStatsResults,
       ServerError
-    >(`/transcribers/stats`, query);
+    >(this.getPathWithOrganization(`/transcribers/stats`), query);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

@@ -3,7 +3,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
@@ -34,11 +34,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function Models() {
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
 
   const classes = useStyles();
 
-  const canSeeModels = React.useMemo(() => hasPermission(PERMISSIONS.models), []);
+  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
 
   if (!canSeeModels) {
     return <Forbidden />;

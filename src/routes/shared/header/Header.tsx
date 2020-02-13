@@ -1,26 +1,26 @@
-import { Button, Toolbar } from '@material-ui/core';
+/* eslint-disable react/display-name */
+import { Button, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import { useSnackbar } from 'notistack';
-import React from 'react';
-import { Link } from "react-router-dom";
+import { OptionsObject, useSnackbar } from 'notistack';
+import { Link } from 'react-router-dom';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { ICONS } from '../../../theme/icons';
 import { IMAGES } from '../../../theme/images';
-import { PATHS } from '../../../types';
+import { LOCAL_STORAGE_KEYS, Organization, PATHS } from '../../../types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
 import MenuPopup from './components/MenuPopup';
-
+import { UploadProgressNotification } from './components/UploadProgressNotification';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -43,22 +43,44 @@ const useStyles = makeStyles((theme) =>
     },
     logo: {
       fontSize: 120,
+      height: 24,
       color: theme.palette.primary.contrastText,
     }
   }),
 );
 
+const QUEUE_NOTIFICATION_KEY = 0;
+const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
+  persist: true,
+  preventDuplicate: true,
+  anchorOrigin: {
+    vertical: 'bottom',
+    horizontal: 'center',
+  },
+  key: QUEUE_NOTIFICATION_KEY,
+};
+
+/**
+ * Handles initial data fetching and site management
+ * @param props 
+ */
 export const Header: React.FunctionComponent<{}> = (props) => {
-  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission, initializeUserRoles, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organization } = globalState;
-  const [organizationLoading, setOrganizationLoading] = React.useState(true);
+  const [organizations, setOrganizations] = useGlobal('organizations');
+  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
+  const [currentProject, setCurrentProject] = useGlobal('currentProject');
+  const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
+  const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
+  const [organizationLoading, setOrganizationsLoading] = React.useState(true);
+  const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
+  const [organization, setOrganization] = React.useState<Organization | undefined>();
+  const [currentProjectId, setCurrentProjectId] = React.useState<string | undefined>();
 
   const classes = useStyles();
 
@@ -74,36 +96,120 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
   const hideProjectsDialog = () => setIsProjectsOpen(false);
 
-  const getOrganization = async () => {
+  const getOrganizations = async () => {
     if (api?.organizations) {
-      setOrganizationLoading(true);
-      const response = await api.organizations.getOrganization();
+      setOrganizationsLoading(true);
+      const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setGlobalState({ organization: response.organization });
+        setOrganizations(response.organizations);
       } else {
         log({
           file: `Header.tsx`,
-          caller: `getOrganization - failed to get organization`,
+          caller: `getOrganizations - failed to get organizations`,
           value: response,
           important: true,
         });
       }
     }
-    setOrganizationLoading(false);
+    setOrganizationsLoading(false);
   };
 
-  const canRename = React.useMemo(() => hasPermission(PERMISSIONS.organization), []);
+  const onComplete = () => {
+    setUploadQueueEmpty(true);
+  };
+
+  const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>) => {
+    return (
+      <UploadProgressNotification key={key} message={message} onComplete={onComplete} callback={callback} />
+    );
+  };
+
+  const getUploadQueue = async (projectId: string, isGetter = false) => {
+    if (api?.rawData) {
+      const response = await api.rawData.getRawDataQueue(projectId);
+      if (response.kind === 'ok') {
+        const { queue } = response;
+        const { projectUnprocessed } = queue;
+        if (projectUnprocessed < 1) {
+          onComplete();
+        } else {
+          //!
+          //TODO
+          //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
+          const text = `${translate('common.uploading')}: ${projectUnprocessed}`;
+          enqueueSnackbar(text, {
+            ...DEFAULT_NOTIFICATION_OPTIONS,
+            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true)),
+          });
+        }
+        if (isGetter) {
+          return projectUnprocessed;
+        }
+      } else {
+        log({
+          file: `Header.tsx`,
+          caller: `getUploadQueue - failed to get raw data queue`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+  };
+  const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.organization), [roles]);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
-    if (user.organizationId && !organization) {
-      getOrganization();
+    if (user.currentOrganizationId && !organizations) {
+      getOrganizations();
     } else {
-      setOrganizationLoading(false);
+      setOrganizationsLoading(false);
     }
   }, []);
 
+  // to get the currently selected organization's info
+  React.useEffect(() => {
+    if (organizations && organizations.length && user.currentOrganizationId) {
+      for (let i = 0; i < organizations.length; i++) {
+        const organization = organizations[i];
+        if (organization.id === user.currentOrganizationId) {
+          setOrganization(organization);
+          break;
+        }
+      }
+    }
+  }, [organizations]);
+
+  React.useEffect(() => {
+    if (organization) {
+      setCurrentOrganization(organization);
+      const roleNames = organization.roles.map(role => role.name);
+      initializeUserRoles(roleNames);
+    }
+  }, [organization]);
+
+  // to check for current upload progress
+  React.useEffect(() => {
+    if (currentProject && !uploadQueueEmpty) {
+      if (currentProjectId !== currentProject.id) {
+        setCurrentProjectId(currentProject.id);
+      }
+      getUploadQueue(currentProject.id);
+    }
+  }, [currentProject, uploadQueueEmpty]);
+
+  // to close any showing notifications
+  React.useEffect(() => {
+    closeSnackbar(QUEUE_NOTIFICATION_KEY);
+  }, [currentProject]);
+
+  // to reset projects and project list
+  React.useEffect(() => {
+    setCurrentProject(undefined);
+    if (currentOrganization && organization && currentOrganization.id !== organization.id) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+    }
+  }, [currentOrganization]);
 
   // to show a notification when the organization name should be changed
   React.useEffect(() => {
@@ -128,6 +234,11 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     }
   }, [canRename, shouldRenameOrganization]);
 
+  React.useEffect(() => {
+    if (projectInitialized) {
+      setNoProjectSelected(!currentProject);
+    }
+  }, [projectInitialized, currentProject]);
 
   return (
     <AppBar
@@ -160,14 +271,22 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             <Button onClick={closeDrawer} component={Link} to={PATHS.home.to as string} className={classes.logoButton} >
               {IMAGES.Logo.svg && IMAGES.Logo.svg({ className: classes.logo })}
             </Button>
-            <Button
-              startIcon={<ICONS.Projects />}
-              color={"inherit"}
-              className={classes.projectButton}
-              onClick={showProjectsDialog}
+            <Tooltip
+              placement='bottom'
+              title={noProjectSelected ? <Typography variant='h6' >{translate('projects.noProjectSelected')}</Typography> : ''}
+              arrow={true}
+              open={noProjectSelected}
             >
-              {translate('path.projects')}
-            </Button>
+              <Button
+                startIcon={<ICONS.Projects />}
+                endIcon={<ICONS.ArrowDown />}
+                color={"inherit"}
+                className={classes.projectButton}
+                onClick={showProjectsDialog}
+              >
+                {currentProject?.name ? currentProject?.name : translate('path.projects')}
+              </Button>
+            </Tooltip>
           </Grid>
           <Grid
             item
@@ -201,7 +320,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       <RenameOrganizationDialog
         name={organization?.name ?? ''}
         open={isRenameOpen}
-        onSuccess={getOrganization}
+        onSuccess={getOrganizations}
         onClose={hideRenameDialog}
       />
       <ProjectsDialog

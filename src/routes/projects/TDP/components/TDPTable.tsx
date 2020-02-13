@@ -1,4 +1,4 @@
-import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { Backdrop, TablePagination, TableSortLabel, Tooltip, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -7,23 +7,22 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LaunchIcon from '@material-ui/icons/Launch';
-import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import TruncateMarkup from 'react-truncate-markup';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../../../constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
-import { NavigationPropsContext } from '../../../../hooks/navigation-props/NavigationPropsContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { FilterParams, PATHS, VoiceData, VoiceDataResults } from '../../../../types';
-import { BooleanById } from '../../../../types/misc.types';
+import { BooleanById, CONTENT_STATUS, FilterParams, LOCAL_STORAGE_KEYS, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
 import { ModelConfigsById } from '../TDP';
@@ -31,7 +30,6 @@ import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
 
-const TRANSCRIPT_ACCESSOR = 'transcript';
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
 
@@ -80,7 +78,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
-    }
+    },
+    backdrop: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: theme.shadows[1],
+    },
   }));
 
 export function TDPTable(props: TDPTableProps) {
@@ -97,32 +99,75 @@ export function TDPTable(props: TDPTableProps) {
   } = props;
   const voiceData = voiceDataResults.content;
   const { translate, formatDate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { width } = useWindowSize();
   const history = useHistory();
-  const { setProps } = React.useContext(NavigationPropsContext);
   const [initialLoad, setInitialLoad] = React.useState(true);
+  const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
   const [expandedRowsByIndex, setExpandedRowsByIndex] = React.useState<BooleanById>({});
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
+  const [sortBy, setSortBy] = React.useState<string | undefined>();
+  const [orderDirection, setOrderDirection] = React.useState<ORDER | undefined>();
+  const [orderBy, setOrderBy] = React.useState<TDPTableColumns | undefined>();
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+
+  const changeSort = (sortColumn: TDPTableColumns) => {
+    let newOrderDirection = orderDirection;
+    let newOrderBy = orderBy;
+    if (orderBy === sortColumn) {
+      newOrderDirection = orderDirection === ORDER.asc ? ORDER.desc : ORDER.asc;
+    } else {
+      newOrderDirection = ORDER.asc;
+      newOrderBy = sortColumn;
+    }
+    const newSortBy = `${newOrderBy}.${newOrderDirection}`;
+    setOrderDirection(newOrderDirection);
+    setOrderBy(newOrderBy);
+    setSortBy(newSortBy);
+    // to close any expanded rows
+    setExpandedRowsByIndex({});
+  };
 
   /**
    * navigates to the the editor
+   * - passes required props to trigger read-only editor state
    * @param voiceData 
    */
   const handleRowClick = (voiceData: VoiceData) => {
-    // to store props that will be used on the next page
-    setProps({ projectName, voiceData });
-    PATHS.editor.function && history.push(PATHS.editor.function(projectId, voiceData.id));
+    setNavigationProps({ voiceData, projectId });
+    PATHS.editor.to && history.push(PATHS.editor.to);
   };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
     const id: VoiceData['modelConfigId'] = cellData.cell.value;
     return (modelConfigsById[id] && modelConfigsById[id].name) || '';
+  };
+
+  const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => {
+    const voiceData = cellData.cell.row.original;
+    // eslint-disable-next-line react/prop-types
+    const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
+    if (canModify && !onlyAssignedData && confirmed) {
+      return (<Tooltip
+        placement='top'
+        title={<Typography variant='body1' >{translate('TDP.openToRate')}</Typography>}
+        arrow={true}
+      >
+        <IconButton
+          color='primary'
+          size='medium'
+          aria-label="open"
+          onClick={() => handleRowClick(voiceData)}
+        >
+          <LaunchIcon />
+        </IconButton>
+      </Tooltip>);
+    }
+    return null;
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
@@ -143,14 +188,7 @@ export function TDPTable(props: TDPTableProps) {
       alignContent='center'
       alignItems='center'
       justify='flex-start'>
-      {canModify && !onlyAssignedData && <IconButton
-        color='primary'
-        size='medium'
-        aria-label="open"
-        onClick={() => handleRowClick(cellData.cell.row.original)}
-      >
-        <LaunchIcon />
-      </IconButton>}
+      {renderLaunchIconButton(cellData)}
       <TruncateMarkup lines={numberOfLines}>
         <Typography style={transcriptStyle}>{transcript}</Typography>
       </TruncateMarkup>
@@ -210,32 +248,32 @@ export function TDPTable(props: TDPTableProps) {
     () => [
       {
         Header: translate('forms.transcript'),
-        accessor: TRANSCRIPT_ACCESSOR,
+        accessor: TDPTableColumns['transcript'],
         Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
       },
       {
         Header: translate('modelConfig.header'),
-        accessor: 'modelConfigId',
+        accessor: TDPTableColumns['modelConfigId'],
         Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
       },
       {
         Header: translate('common.length'),
-        accessor: 'length',
+        accessor: TDPTableColumns['length'],
         Cell: (cellData: CellProps<VoiceData>) => formatSecondsDuration(cellData.cell.value),
       },
       {
         Header: translate('common.date'),
-        accessor: 'startAt',
+        accessor: TDPTableColumns['startAt'],
         Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
       {
         Header: translate('forms.status'),
-        accessor: 'status',
+        accessor: TDPTableColumns['status'],
         Cell: (cellData: CellProps<VoiceData>) => renderStatus(cellData),
       },
       {
         Header: translate('TDP.highRiskSegments'),
-        accessor: 'highRiskSegments',
+        accessor: TDPTableColumns['highRiskSegments'],
         Cell: (cellData: CellProps<VoiceData>) => renderHighRiskSegmentsAndExpandButton(cellData),
       },
     ],
@@ -273,6 +311,7 @@ export function TDPTable(props: TDPTableProps) {
       // This means we'll also have to provide our own
       // pageCount.
       pageCount: voiceDataResults.totalPages,
+
     },
     useFilters,
     usePagination,
@@ -312,14 +351,21 @@ export function TDPTable(props: TDPTableProps) {
     if (initialLoad) {
       setInitialLoad(false);
     } else {
-      getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize });
+      getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
     }
-  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions]);
+  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
     <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-      {column.render('Header')}
+      <TableSortLabel
+        active={orderBy === column.id as TDPTableColumns}
+        direction={orderDirection}
+        onClick={() => changeSort(column.id as TDPTableColumns)}
+        IconComponent={ArrowDropDownIcon}
+      >
+        {column.render('Header')}
+      </TableSortLabel>
     </TableCell>);
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
@@ -357,7 +403,7 @@ export function TDPTable(props: TDPTableProps) {
             className={classes.tableRow}
           >
             {row.cells.map((cell, cellIndex) => {
-              const isTranscript = cell.column.id === TRANSCRIPT_ACCESSOR;
+              const isTranscript = cell.column.id === TDPTableColumns['transcript'];
               const isExpandedTranscript = expanded && isTranscript;
               let className = classes.tableBorder;
               let style: React.CSSProperties = {};
@@ -415,19 +461,19 @@ export function TDPTable(props: TDPTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter component="div">
-      {loading && (
+    {loading && (
+      <Backdrop className={classes.backdrop} open={loading}>
         <PulseLoader
           sizeUnit={"px"}
           size={25}
-          color={theme.palette.primary.main}
+          color={theme.palette.primary.light}
           loading={true}
         />
-      )}
-    </TableFooter>
+      </Backdrop>
+    )}
     {!!voiceData.length && <TablePagination
       className={classes.tableHeader}
-      rowsPerPageOptions={[5, 10, 25, 50, 100]}
+      rowsPerPageOptions={[5, 10, 25, 50]}
       component="div"
       count={voiceDataResults.totalElements}
       rowsPerPage={pageSize}
@@ -442,7 +488,9 @@ export function TDPTable(props: TDPTableProps) {
         gotoPage(newPage);
       }}
       onChangeRowsPerPage={e => {
-        setPageSize(Number(e.target.value));
+        const numberOfRows: string = e.target.value;
+        localStorage.setItem(LOCAL_STORAGE_KEYS.TABLE_ROWS_PER_PAGE, numberOfRows);
+        setPageSize(Number(numberOfRows));
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}

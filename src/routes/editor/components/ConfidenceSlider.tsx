@@ -4,7 +4,7 @@ import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
 import Slider from '@material-ui/core/Slider';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 let timeoutId: NodeJS.Timeout | undefined;

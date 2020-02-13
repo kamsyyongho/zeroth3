@@ -1,6 +1,6 @@
 import { FormControlLabel, Typography } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
-import React from 'react';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
 interface UsersHeaderCheckboxProps {

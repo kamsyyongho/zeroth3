@@ -3,13 +3,13 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { CustomTheme } from '../../theme';
 import { Forbidden } from '../shared/Forbidden';
 import { IAMTabs } from './IAMTabs';
-import { CustomTheme } from '../../theme';
 
 
 export interface CheckedProjectsById {
@@ -34,13 +34,13 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 export function IAM() {
   const { translate } = React.useContext(I18nContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
 
   const classes = useStyles();
 
 
-  const usersAccess = React.useMemo(() => hasPermission(PERMISSIONS.users), []);
-  const transcribersAccess = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const usersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
+  const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   if (!transcribersAccess && !usersAccess) {
     return <Forbidden />;

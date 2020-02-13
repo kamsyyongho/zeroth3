@@ -1,10 +1,11 @@
+import { Grow } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { CellProps } from 'react-table';
+import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { deleteRoleResult } from '../../../../services/api/types/iam.types';
@@ -12,14 +13,6 @@ import { SnackbarError, SNACKBAR_VARIANTS, User } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { differencesBetweenSets, isEqualSet } from '../../../../util/misc';
 import { SelectedRoleIdsByIndex } from './UsersTable';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    hidden: {
-      visibility: 'hidden',
-    },
-  }),
-);
 
 interface UsersCellSubmitButtonProps {
   cellData: CellProps<User>;
@@ -69,7 +62,6 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     return !isEqualSet<string>(initialSet, currentSet);
   };
 
-  const classes = useStyles();
   const theme = useTheme();
   const rolesChanged = checkForRoleChange();
 
@@ -191,20 +183,25 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (rolesToAdd.length) addRoles(rolesToAdd);
   };
 
+  if (!currentSet.size) {
+    return null;
+  }
+
   return (
-    <Button
-      className={!rolesChanged ? classes.hidden : undefined}
-      onClick={submitRolesChange}
-      key={key}
-      variant="contained"
-      color="primary"
-      startIcon={(isAddLoading || isDeleteLoading) ?
-        <MoonLoader
-          sizeUnit={"px"}
-          size={15}
-          color={theme.palette.common.white}
-          loading={true}
-        /> : <CheckIcon />}
-    >{translate("common.submit")}</Button>
+    <Grow in={rolesChanged}>
+      <Button
+        onClick={submitRolesChange}
+        key={key}
+        variant="contained"
+        color="primary"
+        startIcon={(isAddLoading || isDeleteLoading) ?
+          <MoonLoader
+            sizeUnit={"px"}
+            size={15}
+            color={theme.palette.common.white}
+            loading={true}
+          /> : <CheckIcon />}
+      >{translate("common.submit")}</Button>
+    </Grow>
   );
 }

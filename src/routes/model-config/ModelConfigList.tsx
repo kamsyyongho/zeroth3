@@ -6,8 +6,8 @@ import CardHeader from '@material-ui/core/CardHeader';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import { BulletList } from 'react-content-loader';
+import React from 'reactn';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
@@ -132,9 +132,18 @@ export function ModelConfigList(props: ModelConfigListProps) {
           key={index}
           modelConfig={modelConfig}
           setModelConfigToEdit={setModelConfigToEdit}
-          openDialog={openDialog}
           openConfirm={openConfirm}
           deleteLoading={deleteLoading}
+          expandProps={{
+            projectId: project.id,
+            onSuccess: handleModelConfigUpdate,
+            topGraphs: topGraphs,
+            subGraphs: subGraphs,
+            languageModels: languageModels,
+            acousticModels: acousticModels,
+            handleSubGraphListUpdate: handleSubGraphListUpdate,
+            handleLanguageModelCreate: handleLanguageModelCreate,
+          }}
         />
       );
     });
@@ -157,7 +166,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
           action={canModify && <Button
             color="primary"
-            variant='contained'
+            variant='outlined'
             onClick={openCreateDialog}
             startIcon={<AddIcon />}
           >

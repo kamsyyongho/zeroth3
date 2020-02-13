@@ -8,17 +8,16 @@ import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
-import React from "react";
 import { List } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
-import { GlobalStateContext } from '../../hooks/global-state/GlobalStateContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
-import { SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { Organization, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
@@ -34,6 +33,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     userCard: {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
+    },
+    organizationCard: {
+      backgroundColor: theme.palette.background.paper,
     },
     organizationLoader: {
       paddingTop: theme.spacing(3),
@@ -50,48 +53,55 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       fontWeight: 'bold',
       color: theme.palette.primary.main,
     },
+    hidden: {
+      visibility: 'hidden',
+    },
   }),
 );
 
 export function Profile() {
-  const { user, hasPermission } = React.useContext(KeycloakContext);
+  const { user, hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const { organization } = globalState;
+  const [organizations, setOrganizations] = useGlobal('organizations');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
-  const [organizationLoading, setOrganizationLoading] = React.useState(false);
+  const [organizationsLoading, setOrganizationsLoading] = React.useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [organization, setOrganization] = React.useState<Organization | undefined>();
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
 
-  const showDialog = () => setIsOpen(true);
-  const hideDialog = () => setIsOpen(false);
+  const showDialog = () => {
+    setIsOpen(true);
+  };
+  const hideDialog = () => {
+    setIsOpen(false);
+  };
   const confirmReset = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
 
-  const hasRenamePermissions = hasPermission(PERMISSIONS.organization);
+  const hasRenamePermissions = hasPermission(roles, PERMISSIONS.organization);
 
-  const { givenName, familyName, preferredUsername, email, organizationId } = user;
+  const { givenName, familyName, preferredUsername, email, currentOrganizationId } = user;
 
-  const getOrganization = async () => {
+  const getOrganizations = async () => {
     if (api?.organizations) {
-      setOrganizationLoading(true);
-      const response = await api.organizations.getOrganization();
+      setOrganizationsLoading(true);
+      const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setGlobalState({ organization: response.organization });
+        setOrganizations(response.organizations);
       } else {
         log({
           file: `Profile.tsx`,
-          caller: `getOrganization - failed to get organization`,
+          caller: `getOrganizations - failed to get organizations`,
           value: response,
           important: true,
         });
       }
-      setOrganizationLoading(false);
+      setOrganizationsLoading(false);
     }
   };
 
@@ -122,10 +132,23 @@ export function Profile() {
   };
 
   React.useEffect(() => {
-    if (organizationId && !organization) {
-      getOrganization();
+    if (currentOrganizationId && !organizations) {
+      getOrganizations();
     }
   }, []);
+
+  // to get the currently selected organization's info
+  React.useEffect(() => {
+    if (organizations && organizations.length && user.currentOrganizationId) {
+      for (let i = 0; i < organizations.length; i++) {
+        const organization = organizations[i];
+        if (organization.id === user.currentOrganizationId) {
+          setOrganization(organization);
+          break;
+        }
+      }
+    }
+  }, [organizations]);
 
   const renderUserCard = () => <Grid item xs component={Card} elevation={0} >
     <CardHeader
@@ -185,7 +208,7 @@ export function Profile() {
         className: classes.cardTitle,
       }}
     />
-    <Box borderLeft={1} borderColor={theme.table.border} >
+    <Box borderLeft={1} borderColor={theme.table.border} className={classes.organizationCard} >
       <CardContent>
         <Grid
           container
@@ -209,14 +232,15 @@ export function Profile() {
         </Grid>
       </CardContent>
     </Box>
-    {hasRenamePermissions && (<CardActions onClick={showDialog}>
-      <Button
+    <CardActions>
+      {hasRenamePermissions && <Button
         variant='contained'
         color='primary'
         size="small"
+        onClick={showDialog}
         startIcon={<EditIcon />}
-      >{translate('organization.rename')}</Button>
-    </CardActions>)}
+      >{translate('organization.rename')}</Button>}
+    </CardActions>
   </Grid>;
 
   return (
@@ -236,8 +260,7 @@ export function Profile() {
               alignContent='center'
             >
               {renderUserCard()}
-
-              {(organizationLoading || !organization || !organization.name) ? (
+              {(organizationsLoading || !organization) ? (
                 <Grid item xs className={classes.organizationLoader} >
                   <List />
                 </Grid>
@@ -247,7 +270,12 @@ export function Profile() {
           </Box>
         </CardContent>
       </Card>
-      <RenameOrganizationDialog name={(organization && organization.name) ? organization.name : ''} open={isOpen} onSuccess={getOrganization} onClose={hideDialog} />
+      <RenameOrganizationDialog
+        name={(organization && organization.name) ? organization.name : ''}
+        open={isOpen}
+        onSuccess={getOrganizations}
+        onClose={hideDialog}
+      />
       <ConfirmationDialog
         destructive
         titleText={`${translate('profile.resetPassword')}?`}

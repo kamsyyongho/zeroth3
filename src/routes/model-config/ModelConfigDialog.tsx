@@ -3,14 +3,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
@@ -22,6 +23,13 @@ import { LanguageModelDialog } from '../models/components/language-model/Languag
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 interface ModelConfigDialogProps {
   projectId: string;
   open: boolean;
@@ -58,14 +66,23 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const [isError, setIsError] = React.useState(false);
   const isEdit = !!configToEdit;
 
+  const classes = useStyles();
   const theme = useTheme();
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
+  let allAcousticModelsStillTraining = true;
+  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => {
+    const disabled = acousticModel.progress < 100;
+    if (!disabled) {
+      allAcousticModelsStillTraining = false;
+    }
+    return { label: acousticModel.name, value: acousticModel.id, disabled };
+  });
   const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
-  const acousticModelFormSelectOptions: SelectFormFieldOptions = acousticModels.map((acousticModel) => ({ label: acousticModel.name, value: acousticModel.id }));
 
   // validation translated text
+  const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const descriptionText = translate("forms.description");
   const descriptionMaxText = translate("forms.validation.lessEqualTo", { target: descriptionText, value: VALIDATION.MODELS.ACOUSTIC.description.max });
@@ -158,6 +175,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="model-config-dialog"
+      classes={{
+        container: clsx(languageOpen && classes.hidden)
+      }}
     >
       <DialogTitle id="model-config-dialog">{translate(`modelConfig.header`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -166,8 +186,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
             <DialogContent>
               <Form>
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
-                <Field name='selectedAcousticModelId' component={SelectFormField}
-                  options={acousticModelFormSelectOptions} label={translate("forms.acousticModel")} errorOverride={isError} />
+                <Field
+                  name='selectedAcousticModelId'
+                  component={SelectFormField}
+                  options={acousticModelFormSelectOptions}
+                  label={translate("forms.acousticModel")}
+                  errorOverride={isError || noAvailableAcousticModelText}
+                  helperText={noAvailableAcousticModelText}
+                />
                 <Field name='selectedLanguageModelId' component={SelectFormField}
                   options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
                 <Button
@@ -227,6 +253,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
         handleSubGraphListUpdate={handleSubGraphListUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
+        hideBackdrop
       />
     </Dialog>
   );

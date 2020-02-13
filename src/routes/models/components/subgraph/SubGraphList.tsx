@@ -9,16 +9,17 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-import React from 'react';
 import { BulletList } from 'react-content-loader';
 import MoonLoader from 'react-spinners/MoonLoader';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { SubGraph } from '../../../../types';
+import { SubGraph, TopGraph } from '../../../../types';
+import { TrainingChip } from '../../../shared/TrainingChip';
 import { CheckedSubGraphById } from '../ModelTabs';
 import { SubgraphFormDialog } from '../SubgraphFormDialog';
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     container: {
       padding: 0,
@@ -32,10 +33,11 @@ const useStyles = makeStyles((theme) =>
     subGraphRoot: {
       minWidth: 300,
       margin: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
     },
     text: {
       overflowWrap: 'break-word'
-    }
+    },
   }),
 );
 
@@ -43,6 +45,7 @@ export interface SubGraphListProps {
   canModify: boolean;
   subGraphsLoading: boolean;
   subGraphs: SubGraph[];
+  topGraphs: TopGraph[];
   checkedSubGraphs: CheckedSubGraphById;
   deleteLoading: boolean;
   canDelete: boolean;
@@ -56,6 +59,7 @@ export function SubGraphList(props: SubGraphListProps) {
     canModify,
     subGraphsLoading,
     subGraphs,
+    topGraphs,
     checkedSubGraphs,
     deleteLoading,
     canDelete,
@@ -94,11 +98,14 @@ export function SubGraphList(props: SubGraphListProps) {
       return (
         <Box key={subGraph.id} border={1} borderColor={theme.table.border} className={classes.subGraphRoot}>
           <Grid item xs component={Card} elevation={0} >
-            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && <>
+            <CardHeader title={subGraph.name} titleTypographyProps={{ variant: 'body1' }} className={classes.text} action={(canModify && !subGraph.immutable && <>
               <Checkbox checked={isChecked} value="checkedB" color="secondary" onChange={(event) => handleSubGraphCheck(subGraph.id, event.target.checked)} />
               <IconButton aria-label="edit" onClick={() => openEditDialog(subGraph)}>
                 <EditIcon />
               </IconButton></>)} />
+            {subGraph.progress < 100 && <CardContent >
+              <TrainingChip progress={subGraph.progress} />
+            </CardContent>}
           </Grid>
         </Box>
       );
@@ -112,6 +119,7 @@ export function SubGraphList(props: SubGraphListProps) {
         subGraphToEdit={subGraphToEdit}
         onClose={closeDialog}
         onSuccess={handleSubGraphListUpdate}
+        topGraphs={topGraphs}
       />
       <Card elevation={0} className={classes.card} >
         <CardHeader

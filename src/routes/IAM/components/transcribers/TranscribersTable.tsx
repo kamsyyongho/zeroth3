@@ -1,13 +1,13 @@
-import { TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { TablePagination, Typography } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import React from 'react';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
+import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
 import { Pagination } from '../../../shared/Pagination';
@@ -163,7 +163,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
         )}
       </TableBody>
     </Table>
-    <TableFooter component="div">
+    <div>
       {loading && (
         <PulseLoader
           sizeUnit={"px"}
@@ -172,7 +172,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
           loading={true}
         />
       )}
-    </TableFooter>
+    </div>
     {!!transcribersStats.length && <TablePagination
       rowsPerPageOptions={[5, 10, 25, 50, 100]}
       component="div"

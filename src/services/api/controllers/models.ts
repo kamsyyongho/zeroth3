@@ -1,31 +1,7 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import {
-  AcousticModel,
-  LanguageModel,
-  SubGraph,
-  TopGraph,
-} from '../../../types';
+import { AcousticModel, LanguageModel, SubGraph, TopGraph, TRAINING_METHODS } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import {
-  AcousticModelEditRequest,
-  deleteLanguageModelResult,
-  deleteSubGraphResult,
-  getAcousticModelsResult,
-  getLanguageModelsResult,
-  getSubGraphsResult,
-  getTopGraphsResult,
-  LanguageModelRequest,
-  postLanguageModelResult,
-  postSubGraphResult,
-  ProblemKind,
-  refreshAndGetAcousticModelsResult,
-  refreshAndGetTopGraphResult,
-  ServerError,
-  SubGraphRequest,
-  updateAcousticModelResult,
-  updateLanguageModelResult,
-  updateSubGraphResult,
-} from '../types';
+import { AcousticModelEditRequest, deleteLanguageModelResult, deleteSubGraphResult, getAcousticModelsResult, getLanguageModelsResult, getSubGraphsResult, getTopGraphsResult, getTrainingMethodsResult, LanguageModelRequest, postLanguageModelResult, postSubGraphResult, ProblemKind, refreshAndGetAcousticModelsResult, refreshAndGetTopGraphResult, ServerError, SubGraphRequest, TransferLearningRequest, transferLearningResult, updateAcousticModelResult, updateLanguageModelResult, updateSubGraphResult } from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -35,7 +11,7 @@ export class Models extends ParentApi {
   /**
    * Creates the api from the already initiated parent.
    * @param apisauce The apisauce instance.
-   * @param attemptToRefreshToken parent method to refresh the keycloak token
+   * @param logout parent method coming from keycloak
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
@@ -47,7 +23,7 @@ export class Models extends ParentApi {
   async getAcousticModels(): Promise<getAcousticModelsResult> {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      `/models/acoustic`
+      this.getPathWithOrganization(`/models/acoustic`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -76,7 +52,7 @@ export class Models extends ParentApi {
   > {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      `/models/acoustic/refresh`
+      this.getPathWithOrganization(`/models/acoustic/refresh`)
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -115,7 +91,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       AcousticModel,
       ServerError
-    > = await this.apisauce.put(`/models/acoustic/${modelId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/acoustic/${modelId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -143,7 +122,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/topgraphs`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/topgraphs`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -172,7 +153,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TopGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/topgraphs/refresh`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/topgraphs/refresh`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -194,7 +177,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel[],
       ServerError
-    > = await this.apisauce.get(`/models/language-models`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/language-models`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -238,7 +223,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel,
       ServerError
-    > = await this.apisauce.post(`/models/language-models`, request);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/language-models`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -285,7 +273,10 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       LanguageModel,
       ServerError
-    > = await this.apisauce.put(`/models/language-models/${modelId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/language-models/${modelId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -317,7 +308,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/models/language-models/${modelId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/models/language-models/${modelId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -339,7 +332,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph[],
       ServerError
-    > = await this.apisauce.get(`/models/subgraphs`);
+    > = await this.apisauce.get(
+      this.getPathWithOrganization(`/models/subgraphs`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -360,27 +355,36 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Create a new subgraph
+   * Create a new subgraph using text
    * @param name
    * @param text
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    */
   async postSubGraph(
     name: string,
     text: string,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean
   ): Promise<postSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
       name,
       text,
+      topGraphId,
       public: isPublic,
+      immutable: isImmutable,
     };
     // make the api call
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.post(`/models/subgraphs`, request);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/subgraphs`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -406,26 +410,35 @@ export class Models extends ParentApi {
    * @param subGraphId
    * @param name
    * @param text
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    * @returns a `conflict` kind if the subgraph cannot be updated
    */
   async updateSubGraph(
     subGraphId: string,
     name: string,
     text: string,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean
   ): Promise<updateSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
       name,
       text,
+      topGraphId,
       public: isPublic,
+      immutable: isImmutable,
     };
     // make the api call
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.put(`/models/subgraphs/${subGraphId}`, request);
+    > = await this.apisauce.put(
+      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`),
+      request
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -455,7 +468,9 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       undefined,
       ServerError
-    > = await this.apisauce.delete(`/models/subgraphs/${subGraphId}`);
+    > = await this.apisauce.delete(
+      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`)
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -470,23 +485,31 @@ export class Models extends ParentApi {
   }
 
   /**
-   * Upload a subgraph file
+   * Create a new subgraph using a file to upload
    * @param name - the subgraph name
    * @param file - multipart file to upload
+   * @param topGraphId
    * @param isPublic
+   * @param isImmutable
    */
   async uploadSubGraphFile(
     name: string,
     file: File,
-    isPublic?: boolean
+    topGraphId: string,
+    isPublic: boolean,
+    isImmutable: boolean
   ): Promise<postSubGraphResult> {
     // compile data
     // needs name
     const request = new FormData();
     request.append('name', name);
     request.append('file', file);
+    request.append('topGraphId', topGraphId);
     if (typeof isPublic === 'boolean') {
       request.append('public', JSON.stringify(isPublic));
+    }
+    if (typeof isImmutable === 'boolean') {
+      request.append('public', JSON.stringify(isImmutable));
     }
     const config = {
       headers: {
@@ -497,7 +520,11 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       SubGraph,
       ServerError
-    > = await this.apisauce.post(`/models/subgraphs/file`, request, config);
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/models/subgraphs/file`),
+      request,
+      config
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -512,6 +539,75 @@ export class Models extends ParentApi {
     try {
       const subGraph = response.data as SubGraph;
       return { kind: 'ok', subGraph };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Begins training a model based on the selected method
+   * @param name
+   * @param modelConfigId
+   * @param dataSetId
+   * @param shared
+   */
+  async transferLearning(
+    name: string,
+    modelConfigId: string,
+    dataSetId: string,
+    shared: boolean
+  ): Promise<transferLearningResult> {
+    // compile data
+    const request: TransferLearningRequest = {
+      name,
+      modelConfigId,
+      dataSetId,
+      shared,
+    };
+    // make the api call
+    const response: ApiResponse<
+      undefined,
+      ServerError
+    > = await this.apisauce.post(
+      this.getPathWithOrganization(`/transfer`),
+      request
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Gets the list of available training methods
+   */
+  async getTrainingMethods(): Promise<getTrainingMethodsResult> {
+    // make the api call
+    const response: ApiResponse<
+      TRAINING_METHODS[],
+      ServerError
+    > = await this.apisauce.get(`/training-methods`);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const trainingMethods = response.data as TRAINING_METHODS[];
+      return { kind: 'ok', trainingMethods };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

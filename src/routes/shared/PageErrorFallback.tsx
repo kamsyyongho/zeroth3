@@ -1,8 +1,8 @@
 import { Grid, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import WarningIcon from '@material-ui/icons/Warning';
-import React from 'react';
 import { FallbackProps } from 'react-error-boundary';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
 import log from '../../util/log/logger';

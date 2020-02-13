@@ -4,9 +4,9 @@ import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import { useSnackbar } from 'notistack';
-import React from 'react';
 import MoonLoader from 'react-spinners/MoonLoader';
 import { Row } from 'react-table';
+import React from 'reactn';
 import { PERMISSIONS } from '../../../../constants';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
@@ -31,7 +31,7 @@ interface TDPMemoTextFieldProps {
 export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
   const { row, projectId, onSuccess } = props;
   const api = React.useContext(ApiContext);
-  const { hasPermission } = React.useContext(KeycloakContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -49,7 +49,7 @@ export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(PERMISSIONS.crud), []);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
   const updateMemo = async () => {
     if (api?.voiceData && canModify && !loading) {

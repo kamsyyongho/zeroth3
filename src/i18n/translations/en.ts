@@ -20,11 +20,14 @@ export const en: ResourceLanguage = {
       success: 'Success',
       failure: 'Failure',
       clear: 'Clear',
+      clearAll: 'Clear all',
       startAt: 'Start time',
       endAt: 'End time',
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      uploaded: 'Uploaded',
+      uploading: 'Uploading',
       forbidden: 'Forbidden',
       view: 'View',
       date: 'Date',
@@ -35,6 +38,7 @@ export const en: ResourceLanguage = {
       noData: 'No data',
       progress: 'Progress',
       refresh: 'Refresh',
+      close: 'Close',
     },
     table: {
       page: 'Page',
@@ -50,6 +54,7 @@ export const en: ResourceLanguage = {
       projects: 'Projects',
       models: 'Models',
       editor: 'Editor',
+      modelTraining: 'Model Training',
     },
     menu: {
       login: 'Login',
@@ -99,6 +104,7 @@ export const en: ResourceLanguage = {
           main: 'File {{name}} was rejected.',
           notSupported: 'File type not supported.',
           exceedSizeLimit: 'File is too big. Size limit is {{size}}.',
+          duplicateFileNames: 'File names must be unique',
         },
       },
       numberFiles: 'Number of files to upload: {{count}}',
@@ -117,6 +123,9 @@ export const en: ResourceLanguage = {
       sub: 'Sub',
       modelConfig: 'Model configuration',
       privacySetting: 'Privacy setting',
+      mutability: 'Mutability',
+      mutable: 'Mutable',
+      immutable: 'Immutable',
       fileUpload: 'File upload',
       source: 'Source',
       private: 'Private',
@@ -152,6 +161,7 @@ export const en: ResourceLanguage = {
     },
     projects: {
       noProjects: 'No projects',
+      noProjectSelected: 'No project selected',
       notFound: 'Project not found',
       createProject: 'Create project',
       editProject: 'Edit project',
@@ -171,6 +181,7 @@ export const en: ResourceLanguage = {
       websocketCloseStatus: 'Websocket close status',
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: 'Transferred bytes',
+      openToRate: 'Open to rate',
     },
     SET: {
       SET: 'SET',
@@ -180,6 +191,16 @@ export const en: ResourceLanguage = {
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
       addTranscriber: 'Add transcriber',
+    },
+    modelTraining: {
+      header: 'Model Training',
+      model: 'Model',
+      trainingData: 'Training data',
+      trainingMethod: 'Training method',
+      shareSettings: 'Share settings',
+      shared: 'Shared',
+      notShared: 'Not shared',
+      startTraining: 'Start training',
     },
     editor: {
       editor: 'Editor',
@@ -193,6 +214,7 @@ export const en: ResourceLanguage = {
       speaker: 'Speaker',
       toggleMore: 'Toggle more',
       createWord: 'Create word',
+      editSegmentTime: 'Edit segment time',
       wordConfidence: 'Word confidence',
       setWordConfidence: 'Set word confidence threshold',
       nothingToTranscribe: 'Nothing to transcribe',
@@ -218,6 +240,8 @@ export const en: ResourceLanguage = {
       thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       noResults: 'No model configurations',
+      manage: 'Manage configuration',
+      helpText: 'Create a model configuration before uploading data.',
     },
     models: {
       header: 'Model Management',
@@ -239,6 +263,17 @@ export const en: ResourceLanguage = {
           noResults: 'No language models',
         },
       },
+      validation: {
+        allAcousticModelsStillTraining: 'Acoustic model still training',
+        allAcousticModelsStillTraining_plural:
+          'All acoustic models still training',
+        allSubGraphsStillTraining: 'Sub graph still training',
+        allSubGraphsStillTraining_plural: 'All sub graphs still training',
+        allModelConfigsStillTraining: 'Model configuration still training',
+        allModelConfigsStillTraining_plural:
+          'All modelConfigurations still training',
+      },
+      trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',
@@ -250,6 +285,17 @@ export const en: ResourceLanguage = {
     },
     audioPlayer: {
       noUrl: 'No audio URL',
+    },
+    home: {
+      header: 'Welcome to Zeroth',
+      textBlocks: {
+        ['1']: 'Zeroth를 유용하게 사용하시려면',
+        ['2']:
+          '왼쪽 메뉴에서 음향모델과 언어모델을 확인해주세요. 모델이 없을 시, 프로젝트 생성이 제한될 수 있습니다.',
+        ['3']:
+          '프로젝트를 생성하신 후 전사를 시작해보세요. 상단의 프로젝트를 클릭하시면 프로젝트를 생성할 수 있습니다.',
+        ['4']: '사용에 궁금하신 점이 있으시면 연락주세요. 감사합니다.',
+      },
     },
   },
 };

@@ -1,4 +1,4 @@
-import { ClickAwayListener, Popper, Tooltip, Typography } from '@material-ui/core';
+import { ClickAwayListener, Popper, SvgIcon, Tooltip, Typography } from '@material-ui/core';
 import Button, { ButtonProps } from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Fade from '@material-ui/core/Fade';
@@ -11,11 +11,11 @@ import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import ToggleIcon from 'material-ui-toggle-icon';
-import React from 'react';
+import { AiOutlineColumnWidth } from 'react-icons/ai';
 import ScaleLoader from 'react-spinners/ScaleLoader';
+import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
-import { EDITOR_MODES } from '../EditorPage';
 import { ConfidenceSlider } from './ConfidenceSlider';
 
 const useStyles = makeStyles((theme) =>
@@ -65,6 +65,7 @@ export enum EDITOR_CONTROLS {
   split,
   toggleMore,
   createWord,
+  editSegmentTime,
   setThreshold,
   debug,
 }
@@ -76,7 +77,8 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.merge,
   EDITOR_CONTROLS.split,
   EDITOR_CONTROLS.toggleMore,
-  EDITOR_CONTROLS.createWord,
+  // EDITOR_CONTROLS.createWord,
+  EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
   EDITOR_CONTROLS.debug,
 ];
@@ -87,8 +89,7 @@ const secondaryControlOrder = [
 
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
-  onAction: (confirm?: boolean) => void;
-  editorMode: EDITOR_MODES;
+  onConfirm: () => void;
   disabledControls?: EDITOR_CONTROLS[];
   editorOptionsVisible: boolean;
   debugMode?: boolean;
@@ -101,9 +102,8 @@ interface EditorControlsProps {
 
 export const EditorControls = (props: EditorControlsProps) => {
   const {
-    editorMode,
     onCommandClick,
-    onAction,
+    onConfirm,
     disabledControls = [],
     editorOptionsVisible,
     debugMode,
@@ -172,15 +172,15 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Save />;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.save),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.save) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.save),
           };
           break;
         case EDITOR_CONTROLS.confirm:
           label = translate('editor.confirm');
           icon = <PublishIcon />;
           props = {
-            onClick: () => onAction(true),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm) || !editorReady,
+            onClick: onConfirm,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm),
           };
           break;
         case EDITOR_CONTROLS.undo:
@@ -188,12 +188,8 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Undo />;
           tooltipText = osText('undo');
           props = {
-            onClick: () => {
-              //!
-              //TODO
-              //do nothing
-            },
-            disabled: true,
+            onClick: () => onCommandClick(EDITOR_CONTROLS.undo),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
           };
           break;
         case EDITOR_CONTROLS.redo:
@@ -201,32 +197,26 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Redo />;
           tooltipText = osText('redo');
           props = {
-            onClick: () => {
-              //!
-              //TODO
-              //do nothing
-            },
-            disabled: true,
+            onClick: () => onCommandClick(EDITOR_CONTROLS.redo),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
           };
           break;
         case EDITOR_CONTROLS.merge:
           label = translate('editor.merge');
           icon = <ICONS.Merge />;
           tooltipText = osText('merge');
-          selected = editorMode === EDITOR_MODES.merge;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.merge),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.merge) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.merge),
           };
           break;
         case EDITOR_CONTROLS.split:
           label = translate('editor.split');
           icon = <ICONS.Split />;
           tooltipText = osText('split');
-          selected = editorMode === EDITOR_MODES.split;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.split),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.split) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.split),
           };
           break;
         case EDITOR_CONTROLS.toggleMore:
@@ -240,17 +230,24 @@ export const EditorControls = (props: EditorControlsProps) => {
           selected = editorOptionsVisible;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.toggleMore),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
           };
           break;
         case EDITOR_CONTROLS.createWord:
           label = translate('editor.createWord');
           icon = <AddIcon />;
-          tooltipText = osText('createWord');
-          selected = editorMode === EDITOR_MODES.createWord;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.createWord),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
+          };
+          break;
+        case EDITOR_CONTROLS.editSegmentTime:
+          label = translate('editor.editSegmentTime');
+          icon = <SvgIcon ><AiOutlineColumnWidth /></SvgIcon>;
+          tooltipText = osText('editSegmentTime');
+          props = {
+            onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.editSegmentTime),
           };
           break;
         case EDITOR_CONTROLS.setThreshold:
@@ -262,7 +259,7 @@ export const EditorControls = (props: EditorControlsProps) => {
               handleThresholdClick(event);
               onCommandClick(EDITOR_CONTROLS.setThreshold);
             },
-            disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold),
           };
           break;
         case EDITOR_CONTROLS.debug:
@@ -274,11 +271,11 @@ export const EditorControls = (props: EditorControlsProps) => {
               toggleDebugMode();
               onCommandClick(EDITOR_CONTROLS.debug);
             },
-            disabled: disabledControls.includes(EDITOR_CONTROLS.debug) || !editorReady,
+            disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
           };
           break;
       }
-      if (loading) {
+      if (loading || !editorReady) {
         props.disabled = true;
       }
       return renderButton(label, icon, tooltipText, props, selected);

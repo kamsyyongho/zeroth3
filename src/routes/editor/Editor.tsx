@@ -1,12 +1,13 @@
 import { Backdrop } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, DraftStyleMap, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import clsx from 'clsx';
+import { CompositeDecorator, ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftEditorCommand, DraftEntityMutability, DraftHandleValue, Editor as DraftEditor, EditorState, getDefaultKeyBinding, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import { useSnackbar, VariantType } from 'notistack';
-import React from 'react';
 import Draggable from 'react-draggable';
+import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
@@ -17,15 +18,22 @@ import { generateWordKeyString, getRandomColor, WordKeyStore } from '../../util/
 import { EDITOR_CONTROLS } from './components/EditorControls';
 import { EntityContent } from './components/EntityContent';
 import { SegmentBlock } from './components/SegmentBlock';
-import { WordTimePicker, WordTimePickerRootProps } from './components/WordTimePicker';
-import { ParentMethodResponse, PARENT_METHOD_TYPES } from './EditorPage';
+import { SegmentSplitPicker } from './components/SegmentSplitPicker';
+import { SegmentTimePicker } from './components/SegmentTimePicker';
+import { WordTimePicker } from './components/WordTimePicker';
+import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
 import './styles/editor.css';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
+    draggable: {
+      "&:hover": {
+        cursor: 'all-scroll',
+      },
+    },
     backdrop: {
-      zIndex: theme.zIndex.drawer + 1,
+      zIndex: theme.zIndex.drawer - 1,
       color: theme.shadows[1],
       borderTopLeftRadius: 4,
       borderTopRightRadius: 4,
@@ -116,6 +124,7 @@ const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordK
 
 const SPLIT_CHARACTER = '•';
 const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
+const SPLIT_CHARACTER_REGEX = new RegExp(SPLIT_CHARACTER, "g");
 
 
 let entityKeyCounter = 0;
@@ -125,16 +134,14 @@ let prevPlayingEntityKey = -1;
 // used to force updating of the segment
 let newWordWasCreated = false;
 
-
 // Custom overrides for "code" style.
-const styleMap: DraftStyleMap = {
-  [INLINE_STYLE_TYPE.PLAYING]: {
-    color: 'blue',
-    boxShadow: `0px 0px 0px 1px ${'blue'}`,
-    // fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
-    // fontSize: 16,
-    // padding: 2
-  },
+const buildStyleMap = (theme: CustomTheme) => {
+  return {
+    [INLINE_STYLE_TYPE.PLAYING]: {
+      color: theme.editor.playing,
+      boxShadow: `0px 0px 0px 1px ${theme.editor.playing}`,
+    },
+  };
 };
 
 
@@ -164,7 +171,7 @@ function customKeyBindingFunction(event: React.KeyboardEvent): string {
     return KEY_COMMANDS['toggle-popups'];
   }
   if (event.key === "Alt" && event.shiftKey) {
-    return KEY_COMMANDS['create-word'];
+    return KEY_COMMANDS['edit-segment-time'];
   }
   return getDefaultKeyBinding(event) as DraftEditorCommand;
 }
@@ -174,10 +181,22 @@ interface WordPickerOptions {
   word: Word;
   segmentIndex: number;
   entityKeyAfterCursor?: number;
+  isWordUpdate?: boolean;
+}
+interface SegmentPickerOptions {
+  segmentWord: Word;
+  segment: Segment;
+  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
+}
+
+interface SegmentSplitOptions {
+  segmentIndex: number;
+  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
 }
 
 interface EditorProps {
   height?: number;
+  readOnly?: boolean;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -188,23 +207,28 @@ interface EditorProps {
   onReady: (ready: boolean) => void;
   onPopupToggle: (optionsVisible: boolean) => void;
   onWordTimeCreationClose: () => void;
+  onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   popupsOpen?: boolean;
   debugMode?: boolean;
   loading?: boolean;
   segments: Segment[];
   wordConfidenceThreshold: number;
   playingLocation?: SegmentAndWordIndex;
-  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
   assignSpeaker: (segmentIndex: number) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
-  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => Promise<void>;
+  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
+  splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
-  wordTimePickerProps: WordTimePickerRootProps;
+  timePickerRootProps: TimePickerRootProps;
+  splitTimePickerRootProps: SplitTimePickerRootProps;
 }
 
 export function Editor(props: EditorProps) {
   const {
     height,
+    readOnly,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -213,32 +237,39 @@ export function Editor(props: EditorProps) {
     onPopupToggle,
     onWordTimeCreationClose,
     wordConfidenceThreshold,
+    onUpdateUndoRedoStack,
     popupsOpen,
     debugMode,
     loading,
     segments,
     playingLocation,
     updateSegment,
+    updateSegmentTime,
     assignSpeaker,
     onWordClick,
     splitSegment,
+    splitSegmentByTime,
     mergeSegments,
-    wordTimePickerProps,
+    timePickerRootProps,
+    splitTimePickerRootProps,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty()
   );
   const [ready, setReady] = React.useState(false);
   const [focussed, setFocussed] = React.useState(false);
-  const [editorStateBeforeBlur, setEditorStateBeforeBlur] =  React.useState<EditorState | undefined>();
+  const [editorStateBeforeBlur, setEditorStateBeforeBlur] = React.useState<EditorState | undefined>();
   const [currentWordConfidenceThreshold, setCurrentWordConfidenceThreshold] = React.useState(wordConfidenceThreshold);
   const [overlayStyle, setOverlayStyle] = React.useState<React.CSSProperties | undefined>();
   const [wordTimePickerOptions, setWordTimePickerOptions] = React.useState<WordPickerOptions | undefined>();
+  const [segmentPickerOptions, setSegmentPickerOptions] = React.useState<SegmentPickerOptions | undefined>();
+  const [segmentSplitOptions, setSegmentSplitOptions] = React.useState<SegmentSplitOptions | undefined>();
   const [readOnlyEditorState, setReadOnlyEditorState] = React.useState<EditorState | undefined>();
   const [showPopups, setShowPopups] = React.useState(!!popupsOpen);
   const [debug, setDebug] = React.useState(!!debugMode);
@@ -291,30 +322,30 @@ export function Editor(props: EditorProps) {
   };
 
 
-const generateDecorators = () => new CompositeDecorator([
-  {
-    strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
-    component: EntityContent,
-    props: {
-      wordConfidenceThreshold,
-      debugMode,
+  const generateDecorators = () => new CompositeDecorator([
+    {
+      strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
+      component: EntityContent,
+      props: {
+        wordConfidenceThreshold,
+        debugMode,
+      }
+    }, {
+      strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
+      component: EntityContent,
+      props: {
+        wordConfidenceThreshold,
+        debugMode,
+      }
+    }, {
+      strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
+      component: EntityContent,
+      props: {
+        wordConfidenceThreshold,
+        debugMode,
+      }
     }
-  }, {
-    strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
-    component: EntityContent,
-    props: {
-      wordConfidenceThreshold,
-      debugMode,
-    }
-  }, {
-    strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
-    component: EntityContent,
-    props: {
-      wordConfidenceThreshold,
-      debugMode,
-    }
-  }
-]);
+  ]);
 
   function customBlockRenderer(contentBlock: ContentBlock) {
     const type = contentBlock.getType();
@@ -324,6 +355,7 @@ const generateDecorators = () => new CompositeDecorator([
         editable: true,
         props: {
           showPopups,
+          readOnly,
           assignSpeakerForSegment,
         },
       };
@@ -331,12 +363,12 @@ const generateDecorators = () => new CompositeDecorator([
   }
 
   const handleConfidenceThresholdUpdate = (newThreshold: number) => {
-    setCurrentWordConfidenceThreshold(newThreshold)
+    setCurrentWordConfidenceThreshold(newThreshold);
     const contentState = editorState.getCurrentContent();
     // force rerendering to pass updated values to decorators
     const updatedEditorState = EditorState.createWithContent(contentState, generateDecorators());
     setEditorState(updatedEditorState);
-  }
+  };
 
   const createEntity = (wordAlignment: WordAlignment, wordKey: number, key: number) => {
     const data: WordAlignmentEntityData = {
@@ -372,8 +404,12 @@ const generateDecorators = () => new CompositeDecorator([
         segment,
       };
       newBlock.data = data;
-      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join('•').trim();
-      transcript = transcript.split("• ").join(' ').trim();
+      let transcript = segment.wordAlignments.map(wordAlignment => wordAlignment.word.trim().replace('|', ' ')).join(SPLIT_CHARACTER).trim();
+      transcript = transcript.split("• ").join(' ').replace(SPLIT_CHARACTER_REGEX, '').trim();
+      const onlyOneWord = segment.wordAlignments.length < 2;
+      if (onlyOneWord) {
+        transcript = segment.wordAlignments[0].word.replace('|', '');
+      }
       newBlock.text = transcript;
       let offsetPosition = 0;
       const entityRanges: RawDraftEntityRange[] = segment.wordAlignments.map((wordAlignment, wordIndex) => {
@@ -427,12 +463,45 @@ const generateDecorators = () => new CompositeDecorator([
     focusEditor();
   }, []);
 
+  /**
+   * build new entity and key maps when Draft.js changes the enity key map
+   * - Draft.js will sometimes reorder and rename 
+   * the keys, so our maps will be out of sync
+   */
+  const rebuildEntityMapFromContentState = (contentState: ContentState) => {
+    const rawContent = convertToRaw(contentState);
+    const incomingEntityMap = rawContent.entityMap;
+    // only rebuild if the internal entity map has changed
+    if (JSON.stringify(incomingEntityMap) === JSON.stringify(entityMap)) {
+      return;
+    }
+    const entityKeys = Object.keys(incomingEntityMap);
+    entityKeys.forEach(entityKey => {
+      const entityKeyNumber = Number(entityKey);
+      const data = incomingEntityMap[entityKey].data as WordAlignmentEntityData;
+      if (typeof data?.wordKey === 'number') {
+        linkEntityKeyAndWordKey(entityKeyNumber, data.wordKey);
+      }
+    });
+    entityMap = { ...incomingEntityMap } as EntityMap;
+  };
 
   React.useEffect(() => {
+    const contentState = editorState.getCurrentContent();
+    rebuildEntityMapFromContentState(contentState);
+    const undoStack = editorState.getUndoStack();
+    const redoStack = editorState.getRedoStack();
+    const canUndo = undoStack.size > 0;
+    const canRedo = redoStack.size > 0;
+    onUpdateUndoRedoStack(canUndo, canRedo);
     log({
       file: `Editor.tsx`,
       caller: `convertToRaw(editorState)`,
-      value: convertToRaw(editorState.getCurrentContent()),
+      value: {
+        rawContent: convertToRaw(contentState),
+        undoStack,
+        redoStack,
+      },
       important: false,
       trace: false,
       error: false,
@@ -505,6 +574,13 @@ const generateDecorators = () => new CompositeDecorator([
     return updatedEditorState;
   };
 
+  const getEditorStateWithAllStylingRemoved = () => {
+    // to remove the playing style from all content
+    const selectAllState = getSelectionOfAll();
+    const editorStateWithNoStyling = removeStyleFromSelection(selectAllState, INLINE_STYLE_TYPE.PLAYING);
+    return editorStateWithNoStyling;
+  };
+
   const updateWordForCurrentPlayingLocation = (wordLocation: SegmentAndWordIndex) => {
     const targetSelectionArea = getTargetSelection(wordLocation);
 
@@ -513,8 +589,7 @@ const generateDecorators = () => new CompositeDecorator([
       if (targetSelectionArea) {
         const originalSelectionState = editorState.getSelection();
         // to remove the playing style from all content
-        const selectAllState = getSelectionOfAll();
-        const editorStateWithNoStyling = removeStyleFromSelection(selectAllState, INLINE_STYLE_TYPE.PLAYING);
+        const editorStateWithNoStyling = getEditorStateWithAllStylingRemoved();
 
         const newSelection = originalSelectionState.merge(targetSelectionArea) as SelectionState;
         // select the target area and update style
@@ -544,13 +619,10 @@ const generateDecorators = () => new CompositeDecorator([
   React.useEffect(() => {
     if (playingLocation && ready) {
       const wordKey = wordKeyBank.getKey(playingLocation);
-      console.log('playingLocation', playingLocation);
       if (typeof wordKey !== 'number') {
         return;
       }
       const entityKey = getEntityKeyFromWordKey(wordKey);
-      console.log('wordKey', wordKey);
-      console.log('entityKey', entityKey);
       if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
         updateWordForCurrentPlayingLocation(playingLocation);
       }
@@ -605,7 +677,7 @@ const generateDecorators = () => new CompositeDecorator([
           foundEntities.add(entityKeyNumber);
           const entityKeyIndex = foundEntities.size - 1;
           const entityKeyDifferent = entityRanges[entityKeyIndex].key !== entityKeyNumber;
-          if(entityKeyDifferent){
+          if (entityKeyDifferent) {
             entityKeyNumber--;
             updatedProperties.entity = entityKeyNumber.toString();
           }
@@ -818,13 +890,6 @@ const generateDecorators = () => new CompositeDecorator([
         });
         return;
       }
-      console.log('targetBlock', targetBlock);
-      console.log('updatedSegment', updatedSegment);
-      // // update with the new segment Id
-      // replaceSegmentIdAtIndex(blockSegmentIndex, updatedSegment.id);
-
-      // setBlockSegmentId(blockKey, updatedSegment.id);
-      // setSegmentIdBlockKey(updatedSegment.id, blockKey);
       const contentState = incomingEditorState.getCurrentContent();
       const updatedContentState = updateBlockSegmentData(contentState, blockKey, updatedSegment);
 
@@ -883,7 +948,7 @@ const generateDecorators = () => new CompositeDecorator([
   /**
    * builds the callback to the manually split blocks with the updated segment Ids response
    */
-  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, wordSplitIndex: number, incomingEditorState: EditorState) => {
+  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
     const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
       const [updatedSegment, newSegment] = updatedSegments;
       const blockKey = targetBlock.key;
@@ -931,7 +996,7 @@ const generateDecorators = () => new CompositeDecorator([
   };
 
   const handleSegmentMergeCommand = (incomingEditorState?: EditorState) => {
-    if(!incomingEditorState){
+    if (!incomingEditorState) {
       incomingEditorState = editorState;
     }
     const { isStartOfBlock, blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -1041,10 +1106,11 @@ const generateDecorators = () => new CompositeDecorator([
   };
 
   const createWordTime = (incomingEditorState?: EditorState) => {
-    if(!incomingEditorState){
+    if (!incomingEditorState) {
       incomingEditorState = editorState;
     }
-    if(!focussed && editorStateBeforeBlur){;
+    if (!focussed && editorStateBeforeBlur) {
+      ;
       incomingEditorState = editorStateBeforeBlur;
     }
     const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -1056,12 +1122,41 @@ const generateDecorators = () => new CompositeDecorator([
       cursorOffset,
       selectionCharacterDetails,
     } = cursorContent;
-    if (isNoSelection) {
+    if (isNoSelection && !entity) {
       displayMessage(translate('editor.validation.noSelection'));
       return;
     }
+    if (isNoSelection && entity) {
+      const { data } = entity;
+      const { segment } = blockObject.data;
+      if (!segment) {
+        return;
+      }
+      const color = getRandomColor();
+      const time: Time = {
+        start: segment.start + data.wordAlignment.start,
+        end: segment.start + data.wordAlignment.start + data.wordAlignment.length,
+      };
+      const wordToCreateTimeFor: Word = {
+        color,
+        text: data.wordAlignment.word.replace('|', ''),
+        time,
+      };
+      const blockSegmentId = blockObject.data?.segment?.id;
+      const segmentIndex = getIndexOfSegmentId(blockSegmentId as string);
+      if (typeof segmentIndex === 'number') {
+        const wordPickerOptions: WordPickerOptions = {
+          word: wordToCreateTimeFor,
+          segmentIndex,
+          isWordUpdate: true,
+        };
+        setWordTimePickerOptions(wordPickerOptions);
+        setReadOnlyEditorState(incomingEditorState);
+      }
+      return;
+    }
     // if same block with non-entity selection
-    else if (!isNoSelection && !entity) {
+    if (!isNoSelection && !entity) {
       // to ensure our selection doesn't include any entities or invalid characters
       const noEntityWhithinSelection = selectionCharacterDetails.every((characterDetail) => {
         const noEntity = !characterDetail.properties?.entity;
@@ -1077,8 +1172,8 @@ const generateDecorators = () => new CompositeDecorator([
           mutability: MUTABILITY_TYPE.MUTABLE,
           data: {}
         };
-        const blockSegmentIndex = blockObject.data?.segment?.id;
-        const segmentIndex = getIndexOfSegmentId(blockSegmentIndex as string);
+        const blockSegmentId = blockObject.data?.segment?.id;
+        const segmentIndex = getIndexOfSegmentId(blockSegmentId as string);
         if (typeof segmentIndex === 'number') {
           //!
           //TODO
@@ -1113,16 +1208,229 @@ const generateDecorators = () => new CompositeDecorator([
     }
   };
 
+  const prepareSegmentTimePicker = (incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    if (!focussed && editorStateBeforeBlur) {
+      ;
+      incomingEditorState = editorStateBeforeBlur;
+    }
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+
+    const { segment } = cursorContent.blockObject.data;
+    if (segment) {
+      const start = segment.start;
+      const end = start + segment.length;
+      const color = getRandomColor();
+      const time: Time = {
+        start,
+        end,
+      };
+      const segmentWord: Word = {
+        color,
+        time,
+        text: '',
+      };
+      const segmentPickerOptions: SegmentPickerOptions = {
+        segmentWord,
+        segment,
+        cursorContent,
+      };
+      setSegmentPickerOptions(segmentPickerOptions);
+      setReadOnlyEditorState(incomingEditorState);
+    }
+  };
+
+  const prepareSegmentForSplit = (cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>, incomingEditorState?: EditorState, splitByTime?: { time: number; wordStringSplitIndex: number; }) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    const {
+      entity,
+      characterDetailsBeforeCursor,
+      cursorOffset,
+      blockObject,
+    } = cursorContent;
+
+    let validEntity = entity;
+
+    // to keep track of how far we had to travel and how many 
+    // characters to erase if we need to find a valid entity
+    let dinstanceFromCursor = 0;
+
+    // no entity at cursor - we must find the nearest entity
+    if (!validEntity) {
+      // ensure that we are at a valid split point
+      const characterAtCursor = blockObject.text[cursorOffset];
+      if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+        displayMessage(translate('editor.validation.invalidSplitLocation'));
+        return;
+      }
+      const characterListToCheck = blockObject.characterList.slice(cursorOffset);
+      const charactersToCheck = blockObject.text.slice(cursorOffset);
+      let splitEntityKeyString: string | null = null;
+      for (let i = 0; i < characterListToCheck.length; i++) {
+        const characterProperties = characterListToCheck[i];
+        const character = charactersToCheck[i];
+        if (characterProperties.entity) {
+          splitEntityKeyString = characterProperties.entity;
+          dinstanceFromCursor = i;
+          break;
+        }
+        // we have invalid content between the cursor and the next valid word
+        if (!SPLITTABLE_CHARACTERS.includes(character)) {
+          break;
+        }
+      }
+      const splitEntityKey = Number(splitEntityKeyString);
+      // we hit the end before finding a valid entity
+      if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
+        displayMessage(translate('editor.validation.invalidSplitLocation'));
+        return;
+      }
+      const splitEntity = getEntityByKey(splitEntityKeyString);
+
+      validEntity = { ...splitEntity };
+    }
+
+    // to check that we still have a valid entity to use
+    if (validEntity) {
+      // use the entity data to get split location
+      const { wordKey } = validEntity.data;
+      const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
+      const blockSegment = blockObject.data.segment;
+      if (!blockSegment) {
+        return;
+      }
+      const blockSegmentIndex = getIndexOfSegmentId(blockSegment.id);
+      if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
+
+        let contentStateToSplit = incomingEditorState.getCurrentContent();
+        let characterBeforeOffset = cursorOffset;
+
+        const deleteEndOffset = cursorOffset + dinstanceFromCursor;
+        const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
+        // remove any split characters that may have existed before
+        // if space, determine if the next character to the 
+        // left is a split character otherwise determine how
+        // many empty space characters to remove
+        if (shouldTrimBefore) {
+          let numberOfCharactersToRemove = 1;
+          if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
+            const { text } = blockObject;
+            const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
+            for (let i = startingOffsetToCheck; i >= 0; i--) {
+              const character = text[i];
+              if (character === ' ') {
+                numberOfCharactersToRemove++;
+              } else if (character === SPLIT_CHARACTER) {
+                numberOfCharactersToRemove++;
+                break;
+              } else {
+                break;
+              }
+            }
+          }
+          characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
+        }
+        // to remove if we have valid reason to
+        // remove any empty space between the cursor and any found entity
+        // remove any empty space before the cursor
+        if (shouldTrimBefore || dinstanceFromCursor) {
+          const rangeToRemove = new SelectionState({
+            anchorKey: blockObject.key,
+            anchorOffset: characterBeforeOffset,
+            focusKey: blockObject.key,
+            focusOffset: deleteEndOffset,
+          });
+          const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
+          contentStateToSplit = contentStateWithRemovedCharaters;
+        }
+
+        // handle the split
+        const selectionToSplit = new SelectionState({
+          anchorKey: blockObject.key,
+          anchorOffset: characterBeforeOffset,
+          focusKey: blockObject.key,
+          focusOffset: characterBeforeOffset,
+        });
+        const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
+        // reset the undo stack
+        const editorStateAfterSplit = EditorState.createWithContent(splitContentState, generateDecorators());
+        // get the newly created block
+        const newBlock = splitContentState.getBlockAfter(blockObject.key);
+        const newBlockKey = newBlock.getKey();
+        const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
+
+        // set cursor postiion
+        const newBlockCursorPosition = new SelectionState({
+          anchorKey: newBlockKey,
+          anchorOffset: 0,
+          focusKey: newBlockKey,
+          focusOffset: 0,
+        });
+        const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
+        setEditorState(editorStateWithCursorMoved);
+
+        const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, editorStateWithCursorMoved);
+
+        // update the word id bank and segment id array
+        insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
+
+        if (splitByTime?.time && splitByTime?.wordStringSplitIndex) {
+          splitSegmentByTime(blockSegment.id, segmentIndex, splitByTime.time, splitByTime.wordStringSplitIndex, splitCallback);
+        } else {
+          splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
+        }
+        return;
+      }
+    }
+  };
+
+  const openSegmentSplitTimePicker = (incomingSegmentSplitOptions: SegmentSplitOptions, incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    setSegmentSplitOptions(incomingSegmentSplitOptions);
+    setReadOnlyEditorState(incomingEditorState);
+  };
+
+  const closeSegmentSplitTimePicker = () => {
+    setReadOnlyEditorState(undefined);
+    setSegmentSplitOptions(undefined);
+  };
+
+  const splitSegmentPickerSuccess = (time: number) => {
+    if (!segmentSplitOptions) {
+      return;
+    }
+    const { cursorContent, segmentIndex } = segmentSplitOptions;
+    const segment = segments[segmentIndex];
+    const { start, length } = segment;
+    const end = start + length;
+    const adjustedTime = time - start;
+    if (adjustedTime > 0 && time > start && time < end) {
+      const segmentSplitInfo = {
+        time: adjustedTime,
+        wordStringSplitIndex: cursorContent.cursorOffset,
+      };
+      prepareSegmentForSplit(cursorContent, editorState, segmentSplitInfo);
+      closeSegmentSplitTimePicker();
+    }
+  };
+
+
   const toggleDebugMode = (newValue: boolean) => {
     setDebug(newValue);
     const contentState = editorState.getCurrentContent();
     // force rerendering to pass updated values to decorators
     const updatedEditorState = EditorState.createWithContent(contentState, generateDecorators());
     setEditorState(updatedEditorState);
-  }
+  };
 
   const togglePopups = (incomingEditorState?: EditorState) => {
-    if(!incomingEditorState){
+    if (!incomingEditorState) {
       incomingEditorState = editorState;
     }
     setShowPopups(prevValue => {
@@ -1131,7 +1439,7 @@ const generateDecorators = () => new CompositeDecorator([
     });
     // we need to rerender the block components to toggle the popups
     forceRerender(incomingEditorState);
-  }
+  };
 
   const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
     if (readOnlyEditorState) {
@@ -1151,6 +1459,11 @@ const generateDecorators = () => new CompositeDecorator([
         }
         break;
       case KEY_COMMANDS.backspace:
+        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+        if (cursorContent?.isStartOfBlock && cursorContent?.isNoSelection) {
+          return HANDLE_VALUES.handled;
+        }
+        break;
       case KEY_COMMANDS['backspace-word']:
       case KEY_COMMANDS['backspace-to-start-of-line']:
         cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
@@ -1161,8 +1474,8 @@ const generateDecorators = () => new CompositeDecorator([
       case KEY_COMMANDS['merge-segments-back']:
         handleSegmentMergeCommand(incomingEditorState);
         return HANDLE_VALUES.handled;
-      case KEY_COMMANDS['create-word']:
-        createWordTime(incomingEditorState);
+      case KEY_COMMANDS['edit-segment-time']:
+        prepareSegmentTimePicker(incomingEditorState);
         return HANDLE_VALUES.handled;
       default:
         break;
@@ -1175,10 +1488,10 @@ const generateDecorators = () => new CompositeDecorator([
     if (!previousSelectedCursorContent || !previousSelectionState) {
       return false;
     }
-    if(!incomingEditorState){
+    if (!incomingEditorState) {
       incomingEditorState = editorState;
     }
-    if(!cursorContent){
+    if (!cursorContent) {
       cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
     }
     const {
@@ -1204,12 +1517,81 @@ const generateDecorators = () => new CompositeDecorator([
           const character = currentStateOfPreviousBlockObject.text[index];
           return SPLITTABLE_CHARACTERS.includes(character);
         });
+
+        // to squash all the content into one large word alignment
         if (!allWordsHaveEntity) {
-          //revert to old cursor position and display message
-          const prevSelectionEditorState = EditorState.forceSelection(incomingEditorState, previousSelectionState);
-          setEditorState(prevSelectionEditorState);
-          displayMessage(translate('editor.validation.missingTimes'));
-          return false;
+          const { segment } = currentStateOfPreviousBlockObject.data;
+          if (segment?.id) {
+            const segmentIndex = getIndexOfSegmentId(segment.id) as number;
+            const originalSelectionState = editorState.getSelection();
+
+
+            const filteredText = currentStateOfPreviousBlockObject.text.replace(SPLIT_CHARACTER_REGEX, '').trim();
+
+            const blockSelectionState = new SelectionState({
+              anchorKey: currentStateOfPreviousBlockObject.key,
+              anchorOffset: 0,
+              focusKey: currentStateOfPreviousBlockObject.key,
+              focusOffset: currentStateOfPreviousBlockObject.characterList.length,
+            });
+
+            const removedEntitiesEditorState = removeEntitiesAtSelection(incomingEditorState, blockSelectionState);
+
+            const replacedTextContentState = Modifier.replaceText(removedEntitiesEditorState.getCurrentContent(), blockSelectionState, filteredText);
+
+            const replacedTextEditorState = EditorState.createWithContent(replacedTextContentState, generateDecorators());
+            const updatedRawContent = convertToRaw(replacedTextEditorState.getCurrentContent());
+
+            const newBlock = updatedRawContent.blocks[segmentIndex];
+
+            const updatedBlockSelectionState = new SelectionState({
+              anchorKey: newBlock.key,
+              anchorOffset: 0,
+              focusKey: newBlock.key,
+              focusOffset: newBlock.text.length,
+            });
+
+            const replacedTextEditorStateWithSelection = EditorState.forceSelection(replacedTextEditorState, updatedBlockSelectionState);
+
+            const wordAlignment: WordAlignment = {
+              confidence: 1,
+              length: segment.length,
+              start: 0,
+              word: filteredText,
+            };
+
+            const newWordKey = wordKeyBank.generateKeyAndClearSegment(segmentIndex);
+            // create the new word entity
+            const draftEntity: RawDraftEntity<WordAlignmentEntityData> = {
+              type: ENTITY_TYPE.TOKEN,
+              mutability: MUTABILITY_TYPE.MUTABLE,
+              data: {
+                wordKey: newWordKey,
+                wordAlignment,
+              },
+            };
+
+            // save the word entity
+            const { entityKey, updatedEditorState } = setEntityAtSelection(draftEntity, replacedTextEditorStateWithSelection);
+            let entityKeyNumber = Number(entityKey);
+            // we must decrement the values because we are adjusting the origially incorrect values
+            entityKeyNumber--;
+            const adjustedEntityKey = entityKeyNumber.toString();
+
+            // store all info
+            linkEntityKeyAndWordKey(entityKeyNumber, newWordKey);
+            setEntityByKey(adjustedEntityKey, draftEntity);
+
+            const editorStateWithCursorMoved = EditorState.forceSelection(updatedEditorState, originalSelectionState);
+            const updatedContentState = editorStateWithCursorMoved.getCurrentContent();
+
+            const editorStateWithNoUndo = EditorState.createWithContent(updatedContentState, generateDecorators());
+            setEditorState(editorStateWithNoUndo);
+
+            const updateCallback = buildUpdateSegmentCallback(currentStateOfPreviousBlockObject, editorStateWithNoUndo);
+            updateSegment(segment.id, [wordAlignment], wordAlignment.word, segmentIndex, updateCallback);
+            return false;
+          }
         }
         // build request and submit change
         const { segment } = currentStateOfPreviousBlockObject.data;
@@ -1258,7 +1640,7 @@ const generateDecorators = () => new CompositeDecorator([
 
             const segmentIndex = getIndexOfSegmentId(segment.id) as number;
             const updateCallback = buildUpdateSegmentCallback(currentStateOfPreviousBlockObject, editorStateWithNoUndo);
-            updateSegment(segment.id, wordAlignments, segmentIndex, updateCallback);
+            updateSegment(segment.id, wordAlignments, text, segmentIndex, updateCallback);
             return false;
           }
         }
@@ -1276,7 +1658,39 @@ const generateDecorators = () => new CompositeDecorator([
     setEditorState(removedEntityEditorState);
     setWordTimePickerOptions(undefined);
     onWordTimeCreationClose();
-  }
+  };
+
+  const closeSegmentTimePicker = () => {
+    if (readOnlyEditorState) {
+      setEditorState(readOnlyEditorState);
+    } else {
+      setEditorState(cloneEditorState(editorState));
+    }
+    setSegmentPickerOptions(undefined);
+    setReadOnlyEditorState(undefined);
+    onWordTimeCreationClose();
+  };
+
+  const handleSegmentTimeUpdate = (segmentWord: Word, segment: Segment) => {
+    const segmentIndex = getIndexOfSegmentId(segment.id);
+    const { time } = segmentWord;
+    if (segmentPickerOptions &&
+      typeof segmentIndex === 'number' &&
+      typeof time?.start === 'number' &&
+      typeof time?.end === 'number') {
+      let { start, end } = time;
+      // set to 2 sig figs
+      start = Number(start.toFixed(2));
+      end = Number(end.toFixed(2));
+      const length = end - start;
+
+      const { cursorContent } = segmentPickerOptions;
+      const updateSegmentCallback = buildUpdateSegmentCallback(cursorContent.blockObject, editorState);
+
+      updateSegmentTime(segment.id, segmentIndex, start, length, updateSegmentCallback);
+      closeSegmentTimePicker();
+    }
+  };
 
   const handleWordTimeCreation = (wordToCreate: Word, segment: Segment) => {
     // create the word alignment
@@ -1316,7 +1730,7 @@ const generateDecorators = () => new CompositeDecorator([
     }
     // remove the old entity
     const removedEntityEditorState = removeEntitiesAtSelection(readOnlyEditorState);
-    
+
     // create the new word entity
     const draftEntity: RawDraftEntity<WordAlignmentEntityData> = {
       type: ENTITY_TYPE.TOKEN,
@@ -1326,9 +1740,9 @@ const generateDecorators = () => new CompositeDecorator([
         wordAlignment: newWordAlignment,
       }
     };
-    
+
     // save the word entity
-    const {entityKey, updatedEditorState} = setEntityAtSelection(draftEntity, removedEntityEditorState);
+    const { entityKey, updatedEditorState } = setEntityAtSelection(draftEntity, removedEntityEditorState);
     let entityKeyNumber = Number(entityKey);
     // we must decrement the values because we are adjusting the origially incorrect values
     entityKeyNumber--;
@@ -1341,7 +1755,7 @@ const generateDecorators = () => new CompositeDecorator([
     let editorStateToUse = updatedEditorState;
 
     // update the wordAlignment times if was in between other words
-    if(typeof entityKeyAfterCursor === 'number') {
+    if (typeof entityKeyAfterCursor === 'number') {
       const newWordLocation = wordKeyBank.getLocation(newWordKey);
       const [newSegmentIndex, newWordIndex] = newWordLocation;
       let contentState = editorStateToUse.getCurrentContent();
@@ -1350,25 +1764,25 @@ const generateDecorators = () => new CompositeDecorator([
       const numberOfWords = currentBlock.entityRanges.length;
       let currentLength = 0;
       // to calculate the length up to the new word
-      for(let i = 0; i <= newWordIndex; i++){
+      for (let i = 0; i <= newWordIndex; i++) {
         const entityKey = currentBlock.entityRanges[i].key;
         const entityKeyString = entityKey.toString();
         const currentEntity = contentState.getEntity(entityKeyString);
         const currentData: WordAlignmentEntityData = currentEntity.getData();
         currentLength += currentData.wordAlignment.length;
       }
-      for(let i = newWordIndex + 1; i < numberOfWords; i++){
+      for (let i = newWordIndex + 1; i < numberOfWords; i++) {
         const entityKey = currentBlock.entityRanges[i].key;
         const entityKeyString = entityKey.toString();
         const currentEntity = contentState.getEntity(entityKeyString);
         const currentData: WordAlignmentEntityData = currentEntity.getData();
         // only adjust the time if it is overlapping
-        if(currentData.wordAlignment.start < currentLength){
+        if (currentData.wordAlignment.start < currentLength) {
           currentLength += currentData.wordAlignment.length;
           const newStart = currentData.wordAlignment.start + length;
-          const newWordAlignment = {...currentData.wordAlignment, start: newStart};
-          const updatedData = {...currentData, wordAlignment: newWordAlignment}
-          contentState = contentState.replaceEntityData(entityKeyString, {...updatedData});
+          const newWordAlignment = { ...currentData.wordAlignment, start: newStart };
+          const updatedData = { ...currentData, wordAlignment: newWordAlignment };
+          contentState = contentState.replaceEntityData(entityKeyString, { ...updatedData });
         }
       }
       editorStateToUse = EditorState.createWithContent(contentState);
@@ -1389,7 +1803,6 @@ const generateDecorators = () => new CompositeDecorator([
 
   const handleChange = (incomingEditorState: EditorState) => {
     if (readOnlyEditorState) {
-      setEditorState(cloneEditorState(readOnlyEditorState));
       return;
     }
     let canUpdate = true;
@@ -1403,364 +1816,295 @@ const generateDecorators = () => new CompositeDecorator([
     if (!loading && canUpdate) {
       // update location since we are still in same block
       setPreviousSelectionState(incomingEditorState.getSelection());
+      setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
       setEditorState(incomingEditorState);
     }
   };
 
-const handleSegmentSplitCommand = (incomingEditorState?: EditorState) => {
-  if (!incomingEditorState) {
-    incomingEditorState = editorState;
-  }
-  const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-  const {
-    entity,
-    isEndOfBlock,
-    isStartOfBlock,
-    characterDetailsBeforeCursor,
-    characterDetailsAtCursor,
-    cursorOffset,
-    blockObject,
-  } = cursorContent;
+  const handleSegmentSplitCommand = (incomingEditorState?: EditorState) => {
+    if (!incomingEditorState) {
+      incomingEditorState = editorState;
+    }
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const {
+      blockObject,
+      isEndOfBlock,
+      isStartOfBlock,
+      characterDetailsBeforeCursor,
+      characterDetailsAtCursor,
+    } = cursorContent;
 
-  // check if we are at a valid location for splitting segments
-  if (isEndOfBlock || isStartOfBlock) {
-    displayMessage(translate('editor.validation.invalidSplitLocation'));
-    return;
-  }
-
-  const beforeEntityId = characterDetailsBeforeCursor.properties?.entity;
-  const afterEntityId = characterDetailsAtCursor.properties?.entity;
-  const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
-
-  if (isWithinSameEntity) {
-    displayMessage(translate('editor.validation.invalidSplitLocation'));
-    return;
-  }
-
-  let validEntity = entity;
-
-  // to keep track of how far we had to travel and how many 
-  // characters to erase if we need to find a valid entity
-  let dinstanceFromCursor = 0;
-
-  // no entity at cursor - we must find the nearest entity
-  if (!validEntity) {
-    // ensure that we are at a valid split point
-    const characterAtCursor = blockObject.text[cursorOffset];
-    if (!SPLITTABLE_CHARACTERS.includes(characterAtCursor)) {
+    // check if we are at a valid location for splitting segments
+    if (isEndOfBlock || isStartOfBlock) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
-    const characterListToCheck = blockObject.characterList.slice(cursorOffset);
-    const charactersToCheck = blockObject.text.slice(cursorOffset);
-    let splitEntityKeyString: string | null = null;
-    for (let i = 0; i < characterListToCheck.length; i++) {
-      const characterProperties = characterListToCheck[i];
-      const character = charactersToCheck[i];
-      if (characterProperties.entity) {
-        splitEntityKeyString = characterProperties.entity;
-        dinstanceFromCursor = i;
-        break;
-      }
-      // we have invalid content between the cursor and the next valid word
-      if (!SPLITTABLE_CHARACTERS.includes(character)) {
-        break;
-      }
-    }
-    const splitEntityKey = Number(splitEntityKeyString);
-    // we hit the end before finding a valid entity
-    if (!splitEntityKeyString || typeof splitEntityKey !== 'number' || splitEntityKey < 0) {
-      displayMessage(translate('editor.validation.invalidSplitLocation'));
-      return;
-    }
-    const splitEntity = getEntityByKey(splitEntityKeyString);
 
-    validEntity = { ...splitEntity };
-  }
+    const beforeEntityId = characterDetailsBeforeCursor.properties?.entity;
+    const afterEntityId = characterDetailsAtCursor.properties?.entity;
+    const isWithinSameEntity = (beforeEntityId && afterEntityId) && (beforeEntityId === afterEntityId);
 
-  // to check that we still have a valid entity to use
-  if (validEntity) {
-    // use the entity data to get split location
-    const { wordKey } = validEntity.data;
-    const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
-    const blockSegment = blockObject.data.segment;
-    if (!blockSegment) {
-      return;
-    }
-    const blockSegmentIndex = getIndexOfSegmentId(blockSegment.id);
-    if (typeof segmentIndex === 'number' && typeof wordIndex === 'number' && segmentIndex === blockSegmentIndex) {
-      let contentStateToSplit = incomingEditorState.getCurrentContent();
-      let characterBeforeOffset = cursorOffset;
-
-      const deleteEndOffset = cursorOffset + dinstanceFromCursor;
-      const shouldTrimBefore = SPLITTABLE_CHARACTERS.includes(characterDetailsBeforeCursor.character);
-      // remove any split characters that may have existed before
-      // if space, determine if the next character to the 
-      // left is a split character otherwise determine how
-      // many empty space characters to remove
-      if (shouldTrimBefore) {
-        let numberOfCharactersToRemove = 1;
-        if (characterDetailsBeforeCursor.character !== SPLIT_CHARACTER) {
-          const { text } = blockObject;
-          const startingOffsetToCheck = cursorOffset - (numberOfCharactersToRemove + 1);
-          for (let i = startingOffsetToCheck; i >= 0; i--) {
-            const character = text[i];
-            if (character === ' ') {
-              numberOfCharactersToRemove++;
-            } else if (character === SPLIT_CHARACTER) {
-              numberOfCharactersToRemove++;
-              break;
-            } else {
-              break;
-            }
-          }
+    // open segment time selector
+    if (isWithinSameEntity) {
+      if (blockObject.data?.segment && blockObject.data.segment?.wordAlignments?.length < 2) {
+        const splitSegmentIndex = getIndexOfSegmentId(blockObject.data.segment.id);
+        if (typeof splitSegmentIndex === 'number') {
+          const splitOptions = {
+            segmentIndex: splitSegmentIndex,
+            cursorContent,
+          };
+          openSegmentSplitTimePicker(splitOptions, incomingEditorState);
         }
-        characterBeforeOffset = characterBeforeOffset - numberOfCharactersToRemove;
+      } else {
+        displayMessage(translate('editor.validation.invalidSplitLocation'));
       }
-      // to remove if we have valid reason to
-      // remove any empty space between the cursor and any found entity
-      // remove any empty space before the cursor
-      if (shouldTrimBefore || dinstanceFromCursor) {
-        const rangeToRemove = new SelectionState({
-          anchorKey: blockObject.key,
-          anchorOffset: characterBeforeOffset,
-          focusKey: blockObject.key,
-          focusOffset: deleteEndOffset,
-        });
-        const contentStateWithRemovedCharaters = Modifier.removeRange(contentStateToSplit, rangeToRemove, REMOVAL_DIRECTION.forward);
-        contentStateToSplit = contentStateWithRemovedCharaters;
-      }
-
-      // handle the split
-      const selectionToSplit = new SelectionState({
-        anchorKey: blockObject.key,
-        anchorOffset: characterBeforeOffset,
-        focusKey: blockObject.key,
-        focusOffset: characterBeforeOffset,
-      });
-      const splitContentState = Modifier.splitBlock(contentStateToSplit, selectionToSplit);
-      // reset the undo stack
-      const editorStateAfterSplit = EditorState.createWithContent(splitContentState, generateDecorators());
-      // get the newly created block
-      const newBlock = splitContentState.getBlockAfter(blockObject.key);
-      const newBlockKey = newBlock.getKey();
-      const newBlockObject: BlockObject<SegmentBlockData> = newBlock.toJS();
-
-      // set cursor postiion
-      const newBlockCursorPosition = new SelectionState({
-        anchorKey: newBlockKey,
-        anchorOffset: 0,
-        focusKey: newBlockKey,
-        focusOffset: 0,
-      });
-      const editorStateWithCursorMoved = EditorState.forceSelection(editorStateAfterSplit, newBlockCursorPosition);
-      setEditorState(editorStateWithCursorMoved);
-
-      const splitCallback = buildSplitSegmentCallback(blockObject, newBlockObject, wordIndex, editorStateWithCursorMoved);
-
-      // update the word id bank and segment id array
-      insertSegmentIdAtIndex(segmentIndex, wordIndex, blockSegment.id);
-
-      splitSegment(blockSegment.id, segmentIndex, wordIndex, splitCallback);
       return;
     }
-  }
-};
-
-const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
-  if (readOnlyEditorState) {
-    return HANDLE_VALUES.handled;
-  }
-  // only split when holding shift
-  if (event.shiftKey && !loading) {
-    handleSegmentSplitCommand(incomingEditorState);
-  }
-  return HANDLE_VALUES.handled;
-};
-
-const handleFocus = () => {
-  setFocussed(true);
-};
-
-const handleBlur = () => {
-  setFocussed(false);
-  setEditorStateBeforeBlur(cloneEditorState());
-};
-
-const handleClickInsideEditor = () => {
-  if (readOnlyEditorState) {
-    return;
-  }
-  const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>();
-  if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
-    const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
-    onWordClick(segmentAndWordIndex);
-  }
-};
-
-// handle any api requests made by the parent
-// used for updating after the speaker has been set
-React.useEffect(() => {
-  if (responseFromParent && responseFromParent instanceof Object) {
-    onParentResponseHandled();
-    const { type, payload } = responseFromParent;
-    const { segment } = payload;
-    const currentContentState = editorState.getCurrentContent();
-    let blockKey: string | undefined;
-    let updatedContentState: ContentState | undefined;
-    switch (type) {
-      case PARENT_METHOD_TYPES.speaker:
-        blockKey = getBlockKeyFromSegmentId(segment.id);
-        if (blockKey) {
-          updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
-        }
-        break;
-    }
-    // set our updated state
-    if (updatedContentState) {
-      const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
-      const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
-      const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
-      setEditorState(allowUndoEditorState);
-    }
-  }
-}, [responseFromParent]);
-
-// used to call commands from the control bar's button presses
-React.useEffect(() => {
-  if (editorCommand) {
-    onCommandHandled();
-    if (readOnlyEditorState) {
-      return;
-    }
-    console.log('editorCommand', editorCommand);
-    switch (editorCommand) {
-      case EDITOR_CONTROLS.save:
-        updateSegmentOnChange(undefined, undefined, true);
-        break;
-      case EDITOR_CONTROLS.toggleMore:
-        togglePopups();
-        break;
-      case EDITOR_CONTROLS.split:
-        handleSegmentSplitCommand();
-        break;
-      case EDITOR_CONTROLS.merge:
-        handleSegmentMergeCommand();
-        break;
-      case EDITOR_CONTROLS.createWord:
-        createWordTime();
-        break;
-    
-      default:
-        break;
-    }
-  }
-}, [editorCommand]);
-
-// to update the entities with the new confidence values
-React.useEffect(() => {
-  if (wordConfidenceThreshold !== currentWordConfidenceThreshold) {
-    handleConfidenceThresholdUpdate(wordConfidenceThreshold);
-  }
-}, [wordConfidenceThreshold]);
-
-// to update the entities with new a new debug value
-React.useEffect(() => {
-  if (typeof debugMode === 'boolean' && debugMode !== debug) {
-    toggleDebugMode(debugMode);
-  }
-}, [debugMode]);
-
-// used to calculate the exact dimensions of the root div
-// so we can make the overlay the exact same size
-React.useEffect(() => {
-  if (containerRef.current) {
-    const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
-    const overlayPositionStyle: React.CSSProperties = {
-      top: offsetTop,
-      left: offsetLeft,
-      width: offsetWidth,
-      height: offsetHeight,
-    };
-    setOverlayStyle(overlayPositionStyle);
-  }
-}, [containerRef, windowWidth]);
-
-// reset everything on dismount
-React.useEffect(() => {
-  return () => {
-    wordKeyBank = new WordKeyStore();
-    entityMap = {};
-    entityKeyToWordKeyMap = {};
-    wordKeyToEntityKeyMap = {};
-    blockKeyToSegmentIdMap = {};
-    segmentIdToBlockKeyMap = {};
-    segmentOrderById = [];
-    newWordWasCreated = false;
-    onReady(false);
+    prepareSegmentForSplit(cursorContent, incomingEditorState);
   };
-}, []);
 
-//!
-//TODO
-// don't let user to input bullet character
-//!
-//TODO
-// space when at the end of an entity breaks out of it
+  const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
+    if (readOnlyEditorState) {
+      return HANDLE_VALUES.handled;
+    }
+    // only split when holding shift
+    if (event.shiftKey && !loading) {
+      handleSegmentSplitCommand(incomingEditorState);
+    }
+    return HANDLE_VALUES.handled;
+  };
 
-return (
-  <div
-    ref={containerRef}
-    onClick={handleClickInsideEditor}
-    style={{
-      height,
-      overflowY: 'auto',
-    }}
-  >
-    <Backdrop
-      className={classes.backdrop}
-      style={overlayStyle}
-      open={!!readOnlyEditorState}
-      onClick={() => {
-        return undefined;
+  const handleFocus = () => {
+    setFocussed(true);
+  };
+
+  const handleBlur = () => {
+    if (focussed) {
+      setFocussed(false);
+      setEditorStateBeforeBlur(cloneEditorState());
+    }
+  };
+
+  const handleClickInsideEditor = () => {
+    if (readOnlyEditorState || readOnly) {
+      return;
+    }
+    const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>();
+    if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
+      const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
+      onWordClick(segmentAndWordIndex);
+    }
+  };
+
+  /** removes all styling if touching the edge of an entity */
+  const handleBeforeInput = (chars: string, incomingEditorState: EditorState, eventTimeStamp: number) => {
+    const selectionState = incomingEditorState.getSelection();
+    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const {
+      entity,
+      characterDetailsBeforeCursor,
+    } = cursorContent;
+    const entityBeforeCursor = characterDetailsBeforeCursor.properties?.entity;
+    if (!entity || (entity && !entityBeforeCursor)) {
+      const contentState = incomingEditorState.getCurrentContent();
+      const contentWithNoStyling = Modifier.insertText(contentState, selectionState, chars);
+      const editorStateWithNoInlineStyles = EditorState.push(incomingEditorState, contentWithNoStyling, EDITOR_CHANGE_TYPE['insert-characters']);
+      setEditorState(editorStateWithNoInlineStyles);
+      return HANDLE_VALUES.handled;
+    }
+
+    return HANDLE_VALUES['not-handled'];
+  };
+
+  /** prevents changing of the editor state */
+  const editorChangeNoop = () => HANDLE_VALUES.handled;
+
+  // handle any api requests made by the parent
+  // used for updating after the speaker has been set
+  React.useEffect(() => {
+    if (responseFromParent && responseFromParent instanceof Object) {
+      onParentResponseHandled();
+      const { type, payload } = responseFromParent;
+      const { segment } = payload;
+      const currentContentState = editorState.getCurrentContent();
+      let blockKey: string | undefined;
+      let updatedContentState: ContentState | undefined;
+      switch (type) {
+        case PARENT_METHOD_TYPES.speaker:
+          blockKey = getBlockKeyFromSegmentId(segment.id);
+          if (blockKey) {
+            updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
+          }
+          break;
+      }
+      // set our updated state
+      if (updatedContentState) {
+        const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
+        const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+        const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
+        setEditorState(allowUndoEditorState);
+      }
+    }
+  }, [responseFromParent]);
+
+  // used to call commands from the control bar's button presses
+  React.useEffect(() => {
+    if (editorCommand) {
+      onCommandHandled();
+      if (readOnlyEditorState || readOnly) {
+        return;
+      }
+      let updatedEditorState: EditorState | null = null;
+      switch (editorCommand) {
+        case EDITOR_CONTROLS.save:
+          updateSegmentOnChange(undefined, undefined, true);
+          break;
+        case EDITOR_CONTROLS.toggleMore:
+          togglePopups();
+          break;
+        case EDITOR_CONTROLS.split:
+          handleSegmentSplitCommand();
+          break;
+        case EDITOR_CONTROLS.merge:
+          handleSegmentMergeCommand();
+          break;
+        case EDITOR_CONTROLS.createWord:
+          createWordTime();
+          break;
+        case EDITOR_CONTROLS.editSegmentTime:
+          prepareSegmentTimePicker();
+          break;
+        case EDITOR_CONTROLS.undo: ;
+          updatedEditorState = EditorState.undo(editorState);
+          break;
+        case EDITOR_CONTROLS.redo:
+          updatedEditorState = EditorState.redo(editorState);
+          break;
+        default:
+          break;
+      }
+      if (updatedEditorState) {
+        handleChange(updatedEditorState);
+      }
+    }
+  }, [editorCommand]);
+
+  // to update the entities with the new confidence values
+  React.useEffect(() => {
+    if (wordConfidenceThreshold !== currentWordConfidenceThreshold) {
+      handleConfidenceThresholdUpdate(wordConfidenceThreshold);
+    }
+  }, [wordConfidenceThreshold]);
+
+  // to update the entities with new a new debug value
+  React.useEffect(() => {
+    if (typeof debugMode === 'boolean' && debugMode !== debug) {
+      toggleDebugMode(debugMode);
+    }
+  }, [debugMode]);
+
+  // used to calculate the exact dimensions of the root div
+  // so we can make the overlay the exact same size
+  React.useEffect(() => {
+    if (containerRef.current) {
+      const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
+      const overlayPositionStyle: React.CSSProperties = {
+        top: offsetTop,
+        left: offsetLeft,
+        width: offsetWidth,
+        height: offsetHeight,
+      };
+      setOverlayStyle(overlayPositionStyle);
+    }
+  }, [containerRef, windowWidth]);
+
+  // reset everything on dismount
+  React.useEffect(() => {
+    return () => {
+      wordKeyBank = new WordKeyStore();
+      entityMap = {};
+      entityKeyToWordKeyMap = {};
+      wordKeyToEntityKeyMap = {};
+      blockKeyToSegmentIdMap = {};
+      segmentIdToBlockKeyMap = {};
+      segmentOrderById = [];
+      newWordWasCreated = false;
+      onReady(false);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      onClick={handleClickInsideEditor}
+      style={{
+        height,
+        overflowY: 'auto',
       }}
     >
-      <Draggable
-        axis="both"
-        defaultPosition={{ x: 0, y: 0 }}
-        position={undefined}
-        bounds={'parent'}
-        offsetParent={containerRef.current ?? undefined}
-        scale={1}
+      <Backdrop
+        className={classes.backdrop}
+        style={overlayStyle}
+        open={!!readOnlyEditorState}
+        onClick={() => {
+          return undefined;
+        }}
       >
-        <Card className="box">
-          {wordTimePickerOptions && <WordTimePicker
-            segments={segments}
-            segmentIndex={wordTimePickerOptions.segmentIndex}
-            wordToCreateTimeFor={wordTimePickerOptions.word}
-            onClose={closeWordTimePicker}
-            onSuccess={handleWordTimeCreation}
-            onInvalidTime={displayInvalidTimeMessage}
-            {...wordTimePickerProps}
-          />}
-        </Card>
-      </Draggable>
-    </Backdrop>
-    {ready &&
-      <DraftEditor
-        ref={editorRef}
-        editorState={editorState}
-        customStyleMap={styleMap}
-        keyBindingFn={customKeyBindingFunction}
-        blockRendererFn={customBlockRenderer}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        handleReturn={handleReturnPress}
-        handleKeyCommand={handleKeyCommand}
-      />
-    }
-
-  </div>
-);
+        <Draggable
+          axis="both"
+          defaultPosition={{ x: 0, y: 0 }}
+          position={undefined}
+          bounds={'parent'}
+          offsetParent={containerRef.current ?? undefined}
+          scale={1}
+        >
+          <Card className={clsx(classes.draggable, 'box')}>
+            {wordTimePickerOptions && <WordTimePicker
+              segments={segments}
+              segmentIndex={wordTimePickerOptions.segmentIndex}
+              wordToCreateTimeFor={wordTimePickerOptions.word}
+              onClose={closeWordTimePicker}
+              onSuccess={handleWordTimeCreation}
+              onInvalidTime={displayInvalidTimeMessage}
+              {...timePickerRootProps}
+            />}
+            {segmentPickerOptions &&
+              <SegmentTimePicker
+                segment={segmentPickerOptions.segment}
+                segmentToCreateTimeFor={segmentPickerOptions.segmentWord}
+                onClose={closeSegmentTimePicker}
+                onSuccess={handleSegmentTimeUpdate}
+                onInvalidTime={displayInvalidTimeMessage}
+                {...timePickerRootProps}
+              />}
+            {segmentSplitOptions &&
+              <SegmentSplitPicker
+                segments={segments}
+                segmentIndex={segmentSplitOptions.segmentIndex}
+                onClose={closeSegmentSplitTimePicker}
+                onSuccess={splitSegmentPickerSuccess}
+                onInvalidTime={displayInvalidTimeMessage}
+                {...splitTimePickerRootProps}
+              />}
+          </Card>
+        </Draggable>
+      </Backdrop>
+      {ready &&
+        <DraftEditor
+          ref={editorRef}
+          editorState={editorState}
+          customStyleMap={buildStyleMap(theme)}
+          keyBindingFn={customKeyBindingFunction}
+          blockRendererFn={customBlockRenderer}
+          onChange={readOnly ? editorChangeNoop : handleChange}
+          handleBeforeInput={readOnly ? editorChangeNoop : handleBeforeInput}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          handleReturn={readOnly ? editorChangeNoop : handleReturnPress}
+          handleKeyCommand={readOnly ? editorChangeNoop : handleKeyCommand}
+          handlePastedText={editorChangeNoop}
+        />
+      }
+    </div>
+  );
 };
