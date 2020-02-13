@@ -40,6 +40,7 @@ interface SubgraphFormDialogProps {
   topGraphs: TopGraph[];
 }
 
+const ACCEPTED_FILE_TYPES = ['text/*'];
 
 export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
   const { open, hideBackdrop, onClose, onSuccess, subGraphToEdit, topGraphs } = props;
@@ -178,7 +179,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                 <Field
                   showPreviews
                   filesLimit={1}
-                  acceptedFiles={['text/*']}
+                  acceptedFiles={ACCEPTED_FILE_TYPES}
                   hidden={!formikProps.values.shouldUploadFile}
                   name='files'
                   dropZoneText={translate('forms.dropZone.text')}

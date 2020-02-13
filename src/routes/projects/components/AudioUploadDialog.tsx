@@ -32,6 +32,8 @@ interface AudioUploadDialogProps {
 const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
 const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 
+const ACCEPTED_FILE_TYPES = ['audio/wav', 'audio/mp3'];
+
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const { open, projectId, modelConfigs, onClose, onSuccess } = props;
   const { enqueueSnackbar } = useSnackbar();
@@ -41,6 +43,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
   const [duplicateError, setDuplicateError] = React.useState('');
+  const [maxSizeError, setMaxSizeError] = React.useState('');
 
   const theme = useTheme();
 
@@ -63,13 +66,22 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
 
   const validFilesCheck = (files: File[]) => !!files.length && files.every(file => file instanceof File);
 
+
   // validation translated text
   const noAvailableModelConfigText = (modelConfigs.length && allModelConfigsStillTraining) ? translate('models.validation.allModelConfigsStillTraining', { count: modelConfigs.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
-  const handleDuplicateFileNames = (fileName: string, resetError = false) => {
-    if (resetError) {
+  const handleMaxFileSizeExceeded = (totalSize?: string) => {
+    if (!totalSize) {
+      setMaxSizeError('');
+    } else {
+      setMaxSizeError(translate('forms.validation.maxFileSize', { value: totalSize }));
+    }
+  };
+
+  const handleDuplicateFileNames = (fileName?: string) => {
+    if (!fileName) {
       setDuplicateError('');
     } else {
       setDuplicateError(`${translate('forms.dropZone.reject.duplicateFileNames')}: ${fileName}`);
@@ -105,7 +117,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
     if (!validFilesCheck(files) || selectedModelConfigId === null) {
       return;
     }
-    if (api?.rawData && !loading) {
+    if (api?.rawData && !loading && !duplicateError && !maxSizeError) {
       setLoading(true);
       setIsError(false);
       const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
@@ -172,14 +184,15 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                 <Field
                   showPreviews
                   maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
-                  acceptedFiles={['audio/*']}
+                  acceptedFiles={ACCEPTED_FILE_TYPES}
                   name='files'
                   dropZoneText={translate('forms.dropZone.audio_plural')}
                   component={DropZoneFormField}
                   onDuplicateFileNames={handleDuplicateFileNames}
+                  onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
                   helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
-                  errorOverride={isError || !!formikProps.errors.files || duplicateError}
-                  errorTextOverride={formikProps.errors.files || duplicateError}
+                  errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
+                  errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
                 />
               </Form>
             </DialogContent>
@@ -188,7 +201,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError || loading}
+                disabled={!formikProps.isValid || isError || loading || !!duplicateError || !!maxSizeError}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
