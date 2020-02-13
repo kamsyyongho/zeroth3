@@ -26,21 +26,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       marginBottom: theme.spacing(1),
       backgroundColor: theme.palette.background.paper,
     },
-    modelConfigExpandedDetails: {
-      paddingTop: 0,
-      paddingBottom: theme.spacing(1),
-    },
-    text: {
-      overflowWrap: 'break-word'
-    },
-    category: {
-      marginRight: theme.spacing(1),
-    },
-    chip: {
-      marginRight: theme.spacing(0.5),
-      backgroundColor: theme.palette.primary.light,
-      color: theme.palette.primary.contrastText,
-    },
     configName: {
       fontWeight: 600,
     },
@@ -62,16 +47,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     fullWidth: {
       width: '100%',
-    },
-    listItem: {
-      width: '100%',
-      paddingLeft: 24,
-    },
-    expandContent: {
-      marginBottom: 10,
-      paddingLeft: 0,
-      paddingRight: 0,
-      paddingBottom: 0,
     },
   }),
 );
