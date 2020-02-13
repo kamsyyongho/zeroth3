@@ -12,7 +12,6 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { postModelConfigResult } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
 import { AcousticModel, LanguageModel, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
@@ -85,7 +84,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const [isError, setIsError] = React.useState(false);
   // key used to reset the form on close
   const [formCounter, setFormCounter] = React.useState(0);
-  const isEdit = !!configToEdit;
 
   const classes = useStyles();
   const theme = useTheme();
@@ -136,17 +134,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
-  let initialValues: FormValues = {
-    name: "",
-    selectedAcousticModelId: null,
-    selectedLanguageModelId: null,
-    thresholdHr: null,
-    thresholdLr: null,
-    description: "",
-  };
-  if (configToEdit) {
-    initialValues = {
-      ...initialValues,
+  const initialValues = React.useMemo(() => {
+    const initialValues: FormValues = {
       name: configToEdit.name,
       selectedAcousticModelId: configToEdit.acousticModel.id,
       selectedLanguageModelId: configToEdit.languageModel.id,
@@ -154,7 +143,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       thresholdLr: configToEdit.thresholdLr ?? null,
       description: configToEdit.description,
     };
-  }
+    return initialValues;
+  }, [configToEdit]);
 
   const handleSubmit = async (values: FormValues) => {
     const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
@@ -164,18 +154,13 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      let response: postModelConfigResult;
-      if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
-      } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
-      }
+      const response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        onSuccess(response.modelConfig, true);
         handleClose();
-        onSuccess(response.modelConfig, isEdit);
       } else {
         log({
           file: `ModelConfigListItemExpand.tsx`,
@@ -200,6 +185,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   return (
     <Grid
+      key={formCounter}
       wrap='nowrap'
       direction='column'
       alignContent='center'
@@ -346,6 +332,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                 <Grid
                   container
                   item
+                  wrap='nowrap'
                   alignContent='center'
                   alignItems='center'
                   justify='flex-start'
@@ -354,7 +341,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   <Grid item>
                     <Typography align='center' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
                   </Grid>
-                  <Grid item>
+                  <Grid item >
                     <ChipList
                       variant='outlined'
                       labels={configToEdit.languageModel.subGraphs.map(subGraph => subGraph.name)}

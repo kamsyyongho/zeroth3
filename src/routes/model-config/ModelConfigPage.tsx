@@ -79,12 +79,12 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             break;
           }
         }
-        return prevConfigs;
+        return [...prevConfigs];
       });
     } else {
       setModelConfigs(prevConfigs => {
         prevConfigs.push(modelConfig);
-        return prevConfigs;
+        return [...prevConfigs];
       });
     }
   };

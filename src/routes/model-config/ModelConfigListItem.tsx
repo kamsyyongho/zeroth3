@@ -13,7 +13,6 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import clsx from 'clsx';
 import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme';
 import { ModelConfig } from '../../types';
 import { ChipList } from '../shared/ChipList';
@@ -96,7 +95,6 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
   } = props;
   const { acousticModel, languageModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
-  const { width } = useWindowSize();
   const [loading, setLoading] = React.useState(false);
   const [expanded, setExpanded] = React.useState(false);
   const [nameFormValue, setNameFormValue] = React.useState(name ?? '');
