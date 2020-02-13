@@ -66,6 +66,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
+  const [initialProjectFetch, setInitialProjectFetch] = React.useState(false);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
@@ -127,10 +128,15 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-    if (currentOrganization && !projects.length) {
+    getProjects();
+    setInitialProjectFetch(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (currentOrganization && !projects.length && !initialProjectFetch) {
       getProjects();
     }
-  }, [currentOrganization]);
+  }, [currentOrganization, initialProjectFetch]);
 
 
   // to get the currently selected project
