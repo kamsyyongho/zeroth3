@@ -125,7 +125,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
           alignItems='center'
           justify='flex-start'
         >
-          <TrainingChip />
+          <TrainingChip progress={model.progress} />
         </Grid>}
       </CardContent>
     </Grid>

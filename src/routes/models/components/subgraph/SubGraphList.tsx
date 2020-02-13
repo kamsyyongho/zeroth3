@@ -104,7 +104,7 @@ export function SubGraphList(props: SubGraphListProps) {
                 <EditIcon />
               </IconButton></>)} />
             {subGraph.progress < 100 && <CardContent >
-              <TrainingChip />
+              <TrainingChip progress={subGraph.progress} />
             </CardContent>}
           </Grid>
         </Box>

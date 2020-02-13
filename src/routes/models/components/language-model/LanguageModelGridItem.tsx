@@ -141,7 +141,7 @@ export function LanguageModelGridItem(props: LanguageModelGridItemProps) {
           >
             {`${translate('forms.sub')}:`}
           </Typography>
-          <ChipList values={model.subGraphs.map(subGraph => subGraph.name)} light />
+          <ChipList labels={model.subGraphs.map(subGraph => subGraph.name)} light />
         </Grid>
       </CardContent>
     </Grid>

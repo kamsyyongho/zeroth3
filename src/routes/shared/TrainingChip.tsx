@@ -14,14 +14,22 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }),
 );
 
-export const TrainingChip = () => {
+interface TrainingChipProps {
+  progress: number;
+}
+
+export const TrainingChip = (props: TrainingChipProps) => {
+  const { progress } = props;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
-  return (
-    <Chip
-      label={translate('models.trainingInProgress')}
-      size='small'
-      className={classes.trainingAlertChip}
-    />
-  );
+  if (progress < 100) {
+    return (
+      <Chip
+        label={translate('models.trainingInProgress')}
+        size='small'
+        className={classes.trainingAlertChip}
+      />
+    );
+  }
+  return null;
 };

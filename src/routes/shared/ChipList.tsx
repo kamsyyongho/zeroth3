@@ -1,12 +1,15 @@
+import { Typography } from '@material-ui/core';
 import Chip, { ChipProps } from '@material-ui/core/Chip';
-import Grid from '@material-ui/core/Grid';
+import Grid, { GridProps } from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'reactn';
 
-interface ChipListProps extends ChipProps {
-  values: string[];
+interface ChipListProps extends Omit<ChipProps, 'label'> {
+  labels: string[];
   /** if we need to use the lighter primary text */
   light?: boolean;
+  max?: number;
+  gridProps?: GridProps;
 }
 
 const useStyles = makeStyles((theme) =>
@@ -23,19 +26,31 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-export const ChipList = ({ values, light, ...props }: ChipListProps) => {
+export const ChipList = ({ labels, light, max, gridProps, ...props }: ChipListProps) => {
   const classes = useStyles();
+  let displayedEllipsis = false;
   return (
-    <Grid container >
-      {values.map(value => (
-        <Grid item key={value} >
+    <Grid container {...gridProps} >
+      {labels.map((label, index) => {
+        const key = `${label}-${index}`;
+        const item = (<Grid item key={key} >
           <Chip
-            label={value}
+            label={label}
             size={props.size || 'small'}
             className={light ? classes.light : classes.default}
             {...props} />
-        </Grid>
-      ))}
+        </Grid>);
+        if (!max || index < max) {
+          return item;
+        } else if (index >= max) {
+          if (!displayedEllipsis) {
+            displayedEllipsis = true;
+            return <Grid item key={key} ><Typography >{'...'}</Typography></Grid>;
+          } else {
+            return null;
+          }
+        }
+      })}
     </Grid>
   );
 };

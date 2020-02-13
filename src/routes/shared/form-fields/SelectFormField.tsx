@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from "@material-ui/core";
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectProps } from "@material-ui/core";
 import { FieldProps, getIn } from "formik";
 import React from "reactn";
 
@@ -10,10 +10,9 @@ export interface SelectFormFieldOption {
 
 export type SelectFormFieldOptions = Array<SelectFormFieldOption>;
 
-interface SelectFormFieldProps extends FieldProps {
+interface SelectFormFieldProps extends FieldProps, SelectProps {
   errorOverride?: boolean;
   helperText?: string;
-  fullWidth?: boolean;
   label?: string;
   disabledValues?: (string | number)[];
   options: SelectFormFieldOptions;
