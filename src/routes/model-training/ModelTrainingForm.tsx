@@ -60,11 +60,19 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     }
     return { label: modelConfig.name, value: modelConfig.id, disabled };
   });
-  const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => ({ label: dataSets.name, value: dataSets.id }));
+  let allDataSetsStillTranscribing = true;
+  const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => {
+    const disabled = (dataSets.total !== dataSets.processed);
+    if (!disabled) {
+      allDataSetsStillTranscribing = false;
+    }
+    return { label: dataSets.name, value: dataSets.id, disabled };
+  });
   const trainingMethodFormSelectOptions: SelectFormFieldOptions = trainingMethods.map((method) => ({ label: method, value: method }));
 
   // validation translated text
   const noAvailableModelConfigText = (modelConfigFormSelectOptions.length && allModelConfigsStillTraining) ? translate('models.validation.allModelConfigsStillTraining', { count: modelConfigFormSelectOptions.length }) : '';
+  const noAvailableDataSetsText = (dataSetFormSelectOptions.length && allDataSetsStillTranscribing) ? translate('modelTraining.validation.allModelConfigsStillTranscribing', { count: dataSetFormSelectOptions.length }) : '';
   const requiredTranslationText = translate("forms.validation.required");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
@@ -148,8 +156,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 component={SelectFormField}
                 options={dataSetFormSelectOptions}
                 label={translate("modelTraining.trainingData")}
-                errorOverride={isError}
-                helperText={transcriberHelperText}
+                errorOverride={isError || noAvailableDataSetsText}
+                helperText={noAvailableDataSetsText || transcriberHelperText}
               />
               <Field
                 name='selectedTrainingMethod'

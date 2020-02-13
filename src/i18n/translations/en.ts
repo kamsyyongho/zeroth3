@@ -201,6 +201,12 @@ export const en: ResourceLanguage = {
       shared: 'Shared',
       notShared: 'Not shared',
       startTraining: 'Start training',
+      validation: {
+        allModelConfigsStillTranscribing:
+          'Data set transcription still in progress',
+        allModelConfigsStillTranscribing_plural:
+          'All data set transcriptions still in progress',
+      },
     },
     editor: {
       editor: 'Editor',
@@ -271,7 +277,7 @@ export const en: ResourceLanguage = {
         allSubGraphsStillTraining_plural: 'All sub graphs still training',
         allModelConfigsStillTraining: 'Model configuration still training',
         allModelConfigsStillTraining_plural:
-          'All modelConfigurations still training',
+          'All model configurations still training',
       },
       trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',

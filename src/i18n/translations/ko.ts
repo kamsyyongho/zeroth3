@@ -203,6 +203,12 @@ export const ko: ResourceLanguage = {
       shared: 'Shared',
       notShared: 'Not shared',
       startTraining: 'Start training',
+      validation: {
+        allModelConfigsStillTranscribing:
+          'Data set transcription still in progress',
+        allModelConfigsStillTranscribing_plural:
+          'All data set transcriptions still in progress',
+      },
     },
     editor: {
       editor: 'Editor',
