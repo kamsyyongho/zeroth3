@@ -1,10 +1,7 @@
-import { Box, Chip, Grid, Typography } from '@material-ui/core';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+/* eslint-disable react/prop-types */
+import { Box, Divider, Grid, Grow, TextField, Typography } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Menu from '@material-ui/core/Menu';
@@ -13,16 +10,21 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import clsx from 'clsx';
 import React from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme';
 import { ModelConfig } from '../../types';
+import { ChipList } from '../shared/ChipList';
+import { TrainingChip } from '../shared/TrainingChip';
+import { ModelConfigListItemExpand, ModelConfigListItemExpandPropsFromParent } from './ModelConfigListItemExpand';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     modelConfigRoot: {
-      margin: theme.spacing(1),
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
       backgroundColor: theme.palette.background.paper,
     },
     modelConfigExpandedDetails: {
@@ -40,10 +42,27 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       backgroundColor: theme.palette.primary.light,
       color: theme.palette.primary.contrastText,
     },
+    configName: {
+      fontWeight: 600,
+    },
+    subTitle: {
+      fontWeight: 500,
+    },
+    headerGrid: {
+      padding: theme.spacing(1),
+    },
+    headerNameGrid: {
+      padding: theme.spacing(2),
+    },
+    hiddenTitle: {
+      height: 0,
+    },
     divider: {
-      width: '95%',
-      height: 1,
+      width: '100%',
       backgroundColor: theme.table.border,
+    },
+    fullWidth: {
+      width: '100%',
     },
     listItem: {
       width: '100%',
@@ -61,9 +80,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export interface ModelConfigListItemProps {
   modelConfig: ModelConfig;
   setModelConfigToEdit: (modelConfig: ModelConfig) => void;
-  openDialog: () => void;
   openConfirm: () => void;
   deleteLoading: boolean;
+  expandProps: ModelConfigListItemExpandPropsFromParent;
 }
 
 
@@ -71,22 +90,22 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
     modelConfig,
     setModelConfigToEdit,
-    openDialog,
+    expandProps,
     openConfirm,
     deleteLoading,
   } = props;
-  const { acousticModel, languageModel, name, id, thresholdLr, thresholdHr, description } = modelConfig;
+  const { acousticModel, languageModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
   const { width } = useWindowSize();
+  const [loading, setLoading] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(false);
+  const [nameFormValue, setNameFormValue] = React.useState(name ?? '');
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
-
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
   const handleActionClick = (event: React.MouseEvent<HTMLButtonElement>, modelConfig: ModelConfig) => {
-    event.stopPropagation();
     setModelConfigToEdit(modelConfig);
     setAnchorEl(event.currentTarget);
   };
@@ -97,12 +116,20 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
 
   const openEditDialog = () => {
     handleActionClose();
-    openDialog();
+    setExpanded(true);
+  };
+
+  const closeExpand = () => {
+    setExpanded(false);
   };
 
   const confirmDelete = () => {
     handleActionClose();
     openConfirm();
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNameFormValue(event.target.value);
   };
 
   const maxTitleWidth = width ? (width * 0.6) : 500;
@@ -128,7 +155,136 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     </MenuItem>
   </Menu>);
 
-  const divider = <div className={classes.divider} />;
+  const renderHeader = () => {
+    return (
+      <Grid
+        container
+        item
+        wrap='nowrap'
+        direction='row'
+        alignContent='center'
+        alignItems='center'
+        justify='flex-start'
+      >
+        <Grid
+          container
+          item
+          wrap='nowrap'
+          direction='column'
+          alignContent='flex-start'
+          alignItems='flex-start'
+          justify='center'
+          className={classes.headerNameGrid}
+          xs={3}
+        >
+
+          <Collapse in={!expanded}>
+            <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{name}</Typography>
+          </Collapse>
+          <Collapse in={expanded}>
+            <TextField
+              className={clsx(!expanded && classes.hiddenTitle)}
+              helperText={!nameFormValue && translate("forms.validation.required")}
+              error={!nameFormValue}
+              fullWidth
+              onChange={handleNameChange}
+              value={nameFormValue}
+            />
+          </Collapse>
+        </Grid>
+        <Grow in={!expanded}>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='column'
+            alignContent='flex-end'
+            alignItems='flex-end'
+            justify='center'
+            className={classes.headerGrid}
+            xs={2}
+          >
+            <Typography className={classes.subTitle} >{`${translate('forms.languageModel')}:`}</Typography>
+            <Typography className={classes.subTitle} >{`${translate('forms.acousticModel')}:`}</Typography>
+          </Grid>
+        </Grow>
+        <Grow in={!expanded}>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='column'
+            alignContent='flex-start'
+            alignItems='flex-start'
+            justify='center'
+            className={classes.headerGrid}
+            xs={3}
+          >
+            <Typography >{languageModel.name}</Typography>
+            <Typography >{acousticModel.name}</Typography>
+          </Grid>
+        </Grow>
+        <Grid
+          container
+          item
+          wrap='nowrap'
+          direction='column'
+          alignContent='flex-end'
+          alignItems='flex-end'
+          justify='center'
+          xs={3}
+        >
+          <Grid item>
+            <TrainingChip progress={progress} />
+          </Grid>
+          <Grow in={!expanded}>
+            <Grid item>
+              <ChipList max={1} light labels={[`${acousticModel.sampleRate} Hz`]} />
+            </Grid>
+          </Grow>
+        </Grid>
+        <Grid
+          container
+          item
+          wrap='nowrap'
+          direction='column'
+          alignContent='center'
+          alignItems='center'
+          justify='flex-start'
+          xs={1}
+        >
+          {!expanded ? <IconButton
+            aria-label="options"
+            onClick={event => handleActionClick(event, modelConfig)} >
+            <MoreVertIcon />
+          </IconButton>
+            :
+            <Button
+              disabled={loading}
+              onClick={closeExpand}
+              color="primary"
+              variant="outlined"
+              className={clsx(expanded && classes.headerGrid)}
+            >
+              {translate('common.close')}
+            </Button>}
+        </Grid>
+        {renderItemMenu()}
+      </Grid>);
+  };
+
+  const renderExpandedEdit = () => {
+    return (<Collapse in={expanded} className={classes.fullWidth} >
+      <ModelConfigListItemExpand
+        expanded={expanded}
+        onLoading={setLoading}
+        onClose={closeExpand}
+        configToEdit={modelConfig}
+        nameFormValue={nameFormValue}
+        {...expandProps}
+      />
+    </Collapse>);
+  };
 
   return (
     <Box
@@ -137,163 +293,18 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       borderColor={theme.table.border}
       className={classes.modelConfigRoot}
     >
-      <ExpansionPanel elevation={0}>
-        <ExpansionPanelSummary
-          aria-controls="model-config-expand"
-          id="model-config-expand"
-          expandIcon={<IconButton
-            aria-label="options"
-            onFocus={event => event.stopPropagation()}
-            onClick={event => handleActionClick(event, modelConfig)} >
-            <MoreVertIcon />
-          </IconButton>}
-        >
-          <CardHeader
-            title={name}
-            titleTypographyProps={{ noWrap: true, style: { maxWidth: maxTitleWidth } }}
-            subheader={description}
-            subheaderTypographyProps={{ noWrap: true, style: { maxWidth: maxTitleWidth } }}
-          />
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails
-          className={classes.expandContent}
-        >
-          <Grid
-            container
-            wrap='nowrap'
-            direction='column'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Card
-              elevation={0}
-              className={classes.listItem}
-            >
-              <CardContent className={classes.modelConfigExpandedDetails} >
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.thresholdHr')}:`}
-                  </Typography>
-                  <Typography color="textSecondary" className={classes.text}>
-                    {thresholdHr}
-                  </Typography>
-                </Grid>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.thresholdLr')}:`}
-                  </Typography>
-                  <Typography color="textSecondary" className={classes.text}>
-                    {thresholdLr}
-                  </Typography>
-                </Grid>
-              </CardContent>
-            </Card>
-            {divider}
-            <Card
-              elevation={0}
-              className={classes.listItem}
-            >
-              <CardHeader
-                title={translate('forms.languageModel')}
-                titleTypographyProps={{ variant: 'h6' }}
-                subheader={languageModel.name}
-              />
-              <CardContent>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.top')}:`}
-                  </Typography>
-                  <Typography color="textSecondary" className={classes.text}>
-                    {languageModel.topGraph.name}
-                  </Typography>
-                </Grid>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.sub')}:`}
-                  </Typography>
-                  {languageModel.subGraphs.map((subGraph, index) => <Chip key={index} size='small'
-                    label={subGraph.name}
-                    className={classes.chip}
-                  />)}
-                </Grid>
-              </CardContent>
-            </Card>
-            {divider}
-            <Card
-              elevation={0}
-              className={classes.listItem}
-            >
-              <CardHeader
-                title={translate('forms.acousticModel')}
-                titleTypographyProps={{ variant: 'h6' }}
-                subheader={acousticModel.name}
-              />
-              <CardContent>
-                <Grid
-                  container
-                  wrap='nowrap'
-                  direction='row'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                >
-                  <Typography
-                    className={classes.category}
-                    variant='subtitle2'
-                  >
-                    {`${translate('forms.sampleRate')}:`}
-                  </Typography>
-                  <Typography component="p" className={classes.text}>
-                    {acousticModel.sampleRate}{' kHz'}
-                  </Typography>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-          {renderItemMenu()}
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+      <Grid
+        container
+        wrap='nowrap'
+        direction='column'
+        alignContent='flex-start'
+        alignItems='flex-start'
+        justify='flex-start'
+      >
+        {renderHeader()}
+        {expanded && <Divider className={classes.divider} />}
+        {renderExpandedEdit()}
+      </Grid>
     </Box>
   );
 

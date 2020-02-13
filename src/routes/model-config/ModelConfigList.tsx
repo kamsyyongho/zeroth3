@@ -132,9 +132,18 @@ export function ModelConfigList(props: ModelConfigListProps) {
           key={index}
           modelConfig={modelConfig}
           setModelConfigToEdit={setModelConfigToEdit}
-          openDialog={openDialog}
           openConfirm={openConfirm}
           deleteLoading={deleteLoading}
+          expandProps={{
+            projectId: project.id,
+            onSuccess: handleModelConfigUpdate,
+            topGraphs: topGraphs,
+            subGraphs: subGraphs,
+            languageModels: languageModels,
+            acousticModels: acousticModels,
+            handleSubGraphListUpdate: handleSubGraphListUpdate,
+            handleLanguageModelCreate: handleLanguageModelCreate,
+          }}
         />
       );
     });

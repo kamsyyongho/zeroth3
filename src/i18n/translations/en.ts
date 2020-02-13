@@ -38,6 +38,7 @@ export const en: ResourceLanguage = {
       noData: 'No data',
       progress: 'Progress',
       refresh: 'Refresh',
+      close: 'Close',
     },
     table: {
       page: 'Page',
