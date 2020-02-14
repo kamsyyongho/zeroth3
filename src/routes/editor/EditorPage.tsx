@@ -231,7 +231,9 @@ export function EditorPage() {
 
   React.useEffect(() => {
     getSegments();
-    getDataSetMetadata();
+    if (!readOnly) {
+      getDataSetMetadata();
+    }
   }, [voiceData, projectId]);
 
   const confirmData = async () => {
