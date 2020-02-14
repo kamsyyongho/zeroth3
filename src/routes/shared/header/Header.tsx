@@ -300,14 +300,23 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             justify='flex-start'
             alignContent='center'
             alignItems='center'
+            spacing={2}
             xs={5}
           >
-            {!!dataSetMetadata?.name &&
-              <Grid item >
-                <Typography noWrap variant='h6' className={classes.dataSetName} >
-                  {dataSetMetadata?.name ?? ''}
-                </Typography>
-              </Grid>}
+            {typeof dataSetMetadata?.name === 'string' && typeof dataSetMetadata?.processed === 'number' && typeof dataSetMetadata?.total === 'number' &&
+              <>
+                <Grid item >
+                  <Typography noWrap variant='h5' className={classes.dataSetName} >
+                    {dataSetMetadata.name}
+                  </Typography>
+                </Grid>
+                <Grid item >
+                  <Typography noWrap variant='body2' className={classes.dataSetName} >
+                    {`( ${dataSetMetadata.processed} / ${dataSetMetadata.total} )`}
+                  </Typography>
+                </Grid>
+              </>
+            }
           </Grid>
           <Grid
             item
