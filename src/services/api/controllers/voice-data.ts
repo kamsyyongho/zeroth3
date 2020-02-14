@@ -1,6 +1,7 @@
 import { ApisauceInstance } from 'apisauce';
 import {
   CONTENT_STATUS,
+  DataSetMetadata,
   Segment,
   VoiceData as IVoiceData,
   VoiceDataResults,
@@ -11,6 +12,7 @@ import {
   confirmDataResult,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
+  getDataSetMetadataResult,
   getSegmentsDataResult,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
@@ -196,6 +198,33 @@ export class VoiceData extends ParentApi {
       const noContent = response.status === ResponseCode['no-content'];
       const voiceData = response.data as IVoiceData;
       return { kind: 'ok', voiceData, noContent };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Gets the set data of the currently fetched voice data
+   */
+  async getDataSetMetadata(): Promise<getDataSetMetadataResult> {
+    // make the api call
+    const response = await this.apisauce.get<DataSetMetadata, ServerError>(
+      'data/dataset'
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const metadata = response.data as DataSetMetadata;
+      return { kind: 'ok', metadata };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -719,6 +748,7 @@ export class VoiceData extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
   /**
    * Updates a segment's start time and length
    * @param projectId
