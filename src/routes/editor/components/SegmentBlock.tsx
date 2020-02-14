@@ -1,14 +1,19 @@
-import { Badge, Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { Badge, Button, Grid, Popper, Tooltip, Typography } from '@material-ui/core';
+import Fade from '@material-ui/core/Fade';
+import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
+import RecordVoiceOverIcon from '@material-ui/icons/RecordVoiceOver';
 import clsx from 'clsx';
 import { ContentBlock, ContentState, EditorBlock } from 'draft-js';
 import { MdPersonAdd, MdPersonPin } from 'react-icons/md';
 import VisibilitySensor from "react-visibility-sensor";
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme/index';
 import { Segment, SegmentBlockData } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
+import { getIndexOfBlock } from '../util/index';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -47,6 +52,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       padding: 0,
       margin: 0,
     },
+    popper: {
+      zIndex: theme.zIndex.drawer,
+    },
+    playingIconContainer: {
+      padding: 0,
+      margin: 0,
+      height: 35,
+      width: 35,
+    },
   }),
 );
 
@@ -64,7 +78,7 @@ const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
 };
 
 
-interface SegmentBlockSubProps {
+export interface SegmentBlockSubProps {
   showPopups: boolean;
   readOnly?: boolean;
   /** opens the assign speaker dialog for the segment */
@@ -79,14 +93,18 @@ interface SegmentBlockProps extends EditorBlock {
 
 export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
-  const { blockProps, block } = props;
+  const [playingBlockIndex, setPlayingBlockIndex] = useGlobal('playingBlockIndex');
+  const { translate } = React.useContext(I18nContext);
+  const segmentRef = React.useRef<HTMLButtonElement | null>(null);
+  const { contentState, blockProps, block } = props;
   const { showPopups, readOnly, assignSpeakerForSegment } = blockProps;
+  const blockIndex = getIndexOfBlock(contentState, block);
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
   const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
-  const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : 'calculating...';
+  const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
       assignSpeakerForSegment(id);
@@ -111,6 +129,39 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       : ('')}
   </Button>);
 
+  const renderPopper = (curretRef: HTMLButtonElement | null, isPlayingBlock: boolean, isVisible: boolean) => {
+    if (!curretRef) {
+      return null;
+    }
+    return (<Popper
+      open={isPlayingBlock && !isVisible}
+      className={classes.popper}
+      anchorEl={segmentRef.current}
+      placement="bottom"
+      disablePortal={false}
+      transition
+      modifiers={{
+        flip: {
+          enabled: true,
+        },
+        preventOverflow: {
+          enabled: true,
+          boundariesElement: 'scrollParent',
+        },
+      }}
+    >
+      {({ TransitionProps }) => (
+        <Fade {...TransitionProps} timeout={100}>
+          <Paper className={classes.playingIconContainer} elevation={5}>
+            <RecordVoiceOverIcon color='primary' fontSize='large' />
+          </Paper>
+        </Fade>
+      )}
+    </Popper>);
+  };
+
+  const isPlayingBlock = blockIndex === playingBlockIndex;
+
   return (<div
     className={classes.root}
   >
@@ -125,6 +176,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
     >
       <Button
         disabled
+        ref={segmentRef}
         className={classes.timeButton}
       >
         <Badge
@@ -161,6 +213,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       </Button>
       <VisibilitySensor
         offset={DEFAULT_OFFSET}
+        scrollCheck
       >
         {({ isVisible }) => {
           let isOpen = false;
@@ -171,15 +224,18 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
               title = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
             }
           }
-          return (<Tooltip
-            placement='right-start'
-            title={title}
-            open={isOpen}
-            arrow={false}
-            classes={{ tooltip: classes.tooltipContent }}
-          >
-            {speakerButton}
-          </Tooltip>);
+          return (<>
+            <Tooltip
+              placement='right-start'
+              title={title}
+              open={isOpen}
+              arrow={false}
+              classes={{ tooltip: classes.tooltipContent }}
+            >
+              {speakerButton}
+            </Tooltip>
+            {renderPopper(segmentRef.current, isPlayingBlock, isVisible)}
+          </>);
         }
         }
       </VisibilitySensor>
@@ -187,6 +243,6 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
     <div className={classes.block} >
       <EditorBlock {...props} />
     </div>
-  </div>
+  </div >
   );
 };

@@ -49,6 +49,8 @@ let internalSegmentsTracker: Segment[] = [];
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 
+const AUDIO_PLAYER_HEIGHT = 384;
+
 export enum PARENT_METHOD_TYPES {
   speaker
 }
@@ -85,6 +87,7 @@ export function EditorPage() {
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [dataSetMetadata, setDataSetMetadata] = useGlobal('dataSetMetadata');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -210,8 +213,27 @@ export function EditorPage() {
     }
   };
 
+  const getDataSetMetadata = async () => {
+    if (api?.voiceData && projectId && voiceData) {
+      const response = await api.voiceData.getDataSetMetadata();
+      if (response.kind === 'ok') {
+        setDataSetMetadata(response.metadata);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getDataSetMetadata - failed to get voice data metadata`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+  };
+
   React.useEffect(() => {
     getSegments();
+    if (!readOnly) {
+      getDataSetMetadata();
+    }
   }, [voiceData, projectId]);
 
   const confirmData = async () => {
@@ -707,6 +729,7 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
+    setDataSetMetadata(undefined);
     setPlaybackTime(0);
     setCanPlayAudio(false);
     setCanUndo(false);
@@ -760,7 +783,7 @@ export function EditorPage() {
 
   const disabledControls = getDisabledControls();
 
-  const editorHeight = windowSize.height && (windowSize?.height - 384);
+  const editorHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT);
 
   return (
     <>

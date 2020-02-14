@@ -29,21 +29,28 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     tooltipContent: {
       maxWidth: 'none',
     },
-    immutable: {
+    mutable: {
       backgroundImage: theme.editor.entityGradient,
+      padding: '2px 0',
+    },
+    mutableLongWord: {
+      backgroundColor: theme.editor.entity,
       padding: '2px 0',
     },
   }),
 );
 
-function getEntityClassName(mutability: DraftEntityMutability, classes: any) {
+function getEntityClassName(mutability: DraftEntityMutability, classes: any, isLongWord?: boolean) {
   switch (mutability) {
     case MUTABILITY_TYPE.IMMUTABLE:
-      return classes.immutable;
+      return classes.mutable;
     case MUTABILITY_TYPE.MUTABLE:
-      return classes.immutable;
+      if (isLongWord) {
+        return classes.mutableLongWord;
+      }
+      return classes.mutable;
     case MUTABILITY_TYPE.SEGMENTED:
-      return classes.immutable;
+      return classes.mutable;
     default:
       return undefined;
   }
@@ -66,9 +73,10 @@ export const EntityContent = (props: EntityContentProps) => {
   const mutability = tokenEntity.getMutability();
   const targetData: WordAlignmentEntityData = tokenEntity.getData();
   const { wordAlignment } = targetData;
+  const isLongWord = wordAlignment.word.length > 15;
   const confidence = wordAlignment?.confidence ?? 0;
   const LC = confidence < wordConfidenceThreshold;
-  const entityClassName = getEntityClassName(mutability, classes);
+  const entityClassName = getEntityClassName(mutability, classes, isLongWord);
   let style = {};
   if (LC) {
     style = { backgroundImage: theme.editor.LowConfidenceGradient };

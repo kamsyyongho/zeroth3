@@ -4,8 +4,8 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { BulletList } from 'react-content-loader';
 import React from "reactn";
 import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../services/api/types/api-problem.types';
+import { LOCAL_STORAGE_KEYS } from '../../types';
 import { PaginatedResults } from '../../types/pagination.types';
 import { TranscriberStats } from '../../types/transcriber.types';
 import log from '../../util/log/logger';
@@ -31,7 +31,6 @@ interface TranscribersSummaryProps {
 export function TranscribersSummary(props: TranscribersSummaryProps) {
   const { hasAccess, refreshCounter } = props;
   const api = React.useContext(ApiContext);
-  const { translate } = React.useContext(I18nContext);
   const [isForbidden, setIsForbidden] = React.useState(false);
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
   const [initialDataLoading, setInitialDataLoading] = React.useState(true);
@@ -39,7 +38,16 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
 
   const classes = useStyles();
-
+  const initialPageSize = React.useMemo(() => {
+    const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TRANSCRIBER_TABLE_ROWS_PER_PAGE);
+    if (rowsPerPageString) {
+      const rowsPerPage = Number(rowsPerPageString);
+      if (!isNaN(rowsPerPage)) {
+        return rowsPerPage;
+      }
+    }
+    return undefined;
+  }, []);
 
   const getTranscribersWithStats = async (page?: number, size?: number) => {
     if (api?.transcriber) {
@@ -66,7 +74,7 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
 
   React.useEffect(() => {
     if (hasAccess) {
-      getTranscribersWithStats();
+      getTranscribersWithStats(undefined, initialPageSize);
     } else {
       setIsForbidden(true);
     }

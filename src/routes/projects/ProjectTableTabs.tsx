@@ -29,10 +29,18 @@ interface ProjectTableTabsProps {
   projectId: string;
   project?: Project;
   modelConfigs: ModelConfig[];
+  modelConfigDialogOpen?: boolean;
+  openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
 
 export function ProjectTableTabs(props: ProjectTableTabsProps) {
-  const { projectId, project, modelConfigs } = props;
+  const {
+    projectId,
+    project,
+    modelConfigs,
+    modelConfigDialogOpen,
+    openModelConfigDialog,
+  } = props;
   const { translate } = React.useContext(I18nContext);
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [refreshCounterForSet, setRefreshCounterForSet] = React.useState(0);
@@ -71,10 +79,22 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
       </Tabs>
       <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
         {tabsThatShouldRender.has(TAB_INDEX.TDP) &&
-          <TDP projectId={projectId} project={project} modelConfigs={modelConfigs} onSetCreate={handleSetCreate} />}
+          <TDP
+            projectId={projectId}
+            project={project}
+            modelConfigs={modelConfigs}
+            onSetCreate={handleSetCreate}
+            openModelConfigDialog={openModelConfigDialog}
+            modelConfigDialogOpen={modelConfigDialogOpen}
+          />}
       </TabPanel>
       <TabPanel value={activeTab} index={TAB_INDEX.SET}>
-        {tabsThatShouldRender.has(TAB_INDEX.SET) && <SET refreshCounter={refreshCounterForSet} projectId={projectId} />}
+        {tabsThatShouldRender.has(TAB_INDEX.SET) &&
+          <SET
+            refreshCounter={refreshCounterForSet}
+            projectId={projectId}
+          />}
+
       </TabPanel>
     </Paper>
   );

@@ -9,7 +9,7 @@ import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
+import { LOCAL_STORAGE_KEYS, PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
 import { Pagination } from '../../../shared/Pagination';
 import { RatingDisplay } from '../../../shared/RatingDisplay';
 
@@ -189,7 +189,9 @@ export function TranscribersTable(props: TranscribersTableProps) {
         gotoPage(newPage);
       }}
       onChangeRowsPerPage={e => {
-        setPageSize(Number(e.target.value));
+        const numberOfRows: string = e.target.value;
+        localStorage.setItem(LOCAL_STORAGE_KEYS.TRANSCRIBER_TABLE_ROWS_PER_PAGE, numberOfRows);
+        setPageSize(Number(numberOfRows));
       }}
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}

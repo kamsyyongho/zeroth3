@@ -2,6 +2,7 @@ import { Box, FormControl, FormHelperText } from '@material-ui/core';
 import { FieldProps, getIn } from "formik";
 import { DropzoneArea, DropzoneAreaProps } from 'material-ui-dropzone';
 import React from "reactn";
+import { noop } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 /**
@@ -35,7 +36,8 @@ interface DropZoneFormFieldProps extends FieldProps, DropzoneAreaProps {
   dropZoneText?: string;
   hidden?: boolean;
   fullWidth?: boolean;
-  onDuplicateFileNames?: (fileName: string, resetError?: boolean) => void;
+  onDuplicateFileNames?: (fileName?: string) => void;
+  onMaxFileSizeExceeded?: (totalSize?: string) => void;
 }
 
 export const DropZoneFormField = ({
@@ -51,7 +53,8 @@ export const DropZoneFormField = ({
   acceptedFiles,
   hidden,
   fullWidth,
-  onDuplicateFileNames,
+  onDuplicateFileNames = noop,
+  onMaxFileSizeExceeded = noop,
   ...props
 }: DropZoneFormFieldProps) => {
   const { translate } = React.useContext(I18nContext);
@@ -62,23 +65,33 @@ export const DropZoneFormField = ({
   const isError = !!errorText || !!errorOverride;
 
   const handleChange = (selectedFiles: File[]) => {
-    if (typeof onDuplicateFileNames === 'function') {
-      const uniqueFileNames: string[] = [];
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        if (uniqueFileNames.includes(file.name)) {
-          onDuplicateFileNames(file.name);
-          form.setFieldError(field.name, `${translate('forms.dropZone.reject.duplicateFileNames')}: ${file.name}`);
-          break;
-        } else {
-          uniqueFileNames.push(file.name);
-        }
+    // reset errors before check
+    form.setFieldError(field.name, '');
+    onDuplicateFileNames();
+    onMaxFileSizeExceeded();
+
+    const fileSizeToCompare = maxFileSize ? maxFileSize : MAX_FILE_SIZE;
+    const uniqueFileNames: string[] = [];
+    let totalSize = 0;
+    let invalidFiles = false;
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      totalSize += file.size;
+      if (uniqueFileNames.includes(file.name)) {
+        onDuplicateFileNames(file.name);
+        invalidFiles = true;
+        form.setFieldError(field.name, `${translate('forms.dropZone.reject.duplicateFileNames')}: ${file.name}`);
+        break;
+      } else {
+        uniqueFileNames.push(file.name);
       }
-      if (uniqueFileNames.length === selectedFiles.length) {
-        form.setFieldValue(field.name, selectedFiles);
-        onDuplicateFileNames('', true);
-      }
-    } else {
+    }
+    if (totalSize > fileSizeToCompare) {
+      invalidFiles = true;
+      onMaxFileSizeExceeded(convertBytesToMbsOrKbs(totalSize));
+      form.setFieldError(field.name, translate('forms.validation.maxFileSize', { value: convertBytesToMbsOrKbs(totalSize) }));
+    }
+    if (!invalidFiles) {
       form.setFieldValue(field.name, selectedFiles);
     }
   };

@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) =>
       color: theme.palette.secondary.contrastText,
     },
     popper: {
-      zIndex: 100,
+      zIndex: theme.zIndex.drawer,
     },
   }),
 );

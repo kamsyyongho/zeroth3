@@ -86,10 +86,18 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [hideBackdrop, setHideBackdrop] = React.useState(false);
 
 
-  const openDialog = () => setDialogOpen(true);
-  const closeDialog = () => setDialogOpen(false);
+  const openDialog = (hideBackdrop = false) => {
+    setHideBackdrop(hideBackdrop);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setHideBackdrop(false);
+    setDialogOpen(false);
+  };
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -369,7 +377,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           <Button
             color='primary'
             variant='outlined'
-            onClick={openDialog}
+            onClick={() => openDialog()}
           >
             {translate('modelConfig.create')}
           </Button>
@@ -416,9 +424,16 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       }
       {project && isValidProject &&
         <>
-          <ProjectTableTabs projectId={projectId} project={project} modelConfigs={modelConfigs} />
+          <ProjectTableTabs
+            projectId={projectId}
+            project={project}
+            modelConfigs={modelConfigs}
+            openModelConfigDialog={openDialog}
+            modelConfigDialogOpen={dialogOpen}
+          />
           <ModelConfigDialog
             projectId={projectId}
+            hideBackdrop={hideBackdrop}
             open={dialogOpen}
             onClose={closeDialog}
             onSuccess={handleModelConfigUpdate}

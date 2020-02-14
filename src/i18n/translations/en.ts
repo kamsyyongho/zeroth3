@@ -26,8 +26,8 @@ export const en: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
-      uploaded: 'Uploaded',
-      uploading: 'Uploading',
+      decoded: 'Decoded',
+      decoding: 'Decoding',
       forbidden: 'Forbidden',
       view: 'View',
       date: 'Date',
@@ -201,6 +201,12 @@ export const en: ResourceLanguage = {
       shared: 'Shared',
       notShared: 'Not shared',
       startTraining: 'Start training',
+      validation: {
+        allModelConfigsStillTranscribing:
+          'Data set transcription still in progress',
+        allModelConfigsStillTranscribing_plural:
+          'All data set transcriptions still in progress',
+      },
     },
     editor: {
       editor: 'Editor',
@@ -222,6 +228,7 @@ export const en: ResourceLanguage = {
       confirmTranscript: 'Confirm transcript',
       addSpeaker: 'Add speaker',
       changeSpeaker: 'Change speaker',
+      calculating: 'Calculating',
       validation: {
         missingTimes: 'All words must have start and end times',
         invalidSplitLocation: 'Invalid split location',
@@ -271,7 +278,7 @@ export const en: ResourceLanguage = {
         allSubGraphsStillTraining_plural: 'All sub graphs still training',
         allModelConfigsStillTraining: 'Model configuration still training',
         allModelConfigsStillTraining_plural:
-          'All modelConfigurations still training',
+          'All model configurations still training',
       },
       trainingInProgress: 'Training in progress',
       subGraphHeader: 'Sub Graph Management',
