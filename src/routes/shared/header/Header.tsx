@@ -140,7 +140,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
           //!
           //TODO
           //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
-          const text = `${translate('common.uploading')}: ${projectUnprocessed}`;
+          const text = `${translate('common.decoding')}: ${projectUnprocessed}`;
           enqueueSnackbar(text, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
             content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true)),
