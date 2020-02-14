@@ -20,13 +20,13 @@ export const ko: ResourceLanguage = {
       success: '성공',
       failure: '실패',
       clear: '지우기',
-			clearAll: '초기화',
+      clearAll: '초기화',
       startAt: '시작 시간',
       endAt: '종료 시간',
       length: '길이',
       score: '점수',
       upload: '업로드',
-			decoded: '오디오 디코딩 완료',
+      decoded: '오디오 디코딩 완료',
       decoding: '오디오 디코딩 진행중',
       forbidden: '금지',
       view: '보기',
@@ -38,7 +38,7 @@ export const ko: ResourceLanguage = {
       noData: '데이터 없음',
       progress: '진행상황',
       refresh: '새로고침',
-			close: '닫기',
+      close: '닫기',
     },
     table: {
       page: '페이지',
@@ -54,7 +54,7 @@ export const ko: ResourceLanguage = {
       projects: '프로젝트',
       models: '모델',
       editor: '에디터',
-			modelTraining: '모델 학습',
+      modelTraining: '모델 학습',
     },
     menu: {
       login: '로그인',
@@ -106,7 +106,7 @@ export const ko: ResourceLanguage = {
           main: '{{name}} 파일 업로드에 실패했습니다.',
           notSupported: '지원하지 않는 파일 형식입니다.',
           exceedSizeLimit: '파일이 너무 큽니다. 최대 크기는 {{size}} 입니다.',
-					duplicateFileNames: '중복되는 파일 이름입니다.',
+          duplicateFileNames: '중복되는 파일 이름입니다.',
         },
       },
       numberFiles: '업로드할 파일 개수: {{count}}',
@@ -115,7 +115,7 @@ export const ko: ResourceLanguage = {
       name: '이름',
       text: '텍스트 입력',
       file: '파일 업로드',
-			thresholdLr: 'Low risk threshold',
+      thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       description: '설명',
       location: '위치',
@@ -125,7 +125,7 @@ export const ko: ResourceLanguage = {
       sub: '서브 그래프',
       modelConfig: '모델 설정',
       privacySetting: '개인정보',
-			mutability: '수정가능 여부',
+      mutability: '수정가능 여부',
       mutable: '수정가능',
       immutable: '수정불가',
       fileUpload: '파일 업로드',
@@ -163,7 +163,7 @@ export const ko: ResourceLanguage = {
     },
     projects: {
       noProjects: '프로젝트 없음',
-			noProjectSelected: '선택된 프로젝트 없음',
+      noProjectSelected: '선택된 프로젝트 없음',
       notFound: '프로젝트 찾을 수 없음',
       createProject: '프로젝트 생성',
       editProject: '프로젝트 수정',
@@ -192,9 +192,9 @@ export const ko: ResourceLanguage = {
       numberTranscribers_plural: '{{count}} 전사자',
       transcribersToAssign: '할당된 전사자 수: {{count}}',
       addTranscriber: '전사자 추가',
-			openToRate: '전사상태 평가',
+      openToRate: '전사상태 평가',
     },
-		modelTraining: {
+    modelTraining: {
       header: '모델 학습',
       model: '모델',
       trainingData: '학습 데이터',
@@ -203,11 +203,9 @@ export const ko: ResourceLanguage = {
       shared: '공유됨',
       notShared: '공유되지 않음',
       startTraining: '학습 시작',
-			validation: {
-        allModelConfigsStillTranscribing:
-          '데이터 전사가 진행중입니다.',
-        allModelConfigsStillTranscribing_plural:
-          '데이터 전사가 진행중입니다',
+      validation: {
+        allModelConfigsStillTranscribing: '데이터 전사가 진행중입니다.',
+        allModelConfigsStillTranscribing_plural: '데이터 전사가 진행중입니다',
       },
     },
     editor: {
@@ -221,23 +219,23 @@ export const ko: ResourceLanguage = {
       fetch: '받아오기',
       speaker: '발화자',
       toggleMore: '자세히보기',
-			createWord: '단어 만들기',
-			editSegmentTime: '세그먼트 시간 수정',
-			wordConfidence: '단어 confidence',
+      createWord: '단어 만들기',
+      editSegmentTime: '세그먼트 시간 수정',
+      wordConfidence: '단어 confidence',
       setWordConfidence: '단어 confidence threshold 설정',
       nothingToTranscribe: '전사할 데이터가 없습니다',
       discardChanges: '다시 불러오기',
       confirmTranscript: '수정 완료',
       addSpeaker: '발화자 추가',
       changeSpeaker: '발화자 변경',
-			calculating: '계산중',
+      calculating: '계산중',
       validation: {
         missingTimes: '모든 어절의 시작시간과 종료시간을 정해야 합니다.',
         invalidSplitLocation: '유효하지 않은 나누기 위치입니다',
-				invalidMergeLocation: '유효하지 않은 합치기 위치입니다',
+        invalidMergeLocation: '유효하지 않은 합치기 위치입니다',
         invalidTimeRange: '유효하지 않은 시간 범위입니다',
         invalidCharacterRange: 'Invalid character in range',
-				noSelection: 'No word selected',
+        noSelection: 'No word selected',
       },
     },
     modelConfig: {
@@ -246,10 +244,10 @@ export const ko: ResourceLanguage = {
       create: '설정 만들기',
       edit: '설정 수정',
       delete: '설정 삭제',
-			thresholdLr: 'Low risk threshold',
+      thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       noResults: '모델 설정 없음',
-			manage: '설정 관리',
+      manage: '설정 관리',
       helpText: '데이터를 업로드하기 전에 모델 설정을 만들어 주세요.',
     },
     models: {
@@ -271,17 +269,16 @@ export const ko: ResourceLanguage = {
           noResults: '언어 모델이 없습니다.',
         },
       },
-			validation: {
+      validation: {
         allAcousticModelsStillTraining: '음향 모델 학습이 진행중입니다',
-        allAcousticModelsStillTraining_plural:
-          '음향 모델 학습이 진행중입니다',
+        allAcousticModelsStillTraining_plural: '음향 모델 학습이 진행중입니다',
         allSubGraphsStillTraining: '서브 그래프 학습이 진행중입니다',
         allSubGraphsStillTraining_plural: '서브 그래프 학습이 진행중입니다',
-				allModelConfigsStillTraining: '모델 설정을 위한 학습이 진행중입니다',
-				allModelConfigsStillTraining_plural:
+        allModelConfigsStillTraining: '모델 설정을 위한 학습이 진행중입니다',
+        allModelConfigsStillTraining_plural:
           '모델 설정을 위한 학습이 진행중입니다',
       },
-			trainingInProgress: '학습 진행중',
+      trainingInProgress: '학습 진행중',
       subGraphHeader: '서브 그래프 관리',
       subGraphNoResults: '서브 그래프 없음',
       createSubGraph: '서브 그래프 생성',
@@ -294,7 +291,7 @@ export const ko: ResourceLanguage = {
     audioPlayer: {
       noUrl: '오디오 URL이 없습니다',
     },
-		home: {
+    home: {
       header: 'Welcome to Zeroth',
       textBlocks: {
         ['1']: 'Zeroth를 유용하게 사용하시려면',
@@ -305,5 +302,5 @@ export const ko: ResourceLanguage = {
         ['4']: '사용에 궁금하신 점이 있으시면 연락주세요. 감사합니다.',
       },
     },
-
+  },
 };
