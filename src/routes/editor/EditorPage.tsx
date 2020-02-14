@@ -49,6 +49,8 @@ let internalSegmentsTracker: Segment[] = [];
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 
+const AUDIO_PLAYER_HEIGHT = 384;
+
 export enum PARENT_METHOD_TYPES {
   speaker
 }
@@ -760,7 +762,7 @@ export function EditorPage() {
 
   const disabledControls = getDisabledControls();
 
-  const editorHeight = windowSize.height && (windowSize?.height - 384);
+  const editorHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT);
 
   return (
     <>

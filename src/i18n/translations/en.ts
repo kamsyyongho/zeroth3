@@ -228,6 +228,7 @@ export const en: ResourceLanguage = {
       confirmTranscript: 'Confirm transcript',
       addSpeaker: 'Add speaker',
       changeSpeaker: 'Change speaker',
+      calculating: 'Calculating',
       validation: {
         missingTimes: 'All words must have start and end times',
         invalidSplitLocation: 'Invalid split location',

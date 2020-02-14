@@ -11,5 +11,6 @@ declare module 'reactn/default' {
     projectInitialized?: boolean;
     projectTdpDataShouldRefresh?: boolean;
     navigationProps?: any;
+    playingBlockIndex?: number;
   }
 }

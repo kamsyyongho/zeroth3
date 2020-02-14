@@ -7,7 +7,7 @@ import 'draft-js/dist/Draft.css';
 import { Map } from 'immutable';
 import { useSnackbar, VariantType } from 'notistack';
 import Draggable from 'react-draggable';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
@@ -17,7 +17,7 @@ import log from '../../util/log/logger';
 import { generateWordKeyString, getRandomColor, WordKeyStore } from '../../util/misc';
 import { EDITOR_CONTROLS } from './components/EditorControls';
 import { EntityContent } from './components/EntityContent';
-import { SegmentBlock } from './components/SegmentBlock';
+import { SegmentBlock, SegmentBlockSubProps } from './components/SegmentBlock';
 import { SegmentSplitPicker } from './components/SegmentSplitPicker';
 import { SegmentTimePicker } from './components/SegmentTimePicker';
 import { WordTimePicker } from './components/WordTimePicker';
@@ -253,6 +253,7 @@ export function Editor(props: EditorProps) {
     timePickerRootProps,
     splitTimePickerRootProps,
   } = props;
+  const [playingBlockIndex, setPlayingBlockIndex] = useGlobal('playingBlockIndex');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
@@ -357,7 +358,7 @@ export function Editor(props: EditorProps) {
           showPopups,
           readOnly,
           assignSpeakerForSegment,
-        },
+        } as SegmentBlockSubProps,
       };
     }
   }
@@ -624,6 +625,7 @@ export function Editor(props: EditorProps) {
       }
       const entityKey = getEntityKeyFromWordKey(wordKey);
       if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
+        setPlayingBlockIndex(playingLocation[0]);
         updateWordForCurrentPlayingLocation(playingLocation);
       }
     }
