@@ -3,9 +3,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
+import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -19,6 +21,13 @@ import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    hidden: {
+      visibility: 'hidden',
+    },
+  }),
+);
 
 interface AudioUploadDialogProps {
   open: boolean;
@@ -26,6 +35,8 @@ interface AudioUploadDialogProps {
   modelConfigs: ModelConfig[];
   onClose: () => void;
   onSuccess: () => void;
+  modelConfigDialogOpen?: boolean;
+  openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
 
 /** this is using the same simple (incorrect) method for calculating file size as file upload library */
@@ -35,7 +46,15 @@ const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 const ACCEPTED_FILE_TYPES = ['audio/wav', 'audio/mp3'];
 
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
-  const { open, projectId, modelConfigs, onClose, onSuccess } = props;
+  const {
+    open,
+    projectId,
+    modelConfigs,
+    onClose,
+    onSuccess,
+    modelConfigDialogOpen,
+    openModelConfigDialog,
+  } = props;
   const { enqueueSnackbar } = useSnackbar();
   const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const { translate } = React.useContext(I18nContext);
@@ -46,6 +65,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const [maxSizeError, setMaxSizeError] = React.useState('');
 
   const theme = useTheme();
+  const classes = useStyles();
 
   const handleClose = () => {
     setIsError(false);
@@ -166,6 +186,9 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       open={open}
       onClose={handleClose}
       aria-labelledby="audio-upload-dialog"
+      classes={{
+        container: clsx(modelConfigDialogOpen && classes.hidden)
+      }}
     >
       <DialogTitle id="audio-upload-dialog">{translate(`TDP.uploadData`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
@@ -181,6 +204,14 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                   errorOverride={isError || noAvailableModelConfigText}
                   helperText={noAvailableModelConfigText}
                 />
+                {(typeof openModelConfigDialog === 'function') && <Button
+                  fullWidth
+                  color="primary"
+                  onClick={() => openModelConfigDialog(true)}
+                  startIcon={<AddIcon />}
+                >
+                  {translate('modelConfig.create')}
+                </Button>}
                 <Field
                   showPreviews
                   maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}

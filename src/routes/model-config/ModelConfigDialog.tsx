@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme) =>
 interface ModelConfigDialogProps {
   projectId: string;
   open: boolean;
+  hideBackdrop?: boolean;
   configToEdit?: ModelConfig;
   onClose: (modelConfigId?: string) => void;
   onSuccess: (updatedConfig: ModelConfig, isEdit?: boolean) => void;
@@ -48,6 +49,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const {
     projectId,
     open,
+    hideBackdrop,
     onClose,
     onSuccess,
     configToEdit,
@@ -177,6 +179,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       aria-labelledby="model-config-dialog"
       classes={{
         container: clsx(languageOpen && classes.hidden)
+      }}
+      BackdropProps={{
+        className: clsx(hideBackdrop && classes.hidden),
       }}
     >
       <DialogTitle id="model-config-dialog">{translate(`modelConfig.header`)}</DialogTitle>

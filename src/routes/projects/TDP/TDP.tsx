@@ -21,6 +21,8 @@ interface TDPProps {
   project?: Project;
   modelConfigs: ModelConfig[];
   onSetCreate: () => void;
+  modelConfigDialogOpen?: boolean;
+  openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
 
 
@@ -47,7 +49,15 @@ const useStyles = makeStyles((theme) =>
 );
 
 export function TDP(props: TDPProps) {
-  const { projectId, project, modelConfigs = [] as ModelConfig[], onSetCreate } = props;
+  const {
+    projectId,
+    project,
+    modelConfigs = [] as ModelConfig[],
+    onSetCreate,
+    modelConfigDialogOpen,
+    openModelConfigDialog,
+
+  } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
@@ -201,6 +211,8 @@ export function TDP(props: TDPProps) {
         onSuccess={closeUploadDialog}
         projectId={projectId}
         modelConfigs={modelConfigs}
+        openModelConfigDialog={openModelConfigDialog}
+        modelConfigDialogOpen={modelConfigDialogOpen}
       />
       <CreateSetFormDialog
         open={isCreateSetOpen}
