@@ -45,6 +45,9 @@ const useStyles = makeStyles((theme) =>
       fontSize: 120,
       height: 24,
       color: theme.palette.primary.contrastText,
+    },
+    dataSetName: {
+      color: theme.palette.primary.contrastText,
     }
   }),
 );
@@ -74,6 +77,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
+  const [dataSetMetadata, setDataSetMetadata] = useGlobal('dataSetMetadata');
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
@@ -250,6 +254,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         <Grid
           justify='space-between'
           container
+          xs={12}
         >
           <Grid
             item
@@ -258,7 +263,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             justify='flex-start'
             alignContent='center'
             alignItems='center'
-            sm={6}
+            xs={5}
           >
             <IconButton
               onClick={toggleDrawer}
@@ -292,10 +297,26 @@ export const Header: React.FunctionComponent<{}> = (props) => {
             item
             container
             wrap='nowrap'
+            justify='flex-start'
+            alignContent='center'
+            alignItems='center'
+            xs={5}
+          >
+            {!!dataSetMetadata?.name &&
+              <Grid item >
+                <Typography noWrap variant='h6' className={classes.dataSetName} >
+                  {dataSetMetadata?.name ?? ''}
+                </Typography>
+              </Grid>}
+          </Grid>
+          <Grid
+            item
+            container
+            wrap='nowrap'
             justify='flex-end'
             alignContent='center'
             alignItems='center'
-            sm={3}
+            xs={2}
           >
             <IconButton
               onClick={toggleLanguage}

@@ -9,7 +9,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, DataSetMetadata, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { generateWordKeyString } from '../../util/misc';
@@ -87,6 +87,7 @@ export function EditorPage() {
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [dataSetMetadata, setDataSetMetadata] = useGlobal('dataSetMetadata');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -115,14 +116,12 @@ export function EditorPage() {
   const [noAssignedData, setNoAssignedData] = React.useState(false);
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
-  const [dataSetMetadataLoading, setDataSetMetadataLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
-  const [dataSetMetadata, setDataSetMetadata] = React.useState<DataSetMetadata | undefined>();
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -216,7 +215,6 @@ export function EditorPage() {
 
   const getDataSetMetadata = async () => {
     if (api?.voiceData && projectId && voiceData) {
-      setDataSetMetadataLoading(true);
       const response = await api.voiceData.getDataSetMetadata();
       if (response.kind === 'ok') {
         setDataSetMetadata(response.metadata);
@@ -228,7 +226,6 @@ export function EditorPage() {
           important: true,
         });
       }
-      setDataSetMetadataLoading(false);
     }
   };
 
@@ -730,7 +727,6 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
-    setDataSetMetadataLoading(true);
     setDataSetMetadata(undefined);
     setPlaybackTime(0);
     setCanPlayAudio(false);
@@ -800,7 +796,6 @@ export function EditorPage() {
         onThresholdChange={setWordConfidenceThreshold}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
-        dataSetMetadata={!dataSetMetadataLoading ? dataSetMetadata : undefined}
       />}
       <Container
         className={classes.container}

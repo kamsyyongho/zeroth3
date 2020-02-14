@@ -1,6 +1,5 @@
 import 'reactn';
-import { Organization } from './organizations.types';
-import { Project } from './projects.types';
+import { DataSetMetadata, Organization, Project } from './index';
 
 declare module 'reactn/default' {
   export interface State {
@@ -11,6 +10,7 @@ declare module 'reactn/default' {
     projectInitialized?: boolean;
     projectTdpDataShouldRefresh?: boolean;
     navigationProps?: any;
+    dataSetMetadata?: DataSetMetadata;
     playingBlockIndex?: number;
   }
 }

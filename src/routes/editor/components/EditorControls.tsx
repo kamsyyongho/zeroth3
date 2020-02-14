@@ -16,7 +16,6 @@ import ScaleLoader from 'react-spinners/ScaleLoader';
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
-import { DataSetMetadata } from '../../../types';
 import { ConfidenceSlider } from './ConfidenceSlider';
 
 const useStyles = makeStyles((theme) =>
@@ -97,7 +96,6 @@ interface EditorControlsProps {
   toggleDebugMode: () => void;
   loading?: boolean;
   editorReady?: boolean;
-  dataSetMetadata?: DataSetMetadata;
   wordConfidenceThreshold: number;
   onThresholdChange: (threshold: number) => void;
 }
@@ -112,7 +110,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     toggleDebugMode,
     loading,
     editorReady,
-    dataSetMetadata,
     wordConfidenceThreshold,
     onThresholdChange,
   } = props;
@@ -304,7 +301,6 @@ export const EditorControls = (props: EditorControlsProps) => {
         color={theme.palette.common.white}
         loading={true}
       />}
-      {!!dataSetMetadata?.name && <Typography noWrap variant='h6' className={classes.toggle} >{dataSetMetadata?.name ?? ''}</Typography>}
       <ButtonGroup
         variant="contained"
         aria-label="secondary editor buttons"
