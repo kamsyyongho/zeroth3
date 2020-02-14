@@ -1,7 +1,7 @@
 import { ApisauceInstance } from 'apisauce';
 import {
   CONTENT_STATUS,
-  DataSetMetadata,
+  DataSet,
   Segment,
   VoiceData as IVoiceData,
   VoiceDataResults,
@@ -208,7 +208,7 @@ export class VoiceData extends ParentApi {
    */
   async getDataSetMetadata(): Promise<getDataSetMetadataResult> {
     // make the api call
-    const response = await this.apisauce.get<DataSetMetadata, ServerError>(
+    const response = await this.apisauce.get<DataSet, ServerError>(
       'data/dataset'
     );
     // the typical ways to die when calling an api
@@ -223,7 +223,7 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const metadata = response.data as DataSetMetadata;
+      const metadata = response.data as DataSet;
       return { kind: 'ok', metadata };
     } catch {
       return { kind: ProblemKind['bad-data'] };

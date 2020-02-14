@@ -11,8 +11,6 @@ export interface DataSet {
   transcribers: Transcriber[];
 }
 
-export type DataSetMetadata = Pick<DataSet, 'name' | 'processed' | 'total'>;
-
 export interface FilterParams {
   from?: Date;
   till?: Date;
