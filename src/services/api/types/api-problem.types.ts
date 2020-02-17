@@ -66,6 +66,11 @@ export enum ProblemKind {
    * There is a conflict preventing the requested action.
    */
   'conflict' = 'conflict',
+  /**
+   * If there was a partial success, but some parts of the request could not be processed.
+   * - Server will return a warning message
+   */
+  'teapot' = 'teapot',
 }
 
 export interface GeneralApiProblem {

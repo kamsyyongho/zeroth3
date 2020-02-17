@@ -58,7 +58,7 @@ const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
   preventDuplicate: true,
   anchorOrigin: {
     vertical: 'bottom',
-    horizontal: 'center',
+    horizontal: 'left',
   },
   key: QUEUE_NOTIFICATION_KEY,
 };

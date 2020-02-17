@@ -1,4 +1,4 @@
-import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { ApisauceInstance } from 'apisauce';
 import { RawDataQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
@@ -29,7 +29,7 @@ export class RawData extends ParentApi {
   async getRawDataQueue(projectId: string): Promise<getRawDataQueueResult> {
     // make the api call
     const response = await this.apisauce.get<RawDataQueue, ServerError>(
-      this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue`)
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -61,7 +61,7 @@ export class RawData extends ParentApi {
   async uploadRawData(
     projectId: string,
     modelConfigId: string,
-    files: File[]
+    files: File[],
   ): Promise<uploadRawDataResult> {
     // compile data
     const request = new FormData();
@@ -73,18 +73,23 @@ export class RawData extends ParentApi {
       },
     };
     // make the api call
-    const response: ApiResponse<
-      undefined,
-      ServerError
-    > = await this.apisauce.post(
+    const response = await this.apisauce.post<string | undefined, ServerError>(
       this.getPathWithOrganization(`/projects/${projectId}/raw-data`),
       request,
-      config
+      config,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
       if (problem) {
+        if (problem.kind === ProblemKind['teapot']) {
+          try {
+            const warningMessage = response.data as string;
+            return { kind: 'ok', warningMessage };
+          } catch {
+            return { kind: ProblemKind['bad-data'] };
+          }
+        }
         if (problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
