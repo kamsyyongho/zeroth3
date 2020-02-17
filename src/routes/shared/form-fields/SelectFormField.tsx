@@ -1,6 +1,7 @@
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectProps } from "@material-ui/core";
 import { FieldProps, getIn } from "formik";
 import React from "reactn";
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 export interface SelectFormFieldOption {
   label: string;
@@ -19,6 +20,7 @@ interface SelectFormFieldProps extends FieldProps, SelectProps {
 }
 
 export const SelectFormField = ({ field, helperText, form, label, options, errorOverride, disabledValues = [], fullWidth, ...props }: SelectFormFieldProps) => {
+  const { translate } = React.useContext(I18nContext);
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
@@ -30,7 +32,7 @@ export const SelectFormField = ({ field, helperText, form, label, options, error
     <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
       {label && <InputLabel>{label}</InputLabel>}
       <Select fullWidth={fullWidth} {...field} {...props}>
-        {options.map((op: SelectFormFieldOption) => {
+        {options.length ? (options.map((op: SelectFormFieldOption) => {
           // account for blank options
           if (op.value === '') {
             return (<MenuItem key={'empty'} value={op.value} >
@@ -40,7 +42,11 @@ export const SelectFormField = ({ field, helperText, form, label, options, error
           return (<MenuItem disabled={op.disabled || (disabledValues).includes(op.value)} key={op.value} value={op.value}>
             {op.label}
           </MenuItem>);
-        })}
+        })) : (
+            <MenuItem key={'empty'} value={''} >
+              <em>{translate('forms.none')}</em>
+            </MenuItem>
+          )}
       </Select>
       <FormHelperText>{errorText || helperText}</FormHelperText>
     </FormControl>
