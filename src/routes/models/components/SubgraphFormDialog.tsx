@@ -105,6 +105,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       ...initialValues,
       selectedTopGraphId: subGraphToEdit.topGraphId,
       name: subGraphToEdit.name,
+      isMutable: !subGraphToEdit.immutable,
     };
   }
 
