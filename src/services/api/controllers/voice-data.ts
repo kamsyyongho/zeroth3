@@ -1,7 +1,6 @@
 import { ApisauceInstance } from 'apisauce';
 import {
   CONTENT_STATUS,
-  DataSet,
   Segment,
   VoiceData as IVoiceData,
   VoiceDataResults,
@@ -12,7 +11,6 @@ import {
   confirmDataResult,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
-  getDataSetMetadataResult,
   getSegmentsDataResult,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
@@ -84,7 +82,7 @@ export class VoiceData extends ParentApi {
    */
   async searchData(
     projectId: string,
-    requestOptions: SearchDataRequest = {}
+    requestOptions: SearchDataRequest = {},
   ): Promise<searchDataResult> {
     // set default values
     const { page = 0, size = 10 } = requestOptions;
@@ -95,7 +93,7 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.get<VoiceDataResults, ServerError>(
       this.getPathWithOrganization(`/projects/${projectId}/data`),
-      query
+      query,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -123,7 +121,7 @@ export class VoiceData extends ParentApi {
    */
   async getAssignedData(): Promise<getAssignedDataResult> {
     const response = await this.apisauce.get<IVoiceData, ServerError>(
-      this.getPathWithOrganization(`/data/assigned`)
+      this.getPathWithOrganization(`/data/assigned`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -152,12 +150,12 @@ export class VoiceData extends ParentApi {
    */
   async confirmData(
     projectId: string,
-    dataId: string
+    dataId: string,
   ): Promise<confirmDataResult> {
     const response = await this.apisauce.put<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/confirm`
-      )
+        `/projects/${projectId}/data/${dataId}/confirm`,
+      ),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -204,45 +202,18 @@ export class VoiceData extends ParentApi {
   }
 
   /**
-   * Gets the set data of the currently fetched voice data
-   */
-  async getDataSetMetadata(): Promise<getDataSetMetadataResult> {
-    // make the api call
-    const response = await this.apisauce.get<DataSet, ServerError>(
-      'data/dataset'
-    );
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response);
-      if (problem) {
-        if (problem.kind === ProblemKind['unauthorized']) {
-          this.logout();
-        }
-        return problem;
-      }
-    }
-    // transform the data into the format we are expecting
-    try {
-      const metadata = response.data as DataSet;
-      return { kind: 'ok', metadata };
-    } catch {
-      return { kind: ProblemKind['bad-data'] };
-    }
-  }
-
-  /**
    * Gets the segments for the voice data
    * @param projectId
    * @param dataId
    */
   async getSegments(
     projectId: string,
-    dataId: string
+    dataId: string,
   ): Promise<getSegmentsDataResult> {
     const response = await this.apisauce.get<Segment[], ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments`
-      )
+        `/projects/${projectId}/data/${dataId}/segments`,
+      ),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -274,7 +245,7 @@ export class VoiceData extends ParentApi {
     projectId: string,
     dataId: string,
     segmentId: string,
-    wordAlignments: WordAlignment[]
+    wordAlignments: WordAlignment[],
   ): Promise<updateSegmentResult> {
     // compile data
     const request: UpdateSegmentRequest = {
@@ -283,9 +254,9 @@ export class VoiceData extends ParentApi {
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -309,16 +280,16 @@ export class VoiceData extends ParentApi {
   async updateSegments(
     projectId: string,
     dataId: string,
-    segments: Segment[]
+    segments: Segment[],
   ): Promise<updateSegmentsResult> {
     // compile data
     const request: UpdateSegmentsRequest = segments;
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments`
+        `/projects/${projectId}/data/${dataId}/segments`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -344,7 +315,7 @@ export class VoiceData extends ParentApi {
     projectId: string,
     dataId: string,
     segmentId: string,
-    splitIndex: number
+    splitIndex: number,
   ): Promise<splitSegmentResult> {
     const params: SplitSegmentQuery = {
       'split-index': splitIndex,
@@ -352,10 +323,10 @@ export class VoiceData extends ParentApi {
     const response = await this.apisauce.post<[Segment, Segment], ServerError>(
       // query params on a post are the third (3) parameter
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split`,
       ),
       null,
-      { params }
+      { params },
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -390,7 +361,7 @@ export class VoiceData extends ParentApi {
     dataId: string,
     segmentId: string,
     time: number,
-    wordStringSplitIndex: number
+    wordStringSplitIndex: number,
   ): Promise<splitSegmentByTimeResult> {
     // set to 2 sig figs
     const adjustedTime = Number(time.toFixed(2));
@@ -401,10 +372,10 @@ export class VoiceData extends ParentApi {
     const response = await this.apisauce.post<[Segment, Segment], ServerError>(
       // query params on a post are the third (3) parameter
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-by-time`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-by-time`,
       ),
       null,
-      { params }
+      { params },
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -437,7 +408,7 @@ export class VoiceData extends ParentApi {
     projectId: string,
     dataId: string,
     firstSegmentId: string,
-    secondSegmentId: string
+    secondSegmentId: string,
   ): Promise<mergeTwoSegmentsResult> {
     // compile data
     const request: MergeTwoSegmentsRequest = {
@@ -446,9 +417,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.post<Segment, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/merge`
+        `/projects/${projectId}/data/${dataId}/segments/merge`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -478,7 +449,7 @@ export class VoiceData extends ParentApi {
   async updateStatus(
     projectId: string,
     dataId: string,
-    status: CONTENT_STATUS
+    status: CONTENT_STATUS,
   ): Promise<updateStatusResult> {
     // compile data
     const request: UpdateStatusRequest = {
@@ -486,9 +457,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.put<IVoiceData, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/status`
+        `/projects/${projectId}/data/${dataId}/status`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -518,7 +489,7 @@ export class VoiceData extends ParentApi {
   async updateMemo(
     projectId: string,
     dataId: string,
-    memo: string
+    memo: string,
   ): Promise<updateMemoResult> {
     // compile data
     const request: UpdateMemoRequest = {
@@ -526,9 +497,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/memo`
+        `/projects/${projectId}/data/${dataId}/memo`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -552,7 +523,7 @@ export class VoiceData extends ParentApi {
   async rateTranscript(
     projectId: string,
     dataId: string,
-    rating: number
+    rating: number,
   ): Promise<confirmDataResult> {
     // compile data
     const request: RateTranscriptRequest = {
@@ -560,9 +531,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.put<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/rate`
+        `/projects/${projectId}/data/${dataId}/rate`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -589,7 +560,7 @@ export class VoiceData extends ParentApi {
     projectId: string,
     dataId: string,
     segmentId: string,
-    freeText: string
+    freeText: string,
   ): Promise<setFreeTextTranscriptResult> {
     // compile data
     const request: SetFreeTextTranscriptRequest = {
@@ -597,9 +568,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.post<Segment, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/free-text`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/free-text`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -633,7 +604,7 @@ export class VoiceData extends ParentApi {
     dataId: string,
     segmentId: string,
     firstWordIndex: number,
-    secondWordIndex: number
+    secondWordIndex: number,
   ): Promise<mergeWordsInSegmentResult> {
     // compile data
     const request: MergeWordsInSegmentRequest = {
@@ -642,9 +613,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.post<Segment, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/merge-word`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/merge-word`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -680,7 +651,7 @@ export class VoiceData extends ParentApi {
     segmentId: string,
     splitCharacterIndex: number,
     splitTime: number,
-    wordAlignmentIndex: number
+    wordAlignmentIndex: number,
   ): Promise<splitWordInSegmentResult> {
     // compile data
     const request: SplitWordInSegmentRequest = {
@@ -690,9 +661,9 @@ export class VoiceData extends ParentApi {
     };
     const response = await this.apisauce.post<Segment, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-word`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/split-word`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -723,7 +694,7 @@ export class VoiceData extends ParentApi {
     projectId: string,
     dataId: string,
     segmentId: string,
-    speaker: string
+    speaker: string,
   ): Promise<updateSpeakerResult> {
     // compile data
     const request: UpdateSpeakerRequest = {
@@ -732,9 +703,9 @@ export class VoiceData extends ParentApi {
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -761,7 +732,7 @@ export class VoiceData extends ParentApi {
     dataId: string,
     segmentId: string,
     start: number,
-    length: number
+    length: number,
   ): Promise<updateSegmentTimeResult> {
     // compile data
     const request: UpdateSegmentTimeRequest = {
@@ -771,9 +742,9 @@ export class VoiceData extends ParentApi {
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/time`
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/time`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

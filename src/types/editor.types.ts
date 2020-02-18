@@ -231,3 +231,16 @@ export enum INLINE_STYLE_TYPE {
   // start of custom types
   'PLAYING' = 'PLAYING',
 }
+
+export interface VisibilitySensorOffsetShape {
+  top?: number;
+  left?: number;
+  bottom?: number;
+  right?: number;
+}
+
+/** accounts for the editor control bar and audio player */
+export const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
+  top: 140,
+  bottom: 190,
+};

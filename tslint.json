@@ -1,7 +1,8 @@
 {
   "extends": "tslint-config-prettier",
   "rules": {
-    "quotemark": [true, "single", "jsx-double", "avoid-escape"],
+    "no-restricted-globals": false,
+    "quotemark": [true, "single", "jsx-single", "avoid-escape"],
     "semicolon": [true, "always", "ignore-interfaces"],
     "trailing-comma": [
       true,

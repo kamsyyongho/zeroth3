@@ -182,7 +182,7 @@ export const ko: ResourceLanguage = {
       ip: 'IP',
       websocketCloseStatus: 'Websocket close status',
       websocketCloseReason: 'Websocket close reason',
-      transferredBytes: '전송된 바이 byte',
+      transferredBytes: '전송된 바이트',
     },
     SET: {
       SET: '전사세트',

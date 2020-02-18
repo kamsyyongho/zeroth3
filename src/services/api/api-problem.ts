@@ -7,9 +7,9 @@ import { GeneralApiProblem, ProblemKind, ServerError } from './types';
  * @param response The api response.
  */
 export function getGeneralApiProblem(
-  response: ApiResponse<ServerError>
+  response: ApiResponse<ServerError>,
 ): GeneralApiProblem {
-  let generalApiProblem: GeneralApiProblem = {kind: ProblemKind['unknown']};
+  let generalApiProblem: GeneralApiProblem = { kind: ProblemKind['unknown'] };
   switch (response.problem) {
     case 'CONNECTION_ERROR':
       generalApiProblem = {
@@ -46,13 +46,16 @@ export function getGeneralApiProblem(
         case 409:
           generalApiProblem = { kind: ProblemKind['conflict'] };
           break;
+        case 418: // I'm a teapot
+          generalApiProblem = { kind: ProblemKind['teapot'] };
+          break;
         default:
           generalApiProblem = { kind: ProblemKind['rejected'] };
           break;
       }
       break;
     case 'CANCEL_ERROR':
-      generalApiProblem = {kind: ProblemKind['canceled']};
+      generalApiProblem = { kind: ProblemKind['canceled'] };
       break;
   }
 

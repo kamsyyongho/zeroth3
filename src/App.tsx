@@ -42,6 +42,12 @@ function App() {
           globalState.currentOrganization.id
         );
       }
+      if (globalState.wordConfidenceThreshold) {
+        localStorage.setItem(
+          LOCAL_STORAGE_KEYS.WORD_CONFIDENCE_THRESHOLD,
+          globalState.wordConfidenceThreshold.toString(),
+        );
+      }
     });
     return () => {
       // remove the callbacks

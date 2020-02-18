@@ -13,7 +13,7 @@ import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import ToggleIcon from 'material-ui-toggle-icon';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 import ScaleLoader from 'react-spinners/ScaleLoader';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { ConfidenceSlider } from './ConfidenceSlider';
@@ -91,13 +91,8 @@ interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
   onConfirm: () => void;
   disabledControls?: EDITOR_CONTROLS[];
-  editorOptionsVisible: boolean;
-  debugMode?: boolean;
-  toggleDebugMode: () => void;
   loading?: boolean;
   editorReady?: boolean;
-  wordConfidenceThreshold: number;
-  onThresholdChange: (threshold: number) => void;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -105,17 +100,22 @@ export const EditorControls = (props: EditorControlsProps) => {
     onCommandClick,
     onConfirm,
     disabledControls = [],
-    editorOptionsVisible,
-    debugMode,
-    toggleDebugMode,
     loading,
     editorReady,
-    wordConfidenceThreshold,
-    onThresholdChange,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [sliderOpen, setSliderOpen] = React.useState(false);
+  const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
+  const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+
+  // reset values on unmount
+  React.useEffect(() => {
+    return () => {
+      setEditorDebugMode(false);
+      setShowEditorPopups(false);
+    };
+  }, []);
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -222,12 +222,12 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.toggleMore:
           label = translate('editor.toggleMore');
           icon = <ToggleIcon
-            on={editorOptionsVisible}
+            on={!!showEditorPopups}
             onIcon={<VisibilityIcon />}
             offIcon={<VisibilityOffIcon />}
           />;
           tooltipText = osText('toggleMore');
-          selected = editorOptionsVisible;
+          selected = !!showEditorPopups;
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.toggleMore),
             disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
@@ -265,10 +265,10 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.debug:
           label = 'DEBUG';
           icon = <DeveloperModeIcon />;
-          selected = !!debugMode;
+          selected = !!editorDebugMode;
           props = {
             onClick: () => {
-              toggleDebugMode();
+              setEditorDebugMode(!editorDebugMode);
               onCommandClick(EDITOR_CONTROLS.debug);
             },
             disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
@@ -313,8 +313,6 @@ export const EditorControls = (props: EditorControlsProps) => {
           {({ TransitionProps }) => (
             <Fade {...TransitionProps} >
               <ConfidenceSlider
-                wordConfidenceThreshold={wordConfidenceThreshold}
-                onThresholdChange={onThresholdChange}
                 isOpen={open}
                 setSliderOpen={setSliderOpen}
               />

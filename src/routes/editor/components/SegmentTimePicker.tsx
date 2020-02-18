@@ -8,9 +8,8 @@ import DoneIcon from '@material-ui/icons/Done';
 import React from 'reactn';
 import { DEFAULT_EMPTY_TIME } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Segment, Time, Word } from '../../../types';
+import { PLAYER_SEGMENT_IDS, Segment, Time, Word } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
-import { PLAYER_SEGMENT_IDS } from '../../shared/AudioPlayer';
 import { TimePickerRootProps } from '../EditorPage';
 
 const useStyles = makeStyles((theme) =>

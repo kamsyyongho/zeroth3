@@ -40,6 +40,7 @@ const customTheme = {
   },
   editor: {
     playing: '#077db5',
+    playingShadow: `0px 0px 0px 1px #077db5`,
     highlight: pink.A200,
     LowConfidence: '#ffe190',
     LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2.5%)`,
@@ -53,6 +54,8 @@ const customTheme = {
     wordRange: pink[200],
     loop: grey[800],
     disabled: grey[300],
+    playhead: red[600],
+    grid: grey[500],
   },
   error: red.A700,
 };
@@ -70,6 +73,7 @@ export interface CustomTheme extends Theme {
   };
   editor: {
     playing: string;
+    playingShadow: string;
     highlight: string;
     LowConfidence: string;
     LowConfidenceGradient: string;
@@ -83,6 +87,8 @@ export interface CustomTheme extends Theme {
     wordRange: string;
     loop: string;
     disabled: string;
+    playhead: string;
+    grid: string;
   };
   error: string;
 }
@@ -97,6 +103,7 @@ interface CustomThemeOptions extends ThemeOptions {
   };
   editor?: {
     playing?: string;
+    playingShadow?: string;
     highlight?: string;
     LowConfidence?: string;
     LowConfidenceGradient?: string;
@@ -110,6 +117,8 @@ interface CustomThemeOptions extends ThemeOptions {
     wordRange?: string;
     loop?: string;
     disabled?: string;
+    playhead?: string;
+    grid?: string;
   };
   error?: string;
 }

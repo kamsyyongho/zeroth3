@@ -1,6 +1,5 @@
 import {
   CONTENT_STATUS,
-  DataSet,
   Segment,
   VoiceData,
   VoiceDataResults,
@@ -122,10 +121,6 @@ export type getAssignedDataResult =
 
 export type fetchUnconfirmedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
-  | GeneralApiProblem;
-
-export type getDataSetMetadataResult =
-  | { kind: 'ok'; metadata: DataSet }
   | GeneralApiProblem;
 
 export type getSegmentsDataResult =

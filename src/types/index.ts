@@ -1,3 +1,4 @@
+export * from './audio-player.types';
 export * from './data-set.types';
 export * from './editor.types';
 export * from './misc.types';
