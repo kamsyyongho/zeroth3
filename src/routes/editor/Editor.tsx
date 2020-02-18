@@ -13,14 +13,14 @@ import { CustomTheme } from '../../theme/index';
 import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment } from '../../types';
 import { BlockInfo, BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, EntityRangeByEntityKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, Time, Word, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { getRandomColor, WordKeyStore } from '../../util/misc';
+import { getRandomColor } from '../../util/misc';
 import { EDITOR_CONTROLS } from './components/EditorControls';
 import { SegmentBlock, SegmentBlockSubProps } from './components/SegmentBlock';
 import { SegmentSplitPicker } from './components/SegmentSplitPicker';
 import { SegmentTimePicker } from './components/SegmentTimePicker';
 import { WordTimePicker } from './components/WordTimePicker';
 import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
-import { buildStyleMap, cloneEditorState, customKeyBindingFunction, editorChangeNoop, generateDecorators, getWithinSegmentTimes, updateBlockSegmentData } from './helpers/editor.helper';
+import { buildStyleMap, cloneEditorState, customKeyBindingFunction, editorChangeNoop, generateDecorators, getWithinSegmentTimes, updateBlockSegmentData, WordKeyStore } from './helpers/editor.helper';
 import './styles/editor.css';
 
 
