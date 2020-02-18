@@ -54,6 +54,8 @@ const customTheme = {
     wordRange: pink[200],
     loop: grey[800],
     disabled: grey[300],
+    playhead: red[600],
+    grid: grey[500],
   },
   error: red.A700,
 };
@@ -85,6 +87,8 @@ export interface CustomTheme extends Theme {
     wordRange: string;
     loop: string;
     disabled: string;
+    playhead: string;
+    grid: string;
   };
   error: string;
 }
@@ -113,6 +117,8 @@ interface CustomThemeOptions extends ThemeOptions {
     wordRange?: string;
     loop?: string;
     disabled?: string;
+    playhead?: string;
+    grid?: string;
   };
   error?: string;
 }

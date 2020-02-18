@@ -11,10 +11,10 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { AudioPlayer } from '../shared/AudioPlayer';
+import { AudioPlayer } from './AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
 import { PageErrorFallback } from '../shared/PageErrorFallback';
@@ -24,16 +24,13 @@ import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
+import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
 
-
-
-export interface ModelConfigsById {
-  [x: number]: ModelConfig;
-}
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     container: {
+      marginTop: 25,
     },
   }),
 );
@@ -44,13 +41,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  * from a text input focus
  */
 const SEEK_SLOP = 0.00001;
-
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
-
 let internalSegmentsTracker: Segment[] = [];
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
-
 const AUDIO_PLAYER_HEIGHT = 384;
 
 export enum PARENT_METHOD_TYPES {
@@ -95,7 +89,6 @@ export function EditorPage() {
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
   const [currentPlayingLocation, setCurrentPlayingLocation] = React.useState<SegmentAndWordIndex>(STARTING_PLAYING_LOCATION);
   const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
-  const [openWordKey, setOpenWordKey] = React.useState<string | undefined>();
   const [autoSeekLock, setAutoSeekLock] = React.useState(false);
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
   const [currentPlayingWordPlayerSegment, setCurrentlyPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
@@ -139,10 +132,6 @@ export function EditorPage() {
    * Only `CONFIRMED` data can be rated, so we won't show if not
    */
   const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
-
-  React.useEffect(() => {
-    internalSegmentsTracker = segments;
-  }, [segments]);
 
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
@@ -212,10 +201,6 @@ export function EditorPage() {
     }
   };
 
-  React.useEffect(() => {
-    getSegments();
-  }, [voiceData, projectId]);
-
   const confirmData = async () => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
@@ -225,7 +210,6 @@ export function EditorPage() {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-
         // to trigger the `useEffect` to fetch more
         setVoiceData(undefined);
       } else {
@@ -309,10 +293,8 @@ export function EditorPage() {
   const submitSegmentMerge = async (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => {
     if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-
       const firstSegmentId = segments[firstSegmentIndex].id;
       const secondSegmentId = segments[secondSegmentIndex].id;
-
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -350,13 +332,11 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-
         //cut out and replace the old segment
         const splitSegments = [...segments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
@@ -386,13 +366,11 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
-
         //cut out and replace the old segment
         const splitSegments = [...segments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
@@ -483,50 +461,6 @@ export function EditorPage() {
     openConfirmDialog();
   };
 
-  const getDisabledControls = () => {
-    const disabledControls: EDITOR_CONTROLS[] = [];
-    const mergeDisabled = segments.length < 2;
-    if (!canUndo) {
-      disabledControls.push(EDITOR_CONTROLS.undo);
-    }
-    if (!canRedo) {
-      disabledControls.push(EDITOR_CONTROLS.redo);
-    }
-    if (mergeDisabled) {
-      disabledControls.push(EDITOR_CONTROLS.merge);
-    }
-    const splitDisabled = !segments.some(segment => segment.wordAlignments.length > 0);
-    if (splitDisabled) {
-      disabledControls.push(EDITOR_CONTROLS.split);
-    }
-    if (saveSegmentsLoading || confirmSegmentsLoading) {
-      disabledControls.push(EDITOR_CONTROLS.save);
-      disabledControls.push(EDITOR_CONTROLS.confirm);
-    }
-    return disabledControls;
-  };
-
-  const calculateWordTime = (segmentIndex: number, wordIndex: number) => {
-    try {
-      const segment = segments[segmentIndex];
-      const word = segment.wordAlignments[wordIndex];
-      const segmentTime = segment.start;
-      const wordTime = word.start;
-      let totalTime = segmentTime + wordTime;
-      // set to 2 sig figs
-      totalTime = Number(totalTime.toFixed(2));
-      return totalTime;
-    } catch (error) {
-      log({
-        file: `EditorPage.tsx`,
-        caller: `calculateWordTime - failed to calculate time`,
-        value: error.toString(),
-        important: true,
-      });
-      return 0;
-    }
-  };
-
   /**
    * keeps track of where the timer is
    * - used to keep track of which word is currently playing
@@ -553,7 +487,7 @@ export function EditorPage() {
     const [segmentIndex, wordIndex] = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       wordWasClicked = true;
-      const wordTime = calculateWordTime(segmentIndex, wordIndex);
+      const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       buildPlayingAudioPlayerSegment(wordLocation);
       setTimeToSeekTo(wordTime + SEEK_SLOP);
       if (!autoSeekLock) {
@@ -680,6 +614,14 @@ export function EditorPage() {
     setNavigationProps({});
   };
 
+  React.useEffect(() => {
+    internalSegmentsTracker = segments;
+  }, [segments]);
+
+  React.useEffect(() => {
+    getSegments();
+  }, [voiceData, projectId]);
+
   // once we've loaded new segments
   React.useEffect(() => {
     // if we have loaded new voice data
@@ -723,9 +665,13 @@ export function EditorPage() {
     return <NotFound text={translate('editor.nothingToTranscribe')} />;
   }
 
-  const disabledControls = getDisabledControls();
+  const disabledControls = getDisabledControls(segments, canUndo, canRedo, saveSegmentsLoading, confirmSegmentsLoading);
 
   const editorHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT);
+  const editorContainerStyle: React.CSSProperties = {
+    height: editorHeight,
+    minHeight: 250,
+  };
 
   return (
     <>
@@ -736,21 +682,16 @@ export function EditorPage() {
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
       />}
-      <Container
-        className={classes.container}
-      >
+      <Container >
         {readOnly && <StarRating
           voiceData={voiceData}
           projectId={projectId}
         />}
         <Paper
-          style={{ marginTop: 25 }}
+          className={classes.container}
           elevation={5}
         >
-          <div style={{
-            height: editorHeight,
-            minHeight: 250,
-          }}>
+          <div style={editorContainerStyle}>
             {segmentsLoading ? <BulletList /> :
               !!segments.length && (<Editor
                 key={voiceData.id}
@@ -799,7 +740,6 @@ export function EditorPage() {
               url={voiceData.audioUrl}
               timeToSeekTo={timeToSeekTo}
               disabledTimes={disabledTimes}
-              openWordKey={openWordKey}
               segmentIdToDelete={segmentIdToDelete}
               onAutoSeekToggle={handleAutoSeekToggle}
               wordsClosed={wordsClosed}

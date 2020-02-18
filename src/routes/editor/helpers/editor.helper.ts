@@ -12,12 +12,13 @@ import {
 import { Map } from 'immutable';
 import { CustomTheme } from '../../../theme/index';
 import {
+  EDITOR_CHANGE_TYPE,
+  HANDLE_VALUES,
   INLINE_STYLE_TYPE,
   KEY_COMMANDS,
   MUTABILITY_TYPE,
   Segment,
 } from '../../../types';
-import { EDITOR_CHANGE_TYPE, HANDLE_VALUES } from '../../../types/editor.types';
 import { EntityContent } from '../components/EntityContent';
 
 // Custom overrides for "playing" style.

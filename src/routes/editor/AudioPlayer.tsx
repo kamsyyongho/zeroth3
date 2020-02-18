@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Button, Grid, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
@@ -27,7 +25,7 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { Time, WordToCreateTimeFor } from '../../types';
+import { PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration } from '../../util/misc';
@@ -55,15 +53,6 @@ let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
 
-export enum PLAYER_SEGMENT_IDS {
-  'LOOP' = 'LOOP',
-  'DISABLED_0' = 'DISABLED_0',
-  'DISABLED_1' = 'DISABLED_1',
-  'WORD' = 'WORD',
-  'SEGMENT' = 'SEGMENT',
-  'SEGMENT_EDIT' = 'SEGMENT_EDIT',
-  'SEGMENT_SPLIT' = 'SEGMENT_SPLIT',
-}
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
@@ -72,15 +61,10 @@ const STARTING_WORD_LOOP_LENGTH = 0.5;
  * not like creating segments at exactly `0`
  */
 const ZERO_TIME_SLOP = 0.00001;
-
 /** the zoom levels for the peaks */
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
+const DEFAULT_CONTAINER_HEIGHT = 64;
 
-enum DOM_IDS {
-  'zoomview-container' = 'zoomview-container',
-  'overview-container' = 'overview-container',
-  'audio-container' = 'audio-container',
-}
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -126,7 +110,6 @@ interface AudioPlayerProps {
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
-  openWordKey?: string;
   currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
@@ -155,7 +138,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     segmentIdToDelete,
     deleteAllWordSegments,
     wordsClosed,
-    openWordKey,
     currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
@@ -176,12 +158,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [ready, setReady] = React.useState(false);
   const [isPlay, setIsPlay] = React.useState(false);
   const [loop, setLoop] = React.useState(false);
-  const [zoomLevel, setZoomLevel] = React.useState(0); // <0 | 1 | 2>
+  const [zoomLevel, setZoomLevel] = React.useState<0 | 1 | 2 | number>(0);
   const [waiting, setWaiting] = React.useState(false);
   const [showStreamLoader, setShowStreamLoader] = React.useState(false);
   const [isMute, setIsMute] = React.useState(false);
   const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = React.useState(1); // 0 to 1
+  const [playbackSpeed, setPlaybackSpeed] = React.useState<0.5 | 1>(1); // 0 to 1
   // for recreating the segments after disabling a loop
   const [savedCurrentPlayingWordPlayerSegment, setSavedCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
   const [currentTime, setCurrentTime] = React.useState(0);
@@ -240,6 +222,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
       trace: true,
     });
     handleStop();
+  };
+
+  const handlePlaying = () => {
+    setWaiting(false);
+    if (waitingTimeoutId === undefined) {
+      setShowStreamLoader(false);
+    }
+    handlePlay();
   };
 
   const handleStreamingError = () => {
@@ -321,13 +311,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
   /**
    * to get the current time quickly
    * - the `timeupdate` listener for the `HTMLAudioElement` updates too slowly. (~300-900ms)
-   * - sets or clears an interval (30ms) if the we are currently playing audio
+   * - sets or clears an interval (77ms) if the we are currently playing audio
    */
   React.useEffect(() => {
     if (isPlay && !waiting) {
       getTimeIntervalId = setInterval(() => {
         handleAudioProcess(mediaElement?.currentTime);
-      }, 30);
+      }, 77);
     } else {
       if (getTimeIntervalId !== undefined) {
         clearInterval(getTimeIntervalId);
@@ -618,6 +608,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const existingSegments = PeaksPlayer.segments.getSegments();
       let wordPlaybackSegmentExists = false;
       let segmentPlaybackSegmentExists = false;
+      let segmentPlaybackNotChanged = false;
       const updatedSegments = existingSegments.map((segment) => {
         const isWordMatch = segment.id === PLAYER_SEGMENT_IDS.WORD;
         const isSegmentMatch = segment.id === PLAYER_SEGMENT_IDS.SEGMENT;
@@ -627,7 +618,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
         }
         if (isSegmentMatch) {
           segmentPlaybackSegmentExists = true;
-          return currentPlayingSegmentSegment;
+          if (segment.startTime === currentPlayingSegmentSegment.startTime &&
+            segment.endTime === currentPlayingSegmentSegment.endTime) {
+            segmentPlaybackNotChanged = true;
+          } else {
+            return currentPlayingSegmentSegment;
+          }
         }
         const segmentOptions: SegmentAddOptions = {
           startTime: segment.startTime,
@@ -645,8 +641,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (!wordPlaybackSegmentExists) {
         updatedSegments.push(currentPlayingWordSegment);
       }
-      PeaksPlayer.segments.removeAll();
-      PeaksPlayer.segments.add(updatedSegments);
+      if (segmentPlaybackNotChanged) {
+        PeaksPlayer.segments.removeById(PLAYER_SEGMENT_IDS.WORD);
+        PeaksPlayer.segments.add(currentPlayingWordSegment);
+      } else {
+        PeaksPlayer.segments.removeAll();
+        PeaksPlayer.segments.add(updatedSegments);
+      }
       onPlayingSegmentCreate();
     } catch (error) {
       handleError(error);
@@ -756,37 +757,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         setLoop(true);
       }
       isLoop = !isLoop;
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const updateEditableSegment = (editableSegmentId: string) => {
-    if (!PeaksPlayer?.segments) return;
-    try {
-      let seekTime: number | undefined;
-      const existingSegments = PeaksPlayer.segments.getSegments();
-      const updatedSegments = existingSegments.map((segment) => {
-        const isMatch = segment.id === editableSegmentId;
-        if (isMatch) {
-          seekTime = segment.startTime;
-        }
-        const segmentOptions: SegmentAddOptions = {
-          startTime: segment.startTime,
-          endTime: segment.endTime,
-          id: segment.id,
-          color: segment.color,
-          labelText: segment.labelText,
-          editable: isMatch,
-        };
-        return segmentOptions;
-      });
-      PeaksPlayer.segments.removeAll();
-      PeaksPlayer.segments.add(updatedSegments);
-      onSegmentStatusEditChange();
-      if (typeof seekTime === 'number') {
-        seekToTime(seekTime);
-      }
     } catch (error) {
       handleError(error);
     }
@@ -954,13 +924,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [wordsClosed]);
 
-  // to keep track of the current open word to make only that word editable
-  React.useEffect(() => {
-    if (typeof openWordKey === 'string') {
-      updateEditableSegment(openWordKey);
-    }
-  }, [openWordKey]);
-
   // to set zones outside of the current custom edit segment that are disabled
   React.useEffect(() => {
     internaDisabledTimesTracker = disabledTimes;
@@ -1088,6 +1051,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (segmentSplitTime !== undefined) {
       createPoint(segmentSplitTime);
     } else {
+      ;
       deleteAllPoints();
     }
   }, [segmentSplitTime]);
@@ -1122,102 +1086,37 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
     mediaElement?.addEventListener('canplay', handleStreamReady);
-    mediaElement?.addEventListener('suspended', event => console.log('suspended', event));
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
     mediaElement?.addEventListener('seeked', handleSeek);
-    mediaElement?.addEventListener('progress', (progress) => console.log('progress'));
-    mediaElement?.addEventListener('playing', (playing) => {
-      setWaiting(false);
-      if (waitingTimeoutId === undefined) {
-        setShowStreamLoader(false);
-      }
-      handlePlay();
-    });
+    mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
-    mediaElement?.addEventListener('stalled', (stalled) => console.log('stalled', stalled));
 
     const peaksJsInit = () => {
-      const peaksUrl = `${url}.json`;
-      const zoomLevels = DEFAULT_ZOOM_LEVELS;
-
       const options: PeaksOptions = {
-        /** REQUIRED OPTIONS **/
-        // Containing element: either
-        // container: document.getElementById('peaks-container') as HTMLElement,
-
-        // or (preferred):
         containers: {
-          zoomview: document.getElementById(DOM_IDS['zoomview-container']) as HTMLElement,
-          overview: document.getElementById(DOM_IDS['overview-container']) as HTMLElement
+          zoomview: document.getElementById(WAVEFORM_DOM_IDS['zoomview-container']) as HTMLElement,
+          overview: document.getElementById(WAVEFORM_DOM_IDS['overview-container']) as HTMLElement
         },
-        // HTML5 Media element containing an audio track
         mediaElement: mediaElement as HTMLAudioElement,
-        /** Optional config with defaults **/
-        // URI to waveform data file in binary or JSON
         dataUri: {
-          json: peaksUrl,
+          json: `${url}.json`,
         },
-        // rawData: {
-        //   json: jsonShort,
-        // },
-        // If true, Peaks.js will send credentials with all network requests,
-        // i.e., when fetching waveform data.
         withCredentials: false,
-        // webAudio: {
-        //   // A Web Audio AudioContext instance which can be used
-        //   // to render the waveform if dataUri is not provided
-        //   audioContext: new AudioContext(),
-        //   // Alternatively, provide an AudioBuffer containing the decoded audio
-        //   // samples. In this case, an AudioContext is not needed
-        //   audioBuffer: undefined,
-        //   // If true, the waveform will show all available channels.
-        //   // If false, the audio is shown as a single channel waveform.
-        //   multiChannel: false
-        // },
-        // async logging function
         logger: console.error.bind(console),
-        // if true, emit cue events on the Peaks instance (see Cue Events)
         emitCueEvents: true,
-        // default height of the waveform canvases in pixels
-        height: 64,
-        // Array of zoom levels in samples per pixel (big >> small)
-        zoomLevels: zoomLevels,
-        // Bind keyboard controls
+        height: DEFAULT_CONTAINER_HEIGHT,
+        zoomLevels: DEFAULT_ZOOM_LEVELS,
         keyboard: false,
-        // Keyboard nudge increment in seconds (left arrow/right arrow)
         nudgeIncrement: 0.01,
-        // Color for the in marker of segments
-        // segmentStartMarkerColor: theme.editor.highlight,
-        // // Color for the out marker of segments
-        // segmentEndMarkerColor: theme.editor.highlight,
-        // Color for the zoomed in waveform
         zoomWaveformColor: theme.header.lightBlue,
-        // Color for the overview waveform
         overviewWaveformColor: theme.audioPlayer.waveform,
-        // Color for the overview waveform rectangle
-        // that shows what the zoom view shows
-        // overviewHighlightColor: 'grey',
-        // The default number of pixels from the top and bottom of the canvas
-        // that the overviewHighlight takes up
-        // overviewHighlightOffset: 11,
-        // Color for segments on the waveform
-        segmentColor: 'rgba(255, 161, 39, 1)',
-        // Color of the play head
-        playheadColor: '#ff0000',
-        // Color of the play head text
-        playheadTextColor: '#ff0000',
-        // Show current time next to the play head
-        // (zoom view only)
+        playheadColor: theme.audioPlayer.playhead,
+        playheadTextColor: theme.audioPlayer.playhead,
         showPlayheadTime: false,
-        // the color of a point marker
-        pointMarkerColor: '#FF0000',
-        // Color of the axis gridlines
-        axisGridlineColor: '#ccc',
-        // Color of the axis labels
-        axisLabelColor: '#aaa',
-        // Random color per segment (overrides segmentColor)
-        randomizeSegmentColor: true,
+        pointMarkerColor: theme.audioPlayer.playhead,
+        axisGridlineColor: theme.audioPlayer.grid,
+        axisLabelColor: theme.audioPlayer.grid,
       };
 
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
@@ -1233,7 +1132,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
-
     };
 
     const initPlayer = () => {
@@ -1245,9 +1143,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         width: 0,
         height: 0,
       };
-
-      StreamPlayer = videojs(DOM_IDS['audio-container'], options) as VideoJsPlayer;
-
+      StreamPlayer = videojs(WAVEFORM_DOM_IDS['audio-container'], options) as VideoJsPlayer;
       // load the content once ready
       StreamPlayer.on('ready', function (error) {
         if (StreamPlayer) {
@@ -1260,11 +1156,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
       });
     };
 
-
+    // only initialize if we have a valid url
     if (url) {
       initPlayer();
     }
-
   }, []);
 
   // to clear the component on unmount
@@ -1290,6 +1185,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
           mediaElement.removeEventListener('seeked', handleSeek);
+          mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
       } catch (error) {
@@ -1464,11 +1360,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
         </Grid>
       )}
       <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
-        <div id={DOM_IDS['zoomview-container']} className={classes.zoomView} />
-        <div id={DOM_IDS['overview-container']} />
+        <div id={WAVEFORM_DOM_IDS['zoomview-container']} className={classes.zoomView} />
+        <div id={WAVEFORM_DOM_IDS['overview-container']} />
       </div>
       <div data-vjs-player className={classes.hidden}>
-        <audio id={DOM_IDS['audio-container']} className="video-js vjs-hidden"></audio>
+        <audio id={WAVEFORM_DOM_IDS['audio-container']} className="video-js vjs-hidden"></audio>
       </div>
     </Paper>
   );
