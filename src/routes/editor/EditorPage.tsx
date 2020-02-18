@@ -1,6 +1,8 @@
 import { Container } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+/* eslint import/no-webpack-loader-syntax: off */ // this lint rule is from create-react-app
+import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
@@ -12,7 +14,6 @@ import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, ModelConfig, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { generateWordKeyString } from '../../util/misc';
 import { AudioPlayer } from '../shared/AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
@@ -23,6 +24,7 @@ import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
+
 
 
 export interface ModelConfigsById {
@@ -87,7 +89,6 @@ export function EditorPage() {
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [dataSetMetadata, setDataSetMetadata] = useGlobal('dataSetMetadata');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -98,6 +99,7 @@ export function EditorPage() {
   const [autoSeekLock, setAutoSeekLock] = React.useState(false);
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
   const [currentPlayingWordPlayerSegment, setCurrentlyPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
+  const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [segmentSplitTimeBoundary, setSegmentSplitTimeBoundary] = React.useState<Required<Time> | undefined>();
@@ -108,10 +110,7 @@ export function EditorPage() {
   const [timeFromPlayer, setTimeFromPlayer] = React.useState<Time | undefined>();
   const [editorReady, setEditorReady] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
-  const [wordConfidenceThreshold, setWordConfidenceThreshold] = React.useState(0.8);
   const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
-  const [editorOptionsVisible, setEditorOptionsVisible] = React.useState(false);
-  const [debugMode, setDebugMode] = React.useState(false);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
   const [noAssignedData, setNoAssignedData] = React.useState(false);
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
@@ -131,7 +130,7 @@ export function EditorPage() {
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
   const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [readOnly, setReadOnly] = React.useState(!!navigationProps?.voiceData);
+  const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -213,27 +212,8 @@ export function EditorPage() {
     }
   };
 
-  const getDataSetMetadata = async () => {
-    if (api?.voiceData && projectId && voiceData) {
-      const response = await api.voiceData.getDataSetMetadata();
-      if (response.kind === 'ok') {
-        setDataSetMetadata(response.metadata);
-      } else {
-        log({
-          file: `EditorPage.tsx`,
-          caller: `getDataSetMetadata - failed to get voice data metadata`,
-          value: response,
-          important: true,
-        });
-      }
-    }
-  };
-
   React.useEffect(() => {
     getSegments();
-    if (!readOnly) {
-      getDataSetMetadata();
-    }
   }, [voiceData, projectId]);
 
   const confirmData = async () => {
@@ -435,6 +415,70 @@ export function EditorPage() {
     }
   };
 
+  /**
+   * Calculates start and end of the current playing word
+   * - updates the state so it can be passed to the audio player
+   * @params playingLocation
+   */
+  const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
+    const [segmentIndex, wordIndex] = playingLocation;
+    let segmentsToUse = segments;
+    if (!segmentsToUse.length) {
+      segmentsToUse = [...internalSegmentsTracker];
+    }
+    const segment = segmentsToUse[segmentIndex];
+    const wordAlignment = segment.wordAlignments[wordIndex];
+    const startTime = segment.start + wordAlignment.start;
+    const endTime = startTime + wordAlignment.length;
+    const time: Required<Time> = {
+      start: startTime,
+      end: endTime,
+    };
+    setCurrentlyPlayingWordTime(time);
+    const text = wordAlignment.word.replace('|', '');
+    const color = theme.audioPlayer.wordRange;
+    const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
+      color,
+      time,
+      text,
+    };
+    const segmentText = segment.transcript;
+    const segmentColor = theme.audioPlayer.segmentRange;
+    const segmentStartTime = segment.start;
+    const segmentEndTime = segmentStartTime + segment.length;
+    const segmentTime: Required<Time> = {
+      start: segmentStartTime,
+      end: segmentEndTime,
+    };
+    const currentlyPlayingSegmentToDisplay: WordToCreateTimeFor = {
+      color: segmentColor,
+      time: segmentTime,
+      text: segmentText,
+    };
+    setCurrentlyPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
+  };
+
+  /** The worker used to calculate the current playing time */
+  const RemoteWorker = React.useMemo(() => {
+    if (window.Worker) {
+      const worker = new Worker(workerPath);
+      worker.addEventListener('message', message => {
+        const playingLocation: SegmentAndWordIndex | undefined = message.data.playingLocation;
+        const initialSegmentLoad: boolean = message.data.initialSegmentLoad;
+        // to only update if the word has changed
+        // compare strings generated from the tuples because we can't compare the tuples to each other
+        if (playingLocation) {
+          setCurrentPlayingLocation(playingLocation);
+        }
+        if (playingLocation && (initialSegmentLoad ||
+          JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
+          buildPlayingAudioPlayerSegment(playingLocation);
+        }
+      });
+      return worker;
+    };
+  }, []);
+
   const onConfirmClick = () => {
     openConfirmDialog();
   };
@@ -484,103 +528,6 @@ export function EditorPage() {
   };
 
   /**
-   * Calculates start and end of the current playing word
-   * - updates the state so it can be passed to the audio player
-   * @params playingLocation
-   */
-  const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = playingLocation;
-    let segmentsToUse = segments;
-    if (!segmentsToUse.length) {
-      segmentsToUse = [...internalSegmentsTracker];
-    }
-    const segment = segmentsToUse[segmentIndex];
-    const wordAlignment = segment.wordAlignments[wordIndex];
-    const startTime = segment.start + wordAlignment.start;
-    const endTime = startTime + wordAlignment.length;
-    const time: Time = {
-      start: startTime,
-      end: endTime,
-    };
-    const text = wordAlignment.word.replace('|', '');
-    const color = theme.audioPlayer.wordRange;
-    const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
-      color,
-      time,
-      text,
-    };
-    const segmentText = segment.transcript;
-    const segmentColor = theme.audioPlayer.segmentRange;
-    const segmentStartTime = segment.start;
-    const segmentEndTime = segmentStartTime + segment.length;
-    const segmentTime: Time = {
-      start: segmentStartTime,
-      end: segmentEndTime,
-    };
-    const currentlyPlayingSegmentToDisplay: WordToCreateTimeFor = {
-      color: segmentColor,
-      time: segmentTime,
-      text: segmentText,
-    };
-
-    setCurrentlyPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
-  };
-
-  /**
-   * Calculates the segment index and word index of the current playing word
-   * - updates the state so it can be passed to the editor
-   * @params time
-   * @returns `undefined` on error
-   */
-  const calculatePlayingLocation = (time: number): SegmentAndWordIndex | undefined => {
-    try {
-      let segmentsToUse = segments;
-      if (!segmentsToUse.length) {
-        segmentsToUse = [...internalSegmentsTracker];
-      }
-      if (isNaN(time) || !segmentsToUse.length) return;
-      let segmentIndex = 0;
-      let wordIndex = 0;
-
-      for (let i = 0; i < segmentsToUse.length; i++) {
-        const segment = segmentsToUse[i];
-        if (segment.start <= time) {
-          segmentIndex = i;
-        } else {
-          break;
-        }
-      }
-
-      const segment = segmentsToUse[segmentIndex];
-      if (!segment) return;
-      const { wordAlignments } = segment;
-      const wordTime = time - segment.start;
-
-      for (let i = 0; i < wordAlignments.length; i++) {
-        const word = wordAlignments[i];
-        if (word.start <= wordTime) {
-          wordIndex = i;
-        } else {
-          break;
-        }
-      }
-
-      const playingLocation: SegmentAndWordIndex = [segmentIndex, wordIndex];
-
-      setCurrentPlayingLocation(playingLocation);
-      return playingLocation;
-    } catch (error) {
-      log({
-        file: `EditorPage.tsx`,
-        caller: `calculatePlayingLocation`,
-        value: error,
-        important: true,
-      });
-      return undefined;
-    }
-  };
-
-  /**
    * keeps track of where the timer is
    * - used to keep track of which word is currently playing
    * - sets the segment index and word index of the currently playing word
@@ -592,13 +539,7 @@ export function EditorPage() {
       wordWasClicked = false;
     } else {
       setPlaybackTime(time);
-      const playingLocation = calculatePlayingLocation(time);
-      // to only update if the word has changed
-      // compare strings generated from the tuples because we can't compare the tuples to each other
-      if (playingLocation && (initialSegmentLoad ||
-        generateWordKeyString(playingLocation) !== generateWordKeyString(currentPlayingLocation))) {
-        buildPlayingAudioPlayerSegment(playingLocation);
-      }
+      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }
     // to allow us to continue to force seeking the same word during playback
     setTimeToSeekTo(undefined);
@@ -717,8 +658,6 @@ export function EditorPage() {
     setTimeFromPlayer(time);
   };
 
-  const toggleDebugMode = () => setDebugMode((prevValue) => !prevValue);
-
   const onUpdateUndoRedoStack = (canUndo: boolean, canRedo: boolean) => {
     setCanUndo(canUndo);
     setCanRedo(canRedo);
@@ -729,13 +668,13 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
-    setDataSetMetadata(undefined);
     setPlaybackTime(0);
     setCanPlayAudio(false);
     setCanUndo(false);
     setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
     setCurrentlyPlayingWordPlayerSegment(undefined);
+    setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
     setNavigationProps({});
@@ -766,6 +705,9 @@ export function EditorPage() {
     }
     return () => {
       resetVariables();
+      if (RemoteWorker) {
+        RemoteWorker.terminate();
+      }
     };
   }, []);
 
@@ -791,11 +733,6 @@ export function EditorPage() {
         onCommandClick={setEditorCommand}
         onConfirm={onConfirmClick}
         disabledControls={disabledControls}
-        editorOptionsVisible={editorOptionsVisible}
-        debugMode={debugMode}
-        toggleDebugMode={toggleDebugMode}
-        wordConfidenceThreshold={wordConfidenceThreshold}
-        onThresholdChange={setWordConfidenceThreshold}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
       />}
@@ -825,10 +762,6 @@ export function EditorPage() {
                 height={editorHeight}
                 segments={segments}
                 onReady={setEditorReady}
-                popupsOpen={editorOptionsVisible}
-                debugMode={debugMode}
-                onPopupToggle={setEditorOptionsVisible}
-                wordConfidenceThreshold={wordConfidenceThreshold}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
