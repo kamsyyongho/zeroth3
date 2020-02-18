@@ -45,7 +45,7 @@ export enum CONTENT_STATUS {
 }
 
 export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
-  statusKey => statusKey
+  statusKey => statusKey,
 );
 
 export interface Segment {

@@ -4,8 +4,9 @@ import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
 import Slider from '@material-ui/core/Slider';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { LOCAL_STORAGE_KEYS } from '../../../types';
 
 let timeoutId: NodeJS.Timeout | undefined;
 
@@ -21,22 +22,19 @@ const useStyles = makeStyles((theme) =>
 );
 
 interface ConfidenceSliderProps {
-  wordConfidenceThreshold: number;
-  onThresholdChange: (threshold: number) => void;
   setSliderOpen: (open: boolean) => void;
   isOpen: boolean;
 }
 
 export function ConfidenceSlider(props: ConfidenceSliderProps) {
   const {
-    wordConfidenceThreshold,
-    onThresholdChange,
     setSliderOpen,
     isOpen,
   } = props;
   const { translate } = React.useContext(I18nContext);
+  const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
   const classes = useStyles();
-  const [value, setValue] = React.useState<number>(wordConfidenceThreshold * 100);
+  const [value, setValue] = React.useState<number>((wordConfidenceThreshold ?? 0.85) * 100);
 
   const handleSliderChange = (event: any, newValue: number | number[]) => {
     const updateValue = typeof newValue === 'number' ? newValue : newValue[0];
@@ -57,7 +55,7 @@ export function ConfidenceSlider(props: ConfidenceSliderProps) {
   React.useEffect(() => {
     if (!isOpen) {
       const adjustedValue = value / 100;
-      onThresholdChange(adjustedValue);
+      setWordConfidenceThreshold(adjustedValue);
     }
   }, [isOpen]);
 
@@ -69,6 +67,12 @@ export function ConfidenceSlider(props: ConfidenceSliderProps) {
     timeoutId = setTimeout(() => {
       setSliderOpen(true);
     }, 50);
+
+    // use saved value on initial load
+    const savedThreshold = localStorage.getItem(LOCAL_STORAGE_KEYS.WORD_CONFIDENCE_THRESHOLD);
+    if (!isNaN(Number(savedThreshold))) {
+      setValue(Number(savedThreshold) * 100);
+    }
 
     // gets run on dismount
     return () => {

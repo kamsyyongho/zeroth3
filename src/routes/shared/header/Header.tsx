@@ -253,7 +253,6 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         <Grid
           justify='space-between'
           container
-          xs={12}
         >
           <Grid
             item
