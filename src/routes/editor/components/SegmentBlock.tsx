@@ -13,7 +13,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme/index';
 import { Segment, SegmentBlockData } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
-import { getIndexOfBlock } from '../util/index';
+import { getIndexOfBlock } from './helpers/segment-block.helper';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -79,7 +79,6 @@ const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
 
 
 export interface SegmentBlockSubProps {
-  showPopups: boolean;
   readOnly?: boolean;
   /** opens the assign speaker dialog for the segment */
   assignSpeakerForSegment: (segmentId: string) => void;
@@ -94,10 +93,11 @@ interface SegmentBlockProps extends EditorBlock {
 export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
   const [playingBlockIndex, setPlayingBlockIndex] = useGlobal('playingBlockIndex');
+  const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const { translate } = React.useContext(I18nContext);
   const segmentRef = React.useRef<HTMLButtonElement | null>(null);
   const { contentState, blockProps, block } = props;
-  const { showPopups, readOnly, assignSpeakerForSegment } = blockProps;
+  const { readOnly, assignSpeakerForSegment } = blockProps;
   const blockIndex = getIndexOfBlock(contentState, block);
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
@@ -110,16 +110,16 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
       assignSpeakerForSegment(id);
     }
   };
-  const iconHidden = !speaker && !showPopups;
+  const iconHidden = !speaker && !showEditorPopups;
   const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined} fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
   const speakerButton = (<Button
     size='small'
     startIcon={icon}
     onClick={handleSpeakerPress}
-    color={showPopups ? 'primary' : undefined}
+    color={showEditorPopups ? 'primary' : undefined}
     variant={'outlined'}
-    disabled={!showPopups}
-    className={clsx(classes.button, !showPopups && classes.outlineHidden)}
+    disabled={!showEditorPopups}
+    className={clsx(classes.button, !showEditorPopups && classes.outlineHidden)}
   >
     {speaker ? (<span
       contentEditable={false} // prevents the editor from placing the cursor within the content
@@ -219,7 +219,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
           let isOpen = false;
           let title: React.ReactNode = '';
           if (isVisible) {
-            isOpen = showPopups;
+            isOpen = !!showEditorPopups;
             if (displayTextChangedHover) {
               title = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
             }
