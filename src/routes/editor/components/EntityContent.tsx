@@ -1,9 +1,9 @@
 import { Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import { ContentState, DraftEntityMutability } from 'draft-js';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import { CustomTheme } from '../../../theme/index';
-import { ENTITY_TYPE, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
+import { ENTITY_TYPE, LOCAL_STORAGE_KEYS, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -58,24 +58,29 @@ function getEntityClassName(mutability: DraftEntityMutability, classes: any, isL
 
 interface EntityContentProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> {
   contentState: ContentState,
+  blockKey: string,
   offsetKey: string,
   entityKey: string,
-  wordConfidenceThreshold: number;
-  debugMode?: boolean;
+  decoratedText: string,
+  start: number,
+  end: number,
 }
 
 export const EntityContent = (props: EntityContentProps) => {
-  const { contentState, offsetKey, entityKey, wordConfidenceThreshold, debugMode } = props;
+  const { contentState, offsetKey, entityKey } = props;
+  const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
+  const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
+  const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
   const tokenEntity = contentState.getEntity(entityKey);
   const type = tokenEntity.getType();
   const mutability = tokenEntity.getMutability();
   const targetData: WordAlignmentEntityData = tokenEntity.getData();
-  const { wordAlignment } = targetData;
+  const { wordAlignment, wordKey } = targetData;
   const isLongWord = wordAlignment.word.length > 15;
   const confidence = wordAlignment?.confidence ?? 0;
-  const LC = confidence < wordConfidenceThreshold;
+  const LC = confidence < (wordConfidenceThreshold ?? 0.85);
   const entityClassName = getEntityClassName(mutability, classes, isLongWord);
   let style = {};
   if (LC) {
@@ -84,9 +89,26 @@ export const EntityContent = (props: EntityContentProps) => {
   if (type === ENTITY_TYPE.TEMP) {
     style = { ...style, backgroundColor: theme.editor.highlight };
   }
+  if (playingWordKey === wordKey) {
+    style = {
+      ...style,
+      color: theme.editor.playing,
+      boxShadow: theme.editor.playingShadow,
+    };
+  }
+
+  React.useEffect(() => {
+    if (typeof wordConfidenceThreshold !== 'number') {
+      // use saved value on initial load
+      const savedThreshold = localStorage.getItem(LOCAL_STORAGE_KEYS.WORD_CONFIDENCE_THRESHOLD);
+      if (typeof Number(savedThreshold) === 'number') {
+        setWordConfidenceThreshold(Number(savedThreshold));
+      }
+    }
+  }, []);
 
 
-  if (debugMode) {
+  if (editorDebugMode) {
     const timeText = `start: ${wordAlignment?.start}, length: ${wordAlignment?.length}`;
     return <Tooltip
       placement='bottom'

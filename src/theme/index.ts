@@ -40,6 +40,7 @@ const customTheme = {
   },
   editor: {
     playing: '#077db5',
+    playingShadow: `0px 0px 0px 1px #077db5`,
     highlight: pink.A200,
     LowConfidence: '#ffe190',
     LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2.5%)`,
@@ -70,6 +71,7 @@ export interface CustomTheme extends Theme {
   };
   editor: {
     playing: string;
+    playingShadow: string;
     highlight: string;
     LowConfidence: string;
     LowConfidenceGradient: string;
@@ -97,6 +99,7 @@ interface CustomThemeOptions extends ThemeOptions {
   };
   editor?: {
     playing?: string;
+    playingShadow?: string;
     highlight?: string;
     LowConfidence?: string;
     LowConfidenceGradient?: string;
