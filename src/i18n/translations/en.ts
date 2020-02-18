@@ -218,7 +218,7 @@ export const en: ResourceLanguage = {
       undo: 'Undo',
       fetch: 'Fetch',
       speaker: 'Speaker',
-      toggleMore: 'Toggle more',
+      toggleMore: 'View more',
       createWord: 'Create word',
       editSegmentTime: 'Edit segment time',
       wordConfidence: 'Word confidence',
