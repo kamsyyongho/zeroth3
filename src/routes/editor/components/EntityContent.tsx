@@ -82,6 +82,7 @@ export const EntityContent = (props: EntityContentProps) => {
   const confidence = wordAlignment?.confidence ?? 0;
   const LC = confidence < (wordConfidenceThreshold ?? 0.85);
   const entityClassName = getEntityClassName(mutability, classes, isLongWord);
+  const playing = React.useMemo(() => playingWordKey === wordKey, [playingWordKey]);
   let style = {};
   if (LC) {
     style = { backgroundImage: theme.editor.LowConfidenceGradient };
@@ -89,7 +90,7 @@ export const EntityContent = (props: EntityContentProps) => {
   if (type === ENTITY_TYPE.TEMP) {
     style = { ...style, backgroundColor: theme.editor.highlight };
   }
-  if (playingWordKey === wordKey) {
+  if (playing) {
     style = {
       ...style,
       color: theme.editor.playing,

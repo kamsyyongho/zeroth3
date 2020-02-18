@@ -160,7 +160,7 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
     </Popper>);
   };
 
-  const isPlayingBlock = blockIndex === playingBlockIndex;
+  const isPlayingBlock = React.useMemo(() => blockIndex === playingBlockIndex, [playingBlockIndex]);
 
   return (<div
     className={classes.root}
