@@ -332,7 +332,6 @@ export function Editor(props: EditorProps) {
     splitTimePickerRootProps,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-  const [playingBlockIndex, setPlayingBlockIndex] = useGlobal('playingBlockIndex');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -1644,7 +1643,6 @@ export function Editor(props: EditorProps) {
       }
       const entityKey = getEntityKeyFromWordKey(wordKey);
       if (typeof entityKey === 'number' && entityKey !== prevPlayingEntityKey) {
-        setPlayingBlockIndex(playingLocation[0]);
         setPlayingWordKey(wordKeyBank.getKey(playingLocation));
       }
     }

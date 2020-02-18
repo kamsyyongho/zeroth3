@@ -10,7 +10,6 @@ declare module 'reactn/default' {
     projectInitialized?: boolean;
     projectTdpDataShouldRefresh?: boolean;
     navigationProps?: any;
-    playingBlockIndex?: number;
     playingWordKey?: number;
     wordConfidenceThreshold?: number;
     editorDebugMode?: boolean;

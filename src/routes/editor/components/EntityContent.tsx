@@ -1,9 +1,13 @@
-import { Tooltip, Typography } from '@material-ui/core';
+import { Popper, Tooltip, Typography } from '@material-ui/core';
+import Fade from '@material-ui/core/Fade';
+import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import RecordVoiceOverIcon from '@material-ui/icons/RecordVoiceOver';
 import { ContentState, DraftEntityMutability } from 'draft-js';
+import VisibilitySensor from 'react-visibility-sensor';
 import React, { useGlobal } from 'reactn';
 import { CustomTheme } from '../../../theme/index';
-import { ENTITY_TYPE, LOCAL_STORAGE_KEYS, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
+import { DEFAULT_OFFSET, ENTITY_TYPE, LOCAL_STORAGE_KEYS, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -36,6 +40,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     mutableLongWord: {
       backgroundColor: theme.editor.entity,
       padding: '2px 0',
+    },
+    popper: {
+      zIndex: theme.zIndex.drawer,
+    },
+    playingIconContainer: {
+      padding: 0,
+      margin: 0,
+      height: 35,
+      width: 35,
     },
   }),
 );
@@ -71,6 +84,7 @@ export const EntityContent = (props: EntityContentProps) => {
   const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
+  const segmentRef = React.useRef<HTMLButtonElement | null>(null);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
   const tokenEntity = contentState.getEntity(entityKey);
@@ -109,6 +123,51 @@ export const EntityContent = (props: EntityContentProps) => {
   }, []);
 
 
+  const renderPopper = (curretRef: HTMLButtonElement | null, isPlayingBlock: boolean, isVisible: boolean) => {
+    if (!curretRef) {
+      return null;
+    }
+    return (<Popper
+      open={isPlayingBlock && !isVisible}
+      className={classes.popper}
+      anchorEl={segmentRef.current}
+      placement="bottom"
+      disablePortal={false}
+      transition
+      modifiers={{
+        flip: {
+          enabled: true,
+        },
+        preventOverflow: {
+          enabled: true,
+          boundariesElement: 'scrollParent',
+        },
+      }}
+    >
+      {({ TransitionProps }) => (
+        <Fade {...TransitionProps} timeout={100}>
+          <Paper className={classes.playingIconContainer} elevation={5}>
+            <RecordVoiceOverIcon color='primary' fontSize='large' />
+          </Paper>
+        </Fade>
+      )}
+    </Popper>);
+  };
+
+  const content = (
+    <VisibilitySensor
+      offset={DEFAULT_OFFSET}
+      scrollCheck
+    >
+      {({ isVisible }) => {
+        return (<span ref={segmentRef} data-offset-key={offsetKey} className={entityClassName} style={style}>
+          {props.children}
+          {renderPopper(segmentRef.current, !isVisible, !playing)}
+        </span>);
+      }
+      }
+    </VisibilitySensor>);
+
   if (editorDebugMode) {
     const timeText = `start: ${wordAlignment?.start}, length: ${wordAlignment?.length}`;
     return <Tooltip
@@ -117,15 +176,9 @@ export const EntityContent = (props: EntityContentProps) => {
       arrow={true}
       classes={{ tooltip: classes.tooltipContent }}
     >
-      <span data-offset-key={offsetKey} className={entityClassName} style={style}>
-        {props.children}
-      </span>
+      {content}
     </Tooltip>;
   }
 
-  return (
-    <span data-offset-key={offsetKey} className={entityClassName} style={style}>
-      {props.children}
-    </span>
-  );
+  return (content);
 };
