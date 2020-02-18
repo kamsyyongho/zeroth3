@@ -80,7 +80,7 @@ const primaryControlOrder = [
   // EDITOR_CONTROLS.createWord,
   EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
-  EDITOR_CONTROLS.debug,
+  // EDITOR_CONTROLS.debug,
 ];
 
 const secondaryControlOrder = [
