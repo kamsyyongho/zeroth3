@@ -172,12 +172,4 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   );
 };
 
-export const MemoizedSegmentBlockHead = React.memo(SegmentBlockHead, (prevProps, nextProps) => {
-  if (
-    prevProps.showEditorPopups !== nextProps.showEditorPopups ||
-    prevProps.isPlayingBlock !== nextProps.isPlayingBlock
-  ) {
-    return false;
-  }
-  return true;
-});
+export const MemoizedSegmentBlockHead = React.memo(SegmentBlockHead);
