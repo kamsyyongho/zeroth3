@@ -375,20 +375,26 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  const styleMap = React.useMemo(() => {
+    return buildStyleMap(theme);
+  }, []);
+
   /** custom renderer function for segment blocks */
-  function customBlockRenderer(contentBlock: ContentBlock) {
-    const type = contentBlock.getType();
-    if (type === BLOCK_TYPE.segment) {
-      return {
-        component: SegmentBlock,
-        editable: true,
-        props: {
-          readOnly,
-          assignSpeakerForSegment,
-        } as SegmentBlockSubProps,
-      };
-    }
-  }
+  const customBlockRenderer = React.useMemo(() => {
+    return function customBlockRenderer(contentBlock: ContentBlock) {
+      const type = contentBlock.getType();
+      if (type === BLOCK_TYPE.segment) {
+        return {
+          component: SegmentBlock,
+          editable: true,
+          props: {
+            readOnly,
+            assignSpeakerForSegment,
+          } as SegmentBlockSubProps,
+        };
+      }
+    };
+  }, []);
 
   const createEntity = (wordAlignment: WordAlignment, wordKey: number, key: number) => {
     const data: WordAlignmentEntityData = {
@@ -1085,48 +1091,51 @@ export function Editor(props: EditorProps) {
     setShowEditorPopups(!showEditorPopups);
   };
 
-  const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
-    if (readOnlyEditorState) {
-      return HANDLE_VALUES.handled;
-    }
-    let cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined;
-    switch (command) {
-      case KEY_COMMANDS['toggle-popups']:
-        togglePopups();
-        break;
-      case KEY_COMMANDS.delete:
-      case KEY_COMMANDS['delete-word']:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-        // don't allow if at end
-        if (cursorContent?.isEndOfBlock) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS.backspace:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-        if (cursorContent?.isStartOfBlock && cursorContent?.isNoSelection) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS['backspace-word']:
-      case KEY_COMMANDS['backspace-to-start-of-line']:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-        if (cursorContent?.isStartOfBlock) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS['merge-segments-back']:
-        handleSegmentMergeCommand(incomingEditorState);
+  const handleKeyCommand = React.useMemo(() => {
+    const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
+      if (readOnlyEditorState) {
         return HANDLE_VALUES.handled;
-      case KEY_COMMANDS['edit-segment-time']:
-        prepareSegmentTimePicker(incomingEditorState);
-        return HANDLE_VALUES.handled;
-      default:
-        break;
-    }
-    RichUtils.handleKeyCommand(incomingEditorState, command);
-    return HANDLE_VALUES['not-handled'];
-  };
+      }
+      let cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined;
+      switch (command) {
+        case KEY_COMMANDS['toggle-popups']:
+          togglePopups();
+          break;
+        case KEY_COMMANDS.delete:
+        case KEY_COMMANDS['delete-word']:
+          cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+          // don't allow if at end
+          if (cursorContent?.isEndOfBlock) {
+            return HANDLE_VALUES.handled;
+          }
+          break;
+        case KEY_COMMANDS.backspace:
+          cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+          if (cursorContent?.isStartOfBlock && cursorContent?.isNoSelection) {
+            return HANDLE_VALUES.handled;
+          }
+          break;
+        case KEY_COMMANDS['backspace-word']:
+        case KEY_COMMANDS['backspace-to-start-of-line']:
+          cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+          if (cursorContent?.isStartOfBlock) {
+            return HANDLE_VALUES.handled;
+          }
+          break;
+        case KEY_COMMANDS['merge-segments-back']:
+          handleSegmentMergeCommand(incomingEditorState);
+          return HANDLE_VALUES.handled;
+        case KEY_COMMANDS['edit-segment-time']:
+          prepareSegmentTimePicker(incomingEditorState);
+          return HANDLE_VALUES.handled;
+        default:
+          break;
+      }
+      RichUtils.handleKeyCommand(incomingEditorState, command);
+      return HANDLE_VALUES['not-handled'];
+    };
+    return handleKeyCommand;
+  }, []);
 
   /** updates the word alignment data once selected segment / blocks have changed 
    * @returns if we should update the editor state
@@ -1414,25 +1423,28 @@ export function Editor(props: EditorProps) {
     }
   };
 
-  const handleChange = (incomingEditorState: EditorState) => {
-    if (readOnlyEditorState) {
-      return;
-    }
-    let canUpdate = true;
-    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-    if (loading || !previousSelectedCursorContent || !previousSelectionState) {
-      setPreviousSelectedCursorContent(cursorContent);
-      setPreviousSelectionState(incomingEditorState.getSelection());
-    } else if (previousSelectedCursorContent && previousSelectionState) {
-      canUpdate = updateSegmentOnChange(incomingEditorState, cursorContent);
-    }
-    if (!loading && canUpdate) {
-      // update location since we are still in same block
-      setPreviousSelectionState(incomingEditorState.getSelection());
-      setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
-      setEditorState(incomingEditorState);
-    }
-  };
+  const handleChange = React.useMemo(() => {
+    const handleChange = (incomingEditorState: EditorState) => {
+      if (readOnlyEditorState) {
+        return;
+      }
+      let canUpdate = true;
+      const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+      if (loading || !previousSelectedCursorContent || !previousSelectionState) {
+        setPreviousSelectedCursorContent(cursorContent);
+        setPreviousSelectionState(incomingEditorState.getSelection());
+      } else if (previousSelectedCursorContent && previousSelectionState) {
+        canUpdate = updateSegmentOnChange(incomingEditorState, cursorContent);
+      }
+      if (!loading && canUpdate) {
+        // update location since we are still in same block
+        setPreviousSelectionState(incomingEditorState.getSelection());
+        setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
+        setEditorState(incomingEditorState);
+      }
+    };
+    return handleChange;
+  }, []);
 
   /**
    * determines if we are in a valid split location and calls the split methods if we are
@@ -1473,32 +1485,41 @@ export function Editor(props: EditorProps) {
     prepareSegmentForSplit(cursorContent, incomingEditorState);
   };
 
-  /** calls the split command if the editor is in a valid state */
-  const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
-    if (readOnlyEditorState) {
+  const handleReturnPress = React.useMemo(() => {
+    /** calls the split command if the editor is in a valid state */
+    const handleReturnPress = (event: React.KeyboardEvent, incomingEditorState: EditorState): DraftHandleValue => {
+      if (readOnlyEditorState) {
+        return HANDLE_VALUES.handled;
+      }
+      // only split when holding shift
+      if (event.shiftKey && !loading) {
+        handleSegmentSplitCommand(incomingEditorState);
+      }
       return HANDLE_VALUES.handled;
-    }
-    // only split when holding shift
-    if (event.shiftKey && !loading) {
-      handleSegmentSplitCommand(incomingEditorState);
-    }
-    return HANDLE_VALUES.handled;
-  };
+    };
+    return handleReturnPress;
+  }, []);
 
-  const handleFocus = () => {
-    setFocussed(true);
-  };
+  const handleFocus = React.useMemo(() => {
+    const handleFocus = () => {
+      setFocussed(true);
+    };
+    return handleFocus;
+  }, []);
 
-  /** saves a copy of the editor state that can be used if 
-   * the user triggers commands while the editor is not focussed
-   * @example if the user clicks an editor command button
-   */
-  const handleBlur = () => {
-    if (focussed) {
-      setFocussed(false);
-      setEditorStateBeforeBlur(cloneEditorState(editorState));
-    }
-  };
+  const handleBlur = React.useMemo(() => {
+    /** saves a copy of the editor state that can be used if 
+     * the user triggers commands while the editor is not focussed
+     * @example if the user clicks an editor command button
+     */
+    const handleBlur = () => {
+      if (focussed) {
+        setFocussed(false);
+        setEditorStateBeforeBlur(cloneEditorState(editorState));
+      }
+    };
+    return handleBlur;
+  }, []);
 
   /**
    * navigate to the correct timestamp if there is an entity at the cursor
@@ -1513,26 +1534,6 @@ export function Editor(props: EditorProps) {
       onWordClick(segmentAndWordIndex);
     }
   };
-
-  /** removes all styling if touching the edge of an entity */
-  const handleBeforeInput = (chars: string, incomingEditorState: EditorState, eventTimeStamp: number) => {
-    const selectionState = incomingEditorState.getSelection();
-    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-    const {
-      entity,
-      characterDetailsBeforeCursor,
-    } = cursorContent;
-    const entityBeforeCursor = characterDetailsBeforeCursor.properties?.entity;
-    if (!entity || (entity && !entityBeforeCursor)) {
-      const contentState = incomingEditorState.getCurrentContent();
-      const contentWithNoStyling = Modifier.insertText(contentState, selectionState, chars);
-      const editorStateWithNoInlineStyles = EditorState.push(incomingEditorState, contentWithNoStyling, EDITOR_CHANGE_TYPE['insert-characters']);
-      setEditorState(editorStateWithNoInlineStyles);
-      return HANDLE_VALUES.handled;
-    }
-    return HANDLE_VALUES['not-handled'];
-  };
-
 
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
@@ -1719,11 +1720,10 @@ export function Editor(props: EditorProps) {
         <DraftEditor
           ref={editorRef}
           editorState={editorState}
-          customStyleMap={buildStyleMap(theme)}
+          customStyleMap={styleMap}
           keyBindingFn={customKeyBindingFunction}
           blockRendererFn={customBlockRenderer}
           onChange={readOnly ? editorChangeNoop : handleChange}
-          handleBeforeInput={readOnly ? editorChangeNoop : handleBeforeInput}
           onFocus={handleFocus}
           onBlur={handleBlur}
           handleReturn={readOnly ? editorChangeNoop : handleReturnPress}
