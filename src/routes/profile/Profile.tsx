@@ -132,6 +132,7 @@ export function Profile() {
   };
 
   React.useEffect(() => {
+    document.title = translate('path.profile');
     if (currentOrganizationId && !organizations) {
       getOrganizations();
     }

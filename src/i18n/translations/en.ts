@@ -39,6 +39,7 @@ export const en: ResourceLanguage = {
       progress: 'Progress',
       refresh: 'Refresh',
       close: 'Close',
+      zeroth: 'Zeroth EE',
     },
     table: {
       page: 'Page',

@@ -36,6 +36,10 @@ export function Home() {
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
 
+  React.useEffect(() => {
+    document.title = translate('common.zeroth');
+  }, []);
+
   return (
     <Container >
       <Grid

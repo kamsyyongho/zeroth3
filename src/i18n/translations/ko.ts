@@ -39,6 +39,7 @@ export const ko: ResourceLanguage = {
       progress: '진행상황',
       refresh: '새로고침',
       close: '닫기',
+      zeroth: 'Zeroth EE',
     },
     table: {
       page: '페이지',

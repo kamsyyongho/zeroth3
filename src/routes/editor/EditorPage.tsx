@@ -14,11 +14,11 @@ import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { AudioPlayer } from './AudioPlayer';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { NotFound } from '../shared/NotFound';
 import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
+import { AudioPlayer } from './AudioPlayer';
 import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
@@ -640,6 +640,7 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
+    document.title = translate('path.editor');
     if (readOnly) {
       getSegments();
     } else {
