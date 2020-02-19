@@ -66,6 +66,7 @@ export const ko: ResourceLanguage = {
     profile: {
       user: '사용자명',
       organization: '기관명',
+      organization_plural: '기관명',
       fullName: '{{family}} {{given}}',
       resetPassword: '비밀번호 재생성',
       changeOrganization: '기관명 변경',

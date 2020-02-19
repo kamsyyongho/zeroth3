@@ -211,6 +211,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     setCurrentProject(undefined);
     if (currentOrganization && organization && currentOrganization.id !== organization.id) {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+      setOrganization(currentOrganization);
     }
   }, [currentOrganization]);
 

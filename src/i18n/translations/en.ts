@@ -66,6 +66,7 @@ export const en: ResourceLanguage = {
     profile: {
       user: 'User',
       organization: 'Organization',
+      organization_plural: 'Organizations',
       fullName: '{{given}} {{family}}',
       resetPassword: 'Reset password',
       changeOrganization: 'Change organization',
