@@ -68,6 +68,7 @@ export const en: ResourceLanguage = {
       organization: 'Organization',
       fullName: '{{given}} {{family}}',
       resetPassword: 'Reset password',
+      changeOrganization: 'Change organization',
     },
     organization: {
       rename: 'Rename',
@@ -202,6 +203,7 @@ export const en: ResourceLanguage = {
       shared: 'Shared',
       notShared: 'Not shared',
       startTraining: 'Start training',
+      highRiskSegmentsOnly: 'High risk segments only',
       validation: {
         allModelConfigsStillTranscribing:
           'Data set transcription still in progress',

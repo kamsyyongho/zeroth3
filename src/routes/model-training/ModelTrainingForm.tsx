@@ -13,8 +13,8 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
+import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
-import { SwitchFormField } from '../shared/form-fields/SwitchFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
 
 const useStyles = makeStyles((theme) =>
@@ -82,6 +82,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     selectedDataSetId: yup.string().nullable().required(requiredTranslationText),
     selectedTrainingMethod: yup.string().nullable().required(requiredTranslationText),
     shared: yup.boolean().required(requiredTranslationText),
+    hrOnly: yup.boolean().required(requiredTranslationText),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -90,11 +91,12 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     selectedDataSetId: null,
     selectedTrainingMethod: null,
     shared: true,
+    hrOnly: false,
   };
 
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, selectedModelConfigId, selectedDataSetId, selectedTrainingMethod, shared } = values;
+    const { name, selectedModelConfigId, selectedDataSetId, selectedTrainingMethod, shared, hrOnly } = values;
     if (selectedModelConfigId === null ||
       selectedDataSetId === null ||
       selectedTrainingMethod === null
@@ -102,7 +104,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(name.trim(), selectedModelConfigId, selectedDataSetId, shared);
+      const response = await api.models.transferLearning(name.trim(), selectedModelConfigId, selectedDataSetId, shared, hrOnly);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -142,7 +144,12 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
         return (<>
           <CardContent >
             <Form>
-              <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
+              <Field
+                name='name'
+                component={TextFormField}
+                label={translate("forms.name")}
+                errorOverride={isError}
+              />
               <Field
                 name='selectedModelConfigId'
                 component={SelectFormField}
@@ -166,17 +173,18 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 label={translate("modelTraining.trainingMethod")}
                 errorOverride={isError}
               />
-              <div
-                className={classes.switchSpacing}
-              >
-                <Field
-                  name='shared'
-                  component={SwitchFormField}
-                  label={translate("modelTraining.shareSettings")}
-                  text={(value: boolean) => translate(value ? "modelTraining.shared" : "modelTraining.notShared")}
-                  errorOverride={isError}
-                />
-              </div>
+              <Field
+                name='shared'
+                component={CheckboxFormField}
+                text={translate("modelTraining.shared")}
+                errorOverride={isError}
+              />
+              <Field
+                name='hrOnly'
+                component={CheckboxFormField}
+                text={translate("modelTraining.highRiskSegmentsOnly")}
+                errorOverride={isError}
+              />
             </Form>
           </CardContent>
           <CardActions className={classes.cardAction} >
