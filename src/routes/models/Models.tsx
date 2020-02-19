@@ -40,6 +40,10 @@ export function Models() {
 
   const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
 
+  React.useEffect(() => {
+    document.title = translate('path.models');
+  }, []);
+
   if (!canSeeModels) {
     return <Forbidden />;
   }

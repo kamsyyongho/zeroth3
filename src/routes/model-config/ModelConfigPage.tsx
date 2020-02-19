@@ -267,6 +267,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         }
       }
     }
+    document.title = translate('modelConfig.header');
     return () => {
       // to remove the navigation props that were received from the previous page
       setNavigationProps({});

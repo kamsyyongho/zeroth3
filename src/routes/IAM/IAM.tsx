@@ -42,6 +42,10 @@ export function IAM() {
   const usersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
   const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
 
+  React.useEffect(() => {
+    document.title = translate('path.IAM');
+  }, []);
+
   if (!transcribersAccess && !usersAccess) {
     return <Forbidden />;
   }

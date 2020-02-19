@@ -127,6 +127,10 @@ export function ModelTraining() {
   };
 
   React.useEffect(() => {
+    document.title = translate('path.modelTraining');
+  }, []);
+
+  React.useEffect(() => {
     if (currentProject?.id && canSeeModels) {
       setProjectId(currentProject.id);
     }

@@ -242,6 +242,9 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     }
   }, [api, projectId]);
 
+  React.useEffect(() => {
+    document.title = translate('path.projects');
+  }, []);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig) => {
     setModelConfigs(prevConfigs => {
