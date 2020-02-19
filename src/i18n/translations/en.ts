@@ -240,8 +240,8 @@ export const en: ResourceLanguage = {
       },
     },
     modelConfig: {
-      header: 'Model configuration',
-      header_plural: 'Model configurations',
+      header: 'Model Configuration',
+      header_plural: 'Model Configurations',
       create: 'Create configuration',
       edit: 'Edit configuration',
       delete: 'Delete model configuration',
