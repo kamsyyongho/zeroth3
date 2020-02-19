@@ -22,9 +22,6 @@ const useStyles = makeStyles((theme) =>
     cardAction: {
       justifyContent: 'flex-end',
     },
-    switchSpacing: {
-      marginTop: theme.spacing(2),
-    },
   }),
 );
 interface ModelTrainingFormProps {

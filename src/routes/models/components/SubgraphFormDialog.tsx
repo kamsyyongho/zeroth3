@@ -18,6 +18,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { postSubGraphResult } from '../../../services/api/types';
 import { SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../types';
 import log from '../../../util/log/logger';
+import { CheckboxFormField } from '../../shared/form-fields/CheckboxFormField';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
@@ -96,7 +97,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     text: "",
     selectedTopGraphId: (topGraphs && topGraphs[0] && topGraphs[0].id) || null,
     isPublic: true,
-    isMutable: false,
+    isMutable: true,
     shouldUploadFile: false,
     files: [],
   };
@@ -189,8 +190,8 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                   errorTextOverride={formikProps.errors.files}
                 />
                 <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
-                <Field name='isPublic' component={SwitchFormField} label={translate("forms.privacySetting")} text={(value: boolean) => translate(value ? "forms.private" : "forms.public")} errorOverride={isError} />
-                <Field name='isMutable' component={SwitchFormField} label={translate("forms.mutability")} text={(value: boolean) => translate(value ? "forms.mutable" : "forms.immutable")} errorOverride={isError} />
+                <Field name='isPublic' component={CheckboxFormField} text={translate("forms.private")} errorOverride={isError} />
+                <Field name='isMutable' component={CheckboxFormField} text={translate("forms.mutable")} errorOverride={isError} />
               </Form>
             </DialogContent>
             <DialogActions>
