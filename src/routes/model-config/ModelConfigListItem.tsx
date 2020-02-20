@@ -255,7 +255,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         expanded={expanded}
         onLoading={setLoading}
         onClose={closeExpand}
-        configToEdit={modelConfig}
+        modelConfig={modelConfig}
         nameFormValue={nameFormValue}
         {...expandProps}
       />

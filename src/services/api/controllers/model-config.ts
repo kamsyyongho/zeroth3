@@ -1,8 +1,19 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { ModelConfig as ModelConfigType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { deleteModelConfigResult, getModelConfigsResult, ModelConfigRequest, postModelConfigResult, ProblemKind, ServerError } from '../types';
-import { updateModelConfigResult } from '../types/model-config.types';
+import {
+  deleteModelConfigResult,
+  getModelConfigsResult,
+  ModelConfigRequest,
+  postModelConfigResult,
+  ProblemKind,
+  ServerError,
+} from '../types';
+import {
+  ThresholdRequest,
+  updateModelConfigResult,
+  updateThresholdResult,
+} from '../types/model-config.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -14,10 +25,7 @@ export class ModelConfig extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param logout parent method coming from keycloak
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
@@ -31,7 +39,7 @@ export class ModelConfig extends ParentApi {
       ModelConfigType[],
       ServerError
     > = await this.apisauce.get(
-      this.getPathWithOrganization(`/projects/${projectId}/model-config`)
+      this.getPathWithOrganization(`/projects/${projectId}/model-config`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -69,7 +77,7 @@ export class ModelConfig extends ParentApi {
     acousticModelId: string,
     languageModelId: string,
     thresholdLr: number | null,
-    thresholdHr: number | null
+    thresholdHr: number | null,
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -86,7 +94,7 @@ export class ModelConfig extends ParentApi {
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/projects/${projectId}/model-config`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -127,7 +135,7 @@ export class ModelConfig extends ParentApi {
     acousticModelId: string,
     languageModelId: string,
     thresholdLr: number | null,
-    thresholdHr: number | null
+    thresholdHr: number | null,
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -144,9 +152,9 @@ export class ModelConfig extends ParentApi {
       ServerError
     > = await this.apisauce.put(
       this.getPathWithOrganization(
-        `/projects/${projectId}/model-config/${modelConfigId}`
+        `/projects/${projectId}/model-config/${modelConfigId}`,
       ),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -168,13 +176,51 @@ export class ModelConfig extends ParentApi {
   }
 
   /**
+   * Updates a model config's threshold values
+   * @param modelConfigId
+   * @param projectId
+   * @param thresholdLr
+   * @param thresholdHr
+   */
+  async updateThreshold(
+    modelConfigId: string,
+    projectId: string,
+    thresholdLr: number | null,
+    thresholdHr: number | null,
+  ): Promise<updateThresholdResult> {
+    // compile data
+    const request: ThresholdRequest = {
+      thresholdLr,
+      thresholdHr,
+    };
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      this.getPathWithOrganization(
+        `/projects/${projectId}/model-config/${modelConfigId}/threshold`,
+      ),
+      request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
    * Deletes an associated model config
    * @param projectId
    * @param modelConfigId
    */
   async deleteModelConfig(
     projectId: string,
-    modelConfigId: string
+    modelConfigId: string,
   ): Promise<deleteModelConfigResult> {
     // make the api call
     const response: ApiResponse<
@@ -182,8 +228,8 @@ export class ModelConfig extends ParentApi {
       ServerError
     > = await this.apisauce.delete(
       this.getPathWithOrganization(
-        `/projects/${projectId}/model-config/${modelConfigId}`
-      )
+        `/projects/${projectId}/model-config/${modelConfigId}`,
+      ),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

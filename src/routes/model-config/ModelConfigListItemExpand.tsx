@@ -3,6 +3,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
+import CloseIcon from '@material-ui/icons/Close';
 import DoneIcon from '@material-ui/icons/Done';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
@@ -58,7 +59,7 @@ export interface ModelConfigListItemExpandPropsFromParent {
 
 
 interface ModelConfigListItemExpandProps extends ModelConfigListItemExpandPropsFromParent {
-  configToEdit: ModelConfig;
+  modelConfig: ModelConfig;
   expanded: boolean;
   nameFormValue: string;
   onLoading: (loading: boolean) => void;
@@ -73,7 +74,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     onLoading,
     onClose,
     onSuccess,
-    configToEdit,
+    modelConfig,
     topGraphs,
     subGraphs,
     languageModels,
@@ -87,6 +88,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const [languageOpen, setLanguageOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const [isThresholdError, setIsThresholdError] = React.useState(false);
   // key used to reset the form on close
   const [formCounter, setFormCounter] = React.useState(0);
 
@@ -95,6 +97,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   const handleClose = () => {
     setIsError(false);
+    setIsThresholdError(false);
     onLoading(false);
     onClose();
   };
@@ -134,22 +137,30 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdHr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).lessThan(yup.ref('thresholdLr'), `${translate('forms.validation.lessThan', { target: thresholdHrText, value: thresholdLrText })}`).nullable(),
-    thresholdLr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).moreThan(yup.ref('thresholdHr'), `${translate('forms.validation.greaterThan', { target: thresholdLrText, value: thresholdHrText })}`).nullable(),
+    thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
+      const { thresholdHr } = this.parent;
+      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      return thresholdLr < thresholdHr;
+    }),
+    thresholdHr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
+      const { thresholdLr } = this.parent;
+      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      return thresholdHr > thresholdLr;
+    }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues = React.useMemo(() => {
     const initialValues: FormValues = {
-      name: configToEdit.name,
-      selectedAcousticModelId: configToEdit.acousticModel.id,
-      selectedLanguageModelId: configToEdit.languageModel.id,
-      thresholdHr: configToEdit.thresholdHr ?? null,
-      thresholdLr: configToEdit.thresholdLr ?? null,
-      description: configToEdit.description,
+      name: modelConfig.name,
+      selectedAcousticModelId: modelConfig.acousticModel.id,
+      selectedLanguageModelId: modelConfig.languageModel.id,
+      thresholdHr: modelConfig.thresholdHr ?? null,
+      thresholdLr: modelConfig.thresholdLr ?? null,
+      description: modelConfig.description,
     };
     return initialValues;
-  }, [configToEdit]);
+  }, [modelConfig]);
 
   const handleSubmit = async (values: FormValues) => {
     const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
@@ -159,7 +170,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -169,12 +180,40 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       } else {
         log({
           file: `ModelConfigListItemExpand.tsx`,
-          caller: `handleSubmit - failed to create model config`,
+          caller: `handleSubmit - failed to update model config`,
           value: response,
           important: true,
         });
         snackbarError.isError = true;
         setIsError(true);
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setLoading(false);
+    }
+  };
+
+  const updateThreshold = async (thresholdLr: number | null, thresholdHr: number | null) => {
+    if (api?.modelConfig && !loading) {
+      setLoading(true);
+      setIsThresholdError(false);
+      const response = await api.modelConfig.updateThreshold(modelConfig.id, projectId, thresholdLr, thresholdHr);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+      } else {
+        log({
+          file: `ModelConfigListItemExpand.tsx`,
+          caller: `updateThreshold - failed to update model config threshold`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        setIsThresholdError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -203,7 +242,10 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     >
       <Formik key={formCounter} initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => {
-          if (nameFormValue !== formikProps.values.name) {
+          const { name, thresholdHr, thresholdLr } = formikProps.values;
+          const shouldShowThresholdSubmit = thresholdHr !== modelConfig.thresholdHr || thresholdLr !== modelConfig.thresholdLr;
+          const thresholdSubmitDisabled = Boolean(formikProps.errors.thresholdHr || formikProps.errors.thresholdLr || loading);
+          if (nameFormValue !== name) {
             formikProps.setFieldValue('name', nameFormValue, true);
           }
           return (
@@ -239,28 +281,49 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   xs={12}
                 >
                   <Grid item xs={2}>
-                    <Typography align='left' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Field
-                      name='thresholdHr'
-                      component={TextFormField}
-                      type='number'
-                      margin="normal"
-                      errorOverride={isError}
-                    />
-                  </Grid>
-                  <Grid item xs={2}>
                     <Typography align='left' className={classes.subTitle} >{`${thresholdLrText}:`}</Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Field
                       name='thresholdLr'
                       component={TextFormField}
                       type='number'
                       margin="normal"
-                      errorOverride={isError}
+                      errorOverride={isError || isThresholdError}
                     />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Typography align='left' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Field
+                      name='thresholdHr'
+                      component={TextFormField}
+                      type='number'
+                      margin="normal"
+                      errorOverride={isError || isThresholdError}
+                    />
+                  </Grid>
+                  <Grid container item xs={2} >
+                    {shouldShowThresholdSubmit && <>
+                      <Grid item><IconButton
+                        color='primary'
+                        disabled={thresholdSubmitDisabled}
+                        onClick={() => updateThreshold(thresholdLr, thresholdHr)}
+                      >
+                        <DoneIcon />
+                      </IconButton></Grid>
+                      <Grid item><IconButton
+                        color='secondary'
+                        disabled={loading}
+                        onClick={() => {
+                          formikProps.setFieldValue('thresholdHr', modelConfig.thresholdHr ?? null);
+                          formikProps.setFieldValue('thresholdLr', modelConfig.thresholdLr ?? null);
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton></Grid>
+                    </>}
                   </Grid>
                 </Grid>
                 <Divider className={classes.divider} />
@@ -304,20 +367,20 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   spacing={2}
                   xs={12}
                 >
-                  {configToEdit.languageModel.version && <>
+                  {modelConfig.languageModel.version && <>
                     <Grid item>
                       <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography align='left' >{configToEdit.languageModel.version}</Typography>
+                      <Typography align='left' >{modelConfig.languageModel.version}</Typography>
                     </Grid>
                   </>}
-                  {configToEdit.languageModel.description && <>
+                  {modelConfig.languageModel.description && <>
                     <Grid item>
                       <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography align='left' >{configToEdit.languageModel.description}</Typography>
+                      <Typography align='left' >{modelConfig.languageModel.description}</Typography>
                     </Grid>
                   </>}
                 </Grid>
@@ -337,7 +400,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     <Chip
                       variant='outlined'
                       size='small'
-                      label={configToEdit.languageModel.topGraph.name}
+                      label={modelConfig.languageModel.topGraph.name}
                     />
                   </Grid>
                 </Grid>
@@ -357,7 +420,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   <Grid item >
                     <ChipList
                       variant='outlined'
-                      labels={configToEdit.languageModel.subGraphs.map(subGraph => subGraph.name)}
+                      labels={modelConfig.languageModel.subGraphs.map(subGraph => subGraph.name)}
                     />
                   </Grid>
                 </Grid>
@@ -393,25 +456,25 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     justify='flex-start'
                     spacing={2}
                   >
-                    {configToEdit.acousticModel.version && <>
+                    {modelConfig.acousticModel.version && <>
                       <Grid item>
                         <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
                       </Grid>
                       <Grid item>
-                        <Typography align='left' >{configToEdit.acousticModel.version}</Typography>
+                        <Typography align='left' >{modelConfig.acousticModel.version}</Typography>
                       </Grid>
                     </>}
-                    {configToEdit.acousticModel.description && <>
+                    {modelConfig.acousticModel.description && <>
                       <Grid item>
                         <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
                       </Grid>
                       <Grid item>
-                        <Typography align='left' >{configToEdit.acousticModel.description}</Typography>
+                        <Typography align='left' >{modelConfig.acousticModel.description}</Typography>
                       </Grid>
                     </>}
                   </Grid>
                 </Grid>
-                {configToEdit.acousticModel.sampleRate && <Grid
+                {modelConfig.acousticModel.sampleRate && <Grid
                   container
                   item
                   alignContent='center'
@@ -424,14 +487,14 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.sampleRate")}:`}</Typography>
                   </Grid>
                   <Grid item>
-                    <ChipList max={1} light labels={[`${configToEdit.acousticModel.sampleRate} Hz`]} />
+                    <ChipList max={1} light labels={[`${modelConfig.acousticModel.sampleRate} Hz`]} />
                   </Grid>
                 </Grid>}
               </Form>
               <Divider className={classes.divider} />
               <Grid container item justify='flex-end' >
                 <Button
-                  disabled={!formikProps.isValid || isError || loading}
+                  disabled={!formikProps.isValid || loading}
                   onClick={formikProps.submitForm}
                   color="primary"
                   variant="contained"

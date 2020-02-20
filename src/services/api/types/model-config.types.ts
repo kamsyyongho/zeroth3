@@ -14,6 +14,11 @@ export interface ModelConfigRequest {
   description: string;
 }
 
+export type ThresholdRequest = Pick<
+  ModelConfigRequest,
+  'thresholdHr' | 'thresholdLr'
+>;
+
 /////////////
 // RESULTS //
 /////////////
@@ -27,4 +32,5 @@ export type postModelConfigResult =
 export type updateModelConfigResult =
   | { kind: 'ok'; modelConfig: ModelConfig }
   | GeneralApiProblem;
+export type updateThresholdResult = { kind: 'ok' } | GeneralApiProblem;
 export type deleteModelConfigResult = { kind: 'ok' } | GeneralApiProblem;
