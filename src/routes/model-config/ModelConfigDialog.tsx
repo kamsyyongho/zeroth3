@@ -97,8 +97,16 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdHr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).lessThan(yup.ref('thresholdLr'), `${translate('forms.validation.lessThan', { target: thresholdHrText, value: thresholdLrText })}`).nullable(),
-    thresholdLr: yup.number().typeError(numberText).moreThan(VALIDATION.PROJECT.threshold.moreThan).moreThan(yup.ref('thresholdHr'), `${translate('forms.validation.greaterThan', { target: thresholdLrText, value: thresholdHrText })}`).nullable(),
+    thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
+      const { thresholdHr } = this.parent;
+      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      return thresholdLr < thresholdHr;
+    }),
+    thresholdHr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
+      const { thresholdLr } = this.parent;
+      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      return thresholdHr > thresholdLr;
+    }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
@@ -210,17 +218,17 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   {translate('models.tabs.languageModel.create')}
                 </Button>
                 <Field
-                  name='thresholdHr'
+                  name='thresholdLr'
                   component={TextFormField}
-                  label={thresholdHrText}
+                  label={thresholdLrText}
                   type='number'
                   margin="normal"
                   errorOverride={isError}
                 />
                 <Field
-                  name='thresholdLr'
+                  name='thresholdHr'
                   component={TextFormField}
-                  label={thresholdLrText}
+                  label={thresholdHrText}
                   type='number'
                   margin="normal"
                   errorOverride={isError}
@@ -233,7 +241,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError || loading}
+                disabled={!formikProps.isValid || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"
