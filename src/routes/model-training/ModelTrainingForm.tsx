@@ -186,7 +186,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
           </CardContent>
           <CardActions className={classes.cardAction} >
             <Button
-              disabled={!formikProps.isValid || isError || loading}
+              disabled={!formikProps.isValid || loading}
               onClick={formikProps.submitForm}
               color="primary"
               variant="outlined"
