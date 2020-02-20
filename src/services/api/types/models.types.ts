@@ -27,6 +27,7 @@ export interface TransferLearningRequest {
   modelConfigId: string;
   dataSetId: string;
   shared: boolean;
+  hrOnly: boolean;
 }
 
 export interface SubGraphRequest {

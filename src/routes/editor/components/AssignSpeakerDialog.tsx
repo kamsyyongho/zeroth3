@@ -113,7 +113,7 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
                 {translate("common.cancel")}
               </Button>
               <Button
-                disabled={!formikProps.isValid || isError || loading}
+                disabled={!formikProps.isValid || loading}
                 onClick={formikProps.submitForm}
                 color="primary"
                 variant="outlined"

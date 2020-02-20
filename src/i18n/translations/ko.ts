@@ -66,8 +66,10 @@ export const ko: ResourceLanguage = {
     profile: {
       user: '사용자명',
       organization: '기관명',
+      organization_plural: '기관명',
       fullName: '{{family}} {{given}}',
       resetPassword: '비밀번호 재생성',
+      changeOrganization: '기관명 변경',
     },
     organization: {
       rename: '수정',
@@ -204,6 +206,7 @@ export const ko: ResourceLanguage = {
       shared: '공유됨',
       notShared: '공유되지 않음',
       startTraining: '학습 시작',
+      highRiskSegmentsOnly: 'High Risk 세그먼트만',
       validation: {
         allModelConfigsStillTranscribing: '데이터 전사가 진행중입니다.',
         allModelConfigsStillTranscribing_plural: '데이터 전사가 진행중입니다',

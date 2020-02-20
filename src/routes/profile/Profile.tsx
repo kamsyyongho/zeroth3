@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
 import { List } from 'react-content-loader';
@@ -21,6 +22,7 @@ import { Organization, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
+import { OrganizationPickerDialog } from './components/OrganizationPickerDialog';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -63,12 +65,14 @@ export function Profile() {
   const { user, hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
   const [organizations, setOrganizations] = useGlobal('organizations');
+  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [organizationsLoading, setOrganizationsLoading] = React.useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [pickOrganizationOpen, setPickOrganizationOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
 
   const theme: CustomTheme = useTheme();
@@ -79,6 +83,12 @@ export function Profile() {
   };
   const hideDialog = () => {
     setIsOpen(false);
+  };
+  const showOrganizationPicker = () => {
+    setPickOrganizationOpen(true);
+  };
+  const hideOrganizationPicker = () => {
+    setPickOrganizationOpen(false);
   };
   const confirmReset = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -131,8 +141,21 @@ export function Profile() {
     }
   };
 
+  const handleOrganizationChange = (pickedOrganization: Organization) => {
+    let shouldUpdate = false;
+    if (!organization) {
+      shouldUpdate = true;
+    } else if (pickedOrganization.id !== organization.id) {
+      shouldUpdate = true;
+    }
+    if (shouldUpdate) {
+      setOrganization(pickedOrganization);
+      setCurrentOrganization(pickedOrganization);
+    }
+  };
+
   React.useEffect(() => {
-    document.title = translate('path.profile');
+    document.title = translate('menu.profile');
     if (currentOrganizationId && !organizations) {
       getOrganizations();
     }
@@ -140,10 +163,10 @@ export function Profile() {
 
   // to get the currently selected organization's info
   React.useEffect(() => {
-    if (organizations && organizations.length && user.currentOrganizationId) {
+    if (organizations && organizations.length && currentOrganizationId) {
       for (let i = 0; i < organizations.length; i++) {
         const organization = organizations[i];
-        if (organization.id === user.currentOrganizationId) {
+        if (organization.id === currentOrganizationId) {
           setOrganization(organization);
           break;
         }
@@ -241,6 +264,13 @@ export function Profile() {
         onClick={showDialog}
         startIcon={<EditIcon />}
       >{translate('organization.rename')}</Button>}
+      {organizations && organizations.length > 1 && <Button
+        variant='outlined'
+        color='primary'
+        size="small"
+        onClick={showOrganizationPicker}
+        startIcon={<ExpandMoreIcon />}
+      >{translate('profile.changeOrganization')}</Button>}
     </CardActions>
   </Grid>;
 
@@ -285,6 +315,14 @@ export function Profile() {
         onSubmit={resetPassword}
         onCancel={closeConfirmation}
       />
+      {organizations && organizations.length > 1 &&
+        <OrganizationPickerDialog
+          open={pickOrganizationOpen}
+          organizations={organizations}
+          currentOrganizationId={currentOrganizationId}
+          onClose={hideOrganizationPicker}
+          onSuccess={handleOrganizationChange}
+        />}
     </Container>
   );
 }

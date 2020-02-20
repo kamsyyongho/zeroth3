@@ -1,7 +1,35 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { AcousticModel, LanguageModel, SubGraph, TopGraph, TRAINING_METHODS } from '../../../types';
+import {
+  AcousticModel,
+  LanguageModel,
+  SubGraph,
+  TopGraph,
+  TRAINING_METHODS,
+} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { AcousticModelEditRequest, deleteLanguageModelResult, deleteSubGraphResult, getAcousticModelsResult, getLanguageModelsResult, getSubGraphsResult, getTopGraphsResult, getTrainingMethodsResult, LanguageModelRequest, postLanguageModelResult, postSubGraphResult, ProblemKind, refreshAndGetAcousticModelsResult, refreshAndGetTopGraphResult, ServerError, SubGraphRequest, TransferLearningRequest, transferLearningResult, updateAcousticModelResult, updateLanguageModelResult, updateSubGraphResult } from '../types';
+import {
+  AcousticModelEditRequest,
+  deleteLanguageModelResult,
+  deleteSubGraphResult,
+  getAcousticModelsResult,
+  getLanguageModelsResult,
+  getSubGraphsResult,
+  getTopGraphsResult,
+  getTrainingMethodsResult,
+  LanguageModelRequest,
+  postLanguageModelResult,
+  postSubGraphResult,
+  ProblemKind,
+  refreshAndGetAcousticModelsResult,
+  refreshAndGetTopGraphResult,
+  ServerError,
+  SubGraphRequest,
+  TransferLearningRequest,
+  transferLearningResult,
+  updateAcousticModelResult,
+  updateLanguageModelResult,
+  updateSubGraphResult,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -23,7 +51,7 @@ export class Models extends ParentApi {
   async getAcousticModels(): Promise<getAcousticModelsResult> {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      this.getPathWithOrganization(`/models/acoustic`)
+      this.getPathWithOrganization(`/models/acoustic`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -52,7 +80,7 @@ export class Models extends ParentApi {
   > {
     // make the api call
     const response = await this.apisauce.get<AcousticModel[], ServerError>(
-      this.getPathWithOrganization(`/models/acoustic/refresh`)
+      this.getPathWithOrganization(`/models/acoustic/refresh`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -81,7 +109,7 @@ export class Models extends ParentApi {
    */
   async updateAcousticModel(
     modelId: string,
-    description = ''
+    description = '',
   ): Promise<updateAcousticModelResult> {
     // compile data
     const request: AcousticModelEditRequest = {
@@ -93,7 +121,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.put(
       this.getPathWithOrganization(`/models/acoustic/${modelId}`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -123,7 +151,7 @@ export class Models extends ParentApi {
       TopGraph[],
       ServerError
     > = await this.apisauce.get(
-      this.getPathWithOrganization(`/models/topgraphs`)
+      this.getPathWithOrganization(`/models/topgraphs`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -154,7 +182,7 @@ export class Models extends ParentApi {
       TopGraph[],
       ServerError
     > = await this.apisauce.get(
-      this.getPathWithOrganization(`/models/topgraphs/refresh`)
+      this.getPathWithOrganization(`/models/topgraphs/refresh`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -178,7 +206,7 @@ export class Models extends ParentApi {
       LanguageModel[],
       ServerError
     > = await this.apisauce.get(
-      this.getPathWithOrganization(`/models/language-models`)
+      this.getPathWithOrganization(`/models/language-models`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -210,7 +238,7 @@ export class Models extends ParentApi {
     name: string,
     topGraphId: string,
     subGraphIds: string[],
-    description = ''
+    description = '',
   ): Promise<postLanguageModelResult> {
     // compile data
     const request: LanguageModelRequest = {
@@ -225,7 +253,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/models/language-models`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -260,7 +288,7 @@ export class Models extends ParentApi {
     name: string,
     topGraphId: string,
     subGraphIds: string[],
-    description = ''
+    description = '',
   ): Promise<updateLanguageModelResult> {
     // compile data
     const request: LanguageModelRequest = {
@@ -275,7 +303,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.put(
       this.getPathWithOrganization(`/models/language-models/${modelId}`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -302,14 +330,14 @@ export class Models extends ParentApi {
    * @returns a `conflict` kind if the model cannot be deleted
    */
   async deleteLanguageModel(
-    modelId: string
+    modelId: string,
   ): Promise<deleteLanguageModelResult> {
     // make the api call
     const response: ApiResponse<
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      this.getPathWithOrganization(`/models/language-models/${modelId}`)
+      this.getPathWithOrganization(`/models/language-models/${modelId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -333,7 +361,7 @@ export class Models extends ParentApi {
       SubGraph[],
       ServerError
     > = await this.apisauce.get(
-      this.getPathWithOrganization(`/models/subgraphs`)
+      this.getPathWithOrganization(`/models/subgraphs`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -367,7 +395,7 @@ export class Models extends ParentApi {
     text: string,
     topGraphId: string,
     isPublic: boolean,
-    isImmutable: boolean
+    isImmutable: boolean,
   ): Promise<postSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
@@ -383,7 +411,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/models/subgraphs`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -421,7 +449,7 @@ export class Models extends ParentApi {
     text: string,
     topGraphId: string,
     isPublic: boolean,
-    isImmutable: boolean
+    isImmutable: boolean,
   ): Promise<updateSubGraphResult> {
     // compile data
     const request: SubGraphRequest = {
@@ -437,7 +465,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.put(
       this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -469,7 +497,7 @@ export class Models extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`)
+      this.getPathWithOrganization(`/models/subgraphs/${subGraphId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -497,7 +525,7 @@ export class Models extends ParentApi {
     file: File,
     topGraphId: string,
     isPublic: boolean,
-    isImmutable: boolean
+    isImmutable: boolean,
   ): Promise<postSubGraphResult> {
     // compile data
     // needs name
@@ -523,7 +551,7 @@ export class Models extends ParentApi {
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/models/subgraphs/file`),
       request,
-      config
+      config,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -550,12 +578,14 @@ export class Models extends ParentApi {
    * @param modelConfigId
    * @param dataSetId
    * @param shared
+   * @param hrOnly - only high risk segments will be used in training
    */
   async transferLearning(
     name: string,
     modelConfigId: string,
     dataSetId: string,
-    shared: boolean
+    shared: boolean,
+    hrOnly: boolean,
   ): Promise<transferLearningResult> {
     // compile data
     const request: TransferLearningRequest = {
@@ -563,6 +593,7 @@ export class Models extends ParentApi {
       modelConfigId,
       dataSetId,
       shared,
+      hrOnly,
     };
     // make the api call
     const response: ApiResponse<
@@ -570,7 +601,7 @@ export class Models extends ParentApi {
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/transfer`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
