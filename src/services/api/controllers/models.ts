@@ -574,6 +574,7 @@ export class Models extends ParentApi {
 
   /**
    * Begins training a model based on the selected method
+   * @param projectId
    * @param name
    * @param modelConfigId
    * @param dataSetId
@@ -581,6 +582,7 @@ export class Models extends ParentApi {
    * @param hrOnly - only high risk segments will be used in training
    */
   async transferLearning(
+    projectId: string,
     name: string,
     modelConfigId: string,
     dataSetId: string,
@@ -600,7 +602,7 @@ export class Models extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.post(
-      this.getPathWithOrganization(`/transfer`),
+      this.getPathWithOrganization(`/projects/${projectId}/transfer`),
       request,
     );
     // the typical ways to die when calling an api

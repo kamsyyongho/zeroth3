@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme) =>
 );
 interface ModelTrainingFormProps {
   dataSets: DataSet[];
+  projectId: string;
   modelConfigs: ModelConfig[];
   trainingMethods: TRAINING_METHODS[];
   dataSetsById: GenericById<DataSet>;
@@ -35,6 +36,7 @@ interface ModelTrainingFormProps {
 export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const {
     modelConfigs,
+    projectId,
     dataSetsById,
     trainingMethods,
     modelConfigsById,
@@ -101,7 +103,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(name.trim(), selectedModelConfigId, selectedDataSetId, shared, hrOnly);
+      const response = await api.models.transferLearning(projectId, name.trim(), selectedModelConfigId, selectedDataSetId, shared, hrOnly);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
