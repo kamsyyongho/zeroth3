@@ -162,6 +162,7 @@ export function ModelTraining() {
           (<BulletList />) :
           (<ModelTrainingForm
             modelConfigs={modelConfigs}
+            projectId={projectId}
             dataSets={dataSets}
             modelConfigsById={modelConfigsById}
             dataSetsById={dataSetsById}
