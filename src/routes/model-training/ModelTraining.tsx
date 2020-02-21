@@ -158,7 +158,7 @@ export function ModelTraining() {
             className: classes.font,
           }}
         />
-        {(modelConfigsLoading || dataSetsLoading || trainingMethodsLoading) ?
+        {(modelConfigsLoading || dataSetsLoading || trainingMethodsLoading || !projectId) ?
           (<BulletList />) :
           (<ModelTrainingForm
             modelConfigs={modelConfigs}
