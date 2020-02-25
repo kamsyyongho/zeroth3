@@ -532,7 +532,7 @@ export class Models extends ParentApi {
     const request = new FormData();
     request.append('name', name);
     request.append('file', file);
-    request.append('topGraphId', topGraphId);
+    request.append('top-graph-id', topGraphId);
     if (typeof isPublic === 'boolean') {
       request.append('public', JSON.stringify(isPublic));
     }
