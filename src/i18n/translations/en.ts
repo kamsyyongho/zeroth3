@@ -285,6 +285,7 @@ export const en: ResourceLanguage = {
           'All model configurations still training',
       },
       trainingInProgress: 'Training in progress',
+      trainingError: 'Training error',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',

@@ -6,8 +6,13 @@ import { CustomTheme } from '../../theme/index';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
-    trainingAlertChip: {
+    error: {
       backgroundColor: theme.error,
+      color: theme.palette.primary.contrastText,
+      fontWeight: 'bold',
+    },
+    training: {
+      backgroundColor: theme.editor.changes,
       color: theme.palette.primary.contrastText,
       fontWeight: 'bold',
     },
@@ -23,11 +28,12 @@ export const TrainingChip = (props: TrainingChipProps) => {
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
   if (progress < 100) {
+    const isError = progress < 0;
     return (
       <Chip
-        label={translate('models.trainingInProgress')}
+        label={translate(isError ? 'models.trainingError' : 'models.trainingInProgress')}
         size='small'
-        className={classes.trainingAlertChip}
+        className={isError ? classes.error : classes.training}
       />
     );
   }

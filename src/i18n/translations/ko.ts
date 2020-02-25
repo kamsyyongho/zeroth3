@@ -283,6 +283,7 @@ export const ko: ResourceLanguage = {
           '모델 설정을 위한 학습이 진행중입니다',
       },
       trainingInProgress: '학습 진행중',
+      trainingError: '학습 오류',
       subGraphHeader: '서브 그래프 관리',
       subGraphNoResults: '서브 그래프 없음',
       createSubGraph: '서브 그래프 생성',
