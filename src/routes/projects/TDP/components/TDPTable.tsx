@@ -149,23 +149,21 @@ export function TDPTable(props: TDPTableProps) {
     const voiceData = cellData.cell.row.original;
     // eslint-disable-next-line react/prop-types
     const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
-    if (canModify && confirmed) {
-      return (<Tooltip
-        placement='top'
-        title={<Typography variant='body1' >{translate('TDP.openToRate')}</Typography>}
-        arrow={true}
+    return (<Tooltip
+      placement='top'
+      title={<Typography variant='body1' >{confirmed ? translate('TDP.openToRate') : ""}</Typography>}
+      arrow={true}
+      open={confirmed ? undefined : false} // hide tooltip if not confirmed
+    >
+      <IconButton
+        color='primary'
+        size='medium'
+        aria-label="open"
+        onClick={() => handleRowClick(voiceData)}
       >
-        <IconButton
-          color='primary'
-          size='medium'
-          aria-label="open"
-          onClick={() => handleRowClick(voiceData)}
-        >
-          <LaunchIcon />
-        </IconButton>
-      </Tooltip>);
-    }
-    return null;
+        <LaunchIcon />
+      </IconButton>
+    </Tooltip>);
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
