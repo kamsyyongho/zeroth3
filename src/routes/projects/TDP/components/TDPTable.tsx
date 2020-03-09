@@ -38,7 +38,6 @@ interface TDPTableProps {
   projectName: string;
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
-  onlyAssignedData: boolean;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
@@ -91,7 +90,6 @@ export function TDPTable(props: TDPTableProps) {
     projectName,
     voiceDataResults,
     modelConfigsById,
-    onlyAssignedData,
     loading,
     getVoiceData,
     handleVoiceDataUpdate,
@@ -151,7 +149,7 @@ export function TDPTable(props: TDPTableProps) {
     const voiceData = cellData.cell.row.original;
     // eslint-disable-next-line react/prop-types
     const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
-    if (canModify && !onlyAssignedData && confirmed) {
+    if (canModify && confirmed) {
       return (<Tooltip
         placement='top'
         title={<Typography variant='body1' >{translate('TDP.openToRate')}</Typography>}
@@ -231,7 +229,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderStatus = (cellData: CellProps<VoiceData>) => {
     // to only make editable when showing all
-    if (loading || onlyAssignedData) {
+    if (loading) {
       return cellData.cell.value;
     }
     return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
@@ -396,8 +394,6 @@ export function TDPTable(props: TDPTableProps) {
         <React.Fragment key={`row-${rowIndex}`}>
           {rowIndex > 0 && rowFiller}
           <TableRow
-            hover={(onlyAssignedData || !canModify)}
-            onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
             className={classes.tableRow}
@@ -440,18 +436,16 @@ export function TDPTable(props: TDPTableProps) {
 
 
   return (<>
-    {!onlyAssignedData &&
-      <div className={classes.filterContainer} >
-        <TDPFilters
-          updateVoiceData={handleFilterUpdate}
-          loading={loading}
-          modelConfigsById={modelConfigsById}
-        />
-      </div>
-    }
+    <div className={classes.filterContainer} >
+      <TDPFilters
+        updateVoiceData={handleFilterUpdate}
+        loading={loading}
+        modelConfigsById={modelConfigsById}
+      />
+    </div>
     <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
+      <TableBody className={classes.clickableTableBody} >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={fullRowColSpan} >

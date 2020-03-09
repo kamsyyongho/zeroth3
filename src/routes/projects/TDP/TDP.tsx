@@ -62,7 +62,6 @@ export function TDP(props: TDPProps) {
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
-  const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
@@ -101,7 +100,7 @@ export function TDP(props: TDPProps) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [api, onlyAssignedData, projectId]);
+  }, [api, projectId]);
 
   const getVoiceDataWithDefautOptions = () => {
     const options: SearchDataRequest = {};
@@ -190,7 +189,6 @@ export function TDP(props: TDPProps) {
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
-            onlyAssignedData={onlyAssignedData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
             loading={voiceDataLoading}
             setFilterParams={setFilterParams}
