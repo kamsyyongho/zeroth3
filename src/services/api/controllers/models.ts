@@ -577,7 +577,7 @@ export class Models extends ParentApi {
    * @param projectId
    * @param name
    * @param modelConfigId
-   * @param dataSetId
+   * @param dataSetIds
    * @param shared
    * @param hrOnly - only high risk segments will be used in training
    */
@@ -585,7 +585,7 @@ export class Models extends ParentApi {
     projectId: string,
     name: string,
     modelConfigId: string,
-    dataSetId: string,
+    dataSetIds: string[],
     shared: boolean,
     hrOnly: boolean,
   ): Promise<transferLearningResult> {
@@ -593,7 +593,7 @@ export class Models extends ParentApi {
     const request: TransferLearningRequest = {
       name,
       modelConfigId,
-      dataSetId,
+      dataSetIds,
       shared,
       hrOnly,
     };

@@ -25,7 +25,7 @@ export interface LanguageModelRequest {
 export interface TransferLearningRequest {
   name: string;
   modelConfigId: string;
-  dataSetId: string;
+  dataSetIds: string[];
   shared: boolean;
   hrOnly: boolean;
 }
