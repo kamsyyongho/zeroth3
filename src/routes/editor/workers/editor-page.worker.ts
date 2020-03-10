@@ -1,8 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-// const binarySearch = require('binary-search');
-// import binarySearch from 'binary-search';
-import { Segment, SegmentAndWordIndex, Time } from '../../../types';
-import { WordAlignment } from '../../../types/voice-data.types';
+import {
+  Segment,
+  SegmentAndWordIndex,
+  Time,
+  WordAlignment,
+} from '../../../types';
 
 /**
   - Notes about comparator return value:

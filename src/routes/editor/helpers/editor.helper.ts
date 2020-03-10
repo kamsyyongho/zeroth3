@@ -18,8 +18,10 @@ import {
   KEY_COMMANDS,
   MUTABILITY_TYPE,
   Segment,
+  SegmentAndWordIndex,
+  WordKeyLocation3DArray,
+  WordKeyStoreContent,
 } from '../../../types';
-import { SegmentAndWordIndex } from '../../../types/editor.types';
 import { EntityContent } from '../components/EntityContent';
 
 // Custom overrides for "playing" style.
@@ -187,11 +189,6 @@ export const updateBlockSegmentData = (
 /** prevents changing of the editor state */
 export const editorChangeNoop = () => HANDLE_VALUES.handled;
 
-/**
- * Segment arrays of arrays of word keys
- */
-type WordKeyLocation3DArray = number[][];
-
 export class WordKeyStore {
   keys: { [x: number]: SegmentAndWordIndex } = {};
   keyCounter = 0;
@@ -262,6 +259,23 @@ export class WordKeyStore {
     });
     this.wordKeyLocations = tempWordKeyLocations;
     return true;
+  };
+
+  initWithContent = (wordKeyStoreContent: WordKeyStoreContent) => {
+    this.keys = wordKeyStoreContent.keys;
+    this.keyCounter = wordKeyStoreContent.keyCounter;
+    this.wordKeyLocations = wordKeyStoreContent.wordKeyLocations;
+  };
+
+  /** exports the content to be initialized in a different instance
+   * - used to pass a class instance's content to/from a webworker
+   */
+  exportContent = (): WordKeyStoreContent => {
+    return {
+      keys: this.keys,
+      keyCounter: this.keyCounter,
+      wordKeyLocations: this.wordKeyLocations,
+    };
   };
 
   /** Generates a new key for a given location

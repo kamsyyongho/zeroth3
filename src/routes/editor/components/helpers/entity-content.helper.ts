@@ -8,8 +8,8 @@ export const checkLocationOnScreenAndScroll = (
 ) => {
   if (editorAutoScrollDisabled) return;
   const AUTO_SCROLL_AREA_RATIO = 1 / 6; // only the bottom portion of the editor
-  const heightRange =
-    editorContentHeight - editorContentHeight * AUTO_SCROLL_AREA_RATIO;
+  const editorBottomScrollZone = editorContentHeight * AUTO_SCROLL_AREA_RATIO;
+  const heightRange = editorContentHeight - editorBottomScrollZone;
   const nonScrollArea = (windowHeight - editorContentHeight) / 2; // only use the area above the editor
   // check the location and scroll accordingly
   if (referenceElement && nonScrollArea && editorElement && heightRange) {
@@ -23,7 +23,7 @@ export const checkLocationOnScreenAndScroll = (
     ) {
       editorElement.scrollTo({
         behavior: 'smooth',
-        top: editorElement.scrollTop + 200,
+        top: editorElement.scrollTop + editorBottomScrollZone,
         left: 0,
       });
       // scroll up/down if it is off the screen

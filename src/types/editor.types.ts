@@ -7,6 +7,18 @@ import {
 } from 'draft-js';
 import { Segment, WordAlignment } from './voice-data.types';
 
+/**
+ * Segment arrays of arrays of word keys
+ */
+export type WordKeyLocation3DArray = number[][];
+export interface WordKeyStoreContent {
+  keys: {
+    [x: number]: SegmentAndWordIndex;
+  };
+  keyCounter: number;
+  wordKeyLocations: WordKeyLocation3DArray;
+}
+
 export interface Range {
   start: number;
   end: number; // this value used as rangeIndex
