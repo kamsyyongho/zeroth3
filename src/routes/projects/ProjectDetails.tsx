@@ -1,10 +1,12 @@
-import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@material-ui/core';
+import { Box, Card, CardContent, CardHeader, Container, Grid, IconButton, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import CachedIcon from '@material-ui/icons/Cached';
 import clsx from 'clsx';
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
+import MoonLoader from 'react-spinners/MoonLoader';
 import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
@@ -61,6 +63,9 @@ const useStyles = makeStyles((theme) =>
     modelConfigTextGrid: {
       margin: theme.spacing(1),
     },
+    refreshButton: {
+      marginTop: theme.spacing(1),
+    },
   }),
 );
 
@@ -81,6 +86,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
+  const [updateSecretLoading, setUpdateSecretLoading] = React.useState(false);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
@@ -114,6 +120,25 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     const propsToSet = { project, modelConfigs, topGraphs, subGraphs, languageModels, acousticModels };
     setNavigationProps(propsToSet);
     PATHS.modelConfig.function && history.push(PATHS.modelConfig.function(project.id));
+  };
+
+  const updateSecret = async () => {
+    if (api?.projects && project) {
+      setProject({ ...project, apiSecret: '' });
+      setUpdateSecretLoading(true);
+      const response = await api.projects.updateSecret(projectId);
+      if (response.kind === 'ok') {
+        setProject(response.project);
+      } else {
+        log({
+          file: `ProjectDetails.tsx`,
+          caller: `updateSecret - failed to update secret`,
+          value: response,
+          important: true,
+        });
+      }
+      setUpdateSecretLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -289,7 +314,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
         <TextField
           id="api-key"
-          defaultValue={project?.apiKey ?? ""}
+          value={project?.apiKey ?? ""}
           className={clsx(classes.textField, classes.apiInfo)}
           margin="normal"
           InputProps={{
@@ -308,7 +333,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         <Typography align='left' className={classes.apiHeading} >{translate('projects.apiSecret')}</Typography>
         <TextField
           id="api-secret"
-          defaultValue={project?.apiSecret ?? ""}
+          value={project?.apiSecret ?? ""}
           className={clsx(classes.textField, classes.apiInfo)}
           margin="normal"
           InputProps={{
@@ -316,6 +341,19 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           }}
           variant="outlined"
         />
+        <IconButton
+          disabled={updateSecretLoading}
+          color={'primary'}
+          onClick={updateSecret}
+          className={classes.refreshButton}
+        >
+          {updateSecretLoading ? <MoonLoader
+            sizeUnit={"px"}
+            size={15}
+            color={theme.palette.primary.main}
+            loading={true}
+          /> : <CachedIcon />}
+        </IconButton>
       </Grid>
     </Grid>
     );

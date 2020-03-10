@@ -149,7 +149,6 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
       {(formikProps) => {
-        console.log('formikProps.values.selectedDataSetIds', formikProps.values.selectedDataSetIds);
         const modelHelperText = getModelHelperText(formikProps.values.selectedModelConfigId, modelConfigsById);
         const transcriberHelperText = getNumberOfTranscribersHelperText(formikProps.values.selectedDataSetIds, dataSetsById);
         return (<>
