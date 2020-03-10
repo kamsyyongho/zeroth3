@@ -332,6 +332,7 @@ export function Editor(props: EditorProps) {
     splitTimePickerRootProps,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+  const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -1599,6 +1600,7 @@ export function Editor(props: EditorProps) {
         height: offsetHeight,
       };
       setOverlayStyle(overlayPositionStyle);
+      setEditorContentHeight(offsetHeight);
     }
   }, [containerRef, windowWidth]);
 
@@ -1643,6 +1645,7 @@ export function Editor(props: EditorProps) {
 
   return (
     <div
+      id={'scroll-container'}
       ref={containerRef}
       onClick={handleClickInsideEditor}
       style={{
