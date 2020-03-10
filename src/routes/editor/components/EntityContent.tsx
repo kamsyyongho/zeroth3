@@ -85,6 +85,7 @@ interface EntityContentProps extends React.DetailedHTMLProps<React.HTMLAttribute
 export const EntityContent = (props: EntityContentProps) => {
   const { contentState, offsetKey, entityKey } = props;
   const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
+  const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
@@ -119,7 +120,7 @@ export const EntityContent = (props: EntityContentProps) => {
       color: theme.editor.playing,
       boxShadow: theme.editor.playingShadow,
     };
-    checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight);
+    checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
   }
 
   React.useEffect(() => {

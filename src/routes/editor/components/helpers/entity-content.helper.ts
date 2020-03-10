@@ -4,7 +4,9 @@ export const checkLocationOnScreenAndScroll = (
   editorElement: Element | null,
   editorContentHeight = 0,
   windowHeight = 0,
+  editorAutoScrollDisabled?: boolean,
 ) => {
+  if (editorAutoScrollDisabled) return;
   const AUTO_SCROLL_AREA_RATIO = 1 / 6; // only the bottom portion of the editor
   const heightRange =
     editorContentHeight - editorContentHeight * AUTO_SCROLL_AREA_RATIO;

@@ -15,5 +15,6 @@ declare module 'reactn/default' {
     editorDebugMode?: boolean;
     showEditorPopups?: boolean;
     editorContentHeight?: number;
+    editorAutoScrollDisabled?: boolean;
   }
 }

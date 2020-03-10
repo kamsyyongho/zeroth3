@@ -3,6 +3,8 @@ import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
+import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
+import CenterFocusWeakIcon from '@material-ui/icons/CenterFocusWeak';
 import Forward5Icon from '@material-ui/icons/Forward5';
 import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -19,7 +21,7 @@ import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, Segment, Se
 import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
 import PropagateLoader from 'react-spinners/PropagateLoader';
 import ScaleLoader from 'react-spinners/ScaleLoader';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from 'video.js';
 import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
@@ -48,7 +50,6 @@ let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
 let internaDisabledTimesTracker: Time[] | undefined;
 let validTimeBondaries: Required<Time> | undefined;
-let loopValidTimeBoundaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
@@ -153,6 +154,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
@@ -185,6 +187,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onAutoSeekToggle(!prevValue);
     return !prevValue;
   });
+
+  const toggleLockScroll = () => setEditorAutoScrollDisabled(!editorAutoScrollDisabled);
 
   const displayError = (errorText: string) => {
     enqueueSnackbar(errorText, { variant: 'error', preventDuplicate: true });
@@ -592,7 +596,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       // turn off loop
       isLoop = false;
-      loopValidTimeBoundaries = undefined;
       setLoop(false);
       if (isEditingSegmentTime) {
         disableLoop = true;
@@ -726,7 +729,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
       if (isLoop) {
         PeaksPlayer.segments.removeById(PLAYER_SEGMENT_IDS.LOOP);
-        loopValidTimeBoundaries = undefined;
         setLoop(false);
         parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
       } else if (!loopSegment) {
@@ -750,10 +752,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         // only have the loop segment visible
         PeaksPlayer.segments.removeAll();
         PeaksPlayer.segments.add(segmentOptions);
-        loopValidTimeBoundaries = {
-          start: startTime,
-          end: endTime,
-        };
         setLoop(true);
       }
       isLoop = !isLoop;
@@ -1196,6 +1194,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           important: true,
         });
       }
+      setEditorAutoScrollDisabled(false);
       duration = 0;
       waitingTimeoutId = undefined;
       getTimeIntervalId = undefined;
@@ -1206,7 +1205,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer = undefined;
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
-      loopValidTimeBoundaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
     };
   }, []);
@@ -1283,6 +1281,18 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onIcon={<SvgIcon component={TiLockOpenOutline} />}
         offIcon={<SvgIcon component={TiLockClosedOutline} />}
       />
+    </Button>
+    <Button
+      aria-label="scroll-lock"
+      onClick={toggleLockScroll}
+      classes={{
+        root: editorAutoScrollDisabled ? classes.buttonSelected : undefined,
+      }}
+    >
+      {editorAutoScrollDisabled ?
+        <CenterFocusWeakIcon /> :
+        <CenterFocusStrongIcon />
+      }
     </Button>
   </ButtonGroup>);
 
