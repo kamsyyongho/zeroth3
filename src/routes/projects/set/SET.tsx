@@ -77,6 +77,16 @@ export default function SET(props: SETProps) {
     getDataSets();
   }, [refreshCounter]);
 
+  /**
+   * should refresh if the project has changed
+   */
+  React.useEffect(() => {
+    getTranscribersWithStats();
+    getDataSets();
+  }, [projectId]);
+
+
+
   const openTranscriberDialog = () => setTranscribersDialogOpen(true);
   const closeTranscriberDialog = () => {
     setTranscribersDialogOpen(false);
