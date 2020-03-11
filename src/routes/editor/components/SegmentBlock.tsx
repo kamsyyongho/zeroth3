@@ -19,6 +19,8 @@ export interface SegmentBlockSubProps {
   readOnly?: boolean;
   /** opens the assign speaker dialog for the segment */
   assignSpeakerForSegment: (segmentId: string) => void;
+  /** deletes high-risk segment value */
+  removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
 
 interface SegmentBlockProps extends EditorBlock {

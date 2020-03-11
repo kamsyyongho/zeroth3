@@ -1049,7 +1049,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (segmentSplitTime !== undefined) {
       createPoint(segmentSplitTime);
     } else {
-      ;
       deleteAllPoints();
     }
   }, [segmentSplitTime]);

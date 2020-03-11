@@ -1,4 +1,4 @@
-import { Badge, Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { Badge, Button, Chip, Grid, Tooltip, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import clsx from 'clsx';
@@ -43,11 +43,23 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       backgroundColor: theme.editor.changes,
     },
     highRistkBadge: {
+      caretColor: theme.audioPlayer.playhead,
       marginLeft: theme.spacing(1),
     },
     timeButton: {
       padding: 0,
       margin: 0,
+    },
+    highRiskChip: {
+      borderColor: theme.audioPlayer.playhead,
+      color: theme.audioPlayer.playhead,
+      marginLeft: theme.spacing(1),
+    },
+    highRiskChipIcon: {
+      color: theme.audioPlayer.playhead,
+      "&:hover": {
+        color: theme.error,
+      }
     },
   }),
 );
@@ -64,7 +76,7 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   const classes = useStyles();
   const { translate } = React.useContext(I18nContext);
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-  const { readOnly, assignSpeakerForSegment, block } = props;
+  const { readOnly, assignSpeakerForSegment, removeHighRiskValueFromSegment, block } = props;
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
@@ -76,7 +88,13 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
       assignSpeakerForSegment(id);
     }
   };
+  const handleHighRiskDelete = () => {
+    if (id && removeHighRiskValueFromSegment && typeof removeHighRiskValueFromSegment === 'function') {
+      removeHighRiskValueFromSegment(id);
+    }
+  };
   const iconHidden = !speaker && !showEditorPopups;
+  const showChip = highRisk && showEditorPopups;
   const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined} fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
   const speakerButton = (<Button
     size='small'
@@ -147,23 +165,33 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
       >
         {({ isVisible }) => {
           let isOpen = false;
-          let title: React.ReactNode = '';
+          let tooltipText: React.ReactNode = '';
           if (isVisible) {
             isOpen = !!showEditorPopups;
             if (displayTextChangedHover) {
-              title = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
+              tooltipText = <Typography contentEditable={false} variant='body1' >{decoderTranscript}</Typography>;
             }
           }
           return (<>
             <Tooltip
               placement='right-start'
-              title={title}
+              title={tooltipText}
               open={isOpen}
               arrow={false}
               classes={{ tooltip: classes.tooltipContent }}
             >
               {speakerButton}
             </Tooltip>
+            {showChip && <Chip
+              className={classes.highRiskChip}
+              classes={{
+                deleteIconSmall: classes.highRiskChipIcon,
+              }}
+              label={translate('editor.highRiskSegment')}
+              size='small'
+              onDelete={handleHighRiskDelete}
+              variant="outlined"
+            />}
           </>);
         }
         }

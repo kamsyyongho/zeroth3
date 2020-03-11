@@ -233,6 +233,7 @@ export const en: ResourceLanguage = {
       addSpeaker: 'Add speaker',
       changeSpeaker: 'Change speaker',
       calculating: 'Calculating',
+      highRiskSegment: 'High Risk Segment',
       validation: {
         missingTimes: 'All words must have start and end times',
         invalidSplitLocation: 'Invalid split location',

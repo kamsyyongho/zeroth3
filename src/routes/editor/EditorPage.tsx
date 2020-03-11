@@ -48,7 +48,8 @@ let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
 
 export enum PARENT_METHOD_TYPES {
-  speaker
+  speaker,
+  highRisk,
 }
 
 export interface ParentMethodResponse {
@@ -109,6 +110,7 @@ export function EditorPage() {
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
+  const [highRiskRemoveLoading, setHighRiskRemoveLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
@@ -136,6 +138,12 @@ export function EditorPage() {
 
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
+
+  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
+    const updatedSegments = [...segments];
+    updatedSegments[segmentIndex] = updatedSegment;
+    setSegments(updatedSegments);
+  };
 
   const getAssignedData = async () => {
     if (api?.voiceData) {
@@ -394,6 +402,39 @@ export function EditorPage() {
     }
   };
 
+  const removeHighRiskFlagFromSegment = async (segmentIndex: number, segmentId: string) => {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed && !highRiskRemoveLoading) {
+      setHighRiskRemoveLoading(true);
+      const response = await api.voiceData.removeHighRiskFlagFromSegment(projectId, voiceData.id, segmentId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+
+        const updatedSegment = { ...segments[segmentIndex], highRisk: false };
+        handleSegmentUpdate(updatedSegment, segmentIndex);
+        const dispatchResponse: ParentMethodResponse = {
+          type: PARENT_METHOD_TYPES.highRisk,
+          payload: { segment: updatedSegment, index: segmentIndex },
+        };
+        setResponseToPassToEditor(dispatchResponse);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentSplitByTime - failed to split segment by time`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setHighRiskRemoveLoading(false);
+    }
+  };
+
   /**
    * Calculates start and end of the current playing word
    * - updates the state so it can be passed to the audio player
@@ -503,12 +544,6 @@ export function EditorPage() {
     setDisabledTimes(disabledTimes);
   };
 
-  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
-    const updatedSegments = [...segments];
-    updatedSegments[segmentIndex] = updatedSegment;
-    setSegments(updatedSegments);
-  };
-
   /** 
    * will be called in the editor to get the updated info
    * - used to update the attached segment data for the block
@@ -537,6 +572,8 @@ export function EditorPage() {
   const handleAutoSeekToggle = (value: boolean) => setAutoSeekLock(value);
 
   const openSpeakerAssignDialog = (segmentIndex: number) => setSegmentIndexToAssignSpeakerTo(segmentIndex);
+
+  const removeHighRiskFromSegment = (segmentIndex: number, segmentId: string) => removeHighRiskFlagFromSegment(segmentIndex, segmentId);
 
   const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
 
@@ -721,6 +758,7 @@ export function EditorPage() {
                 splitSegmentByTime={submitSegmentSplitByTime}
                 mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
+                removeHighRiskFromSegment={removeHighRiskFromSegment}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
                 timePickerRootProps={{
                   setDisabledTimes: handleDisabledTimesSet,

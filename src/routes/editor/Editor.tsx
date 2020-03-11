@@ -298,6 +298,7 @@ interface EditorProps {
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
   assignSpeaker: (segmentIndex: number) => void;
+  removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
   splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
@@ -324,6 +325,7 @@ export function Editor(props: EditorProps) {
     updateSegment,
     updateSegmentTime,
     assignSpeaker,
+    removeHighRiskFromSegment,
     onWordClick,
     splitSegment,
     splitSegmentByTime,
@@ -375,6 +377,16 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  /**
+   * used in the custom block to delete high-risk segment value
+   */
+  const removeHighRiskValueFromSegment = (segmentId: string) => {
+    const segmentIndex = getIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      removeHighRiskFromSegment(segmentIndex, segmentId);
+    }
+  };
+
   const styleMap = React.useMemo(() => {
     return buildStyleMap(theme);
   }, []);
@@ -389,6 +401,7 @@ export function Editor(props: EditorProps) {
         props: {
           readOnly,
           assignSpeakerForSegment,
+          removeHighRiskValueFromSegment,
         } as SegmentBlockSubProps,
       };
     }
@@ -1537,6 +1550,7 @@ export function Editor(props: EditorProps) {
       let updatedContentState: ContentState | undefined;
       switch (type) {
         case PARENT_METHOD_TYPES.speaker:
+        case PARENT_METHOD_TYPES.highRisk:
           blockKey = getBlockKeyFromSegmentId(segment.id);
           if (blockKey) {
             updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);

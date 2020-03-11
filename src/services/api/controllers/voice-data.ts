@@ -272,6 +272,36 @@ export class VoiceData extends ParentApi {
   }
 
   /**
+   * Removes the high-risk segment value from a segment
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   */
+  async removeHighRiskFlagFromSegment(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+  ): Promise<updateSegmentResult> {
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/no-risk`,
+      ),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
    * Updates a voice data's segments
    * @param projectId
    * @param dataId
