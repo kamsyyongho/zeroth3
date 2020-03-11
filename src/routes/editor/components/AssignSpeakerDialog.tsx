@@ -15,12 +15,14 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { Segment, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
+import { InputSelectFormField } from '../../shared/form-fields/InputSelectFormField';
 
 interface AssignSpeakerDialogProps {
   open: boolean;
   projectId: string;
   dataId: string;
+  speakers: string[];
+  onSpeakersUpdate: (speakers: string[]) => void;
   segment?: Segment;
   segmentIndex?: number;
   onClose: () => void;
@@ -33,6 +35,8 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
     open,
     projectId,
     dataId,
+    speakers,
+    onSpeakersUpdate,
     segment,
     segmentIndex,
     onClose,
@@ -63,12 +67,18 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
     if (api?.voiceData && !loading && segmentId && segment && typeof segmentIndex === 'number') {
       setLoading(true);
       setIsError(false);
-      const response = await api.voiceData.updateSpeaker(projectId, dataId, segmentId, values.speaker.trim());
+      const speaker = values.speaker.trim();
+      const response = await api.voiceData.updateSpeaker(projectId, dataId, segmentId, speaker);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-        const updatedSegment = { ...segment, speaker: values.speaker.trim() };
+        const speakersSet = new Set(speakers);
+        if (!speakersSet.has(speaker)) {
+          speakers.push(speaker);
+          onSpeakersUpdate(speakers);
+        }
+        const updatedSegment = { ...segment, speaker: speaker };
         onSuccess(updatedSegment, segmentIndex);
         onClose();
       } else {
@@ -105,7 +115,14 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
           <>
             <DialogContent>
               <Form>
-                <Field autoFocus name='speaker' component={TextFormField} label={translate("forms.speaker")} errorOverride={isError} />
+                <Field
+                  autoFocus
+                  options={speakers}
+                  name='speaker'
+                  component={InputSelectFormField}
+                  label={translate("forms.speaker")}
+                  errorOverride={isError}
+                />
               </Form>
             </DialogContent>
             <DialogActions>

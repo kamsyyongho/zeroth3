@@ -7,6 +7,7 @@ import 'draft-js/dist/Draft.css';
 import { useSnackbar, VariantType } from 'notistack';
 import Draggable from 'react-draggable';
 import React, { useGlobal } from 'reactn';
+import { SPLITTABLE_CHARACTERS, SPLIT_CHARACTER, SPLIT_CHARACTER_REGEX } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
@@ -100,9 +101,6 @@ const getSegmentIdFromBlockKey = (blockKey: string) => blockKeyToSegmentIdMap[bl
 const getBlockKeyFromSegmentId = (segmentId: string) => segmentIdToBlockKeyMap[segmentId];
 const getWordKeyFromEntityKey = (entityKey: number) => entityKeyToWordKeyMap[entityKey];
 const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordKey];
-const SPLIT_CHARACTER = '•';
-const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
-const SPLIT_CHARACTER_REGEX = new RegExp(SPLIT_CHARACTER, "g");
 let entityKeyCounter = 0;
 const prevPlayingEntityKey = -1;
 // used to force updating of the segment
@@ -292,6 +290,7 @@ interface EditorProps {
   onCommandHandled: () => void;
   onReady: (ready: boolean) => void;
   onWordTimeCreationClose: () => void;
+  onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   loading?: boolean;
   segments: Segment[];
@@ -317,6 +316,7 @@ export function Editor(props: EditorProps) {
     onCommandHandled,
     onReady,
     onWordTimeCreationClose,
+    onSpeakersUpdate,
     onUpdateUndoRedoStack,
     loading,
     segments,
@@ -409,14 +409,21 @@ export function Editor(props: EditorProps) {
   };
 
   const generateStateFromSegments = () => {
+    const speakers = new Set<string>();
     let textString = '';
     segments.forEach((segment: Segment, index: number) => {
+      if (segment.speaker) {
+        speakers.add(segment.speaker);
+      }
       if (!index) {
         textString = `${index}`;
       } else {
         textString = textString + `***${index}`;
       }
     });
+    if (speakers.size) {
+      onSpeakersUpdate(Array.from(speakers));
+    }
     wordKeyBank.init(segments);
     const content = ContentState.createFromText(textString, '***');
     const rawContent = convertToRaw(content);

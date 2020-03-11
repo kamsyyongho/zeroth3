@@ -114,6 +114,7 @@ export function EditorPage() {
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
+  const [speakers, setSpeakers] = React.useState<string[]>([]);
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -592,6 +593,10 @@ export function EditorPage() {
     setTimeFromPlayer(time);
   };
 
+  const handleSpeakersUpdate = (speakers: string[]) => {
+    setSpeakers(speakers);
+  };
+
   const onUpdateUndoRedoStack = (canUndo: boolean, canRedo: boolean) => {
     setCanUndo(canUndo);
     setCanRedo(canRedo);
@@ -602,6 +607,7 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
+    setSpeakers([]);
     setPlaybackTime(0);
     setCanPlayAudio(false);
     setCanUndo(false);
@@ -706,6 +712,7 @@ export function EditorPage() {
                 onReady={setEditorReady}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
+                onSpeakersUpdate={handleSpeakersUpdate}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
                 updateSegment={submitSegmentUpdate}
@@ -773,6 +780,8 @@ export function EditorPage() {
       <AssignSpeakerDialog
         projectId={projectId}
         dataId={voiceData.id}
+        speakers={speakers}
+        onSpeakersUpdate={handleSpeakersUpdate}
         segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
         segmentIndex={segmentIndexToAssignSpeakerTo}
         open={segmentIndexToAssignSpeakerTo !== undefined}
