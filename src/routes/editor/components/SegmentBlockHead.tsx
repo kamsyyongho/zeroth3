@@ -61,6 +61,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         color: theme.error,
       }
     },
+    hidden: {
+      visibility: 'hidden',
+      width: 0,
+    },
   }),
 );
 
@@ -74,7 +78,7 @@ interface SegmentBlockHeadProps extends SegmentBlockSubProps {
 
 const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   const classes = useStyles();
-  const { translate } = React.useContext(I18nContext);
+  const { translate, osText } = React.useContext(I18nContext);
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const { readOnly, assignSpeakerForSegment, removeHighRiskValueFromSegment, block } = props;
   const rawBlockData = block.getData();
@@ -174,33 +178,31 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
           }
           return (<>
             <Tooltip
+              placement='top-start'
+              title={<Typography variant='h6' >{osText('speaker')}</Typography>}
+              arrow={true}
+            >
+              <span>{speakerButton}</span>
+            </Tooltip>
+
+            <Tooltip
               placement='right-start'
               title={tooltipText}
-              open={isOpen && !showChip}
+              open={isOpen}
               arrow={false}
               classes={{ tooltip: classes.tooltipContent }}
             >
-              {speakerButton}
+              <Chip
+                className={clsx(classes.highRiskChip, !showChip && classes.hidden)}
+                classes={{
+                  deleteIconSmall: classes.highRiskChipIcon,
+                }}
+                label={translate('editor.highRiskSegment')}
+                size='small'
+                onDelete={handleHighRiskDelete}
+                variant="outlined"
+              />
             </Tooltip>
-            {showChip &&
-              <Tooltip
-                placement='right-start'
-                title={tooltipText}
-                open={isOpen}
-                arrow={false}
-                classes={{ tooltip: classes.tooltipContent }}
-              >
-                <Chip
-                  className={classes.highRiskChip}
-                  classes={{
-                    deleteIconSmall: classes.highRiskChipIcon,
-                  }}
-                  label={translate('editor.highRiskSegment')}
-                  size='small'
-                  onDelete={handleHighRiskDelete}
-                  variant="outlined"
-                />
-              </Tooltip>}
           </>);
         }
         }
