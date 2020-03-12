@@ -11,7 +11,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS, DataSet, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -117,6 +117,7 @@ export function EditorPage() {
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
   const [speakers, setSpeakers] = React.useState<string[]>([]);
+  const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -168,10 +169,10 @@ export function EditorPage() {
     }
   };
 
-  const fetchMoreVoiceData = async () => {
+  const fetchMoreVoiceData = async (dataSetId?: string) => {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
-      const response = await api.voiceData.fetchUnconfirmedData();
+      const response = await api.voiceData.fetchUnconfirmedData(dataSetId);
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setNoRemainingContent(response.noContent);
@@ -207,6 +208,22 @@ export function EditorPage() {
         });
       }
       setSegmentsLoading(false);
+    }
+  };
+
+  const getDataSetsToFetchFrom = async () => {
+    if (api?.user) {
+      const response = await api.user.getDataSetsToFetchFrom();
+      if (response.kind === 'ok') {
+        setDataSets(response.dataSets);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getDataSetsToFetchFrom - failed to get data sets`,
+          value: response,
+          important: true,
+        });
+      }
     }
   };
 
@@ -645,6 +662,7 @@ export function EditorPage() {
     setSegmentsLoading(true);
     setSegments([]);
     setSpeakers([]);
+    setDataSets([]);
     setPlaybackTime(0);
     setCanPlayAudio(false);
     setCanUndo(false);
@@ -678,6 +696,7 @@ export function EditorPage() {
     if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
+      getDataSetsToFetchFrom();
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
@@ -688,6 +707,7 @@ export function EditorPage() {
       getSegments();
     } else {
       getAssignedData();
+      getDataSetsToFetchFrom();
     }
     return () => {
       resetVariables();
@@ -702,7 +722,7 @@ export function EditorPage() {
   }
 
   if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent) {
-    return <EditorFetchButton onClick={fetchMoreVoiceData} />;
+    return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
   if (noRemainingContent || !voiceData || !projectId) {

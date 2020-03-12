@@ -147,6 +147,7 @@ export const en: ResourceLanguage = {
       transcript: 'Transcript',
       transcriber: 'Transcriber',
       none: 'None',
+      all: 'All',
       today: 'Today',
       assign: 'Assign',
       length: 'Length',
@@ -191,6 +192,7 @@ export const en: ResourceLanguage = {
     },
     SET: {
       SET: 'SET',
+      dataSet: 'Data set',
       createSetFromFilter: 'Create SET from filter',
       createSet: 'Create SET',
       numberTranscribers: '{{count}} transcriber',

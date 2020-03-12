@@ -63,6 +63,7 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
+      <TableCell />
     </TableRow>
   </TableHead>);
 

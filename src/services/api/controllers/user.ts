@@ -1,6 +1,12 @@
-import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { ApisauceInstance } from 'apisauce';
+import { DataSet } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { ProblemKind, resetPasswordResult, ServerError } from '../types';
+import {
+  getDataSetsToFetchFromResult,
+  ProblemKind,
+  resetPasswordResult,
+  ServerError,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -21,10 +27,9 @@ export class User extends ParentApi {
    */
   async resetPassword(): Promise<resetPasswordResult> {
     // make the api call
-    const response: ApiResponse<
-      undefined,
-      ServerError
-    > = await this.apisauce.post(`/reset-password`);
+    const response = await this.apisauce.post<undefined, ServerError>(
+      `/reset-password`,
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -36,5 +41,32 @@ export class User extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+
+  /**
+   * Gets a list of data sets assigned to the user
+   */
+  async getDataSetsToFetchFrom(): Promise<getDataSetsToFetchFromResult> {
+    // make the api call
+    const response = await this.apisauce.get<DataSet[], ServerError>(
+      this.getPathWithOrganization(`/assigned-datasets`),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const dataSets = response.data as DataSet[];
+      return { kind: 'ok', dataSets };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

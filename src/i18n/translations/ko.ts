@@ -149,6 +149,7 @@ export const ko: ResourceLanguage = {
       transcript: '전사 결과',
       transcriber: '전사자',
       none: '없음',
+      all: '모든',
       today: '오늘',
       assign: '할당',
       length: '길이',
@@ -192,6 +193,7 @@ export const ko: ResourceLanguage = {
     },
     SET: {
       SET: '전사세트',
+      dataSet: '데이터 전사',
       createSetFromFilter: '필터로 전사세트 만들기',
       createSet: '전사세트 만들기',
       numberTranscribers: '{{count}} 전사자',

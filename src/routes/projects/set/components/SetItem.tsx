@@ -1,10 +1,12 @@
 import { Grid, TableCell, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import EditIcon from '@material-ui/icons/Edit';
 import React from 'reactn';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
@@ -33,11 +35,33 @@ export function SetItem(props: SetItemProps) {
   const { dataSet, dataSetIndex, openTranscriberDialog } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
+  const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
 
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
 
   const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
+
+
+  const getDownloadLink = async () => {
+    if (api?.dataSet) {
+      setSubGraphsLoading(true);
+      setSubGraphs([]);
+      const response = await api.models.getDownloadLink();
+      if (response.kind === 'ok') {
+        setSubGraphs(response.subGraphs);
+      } else {
+        log({
+          file: `SetItem.tsx`,
+          caller: `getDownloadLink - failed to get download link`,
+          value: response,
+          important: true,
+        });
+      }
+      setSubGraphsLoading(false);
+    }
+  };
 
   // must be a number from 0 to 100
   const progress = processed / total * 100;
@@ -100,6 +124,11 @@ export function SetItem(props: SetItemProps) {
       </TableCell>
       <TableCell>
         {renderTranscriberEdit()}
+      </TableCell>
+      <TableCell>
+        <IconButton color='primary' >
+          <CloudDownloadIcon />
+        </IconButton>
       </TableCell>
     </TableRow>
   );

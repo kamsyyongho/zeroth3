@@ -68,7 +68,6 @@ export function TDP(props: TDPProps) {
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
   const [voiceDataDeleteLoading, setVoiceDataDeleteLoading] = React.useState(false);
-  const [voiceDataDeleted, setVoiceDataDeleted] = React.useState(false);
   const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 

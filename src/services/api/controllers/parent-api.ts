@@ -5,7 +5,7 @@ import { LOCAL_STORAGE_KEYS } from '../../../types';
 /**
  * Manages all of the parent api instances and methods.
  */
-export class ParentApi {
+export abstract class ParentApi {
   /**
    * The underlying apisauce instance which performs the requests.
    */
@@ -34,7 +34,7 @@ export class ParentApi {
    */
   private buildPathStringWithOrganizationInfo(path: string): string {
     const organizationId = localStorage.getItem(
-      LOCAL_STORAGE_KEYS.ORGANIZATION_ID
+      LOCAL_STORAGE_KEYS.ORGANIZATION_ID,
     );
     if (typeof organizationId === 'string') {
       return `/organizations/${organizationId}${path}`;

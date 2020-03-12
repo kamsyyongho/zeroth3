@@ -1726,6 +1726,7 @@ export function Editor(props: EditorProps) {
           ref={editorRef}
           editorState={editorState}
           customStyleMap={styleMap}
+          readOnly={readOnly}
           keyBindingFn={customKeyBindingFunction}
           blockRendererFn={customBlockRenderer}
           onChange={readOnly ? editorChangeNoop : handleChange}

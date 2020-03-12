@@ -174,14 +174,27 @@ export class VoiceData extends ParentApi {
   /**
    * Assigns one set of assigned data to transcribe
    * - used in the editor
+   * @param dataSetId - the data set to pull voice data from
    * @returns `voiceData` if there is data assigned data
    * @returns `noContent` if status code is 204
    */
-  async fetchUnconfirmedData(): Promise<fetchUnconfirmedDataResult> {
+  async fetchUnconfirmedData(
+    dataSetId?: string,
+  ): Promise<fetchUnconfirmedDataResult> {
+    const params = dataSetId
+      ? {
+          'data-set': dataSetId,
+        }
+      : undefined;
+    // query params on a post are the third (3) parameter
     const response = await this.apisauce.post<
       IVoiceData | undefined,
       ServerError
-    >(this.getPathWithOrganization(`/data/unconfirmed`));
+    >(
+      this.getPathWithOrganization(`/data/unconfirmed`),
+      null,
+      params ? { params } : undefined,
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
