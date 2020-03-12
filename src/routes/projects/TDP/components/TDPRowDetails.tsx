@@ -51,6 +51,9 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
   const {
     startAt,
     endAt,
+    fetchedAt,
+    confirmedAt,
+    originalFilename,
     sessionId,
     ip,
     webSocketCloseReason,
@@ -60,6 +63,8 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
   } = row.original;
   const startDate = new Date(startAt);
   const endDate = new Date(endAt);
+  const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
+  const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
   return (<TableRow
     className={classes.row}
   >
@@ -146,6 +151,40 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             </Typography>
             <Typography>{ip}</Typography>
           </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
+              {`${translate('common.fetchedAt')}:`}
+            </Typography>
+            <Typography>{fetchedDate ? formatDate(fetchedDate) : ''}</Typography>
+          </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
+              {`${translate('common.confirmedAt')}:`}
+            </Typography>
+            <Typography>{confirmedDate ? formatDate(confirmedDate) : ''}</Typography>
+          </Grid>
         </Grid>
         <Grid
           container
@@ -207,6 +246,23 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               {`${translate('TDP.transferredBytes')}:`}
             </Typography>
             <Typography>{transferedBytes}</Typography>
+          </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
+              {`${translate('TDP.originalFilename')}:`}
+            </Typography>
+            <Typography>{originalFilename}</Typography>
           </Grid>
           <Grid
             container

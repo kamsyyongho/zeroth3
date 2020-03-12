@@ -23,6 +23,8 @@ export const en: ResourceLanguage = {
       clearAll: 'Clear all',
       startAt: 'Start time',
       endAt: 'End time',
+      fetchedAt: 'Fetched time',
+      confirmedAt: 'Confirmed time',
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
@@ -185,6 +187,7 @@ export const en: ResourceLanguage = {
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: 'Transferred bytes',
       openToRate: 'Open to rate',
+      originalFilename: 'Filename',
     },
     SET: {
       SET: 'SET',
