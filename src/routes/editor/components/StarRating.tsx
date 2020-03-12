@@ -109,6 +109,7 @@ export const StarRating = (props: StarRatingProps) => {
     >
       <Rating
         readOnly={!canRate}
+        name={projectId}
         value={rating}
         max={5}
         onChange={handleChange}
