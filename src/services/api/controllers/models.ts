@@ -1,4 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { AxiosRequestConfig } from 'axios';
+import { UPLOAD_REQUEST_TIMEOUT } from '../../../constants';
 import {
   AcousticModel,
   LanguageModel,
@@ -514,6 +516,7 @@ export class Models extends ParentApi {
 
   /**
    * Create a new subgraph using a file to upload
+   * - 30 second timeout
    * @param name - the subgraph name
    * @param file - multipart file to upload
    * @param topGraphId
@@ -539,10 +542,11 @@ export class Models extends ParentApi {
     if (typeof isImmutable === 'boolean') {
       request.append('public', JSON.stringify(isImmutable));
     }
-    const config = {
+    const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
+      timeout: UPLOAD_REQUEST_TIMEOUT,
     };
     // make the api call
     const response: ApiResponse<
