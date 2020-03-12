@@ -444,7 +444,7 @@ export function TDPTable(props: TDPTableProps) {
     </div>
     <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody className={classes.clickableTableBody} >
+      <TableBody >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={fullRowColSpan} >
