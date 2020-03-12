@@ -176,22 +176,31 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
             <Tooltip
               placement='right-start'
               title={tooltipText}
-              open={isOpen}
+              open={isOpen && !showChip}
               arrow={false}
               classes={{ tooltip: classes.tooltipContent }}
             >
               {speakerButton}
             </Tooltip>
-            {showChip && <Chip
-              className={classes.highRiskChip}
-              classes={{
-                deleteIconSmall: classes.highRiskChipIcon,
-              }}
-              label={translate('editor.highRiskSegment')}
-              size='small'
-              onDelete={handleHighRiskDelete}
-              variant="outlined"
-            />}
+            {showChip &&
+              <Tooltip
+                placement='right-start'
+                title={tooltipText}
+                open={isOpen}
+                arrow={false}
+                classes={{ tooltip: classes.tooltipContent }}
+              >
+                <Chip
+                  className={classes.highRiskChip}
+                  classes={{
+                    deleteIconSmall: classes.highRiskChipIcon,
+                  }}
+                  label={translate('editor.highRiskSegment')}
+                  size='small'
+                  onDelete={handleHighRiskDelete}
+                  variant="outlined"
+                />
+              </Tooltip>}
           </>);
         }
         }
