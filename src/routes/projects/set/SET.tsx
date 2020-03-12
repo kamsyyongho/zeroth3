@@ -126,6 +126,7 @@ export default function SET(props: SETProps) {
       />
       {setsLoading ? <BulletList /> :
         <SetTable
+          projectId={projectId}
           dataSets={dataSets}
           openTranscriberDialog={handleTranscriberEditClick}
         />
