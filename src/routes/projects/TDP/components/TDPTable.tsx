@@ -40,7 +40,7 @@ interface TDPTableProps {
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
-  deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number) => void;
+  deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
 }
 
@@ -128,6 +128,11 @@ export function TDPTable(props: TDPTableProps) {
     setSortBy(newSortBy);
     // to close any expanded rows
     setExpandedRowsByIndex({});
+  };
+
+  const handleDelete = (voiceDataId: string, dataIndex: number) => {
+    const shoudRefresh = voiceDataResults.content.length < 2;
+    deleteUnconfirmedVoiceData(voiceDataId, dataIndex, shoudRefresh);
   };
 
   /**
@@ -425,7 +430,7 @@ export function TDPTable(props: TDPTableProps) {
               row={row}
               detailsRowColSpan={detailsRowColSpan}
               projectId={projectId}
-              onDelete={deleteUnconfirmedVoiceData}
+              onDelete={handleDelete}
               onSuccess={handleVoiceDataUpdate}
             />
           }

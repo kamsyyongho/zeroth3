@@ -68,6 +68,8 @@ export function TDP(props: TDPProps) {
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
   const [voiceDataDeleteLoading, setVoiceDataDeleteLoading] = React.useState(false);
+  const [voiceDataDeleted, setVoiceDataDeleted] = React.useState(false);
+  const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
   const classes = useStyles();
@@ -95,20 +97,12 @@ export function TDP(props: TDPProps) {
     });
   };
 
-  /**
-   * Removes a single item after deleting
-   */
-  const handleVoiceDataDelete = (dataIndex: number) => {
-    setVoiceDataResults(prevResults => {
-      const updatedContent = [...prevResults.content];
-      updatedContent.splice(dataIndex, 1);
-      return { ...prevResults, content: updatedContent };
-    });
-  };
-
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
+      //save the options to allow us to redo a search
+      // in case we delete a row and it would lead us to have no results
+      setPreviousSearchOptions(options);
       const response = await api.voiceData.searchData(projectId, options);
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
@@ -125,12 +119,36 @@ export function TDP(props: TDPProps) {
     }
   }, [api, projectId]);
 
-  const deleteUnconfirmedVoiceData = React.useCallback(async (voiceDataId: string, voiceDataIndex: number) => {
+  /**
+   * Removes a single item after deleting
+   */
+  const handleVoiceDataDelete = (dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1);
+      return { ...prevResults, content: updatedContent, totalElements: prevResults.totalElements - 1 };
+    });
+  };
+
+  /**
+   * Deletes voice data and updates the table
+   * @param voiceDataId 
+   * @param voiceDataIndex 
+   * @param shoudRefresh determines if we need to redo a search 
+   * because the current page would have no results after deletion
+   */
+  const deleteUnconfirmedVoiceData = async (voiceDataId: string, voiceDataIndex: number, shoudRefresh: boolean) => {
     if (api?.voiceData && projectId) {
       setVoiceDataDeleteLoading(true);
       const response = await api.voiceData.deleteUnconfirmedVoiceData(projectId, voiceDataId);
       if (response.kind === 'ok') {
-        handleVoiceDataDelete(voiceDataIndex);
+        if (shoudRefresh) {
+          // redo seach if the page would show no results
+          setInitialVoiceDataLoading(true);
+          getVoiceData({ ...previousSearchOptions, page: undefined });
+        } else {
+          handleVoiceDataDelete(voiceDataIndex);
+        }
       } else {
         log({
           file: `TDP.tsx`,
@@ -141,7 +159,7 @@ export function TDP(props: TDPProps) {
       }
       setVoiceDataDeleteLoading(false);
     }
-  }, [api, projectId]);
+  };
 
   const getVoiceDataWithDefautOptions = () => {
     const options: SearchDataRequest = {};
