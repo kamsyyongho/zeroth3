@@ -164,3 +164,7 @@ export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
 export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type deleteUnconfirmedVoiceDataResult =
+  | { kind: 'ok' }
+  | GeneralApiProblem;

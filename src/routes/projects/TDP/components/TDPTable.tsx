@@ -35,12 +35,12 @@ const SINGLE_WIDTH_COLUMN = 1;
 
 interface TDPTableProps {
   projectId: string;
-  projectName: string;
   voiceDataResults: VoiceDataResults;
   modelConfigsById: ModelConfigsById;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
 }
 
@@ -87,11 +87,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export function TDPTable(props: TDPTableProps) {
   const {
     projectId,
-    projectName,
     voiceDataResults,
     modelConfigsById,
     loading,
     getVoiceData,
+    deleteUnconfirmedVoiceData,
     handleVoiceDataUpdate,
     setFilterParams,
   } = props;
@@ -425,6 +425,7 @@ export function TDPTable(props: TDPTableProps) {
               row={row}
               detailsRowColSpan={detailsRowColSpan}
               projectId={projectId}
+              onDelete={deleteUnconfirmedVoiceData}
               onSuccess={handleVoiceDataUpdate}
             />
           }

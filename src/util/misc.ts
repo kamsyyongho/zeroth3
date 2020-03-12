@@ -114,3 +114,9 @@ export function generateWordKeyString(location: SegmentAndWordIndex) {
   const key = `${location[0]}${WORD_KEY_SEPARATOR}${location[1]}`;
   return key;
 }
+
+export function deepCopy<T>(itemToCopy: Array<T> | object) {
+  console.log({ itemToCopy });
+  const stringified = JSON.stringify(itemToCopy);
+  return JSON.parse(stringified) as T;
+}

@@ -67,6 +67,7 @@ export function TDP(props: TDPProps) {
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
+  const [voiceDataDeleteLoading, setVoiceDataDeleteLoading] = React.useState(false);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
   const classes = useStyles();
@@ -83,6 +84,28 @@ export function TDP(props: TDPProps) {
     return null;
   }, []);
 
+  /**
+   * Updates a single item after updating
+   */
+  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1, voiceData);
+      return { ...prevResults, content: updatedContent };
+    });
+  };
+
+  /**
+   * Removes a single item after deleting
+   */
+  const handleVoiceDataDelete = (dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1);
+      return { ...prevResults, content: updatedContent };
+    });
+  };
+
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
@@ -92,13 +115,31 @@ export function TDP(props: TDPProps) {
       } else {
         log({
           file: `TDP.tsx`,
-          caller: `getAcousticModels - failed to get voice data`,
+          caller: `getVoiceData - failed to get voice data`,
           value: response,
           important: true,
         });
       }
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
+    }
+  }, [api, projectId]);
+
+  const deleteUnconfirmedVoiceData = React.useCallback(async (voiceDataId: string, voiceDataIndex: number) => {
+    if (api?.voiceData && projectId) {
+      setVoiceDataDeleteLoading(true);
+      const response = await api.voiceData.deleteUnconfirmedVoiceData(projectId, voiceDataId);
+      if (response.kind === 'ok') {
+        handleVoiceDataDelete(voiceDataIndex);
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `deleteUnconfirmedVoiceData - failed to delete voice data`,
+          value: response,
+          important: true,
+        });
+      }
+      setVoiceDataDeleteLoading(false);
     }
   }, [api, projectId]);
 
@@ -125,17 +166,6 @@ export function TDP(props: TDPProps) {
       getVoiceDataWithDefautOptions();
     }
   }, [projectTdpDataShouldRefresh]);
-
-  /**
-   * Updates a single item after updating
-   */
-  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
-    setVoiceDataResults(prevResults => {
-      const updatedContent = [...prevResults.content];
-      updatedContent.splice(dataIndex, 1, voiceData);
-      return { ...prevResults, content: updatedContent };
-    });
-  };
 
   const modelConfigsById: ModelConfigsById = React.useMemo(
     () => {
@@ -185,13 +215,13 @@ export function TDP(props: TDPProps) {
         {(!project || initialVoiceDataLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectId}
-            projectName={project?.name}
             modelConfigsById={modelConfigsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
-            loading={voiceDataLoading}
+            loading={voiceDataLoading || voiceDataDeleteLoading}
             setFilterParams={setFilterParams}
+            deleteUnconfirmedVoiceData={deleteUnconfirmedVoiceData}
           />
         }
       </CardContent>
