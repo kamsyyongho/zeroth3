@@ -403,7 +403,7 @@ export function EditorPage() {
   };
 
   const removeHighRiskFlagFromSegment = async (segmentIndex: number, segmentId: string) => {
-    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed && !highRiskRemoveLoading) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setHighRiskRemoveLoading(true);
       const response = await api.voiceData.removeHighRiskFlagFromSegment(projectId, voiceData.id, segmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
