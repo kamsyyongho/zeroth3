@@ -303,6 +303,13 @@ export const en: ResourceLanguage = {
     },
     audioPlayer: {
       noUrl: 'No audio URL',
+      zoomIn: 'Zoom in',
+      zoomOut: 'Zoom out',
+      loop: 'Loop',
+      playbackSpeed: 'Playback speed',
+      mute: 'Mute',
+      lockNavigateOnClick: 'Lock click navigation',
+      disableAutoScroll: 'Disable auto scroll',
     },
     home: {
       header: 'Welcome to Zeroth',

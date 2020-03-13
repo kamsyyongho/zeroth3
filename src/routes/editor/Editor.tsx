@@ -1585,6 +1585,7 @@ export function Editor(props: EditorProps) {
           }
           break;
       }
+
       // set our updated state
       if (updatedContentState) {
         const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
@@ -1597,9 +1598,8 @@ export function Editor(props: EditorProps) {
             previousSelectionState,
           );
         }
-        setPreviousSelectionState(undefined);;
+        setPreviousSelectionState(undefined);
         setEditorState(editorStateToUse);
-        focusEditor();
       }
     }
   }, [responseFromParent]);
@@ -1694,6 +1694,7 @@ export function Editor(props: EditorProps) {
     }
   }, [playingLocation, ready]);
 
+  // initial mount and unmount logic
   React.useEffect(() => {
     generateStateFromSegments();
     focusEditor();

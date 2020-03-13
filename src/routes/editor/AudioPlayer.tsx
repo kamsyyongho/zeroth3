@@ -341,28 +341,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [isPlay, waiting]);
 
-  /**
-   * display a loading indicator when the player is waiting
-   * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
-   */
-  function handleWaiting() {
-    setWaiting(true);
-    setShowStreamLoader(true);
-    waitingTimeoutId = setTimeout(() => {
-      if (waitingTimeoutId !== undefined) {
-        clearTimeout(waitingTimeoutId);
-        waitingTimeoutId = undefined;
-      }
-      if (!waiting) {
-        setShowStreamLoader(false);
-      }
-    }, 400);
-  }
-
   const handleLoaded = () => {
     setWaiting(false);
   };
-
 
   function handleSeek() {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -530,6 +511,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
       handleError(error);
     }
   };
+
+  /**
+   * display a loading indicator when the player is waiting
+   * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
+   */
+  function handleWaiting() {
+    setWaiting(true);
+    setShowStreamLoader(true);
+    waitingTimeoutId = setTimeout(() => {
+      if (waitingTimeoutId !== undefined) {
+        clearTimeout(waitingTimeoutId);
+        waitingTimeoutId = undefined;
+        handlePlayPause();
+        setTimeout(() => {
+          handlePlayPause();
+        }, 10);
+      }
+      if (!waiting) {
+        setShowStreamLoader(false);
+      }
+    }, 400);
+  }
 
   const handleSkip = (rewind = false) => {
     if (!duration) return;
@@ -1089,35 +1092,49 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [segmentSplitTimeBoundary]);
 
-  /**
-   * handle shortcut key presses
-   */
-  const handleKeyPress = (event: KeyboardEvent) => {
-    const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    const { key, shiftKey } = event;
-    switch (key) {
-      case 'a':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handleSkip(true);
-        }
-        break;
-      case 'd':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handleSkip();
-        }
-        break;
-      case 's':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handlePlayPause();
-        }
-        break;
-    }
-  };
-
+  // initial mount and unmount logic
   React.useEffect(() => {
+    /**
+     * handle shortcut key presses
+     */
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+      const { key, shiftKey } = event;
+      switch (key) {
+        case 'a':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handleSkip(true);
+          }
+          break;
+        case 'd':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handleSkip();
+          }
+          break;
+        case 's':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handlePlayPause();
+          }
+          break;
+      }
+    };
+    /**
+     * start playing on double click
+     * - there is no easy way to prevent selecting text
+     * on doubleclick, so we will immediately remove the selection
+     */
+    const handleDoubleClick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.getSelection()?.empty();
+      if (!playing) {
+        handlePlayPause();
+      }
+    };
+
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
@@ -1169,6 +1186,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
       document.addEventListener('keydown', handleKeyPress);
+      document.addEventListener('dblclick', handleDoubleClick);
     };
 
     const initPlayer = () => {
@@ -1197,10 +1215,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (url) {
       initPlayer();
     }
-  }, []);
 
-  // to clear the component on unmount
-  React.useEffect(() => {
+    // to clear the component on unmount
     return () => {
       try {
         if (getTimeIntervalId) {
@@ -1226,6 +1242,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         document.removeEventListener('keydown', handleKeyPress);
+        document.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
@@ -1251,109 +1268,124 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
   }, []);
 
-  const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
-    <Tooltip
+  const renderControlWithTooltip = (text: string, button: JSX.Element) => {
+    if (button.props.disabled) {
+      return button;
+    }
+    return <Tooltip
       placement='top'
-      title={<Typography variant='h6' >{osText('rewind')}</Typography>}
+      title={<Typography variant={'h6'} >{text}</Typography>}
       arrow={true}
     >
+      {button}
+    </Tooltip >;
+  };
+
+  const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
+    {renderControlWithTooltip(osText('rewind'),
       <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
         <Replay5Icon />
       </Button>
-    </Tooltip>
+    )}
     <Button aria-label="stop" onClick={handleStop} >
       <StopIcon />
     </Button>
-    <Tooltip
-      placement='top'
-      title={<Typography variant='h6' >{osText('playPause')}</Typography>}
-      arrow={true}
-    >
+    {renderControlWithTooltip(osText('playPause'),
       <Button aria-label="play/pause" onClick={handlePlayPause} >
         {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
       </Button>
-    </Tooltip>
-    <Tooltip
-      placement='top'
-      title={<Typography variant='h6' >{osText('forward')}</Typography>}
-      arrow={true}
-    >
+    )}
+    {renderControlWithTooltip(osText('forward'),
       <Button aria-label="forward-5s" onClick={() => handleSkip()} >
         <Forward5Icon />
       </Button>
-    </Tooltip>
+    )}
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
-    <Button
-      aria-label="zoom-in"
-      onClick={() => handleZoom(true)}
-      disabled={zoomLevel === 0}
-    >
-      <ZoomInIcon />
-    </Button>
-    <Button
-      aria-label="zoom-out"
-      onClick={() => handleZoom()}
-      disabled={zoomLevel === DEFAULT_ZOOM_LEVELS.length - 1}
-    >
-      <ZoomOutIcon />
-    </Button>
-    <Button
-      aria-label="create-loop"
-      disabled={!!internaDisabledTimesTracker}
-      onClick={handleLoopClick}
-      classes={{
-        root: loop ? classes.buttonSelected : undefined,
-      }}
-    >
-      <SvgIcon component={TiArrowLoop} />
-    </Button>
-    <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} className={classes.playbackButton} >
-      {playbackSpeed < 1 ?
-        '0.5⨉'
-        :
-        '1.0⨉'
-      }
-    </Button>
-    <Button
-      aria-label="mute"
-      onClick={toggleMute}
-      classes={{
-        root: isMute ? classes.buttonSelected : undefined,
-      }}
-    >
-      <ToggleIcon
-        on={!isMute}
-        onIcon={<VolumeUpIcon />}
-        offIcon={<VolumeOffIcon />}
-      />
-    </Button>
-    <Button
-      aria-label="seek-lock"
-      onClick={toggleLockSeek}
-      classes={{
-        root: autoSeekDisabled ? classes.buttonSelected : undefined,
-      }}
-    >
-      <ToggleIcon
-        on={!autoSeekDisabled}
-        onIcon={<SvgIcon component={TiLockOpenOutline} />}
-        offIcon={<SvgIcon component={TiLockClosedOutline} />}
-      />
-    </Button>
-    <Button
-      aria-label="scroll-lock"
-      onClick={toggleLockScroll}
-      classes={{
-        root: editorAutoScrollDisabled ? classes.buttonSelected : undefined,
-      }}
-    >
-      {editorAutoScrollDisabled ?
-        <CenterFocusWeakIcon /> :
-        <CenterFocusStrongIcon />
-      }
-    </Button>
+    {renderControlWithTooltip(translate('audioPlayer.zoomIn'),
+      <Button
+        aria-label="zoom-in"
+        onClick={() => handleZoom(true)}
+        disabled={zoomLevel === 0}
+      >
+        <ZoomInIcon />
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.zoomOut'),
+      <Button
+        aria-label="zoom-out"
+        onClick={() => handleZoom()}
+        disabled={zoomLevel === DEFAULT_ZOOM_LEVELS.length - 1}
+      >
+        <ZoomOutIcon />
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.loop'),
+      <Button
+        aria-label="create-loop"
+        disabled={!!internaDisabledTimesTracker}
+        onClick={handleLoopClick}
+        classes={{
+          root: loop ? classes.buttonSelected : undefined,
+        }}
+      >
+        <SvgIcon component={TiArrowLoop} />
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.playbackSpeed'),
+      <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} className={classes.playbackButton} >
+        {playbackSpeed < 1 ?
+          '0.5⨉'
+          :
+          '1.0⨉'
+        }
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.mute'),
+      <Button
+        aria-label="mute"
+        onClick={toggleMute}
+        classes={{
+          root: isMute ? classes.buttonSelected : undefined,
+        }}
+      >
+        <ToggleIcon
+          on={!isMute}
+          onIcon={<VolumeUpIcon />}
+          offIcon={<VolumeOffIcon />}
+        />
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.lockNavigateOnClick'),
+      <Button
+        aria-label="seek-lock"
+        onClick={toggleLockSeek}
+        classes={{
+          root: autoSeekDisabled ? classes.buttonSelected : undefined,
+        }}
+      >
+        <ToggleIcon
+          on={!autoSeekDisabled}
+          onIcon={<SvgIcon component={TiLockOpenOutline} />}
+          offIcon={<SvgIcon component={TiLockClosedOutline} />}
+        />
+      </Button>
+    )}
+    {renderControlWithTooltip(translate('audioPlayer.disableAutoScroll'),
+      <Button
+        aria-label="scroll-lock"
+        onClick={toggleLockScroll}
+        classes={{
+          root: editorAutoScrollDisabled ? classes.buttonSelected : undefined,
+        }}
+      >
+        {editorAutoScrollDisabled ?
+          <CenterFocusWeakIcon /> :
+          <CenterFocusStrongIcon />
+        }
+      </Button>
+    )}
   </ButtonGroup>);
 
   return (

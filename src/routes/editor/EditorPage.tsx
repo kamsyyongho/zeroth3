@@ -693,9 +693,12 @@ export function EditorPage() {
     internalSegmentsTracker = segments;
   }, [segments]);
 
+  //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
-    getSegments();
-  }, [voiceData, projectId]);
+    if (!readOnly) {
+      getSegments();
+    }
+  }, [voiceData, projectId, readOnly]);
 
   // once we've loaded new segments
   React.useEffect(() => {
