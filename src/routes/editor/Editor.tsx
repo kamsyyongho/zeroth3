@@ -1005,7 +1005,7 @@ export function Editor(props: EditorProps) {
       validEntity = { ...splitEntity };
     }
     // to check that we still have a valid entity to use
-    if (validEntity) {
+    if (validEntity && validEntity.data) {
       // use the entity data to get split location
       const { wordKey } = validEntity.data;
       const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
@@ -1132,7 +1132,6 @@ export function Editor(props: EditorProps) {
     let cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined;
     switch (command) {
       case KEY_COMMANDS['toggle-popups']:
-        togglePopups();
         break;
       case KEY_COMMANDS.delete:
       case KEY_COMMANDS['delete-word']:
@@ -1767,7 +1766,6 @@ export function Editor(props: EditorProps) {
           ref={editorRef}
           editorState={editorState}
           customStyleMap={styleMap}
-          readOnly={readOnly}
           keyBindingFn={customKeyBindingFunction}
           blockRendererFn={customBlockRenderer}
           onChange={readOnly ? editorChangeNoop : handleChange}

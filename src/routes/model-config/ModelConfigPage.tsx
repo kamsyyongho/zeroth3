@@ -11,6 +11,7 @@ import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
+import { Forbidden } from '../shared/Forbidden';
 import { NotFound } from '../shared/NotFound';
 import { ModelConfigList } from './ModelConfigList';
 
@@ -67,7 +68,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const hasModelConfigPermission = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig, isEdit?: boolean) => {
     if (isEdit) {
@@ -244,7 +245,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       } else {
         setProjectLoading(false);
       }
-      if (canModify) {
+      if (hasModelConfigPermission) {
         if (!topGraphs.length) {
           getTopGraphs();
         } else {
@@ -284,7 +285,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     return (
       <ModelConfigList
         project={project}
-        canModify={canModify}
+        canModify={hasModelConfigPermission}
         modelConfigs={modelConfigs}
         modelConfigsLoading={modelConfigsLoading}
         topGraphs={topGraphs}
@@ -297,6 +298,10 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleLanguageModelCreate={handleLanguageModelCreate}
       />);
   };
+
+  if (!hasModelConfigPermission) {
+    return <Forbidden />;
+  }
 
   return (
     <Container maxWidth={false} className={classes.container} >

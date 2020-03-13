@@ -3,7 +3,9 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import React from 'reactn';
+import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { BooleanById, ModelConfig, Project } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from './set/SET';
@@ -42,10 +44,12 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
     openModelConfigDialog,
   } = props;
   const { translate } = React.useContext(I18nContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [refreshCounterForSet, setRefreshCounterForSet] = React.useState(0);
 
   const classes = useStyles();
+  const hasSetPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.SET), [roles]);
 
   /** used to prevent tabs from rendering before they should be displayed */
   const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
@@ -75,7 +79,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
         onChange={handleChange}
       >
         <Tab label={translate('TDP.TDP')} />
-        <Tab label={translate('SET.SET')} />
+        {hasSetPermissions && <Tab label={translate('SET.SET')} />}
       </Tabs>
       <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
         {tabsThatShouldRender.has(TAB_INDEX.TDP) &&
@@ -88,14 +92,14 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             modelConfigDialogOpen={modelConfigDialogOpen}
           />}
       </TabPanel>
-      <TabPanel value={activeTab} index={TAB_INDEX.SET}>
+      {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
         {tabsThatShouldRender.has(TAB_INDEX.SET) &&
           <SET
             refreshCounter={refreshCounterForSet}
             projectId={projectId}
           />}
 
-      </TabPanel>
+      </TabPanel>}
     </Paper>
   );
 }

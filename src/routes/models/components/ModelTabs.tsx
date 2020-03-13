@@ -49,7 +49,9 @@ export function ModelTabs() {
   /** used to prevent tabs from rendering before they should be displayed */
   const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canModifyAcousticModel = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.acoustic), [roles]);
+  const canModifyLanguageModel = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.language), [roles]);
+  const canModifySubGraph = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.subGraph), [roles]);
 
   const confirmDelete = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
@@ -86,7 +88,7 @@ export function ModelTabs() {
   };
 
   const handleSubGraphDelete = async () => {
-    if (!canModify) return;
+    if (!canModifySubGraph) return;
     setDeleteLoading(true);
     closeConfirmation();
     const deleteProjectPromises: Promise<deleteSubGraphResult>[] = [];
@@ -222,12 +224,12 @@ export function ModelTabs() {
         <Tab label={translate('models.tabs.languageModel.header')} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
-        {tabsThatShouldRender.has(0) && <AcousticModelGridList canModify={canModify} />}
+        {tabsThatShouldRender.has(0) && <AcousticModelGridList canModify={canModifyAcousticModel} />}
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
         {tabsThatShouldRender.has(1) && <>
           <LanguageModelGridList
-            canModify={canModify}
+            canModify={canModifyLanguageModel}
             refreshTopGraphs={refreshTopGraphs}
             topGraphsLoading={topGraphsLoading}
             topGraphs={topGraphs}
@@ -235,7 +237,7 @@ export function ModelTabs() {
             handleSubGraphListUpdate={handleSubGraphListUpdate}
           />
           <SubGraphList
-            canModify={canModify}
+            canModify={canModifySubGraph}
             subGraphsLoading={subGraphsLoading}
             checkedSubGraphs={checkedSubGraphs}
             handleSubGraphCheck={handleSubGraphCheck}

@@ -53,7 +53,7 @@ export const StarRating = (props: StarRatingProps) => {
   const theme = useTheme();
   const classes = useStyles();
 
-  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
   const confirmedVoiceData = React.useMemo(() => voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData.id]);
 
   const onSuccess = () => {

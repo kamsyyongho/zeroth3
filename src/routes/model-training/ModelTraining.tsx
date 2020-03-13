@@ -51,7 +51,7 @@ export function ModelTraining() {
 
   const classes = useStyles();
 
-  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
+  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelTraining), [roles]);
 
   const getModelConfigs = async (projectId: string) => {
     if (api?.modelConfig) {

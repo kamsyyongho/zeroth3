@@ -93,7 +93,7 @@ export function Profile() {
   const confirmReset = () => setConfirmationOpen(true);
   const closeConfirmation = () => setConfirmationOpen(false);
 
-  const hasRenamePermissions = hasPermission(roles, PERMISSIONS.organization);
+  const hasRenamePermissions = hasPermission(roles, PERMISSIONS.profile.renameOrganization);
 
   const { givenName, familyName, preferredUsername, email, currentOrganizationId } = user;
 

@@ -73,7 +73,8 @@ export function TDP(props: TDPProps) {
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canUpload = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
+  const hasTdpPermission = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
   const initialPageSize = React.useMemo(() => {
     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE);
     if (rowsPerPageString) {
@@ -204,8 +205,8 @@ export function TDP(props: TDPProps) {
   const renderContent = () => {
     return (<Card elevation={0} className={classes.card} >
       <CardHeader
-        action={canModify && <Grid container spacing={1}>
-          <Grid item>
+        action={<Grid container spacing={1}>
+          {hasTdpPermission && <Grid item>
             <Button
               variant='outlined'
               color="primary"
@@ -215,8 +216,8 @@ export function TDP(props: TDPProps) {
             >
               {translate('SET.createSetFromFilter')}
             </Button>
-          </Grid>
-          <Grid item>
+          </Grid>}
+          {canUpload && <Grid item>
             <Button
               variant='contained'
               color="primary"
@@ -225,10 +226,10 @@ export function TDP(props: TDPProps) {
             >
               {translate('TDP.uploadData')}
             </Button>
-          </Grid>
+          </Grid>}
         </Grid>}
       />
-      <CardContent className={classes.cardContent} >
+      {hasTdpPermission && <CardContent className={classes.cardContent} >
         {(!project || initialVoiceDataLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectId}
@@ -241,7 +242,7 @@ export function TDP(props: TDPProps) {
             deleteUnconfirmedVoiceData={deleteUnconfirmedVoiceData}
           />
         }
-      </CardContent>
+      </CardContent>}
     </Card>);
   };
 

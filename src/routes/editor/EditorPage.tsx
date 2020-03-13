@@ -7,14 +7,17 @@ import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
 import React, { useGlobal } from "reactn";
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, DataSet, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { Forbidden } from '../shared/Forbidden';
 import { NotFound } from '../shared/NotFound';
 import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
@@ -84,6 +87,7 @@ export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
@@ -137,6 +141,9 @@ export function EditorPage() {
    * Only `CONFIRMED` data can be rated, so we won't show if not
    */
   const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
+
+  const canUseEditor = React.useMemo(() => hasPermission(roles, PERMISSIONS.editor.edit), [roles]);
+  const canSeeReadOnlyEditor = React.useMemo(() => hasPermission(roles, PERMISSIONS.editor.readOnly), [roles]);
 
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
@@ -710,9 +717,9 @@ export function EditorPage() {
   // initial fetch and dismount logic
   React.useEffect(() => {
     document.title = translate('path.editor');
-    if (readOnly) {
+    if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
-    } else {
+    } else if (canUseEditor) {
       getAssignedData();
       getDataSetsToFetchFrom();
     }
@@ -723,6 +730,12 @@ export function EditorPage() {
       }
     };
   }, []);
+
+  // if we don't have the correct permissions
+  if ((readOnly && !canSeeReadOnlyEditor) ||
+    (!readOnly && !canUseEditor)) {
+    return <Forbidden />;
+  }
 
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;

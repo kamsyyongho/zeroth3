@@ -108,7 +108,8 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
+  const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
 
   /**
    * navigates to the the model config page
@@ -257,9 +258,11 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       });
     } else {
       getProject();
-      getModelConfigs();
+      if (hasModelConfigPermissions) {
+        getModelConfigs();
+      }
     }
-    if (canModify) {
+    if (hasModelConfigPermissions) {
       getTopGraphs();
       getSubGraphs();
       getLanguageModels();
@@ -360,6 +363,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   };
 
   const renderModelConfigArea = () => {
+    if (!hasModelConfigPermissions) return null;
     return (<Grid
       container
       item
@@ -451,7 +455,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             spacing={2}
           >
             {renderApiInfo()}
-            {canModify && renderModelConfigArea()}
+            {hasAdminPermissions && renderModelConfigArea()}
           </Grid>
         }
       </CardContent>

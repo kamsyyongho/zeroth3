@@ -39,8 +39,8 @@ export function IAM() {
   const classes = useStyles();
 
 
-  const usersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
-  const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const usersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.users), [roles]);
+  const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
 
   React.useEffect(() => {
     document.title = translate('path.IAM');

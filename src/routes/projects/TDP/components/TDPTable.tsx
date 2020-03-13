@@ -111,7 +111,7 @@ export function TDPTable(props: TDPTableProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
   const changeSort = (sortColumn: TDPTableColumns) => {
     let newOrderDirection = orderDirection;
@@ -151,6 +151,7 @@ export function TDPTable(props: TDPTableProps) {
   };
 
   const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => {
+    if (!canRate) return null;
     const voiceData = cellData.cell.row.original;
     // eslint-disable-next-line react/prop-types
     const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
