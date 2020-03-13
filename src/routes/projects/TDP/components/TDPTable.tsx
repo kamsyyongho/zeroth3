@@ -358,9 +358,10 @@ export function TDPTable(props: TDPTableProps) {
   }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
 
   // Render the UI for your table
-  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
-    <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {
+    return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
       <TableSortLabel
+        disabled={column.id as TDPTableColumns === TDPTableColumns.transcript}
         active={orderBy === column.id as TDPTableColumns}
         direction={orderDirection}
         onClick={() => changeSort(column.id as TDPTableColumns)}
@@ -369,6 +370,7 @@ export function TDPTable(props: TDPTableProps) {
         {column.render('Header')}
       </TableSortLabel>
     </TableCell>);
+  };
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
