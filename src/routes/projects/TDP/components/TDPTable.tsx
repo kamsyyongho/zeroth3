@@ -134,6 +134,7 @@ export function TDPTable(props: TDPTableProps) {
   const handleDelete = (voiceDataId: string, dataIndex: number) => {
     const shoudRefresh = voiceDataResults.content.length < 2;
     deleteUnconfirmedVoiceData(voiceDataId, dataIndex, shoudRefresh);
+    setExpandedRowsByIndex({});
   };
 
   /**
@@ -355,6 +356,7 @@ export function TDPTable(props: TDPTableProps) {
       setInitialLoad(false);
     } else {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
+      setExpandedRowsByIndex({});
     }
   }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
 
