@@ -50,10 +50,11 @@ const AUDIO_PLAYER_HEIGHT = 384;
 export enum PARENT_METHOD_TYPES {
   speaker,
   highRisk,
+  speakerCancel,
 }
 
 export interface ParentMethodResponse {
-  payload: {
+  payload?: {
     segment: Segment,
     index: number,
   };
@@ -592,7 +593,13 @@ export function EditorPage() {
 
   const removeHighRiskFromSegment = (segmentIndex: number, segmentId: string) => removeHighRiskFlagFromSegment(segmentIndex, segmentId);
 
-  const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
+  const closeSpeakerAssignDialog = () => {
+    setSegmentIndexToAssignSpeakerTo(undefined);
+    const dispatchResponse: ParentMethodResponse = {
+      type: PARENT_METHOD_TYPES.speakerCancel,
+    };
+    setResponseToPassToEditor(dispatchResponse);
+  };
 
   const handleEditorResponseHandled = () => setResponseToPassToEditor(undefined);
 

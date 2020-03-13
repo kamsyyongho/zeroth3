@@ -115,8 +115,4 @@ export function generateWordKeyString(location: SegmentAndWordIndex) {
   return key;
 }
 
-export function deepCopy<T>(itemToCopy: Array<T> | object) {
-  console.log({ itemToCopy });
-  const stringified = JSON.stringify(itemToCopy);
-  return JSON.parse(stringified) as T;
-}
+export const isMacOs = () => navigator.userAgent.includes('Mac');

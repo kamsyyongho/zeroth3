@@ -378,6 +378,22 @@ export function Editor(props: EditorProps) {
   };
 
   /**
+   * gets the segment location from the cursor location
+   * - saves the current cursor selection so we can restore 
+   * it after the dialog is closed
+   */
+  const assignSpeakerFromShortcut = (incomingEditorState: EditorState) => {
+    const { blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const segmentId = getSegmentIdFromBlockKey(blockObject.key);
+    const segmentIndex = getIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      assignSpeaker(segmentIndex);
+      // save selection so we can focus after assign success
+      setPreviousSelectionState(incomingEditorState.getSelection());
+    }
+  };
+
+  /**
    * used in the custom block to delete high-risk segment value
    */
   const removeHighRiskValueFromSegment = (segmentId: string) => {
@@ -1544,16 +1560,29 @@ export function Editor(props: EditorProps) {
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
-      const { segment } = payload;
+      const segment = payload?.segment;
       const currentContentState = editorState.getCurrentContent();
       let blockKey: string | undefined;
       let updatedContentState: ContentState | undefined;
       switch (type) {
         case PARENT_METHOD_TYPES.speaker:
         case PARENT_METHOD_TYPES.highRisk:
+          if (!segment) break;
           blockKey = getBlockKeyFromSegmentId(segment.id);
           if (blockKey) {
             updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
+          }
+          break;
+        case PARENT_METHOD_TYPES.speakerCancel:
+          // refocus editor on speaker assign cancel
+          if (previousSelectionState) {
+            const updatedEditorState = EditorState.forceSelection(
+              editorState,
+              previousSelectionState,
+            );
+            setPreviousSelectionState(undefined);;
+            setEditorState(updatedEditorState);
+            focusEditor();
           }
           break;
       }
@@ -1562,7 +1591,16 @@ export function Editor(props: EditorProps) {
         const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
         const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
         const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
-        setEditorState(allowUndoEditorState);
+        let editorStateToUse = allowUndoEditorState;
+        if (previousSelectionState) {
+          editorStateToUse = EditorState.forceSelection(
+            allowUndoEditorState,
+            previousSelectionState,
+          );
+        }
+        setPreviousSelectionState(undefined);;
+        setEditorState(editorStateToUse);
+        focusEditor();
       }
     }
   }, [responseFromParent]);
@@ -1599,6 +1637,9 @@ export function Editor(props: EditorProps) {
           break;
         case EDITOR_CONTROLS.redo:
           updatedEditorState = EditorState.redo(editorState);
+          break;
+        case EDITOR_CONTROLS.speaker:
+          assignSpeakerFromShortcut(editorState);
           break;
         default:
           break;

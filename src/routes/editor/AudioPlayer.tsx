@@ -1,4 +1,4 @@
-import { Button, Grid, Typography } from '@material-ui/core';
+import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -30,11 +30,14 @@ import { CustomTheme } from '../../theme';
 import { PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { formatSecondsDuration } from '../../util/misc';
+import { formatSecondsDuration, isMacOs } from '../../util/misc';
 
 
 /** total duration of the file in seconds */
 let duration = 0;
+/** current playback time in seconds */
+let currentPlaybackTime = 0;
+let playing = false;
 /** the timeout used to display the streaming indicator for a minimum time */
 let waitingTimeoutId: NodeJS.Timeout | undefined;
 /** the interval used to get the current time */
@@ -152,7 +155,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentStatusEditChange,
     onReady,
   } = props;
-  const { translate } = React.useContext(I18nContext);
+  const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [errorText, setErrorText] = React.useState('');
@@ -177,6 +180,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const handlePause = () => setIsPlay(false);
   const handlePlay = () => setIsPlay(true);
+
+  React.useEffect(() => {
+    currentPlaybackTime = currentTime;
+  }, [currentTime]);
+
+  React.useEffect(() => {
+    playing = isPlay;
+  }, [isPlay]);
 
   const checkIfFinished = () => {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -510,7 +521,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handlePlayPause = () => {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
-      if (isPlay) {
+      if (playing) {
         StreamPlayer.pause();
       } else {
         StreamPlayer.play();
@@ -523,7 +534,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handleSkip = (rewind = false) => {
     if (!duration) return;
     const interval = rewind ? -5 : 5;
-    let timeToSeekTo = currentTime + interval;
+    let timeToSeekTo = currentPlaybackTime + interval;
     if (timeToSeekTo < 0) {
       timeToSeekTo = 0;
     } else if (timeToSeekTo > duration) {
@@ -1078,6 +1089,34 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [segmentSplitTimeBoundary]);
 
+  /**
+   * handle shortcut key presses
+   */
+  const handleKeyPress = (event: KeyboardEvent) => {
+    const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+    const { key, shiftKey } = event;
+    switch (key) {
+      case 'a':
+        if (event[keyName] && shiftKey) {
+          event.preventDefault();
+          handleSkip(true);
+        }
+        break;
+      case 'd':
+        if (event[keyName] && shiftKey) {
+          event.preventDefault();
+          handleSkip();
+        }
+        break;
+      case 's':
+        if (event[keyName] && shiftKey) {
+          event.preventDefault();
+          handlePlayPause();
+        }
+        break;
+    }
+  };
+
   React.useEffect(() => {
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
@@ -1129,6 +1168,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
+      document.addEventListener('keydown', handleKeyPress);
     };
 
     const initPlayer = () => {
@@ -1185,6 +1225,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
+        document.removeEventListener('keydown', handleKeyPress);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
@@ -1195,6 +1236,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       setEditorAutoScrollDisabled(false);
       duration = 0;
+      currentPlaybackTime = 0;
+      playing = false;
       waitingTimeoutId = undefined;
       getTimeIntervalId = undefined;
       fatalError = false;
@@ -1209,18 +1252,36 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, []);
 
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
-    <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
-      <Replay5Icon />
-    </Button>
+    <Tooltip
+      placement='top'
+      title={<Typography variant='h6' >{osText('rewind')}</Typography>}
+      arrow={true}
+    >
+      <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
+        <Replay5Icon />
+      </Button>
+    </Tooltip>
     <Button aria-label="stop" onClick={handleStop} >
       <StopIcon />
     </Button>
-    <Button aria-label="play/pause" onClick={handlePlayPause} >
-      {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
-    </Button>
-    <Button aria-label="forward-5s" onClick={() => handleSkip()} >
-      <Forward5Icon />
-    </Button>
+    <Tooltip
+      placement='top'
+      title={<Typography variant='h6' >{osText('playPause')}</Typography>}
+      arrow={true}
+    >
+      <Button aria-label="play/pause" onClick={handlePlayPause} >
+        {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
+      </Button>
+    </Tooltip>
+    <Tooltip
+      placement='top'
+      title={<Typography variant='h6' >{osText('forward')}</Typography>}
+      arrow={true}
+    >
+      <Button aria-label="forward-5s" onClick={() => handleSkip()} >
+        <Forward5Icon />
+      </Button>
+    </Tooltip>
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">

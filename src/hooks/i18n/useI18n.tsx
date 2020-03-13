@@ -4,6 +4,7 @@ import { TOptions } from 'i18next';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { shortcuts } from '../../i18n/translations/shortcuts';
+import { isMacOs } from '../../util/misc';
 import { ParsedI18n } from './I18nContext';
 
 interface FormatOptions {
@@ -76,8 +77,6 @@ function getDateTimeFormats(locale: Locale | PickerLocale): DateTimeFormats {
   };
   return formats;
 }
-
-const isMacOs = () => navigator.userAgent.includes('Mac');
 
 export const useI18n = (): ParsedI18n => {
   const { t, i18n } = useTranslation();
