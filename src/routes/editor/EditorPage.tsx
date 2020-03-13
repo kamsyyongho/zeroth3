@@ -693,6 +693,7 @@ export function EditorPage() {
     internalSegmentsTracker = segments;
   }, [segments]);
 
+  //will be called on subsequent fetches AND when the editor is read only
   React.useEffect(() => {
     getSegments();
   }, [voiceData, projectId]);
@@ -717,9 +718,7 @@ export function EditorPage() {
   // initial fetch and dismount logic
   React.useEffect(() => {
     document.title = translate('path.editor');
-    if (readOnly && canSeeReadOnlyEditor) {
-      getSegments();
-    } else if (canUseEditor) {
+    if (!readOnly && !canSeeReadOnlyEditor && canUseEditor) {
       getAssignedData();
       getDataSetsToFetchFrom();
     }
