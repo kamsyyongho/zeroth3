@@ -282,9 +282,9 @@ export const EditorControls = (props: EditorControlsProps) => {
    */
   const handleKeyPress = (event: KeyboardEvent) => {
     const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    const { key, ctrlKey, altKey, metaKey, shiftKey } = event;
+    const { key, shiftKey } = event;
     switch (key) {
-      case 'a':
+      case 'x':
         if (shiftKey && event[keyName]) {
           event.preventDefault();
           onCommandClick(EDITOR_CONTROLS.speaker);
@@ -298,33 +298,33 @@ export const EditorControls = (props: EditorControlsProps) => {
         break;
       case 'z':
         if (event[keyName]) {
+          event.preventDefault();
           if (shiftKey) {
             onCommandClick(EDITOR_CONTROLS.redo);
           } else {
             onCommandClick(EDITOR_CONTROLS.undo);
           }
-          event.preventDefault();
         }
         break;
       case 'Backspace':
         if (shiftKey) {
-          onCommandClick(EDITOR_CONTROLS.merge);
           event.preventDefault();
+          onCommandClick(EDITOR_CONTROLS.merge);
         }
         break;
       case 'Enter':
         if (shiftKey) {
-          onCommandClick(EDITOR_CONTROLS.split);
           event.preventDefault();
+          onCommandClick(EDITOR_CONTROLS.split);
         }
         break;
       case 'Alt':
+        event.preventDefault();
         if (shiftKey) {
           onCommandClick(EDITOR_CONTROLS.editSegmentTime);
         } else {
           onCommandClick(EDITOR_CONTROLS.toggleMore);
         }
-        event.preventDefault();
         break;
     }
   };
