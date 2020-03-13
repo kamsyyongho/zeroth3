@@ -80,8 +80,10 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
         textColor="primary"
         onChange={handleChange}
       >
-        <Tab label={translate('TDP.TDP')} />
-        {hasSetPermissions && <Tab label={translate('SET.SET')} />}
+        {hasSetPermissions && <>
+          <Tab label={translate('TDP.TDP')} />
+          <Tab label={translate('SET.SET')} />
+        </>}
       </Tabs>
       <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
         {tabsThatShouldRender.has(TAB_INDEX.TDP) &&
