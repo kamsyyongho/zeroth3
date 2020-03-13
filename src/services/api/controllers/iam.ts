@@ -1,7 +1,18 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Role, User } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { assignRolesToUserResult, deleteRoleResult, deleteUserResult, getRolesResult, getUserResult, inviteUserResult, ProblemKind, resetPasswordOfUserResult, ServerError } from '../types';
+import {
+  assignRolesToUserResult,
+  deleteRoleResult,
+  deleteUserResult,
+  getRolesResult,
+  getUserResult,
+  inviteUserResult,
+  ProblemKind,
+  resetPasswordOfUserResult,
+  ServerError,
+} from '../types';
+import { InviteUserRequest } from '../types/iam.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -13,10 +24,7 @@ export class IAM extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param logout parent method coming from keycloak
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
@@ -26,7 +34,7 @@ export class IAM extends ParentApi {
   async getUsers(): Promise<getUserResult> {
     // make the api call
     const response: ApiResponse<User[], ServerError> = await this.apisauce.get(
-      this.getPathWithOrganization(`/iam/users`)
+      this.getPathWithOrganization(`/iam/users`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -53,7 +61,7 @@ export class IAM extends ParentApi {
   async getRoles(): Promise<getRolesResult> {
     // make the api call
     const response: ApiResponse<Role[], ServerError> = await this.apisauce.get(
-      `/iam/roles`
+      `/iam/roles`,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -84,7 +92,7 @@ export class IAM extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      this.getPathWithOrganization(`/iam/users/${userId}`)
+      this.getPathWithOrganization(`/iam/users/${userId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -106,7 +114,7 @@ export class IAM extends ParentApi {
    */
   async assignRolesToUser(
     userId: string,
-    roleIds: string[]
+    roleIds: string[],
   ): Promise<assignRolesToUserResult> {
     // compile data
     const request = {
@@ -115,7 +123,7 @@ export class IAM extends ParentApi {
     // make the api call
     const response: ApiResponse<User, ServerError> = await this.apisauce.post(
       this.getPathWithOrganization(`/iam/users/${userId}/roles`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -147,7 +155,7 @@ export class IAM extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      this.getPathWithOrganization(`/iam/users/${userId}/roles/${roleId}`)
+      this.getPathWithOrganization(`/iam/users/${userId}/roles/${roleId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -165,19 +173,26 @@ export class IAM extends ParentApi {
   /**
    * Invite a user to an organization
    * @param email
+   * @param inviteAsTranscriber
    */
-  async inviteUser(email: string): Promise<inviteUserResult> {
+  async inviteUser(
+    email: string,
+    inviteAsTranscriber?: boolean,
+  ): Promise<inviteUserResult> {
     // compile data
-    const request = {
+    const request: InviteUserRequest = {
       email,
     };
+    if (inviteAsTranscriber) {
+      request.transcriber = inviteAsTranscriber;
+    }
     // make the api call
     const response: ApiResponse<
       undefined,
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/iam/users/invite`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -197,14 +212,14 @@ export class IAM extends ParentApi {
    * @param userId
    */
   async resetPasswordOfUser(
-    userId: string
+    userId: string,
   ): Promise<resetPasswordOfUserResult> {
     // make the api call
     const response: ApiResponse<
       undefined,
       ServerError
     > = await this.apisauce.post(
-      this.getPathWithOrganization(`/iam/users/${userId}/reset-password`)
+      this.getPathWithOrganization(`/iam/users/${userId}/reset-password`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

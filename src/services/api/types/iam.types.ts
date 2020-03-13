@@ -1,5 +1,15 @@
 import { Role, User } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
+
+//////////////
+// REQUESTS //
+//////////////
+
+export interface InviteUserRequest {
+  email: string;
+  transcriber?: boolean;
+}
+
 /////////////
 // RESULTS //
 /////////////
