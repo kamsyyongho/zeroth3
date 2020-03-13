@@ -16,7 +16,7 @@ export const shortcuts: {
     rewind: '⇧ Shift + ⌘ Cmd + A',
     forward: '⇧ Shift + ⌘ Cmd + D',
     playPause: '⇧ Shift + ⌘ Cmd + S',
-    speaker: '⇧ Shift + ⌘ Cmd + ⌥ Opt',
+    speaker: '⇧ Shift + ⌘ Cmd + A',
   },
   other: {
     save: 'Ctrl + S',
@@ -29,7 +29,7 @@ export const shortcuts: {
     rewind: '⇧ Shift + Ctrl + A',
     forward: '⇧ Shift + Ctrl + D',
     playPause: '⇧ Shift + Ctrl + S',
-    speaker: '⇧ Shift + Ctrl + Alt',
+    speaker: '⇧ Shift + Ctrl + A',
   },
 };
 
