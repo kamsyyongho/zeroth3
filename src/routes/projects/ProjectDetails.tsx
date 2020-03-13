@@ -14,7 +14,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
-import { AcousticModel, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
 import { ModelConfigDialog } from '../model-config/ModelConfigDialog';
 import { NotFound } from '../shared/NotFound';
@@ -85,6 +85,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
   const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
+  const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [updateSecretLoading, setUpdateSecretLoading] = React.useState(false);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
@@ -110,6 +111,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
 
   const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
   const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
+  const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
   /**
    * navigates to the the model config page
@@ -181,6 +183,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           });
         }
         setModelConfigsLoading(false);
+      }
+    };
+    const getDataSetsToFetchFrom = async () => {
+      if (api?.user) {
+        const response = await api.user.getDataSetsToFetchFrom();
+        if (response.kind === 'ok') {
+          setDataSets(response.dataSets);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getDataSetsToFetchFrom - failed to get data sets`,
+            value: response,
+            important: true,
+          });
+        }
       }
     };
     const getTopGraphs = async () => {
@@ -267,6 +284,9 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getSubGraphs();
       getLanguageModels();
       getAcousticModels();
+    }
+    if (hasTdpPermissions) {
+      getDataSetsToFetchFrom();
     }
   }, [api, projectId]);
 
@@ -473,6 +493,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             projectId={projectId}
             project={project}
             modelConfigs={modelConfigs}
+            dataSets={dataSets}
             openModelConfigDialog={openDialog}
             modelConfigDialogOpen={dialogOpen}
           />

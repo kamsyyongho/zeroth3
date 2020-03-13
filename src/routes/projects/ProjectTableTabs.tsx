@@ -6,7 +6,7 @@ import React from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { BooleanById, ModelConfig, Project } from '../../types';
+import { BooleanById, DataSet, ModelConfig, Project } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from './set/SET';
 import { TDP } from './TDP/TDP';
@@ -31,6 +31,7 @@ interface ProjectTableTabsProps {
   projectId: string;
   project?: Project;
   modelConfigs: ModelConfig[];
+  dataSets: DataSet[];
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
@@ -40,6 +41,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
     projectId,
     project,
     modelConfigs,
+    dataSets,
     modelConfigDialogOpen,
     openModelConfigDialog,
   } = props;
@@ -87,6 +89,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             projectId={projectId}
             project={project}
             modelConfigs={modelConfigs}
+            dataSets={dataSets}
             onSetCreate={handleSetCreate}
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}

@@ -12,6 +12,8 @@ import { GeneralApiProblem } from './api-problem.types';
 //////////////
 
 export interface SearchDataRequest {
+  'data-set'?: string;
+  filename?: string;
   from?: Date;
   till?: Date;
   /**

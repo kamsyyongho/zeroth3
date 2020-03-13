@@ -22,10 +22,9 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { BooleanById, CONTENT_STATUS, FilterParams, LOCAL_STORAGE_KEYS, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
+import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
-import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
@@ -36,7 +35,8 @@ const SINGLE_WIDTH_COLUMN = 1;
 interface TDPTableProps {
   projectId: string;
   voiceDataResults: VoiceDataResults;
-  modelConfigsById: ModelConfigsById;
+  modelConfigsById: GenericById<ModelConfig>;
+  dataSetsById: GenericById<DataSet>;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
@@ -89,6 +89,7 @@ export function TDPTable(props: TDPTableProps) {
     projectId,
     voiceDataResults,
     modelConfigsById,
+    dataSetsById,
     loading,
     getVoiceData,
     deleteUnconfirmedVoiceData,
@@ -448,6 +449,7 @@ export function TDPTable(props: TDPTableProps) {
         updateVoiceData={handleFilterUpdate}
         loading={loading}
         modelConfigsById={modelConfigsById}
+        dataSetsById={dataSetsById}
       />
     </div>
     <Table {...getTableProps()} className={classes.table} >

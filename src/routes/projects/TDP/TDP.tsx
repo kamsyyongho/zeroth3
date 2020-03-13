@@ -10,7 +10,7 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { FilterParams, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import { DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -20,15 +20,12 @@ interface TDPProps {
   projectId: string;
   project?: Project;
   modelConfigs: ModelConfig[];
+  dataSets: DataSet[];
   onSetCreate: () => void;
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
 
-
-export interface ModelConfigsById {
-  [x: string]: ModelConfig;
-}
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -53,6 +50,7 @@ export function TDP(props: TDPProps) {
     projectId,
     project,
     modelConfigs = [] as ModelConfig[],
+    dataSets = [] as DataSet[],
     onSetCreate,
     modelConfigDialogOpen,
     openModelConfigDialog,
@@ -185,13 +183,22 @@ export function TDP(props: TDPProps) {
     }
   }, [projectTdpDataShouldRefresh]);
 
-  const modelConfigsById: ModelConfigsById = React.useMemo(
+  const modelConfigsById: GenericById<ModelConfig> = React.useMemo(
     () => {
       const modelConfigsByIdTemp: { [x: string]: ModelConfig; } = {};
       modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
       return modelConfigsByIdTemp;
     },
     [modelConfigs]
+  );
+
+  const dataSetsById: GenericById<DataSet> = React.useMemo(
+    () => {
+      const dataSetsByIdTemp: { [x: string]: DataSet; } = {};
+      dataSets.forEach(dataSet => dataSetsByIdTemp[dataSet.id] = dataSet);
+      return dataSetsByIdTemp;
+    },
+    [dataSets]
   );
 
   const openUploadDialog = () => setIsUploadOpen(true);
@@ -234,6 +241,7 @@ export function TDP(props: TDPProps) {
           <TDPTable
             projectId={projectId}
             modelConfigsById={modelConfigsById}
+            dataSetsById={dataSetsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
