@@ -15,15 +15,15 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES } from '../../../../types';
+import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
-import { ModelConfigsById } from '../TDP';
 
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
-  modelConfigsById: ModelConfigsById;
+  modelConfigsById: GenericById<ModelConfig>;
+  dataSetsById: GenericById<DataSet>;
   loading?: boolean;
 }
 
@@ -41,7 +41,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPFilters(props: TDPFiltersProps) {
-  const { updateVoiceData, modelConfigsById, loading } = props;
+  const { updateVoiceData, modelConfigsById, dataSetsById, loading } = props;
   const { translate } = React.useContext(I18nContext);
   const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
@@ -65,6 +65,16 @@ export function TDPFilters(props: TDPFiltersProps) {
     return tempFormSelectOptions;
   }, [modelConfigsById, translate]);
 
+  const dataSetFormSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(dataSetsById).map((id) => ({
+      label: dataSetsById[id].name,
+      value: dataSetsById[id].id,
+    }));
+    // add the placeholder
+    tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
+    return tempFormSelectOptions;
+  }, [modelConfigsById, translate]);
+
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
   const lengthMinText = translate("forms.validation.greaterEqualTo", { target: translate('forms.lengthMin'), value: VALIDATION.TDP.length.min });
@@ -77,6 +87,8 @@ export function TDPFilters(props: TDPFiltersProps) {
     transcript: yup.string().notRequired(),
     status: yup.mixed().oneOf(CONTENT_STATUS_VALUES.concat([''])).notRequired(),
     modelConfigId: yup.mixed<string | ''>().notRequired(),
+    dataSetId: yup.mixed<string | ''>().notRequired(),
+    filename: yup.string().notRequired(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -84,6 +96,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     endDate: null,
     status: '',
     modelConfigId: '',
+    dataSetId: '',
   };
 
 
@@ -96,6 +109,8 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status,
       modelConfigId,
+      dataSetId,
+      filename,
     } = values;
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
@@ -108,6 +123,8 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status: status === '' ? undefined : status,
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
+      'data-set': dataSetId === '' ? undefined : dataSetId,
+      filename,
     };
     updateVoiceData(options);
   };
@@ -262,6 +279,42 @@ export function TDPFilters(props: TDPFiltersProps) {
                           component={SelectFormField}
                           options={modelConfigFormSelectOptions}
                           label={translate("modelConfig.header")}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid
+                      container
+                      item
+                      xs={12}
+                      spacing={5}
+                      direction="row"
+                      wrap='nowrap'
+                      justify='flex-start'
+                    >
+                      <Grid
+                        item
+                        xs={6}
+                        md={4}
+                      >
+                        <Field
+                          name='filename'
+                          component={TextFormField}
+                          label={translate('TDP.originalFilename')}
+                          variant="outlined"
+                          margin="normal"
+                        />
+                      </Grid>
+                      <Grid
+                        item
+                        xs={6}
+                        md={4}
+                      >
+                        <Field
+                          fullWidth
+                          name='dataSetId'
+                          component={SelectFormField}
+                          options={dataSetFormSelectOptions}
+                          label={translate("SET.dataSet")}
                         />
                       </Grid>
                     </Grid>

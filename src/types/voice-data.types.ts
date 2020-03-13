@@ -10,8 +10,11 @@ export interface VoiceData {
   id: string;
   startAt: Date;
   endAt: Date;
-  ip: string;
+  fetchedAt: Date | null;
+  confirmedAt: Date | null;
+  originalFilename: string | null;
   memo: string | null;
+  ip: string;
   sessionId: string;
   modelConfigId: string;
   projectId: string | null;

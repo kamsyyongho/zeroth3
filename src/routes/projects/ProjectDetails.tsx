@@ -1,10 +1,12 @@
-import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@material-ui/core';
+import { Box, Card, CardContent, CardHeader, Container, Grid, IconButton, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import CachedIcon from '@material-ui/icons/Cached';
 import clsx from 'clsx';
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
+import MoonLoader from 'react-spinners/MoonLoader';
 import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
@@ -12,7 +14,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
-import { AcousticModel, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
 import { ModelConfigDialog } from '../model-config/ModelConfigDialog';
 import { NotFound } from '../shared/NotFound';
@@ -61,6 +63,9 @@ const useStyles = makeStyles((theme) =>
     modelConfigTextGrid: {
       margin: theme.spacing(1),
     },
+    refreshButton: {
+      marginTop: theme.spacing(1),
+    },
   }),
 );
 
@@ -80,7 +85,9 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
   const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
+  const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
+  const [updateSecretLoading, setUpdateSecretLoading] = React.useState(false);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
   const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
@@ -102,7 +109,9 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
+  const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
+  const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
   /**
    * navigates to the the model config page
@@ -114,6 +123,25 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     const propsToSet = { project, modelConfigs, topGraphs, subGraphs, languageModels, acousticModels };
     setNavigationProps(propsToSet);
     PATHS.modelConfig.function && history.push(PATHS.modelConfig.function(project.id));
+  };
+
+  const updateSecret = async () => {
+    if (api?.projects && project) {
+      setProject({ ...project, apiSecret: '' });
+      setUpdateSecretLoading(true);
+      const response = await api.projects.updateSecret(projectId);
+      if (response.kind === 'ok') {
+        setProject(response.project);
+      } else {
+        log({
+          file: `ProjectDetails.tsx`,
+          caller: `updateSecret - failed to update secret`,
+          value: response,
+          important: true,
+        });
+      }
+      setUpdateSecretLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -155,6 +183,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           });
         }
         setModelConfigsLoading(false);
+      }
+    };
+    const getDataSetsToFetchFrom = async () => {
+      if (api?.user) {
+        const response = await api.user.getDataSetsToFetchFrom();
+        if (response.kind === 'ok') {
+          setDataSets(response.dataSets);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getDataSetsToFetchFrom - failed to get data sets`,
+            value: response,
+            important: true,
+          });
+        }
       }
     };
     const getTopGraphs = async () => {
@@ -232,13 +275,18 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       });
     } else {
       getProject();
-      getModelConfigs();
+      if (hasModelConfigPermissions) {
+        getModelConfigs();
+      }
     }
-    if (canModify) {
+    if (hasModelConfigPermissions) {
       getTopGraphs();
       getSubGraphs();
       getLanguageModels();
       getAcousticModels();
+    }
+    if (hasTdpPermissions) {
+      getDataSetsToFetchFrom();
     }
   }, [api, projectId]);
 
@@ -289,7 +337,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
         <TextField
           id="api-key"
-          defaultValue={project?.apiKey ?? ""}
+          value={project?.apiKey ?? ""}
           className={clsx(classes.textField, classes.apiInfo)}
           margin="normal"
           InputProps={{
@@ -308,7 +356,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         <Typography align='left' className={classes.apiHeading} >{translate('projects.apiSecret')}</Typography>
         <TextField
           id="api-secret"
-          defaultValue={project?.apiSecret ?? ""}
+          value={project?.apiSecret ?? ""}
           className={clsx(classes.textField, classes.apiInfo)}
           margin="normal"
           InputProps={{
@@ -316,12 +364,26 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           }}
           variant="outlined"
         />
+        <IconButton
+          disabled={updateSecretLoading}
+          color={'primary'}
+          onClick={updateSecret}
+          className={classes.refreshButton}
+        >
+          {updateSecretLoading ? <MoonLoader
+            sizeUnit={"px"}
+            size={15}
+            color={theme.palette.primary.main}
+            loading={true}
+          /> : <CachedIcon />}
+        </IconButton>
       </Grid>
     </Grid>
     );
   };
 
   const renderModelConfigArea = () => {
+    if (!hasModelConfigPermissions) return null;
     return (<Grid
       container
       item
@@ -413,7 +475,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             spacing={2}
           >
             {renderApiInfo()}
-            {canModify && renderModelConfigArea()}
+            {hasAdminPermissions && renderModelConfigArea()}
           </Grid>
         }
       </CardContent>
@@ -431,6 +493,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             projectId={projectId}
             project={project}
             modelConfigs={modelConfigs}
+            dataSets={dataSets}
             openModelConfigDialog={openDialog}
             modelConfigDialogOpen={dialogOpen}
           />

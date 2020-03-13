@@ -22,10 +22,9 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { BooleanById, CONTENT_STATUS, FilterParams, LOCAL_STORAGE_KEYS, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
+import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
-import { ModelConfigsById } from '../TDP';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
@@ -35,13 +34,13 @@ const SINGLE_WIDTH_COLUMN = 1;
 
 interface TDPTableProps {
   projectId: string;
-  projectName: string;
   voiceDataResults: VoiceDataResults;
-  modelConfigsById: ModelConfigsById;
-  onlyAssignedData: boolean;
+  modelConfigsById: GenericById<ModelConfig>;
+  dataSetsById: GenericById<DataSet>;
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
 }
 
@@ -88,12 +87,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export function TDPTable(props: TDPTableProps) {
   const {
     projectId,
-    projectName,
     voiceDataResults,
     modelConfigsById,
-    onlyAssignedData,
+    dataSetsById,
     loading,
     getVoiceData,
+    deleteUnconfirmedVoiceData,
     handleVoiceDataUpdate,
     setFilterParams,
   } = props;
@@ -113,7 +112,7 @@ export function TDPTable(props: TDPTableProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
   const changeSort = (sortColumn: TDPTableColumns) => {
     let newOrderDirection = orderDirection;
@@ -129,6 +128,12 @@ export function TDPTable(props: TDPTableProps) {
     setOrderBy(newOrderBy);
     setSortBy(newSortBy);
     // to close any expanded rows
+    setExpandedRowsByIndex({});
+  };
+
+  const handleDelete = (voiceDataId: string, dataIndex: number) => {
+    const shoudRefresh = voiceDataResults.content.length < 2;
+    deleteUnconfirmedVoiceData(voiceDataId, dataIndex, shoudRefresh);
     setExpandedRowsByIndex({});
   };
 
@@ -148,26 +153,25 @@ export function TDPTable(props: TDPTableProps) {
   };
 
   const renderLaunchIconButton = (cellData: CellProps<VoiceData>) => {
+    if (!canRate) return null;
     const voiceData = cellData.cell.row.original;
     // eslint-disable-next-line react/prop-types
     const confirmed = voiceData.status === CONTENT_STATUS.CONFIRMED;
-    if (canModify && !onlyAssignedData && confirmed) {
-      return (<Tooltip
-        placement='top'
-        title={<Typography variant='body1' >{translate('TDP.openToRate')}</Typography>}
-        arrow={true}
+    return (<Tooltip
+      placement='top'
+      title={<Typography variant='body1' >{confirmed ? translate('TDP.openToRate') : ""}</Typography>}
+      arrow={true}
+      open={confirmed ? undefined : false} // hide tooltip if not confirmed
+    >
+      <IconButton
+        color='primary'
+        size='medium'
+        aria-label="open"
+        onClick={() => handleRowClick(voiceData)}
       >
-        <IconButton
-          color='primary'
-          size='medium'
-          aria-label="open"
-          onClick={() => handleRowClick(voiceData)}
-        >
-          <LaunchIcon />
-        </IconButton>
-      </Tooltip>);
-    }
-    return null;
+        <LaunchIcon />
+      </IconButton>
+    </Tooltip>);
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
@@ -231,7 +235,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const renderStatus = (cellData: CellProps<VoiceData>) => {
     // to only make editable when showing all
-    if (loading || onlyAssignedData) {
+    if (loading) {
       return cellData.cell.value;
     }
     return TDPCellStatusSelect({ cellData, projectId, onSuccess: handleVoiceDataUpdate });
@@ -352,13 +356,15 @@ export function TDPTable(props: TDPTableProps) {
       setInitialLoad(false);
     } else {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
+      setExpandedRowsByIndex({});
     }
   }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
 
   // Render the UI for your table
-  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
-    <TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {
+    return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
       <TableSortLabel
+        disabled={column.id as TDPTableColumns === TDPTableColumns.transcript}
         active={orderBy === column.id as TDPTableColumns}
         direction={orderDirection}
         onClick={() => changeSort(column.id as TDPTableColumns)}
@@ -367,6 +373,7 @@ export function TDPTable(props: TDPTableProps) {
         {column.render('Header')}
       </TableSortLabel>
     </TableCell>);
+  };
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
@@ -396,8 +403,6 @@ export function TDPTable(props: TDPTableProps) {
         <React.Fragment key={`row-${rowIndex}`}>
           {rowIndex > 0 && rowFiller}
           <TableRow
-            hover={(onlyAssignedData || !canModify)}
-            onClick={() => (onlyAssignedData || !canModify) ? handleRowClick(row.original) : {}}
             key={`row-${rowIndex}`}
             {...row.getRowProps()}
             className={classes.tableRow}
@@ -431,6 +436,7 @@ export function TDPTable(props: TDPTableProps) {
               row={row}
               detailsRowColSpan={detailsRowColSpan}
               projectId={projectId}
+              onDelete={handleDelete}
               onSuccess={handleVoiceDataUpdate}
             />
           }
@@ -440,18 +446,17 @@ export function TDPTable(props: TDPTableProps) {
 
 
   return (<>
-    {!onlyAssignedData &&
-      <div className={classes.filterContainer} >
-        <TDPFilters
-          updateVoiceData={handleFilterUpdate}
-          loading={loading}
-          modelConfigsById={modelConfigsById}
-        />
-      </div>
-    }
+    <div className={classes.filterContainer} >
+      <TDPFilters
+        updateVoiceData={handleFilterUpdate}
+        loading={loading}
+        modelConfigsById={modelConfigsById}
+        dataSetsById={dataSetsById}
+      />
+    </div>
     <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody className={(onlyAssignedData || !canModify) ? classes.clickableTableBody : undefined} >
+      <TableBody >
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={fullRowColSpan} >

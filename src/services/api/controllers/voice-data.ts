@@ -43,6 +43,7 @@ import {
   UpdateStatusRequest,
   updateStatusResult,
 } from '../types';
+import { deleteUnconfirmedVoiceDataResult } from '../types/voice-data.types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -173,14 +174,27 @@ export class VoiceData extends ParentApi {
   /**
    * Assigns one set of assigned data to transcribe
    * - used in the editor
+   * @param dataSetId - the data set to pull voice data from
    * @returns `voiceData` if there is data assigned data
    * @returns `noContent` if status code is 204
    */
-  async fetchUnconfirmedData(): Promise<fetchUnconfirmedDataResult> {
+  async fetchUnconfirmedData(
+    dataSetId?: string,
+  ): Promise<fetchUnconfirmedDataResult> {
+    const params = dataSetId
+      ? {
+          'data-set': dataSetId,
+        }
+      : undefined;
+    // query params on a post are the third (3) parameter
     const response = await this.apisauce.post<
       IVoiceData | undefined,
       ServerError
-    >(this.getPathWithOrganization(`/data/unconfirmed`));
+    >(
+      this.getPathWithOrganization(`/data/unconfirmed`),
+      null,
+      params ? { params } : undefined,
+    );
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -257,6 +271,36 @@ export class VoiceData extends ParentApi {
         `/projects/${projectId}/data/${dataId}/segments/${segmentId}/word-alignments`,
       ),
       request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Removes the high-risk segment value from a segment
+   * @param projectId
+   * @param dataId
+   * @param segmentId
+   */
+  async removeHighRiskFlagFromSegment(
+    projectId: string,
+    dataId: string,
+    segmentId: string,
+  ): Promise<updateSegmentResult> {
+    // make the api call
+    const response = await this.apisauce.patch<undefined, ServerError>(
+      this.getPathWithOrganization(
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/no-risk`,
+      ),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -745,6 +789,32 @@ export class VoiceData extends ParentApi {
         `/projects/${projectId}/data/${dataId}/segments/${segmentId}/time`,
       ),
       request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Deletes voice data from a project
+   * @param projectId
+   * @param dataId
+   */
+  async deleteUnconfirmedVoiceData(
+    projectId: string,
+    dataId: string,
+  ): Promise<deleteUnconfirmedVoiceDataResult> {
+    // make the api call
+    const response = await this.apisauce.delete<undefined, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/data/${dataId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

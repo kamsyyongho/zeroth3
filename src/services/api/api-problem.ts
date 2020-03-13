@@ -61,7 +61,19 @@ export function getGeneralApiProblem(
 
   if (generalApiProblem instanceof Object) {
     const serverError: ServerError | undefined = response.data;
-    generalApiProblem.serverError = serverError;
+    if (serverError) {
+      generalApiProblem.serverError = serverError;
+    } else {
+      // append any axios error messages if no message from server
+      const originalError = response.originalError?.toJSON() as
+        | { stack: string; message: string }
+        | undefined;
+      if (originalError?.message) {
+        generalApiProblem.serverError = {
+          message: originalError.message,
+        };
+      }
+    }
   }
   return generalApiProblem;
 }

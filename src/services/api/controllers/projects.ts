@@ -1,7 +1,16 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
 import { Project } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
-import { deleteProjectResult, getProjectResult, getProjectsResult, postProjectResult, ProblemKind, ProjectRequest, ServerError, updateProjectResult } from '../types';
+import {
+  deleteProjectResult,
+  getProjectResult,
+  getProjectsResult,
+  postProjectResult,
+  ProblemKind,
+  ProjectRequest,
+  ServerError,
+  updateProjectResult,
+} from '../types';
 import { ParentApi } from './parent-api';
 
 /**
@@ -13,10 +22,7 @@ export class Projects extends ParentApi {
    * @param apisauce The apisauce instance.
    * @param logout parent method coming from keycloak
    */
-  constructor(
-    apisauce: ApisauceInstance,
-    logout: () => void,
-  ) {
+  constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
 
@@ -27,7 +33,7 @@ export class Projects extends ParentApi {
   async getProject(projectId: string): Promise<getProjectResult> {
     // make the api call
     const response: ApiResponse<Project, ServerError> = await this.apisauce.get(
-      this.getPathWithOrganization(`/projects/${projectId}`)
+      this.getPathWithOrganization(`/projects/${projectId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -91,7 +97,7 @@ export class Projects extends ParentApi {
       ServerError
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/projects`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -122,7 +128,7 @@ export class Projects extends ParentApi {
       undefined,
       ServerError
     > = await this.apisauce.delete(
-      this.getPathWithOrganization(`/projects/${projectId}`)
+      this.getPathWithOrganization(`/projects/${projectId}`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -144,7 +150,7 @@ export class Projects extends ParentApi {
    */
   async updateProject(
     name: string,
-    projectId: string
+    projectId: string,
   ): Promise<updateProjectResult> {
     // compile data
     const request: ProjectRequest = {
@@ -153,7 +159,7 @@ export class Projects extends ParentApi {
     // make the api call
     const response: ApiResponse<Project, ServerError> = await this.apisauce.put(
       this.getPathWithOrganization(`/projects/${projectId}`),
-      request
+      request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -184,7 +190,7 @@ export class Projects extends ParentApi {
       Project,
       ServerError
     > = await this.apisauce.post(
-      this.getPathWithOrganization(`/projects/${projectId}/secret`)
+      this.getPathWithOrganization(`/projects/${projectId}/secret`),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

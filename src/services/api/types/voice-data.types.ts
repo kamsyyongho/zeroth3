@@ -12,6 +12,8 @@ import { GeneralApiProblem } from './api-problem.types';
 //////////////
 
 export interface SearchDataRequest {
+  'data-set'?: string;
+  filename?: string;
   from?: Date;
   till?: Date;
   /**
@@ -164,3 +166,7 @@ export type updateMemoResult = { kind: 'ok' } | GeneralApiProblem;
 export type updateSpeakerResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type deleteUnconfirmedVoiceDataResult =
+  | { kind: 'ok' }
+  | GeneralApiProblem;

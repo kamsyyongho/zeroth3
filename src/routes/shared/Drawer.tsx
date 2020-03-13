@@ -55,9 +55,12 @@ export const AppDrawer = (props: AppDrawerProps) => {
     }
   };
 
-  const canSeeModels: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
-  const canSeeUsers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.users), [roles]);
-  const canSeeTranscribers: boolean = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canSeeAcousticModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.acoustic), [roles]);
+  const canSeeLanguageModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.language), [roles]);
+  const canSeeSubGraphs = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.subGraph), [roles]);
+  const canSeeModels = canSeeAcousticModels || canSeeLanguageModels || canSeeSubGraphs;
+  const canSeeUsers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.users), [roles]);
+  const canSeeTranscribers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
 
   const drawerItems: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {

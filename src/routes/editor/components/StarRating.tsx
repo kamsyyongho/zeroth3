@@ -4,6 +4,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import ClearIcon from '@material-ui/icons/Clear';
 import Rating from '@material-ui/lab/Rating';
+import clsx from 'clsx';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
@@ -11,7 +12,7 @@ import { PERMISSIONS } from '../../../constants';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
-import { SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../types';
+import { CONTENT_STATUS, SnackbarError, SNACKBAR_VARIANTS, VoiceData } from '../../../types';
 import log from '../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
@@ -52,7 +53,8 @@ export const StarRating = (props: StarRatingProps) => {
   const theme = useTheme();
   const classes = useStyles();
 
-  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canRate = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
+  const confirmedVoiceData = React.useMemo(() => voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData.id]);
 
   const onSuccess = () => {
     const updatedVoiceData = { ...voiceData, transcriptionRating: rating };
@@ -64,7 +66,7 @@ export const StarRating = (props: StarRatingProps) => {
   const handleChange = (event: React.ChangeEvent<{}>, value: number | null) => setRating(value);
 
   const updateRating = async () => {
-    if (api?.voiceData && ratingChanged && !loading && typeof rating === 'number') {
+    if (api?.voiceData && ratingChanged && !loading && typeof rating === 'number' && confirmedVoiceData) {
       setLoading(true);
       const response = await api.voiceData.rateTranscript(projectId, voiceData.id, rating);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -103,10 +105,11 @@ export const StarRating = (props: StarRatingProps) => {
       alignContent='center'
       alignItems='center'
       justify='flex-start'
-      className={classes.container}
+      className={clsx(classes.container, !confirmedVoiceData && classes.hidden)}
     >
       <Rating
         readOnly={!canRate}
+        name={projectId}
         value={rating}
         max={5}
         onChange={handleChange}

@@ -10,7 +10,7 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { FilterParams, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import { DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -20,15 +20,12 @@ interface TDPProps {
   projectId: string;
   project?: Project;
   modelConfigs: ModelConfig[];
+  dataSets: DataSet[];
   onSetCreate: () => void;
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
 
-
-export interface ModelConfigsById {
-  [x: string]: ModelConfig;
-}
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -53,6 +50,7 @@ export function TDP(props: TDPProps) {
     projectId,
     project,
     modelConfigs = [] as ModelConfig[],
+    dataSets = [] as DataSet[],
     onSetCreate,
     modelConfigDialogOpen,
     openModelConfigDialog,
@@ -62,17 +60,19 @@ export function TDP(props: TDPProps) {
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
-  const [onlyAssignedData, setOnlyAssignedData] = React.useState(false);
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(true);
+  const [voiceDataDeleteLoading, setVoiceDataDeleteLoading] = React.useState(false);
+  const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
   const classes = useStyles();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canUpload = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
+  const hasTdpPermission = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
   const initialPageSize = React.useMemo(() => {
     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE);
     if (rowsPerPageString) {
@@ -84,16 +84,30 @@ export function TDP(props: TDPProps) {
     return null;
   }, []);
 
+  /**
+   * Updates a single item after updating
+   */
+  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1, voiceData);
+      return { ...prevResults, content: updatedContent };
+    });
+  };
+
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
+      //save the options to allow us to redo a search
+      // in case we delete a row and it would lead us to have no results
+      setPreviousSearchOptions(options);
       const response = await api.voiceData.searchData(projectId, options);
       if (response.kind === 'ok') {
         setVoiceDataResults(response.data);
       } else {
         log({
           file: `TDP.tsx`,
-          caller: `getAcousticModels - failed to get voice data`,
+          caller: `getVoiceData - failed to get voice data`,
           value: response,
           important: true,
         });
@@ -101,7 +115,49 @@ export function TDP(props: TDPProps) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [api, onlyAssignedData, projectId]);
+  }, [api, projectId]);
+
+  /**
+   * Removes a single item after deleting
+   */
+  const handleVoiceDataDelete = (dataIndex: number) => {
+    setVoiceDataResults(prevResults => {
+      const updatedContent = [...prevResults.content];
+      updatedContent.splice(dataIndex, 1);
+      return { ...prevResults, content: updatedContent, totalElements: prevResults.totalElements - 1 };
+    });
+  };
+
+  /**
+   * Deletes voice data and updates the table
+   * @param voiceDataId 
+   * @param voiceDataIndex 
+   * @param shoudRefresh determines if we need to redo a search 
+   * because the current page would have no results after deletion
+   */
+  const deleteUnconfirmedVoiceData = async (voiceDataId: string, voiceDataIndex: number, shoudRefresh: boolean) => {
+    if (api?.voiceData && projectId) {
+      setVoiceDataDeleteLoading(true);
+      const response = await api.voiceData.deleteUnconfirmedVoiceData(projectId, voiceDataId);
+      if (response.kind === 'ok') {
+        if (shoudRefresh) {
+          // redo seach if the page would show no results
+          setInitialVoiceDataLoading(true);
+          getVoiceData({ ...previousSearchOptions, page: undefined });
+        } else {
+          handleVoiceDataDelete(voiceDataIndex);
+        }
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `deleteUnconfirmedVoiceData - failed to delete voice data`,
+          value: response,
+          important: true,
+        });
+      }
+      setVoiceDataDeleteLoading(false);
+    }
+  };
 
   const getVoiceDataWithDefautOptions = () => {
     const options: SearchDataRequest = {};
@@ -127,24 +183,22 @@ export function TDP(props: TDPProps) {
     }
   }, [projectTdpDataShouldRefresh]);
 
-  /**
-   * Updates a single item after updating
-   */
-  const handleVoiceDataUpdate = (voiceData: VoiceData, dataIndex: number) => {
-    setVoiceDataResults(prevResults => {
-      const updatedContent = [...prevResults.content];
-      updatedContent.splice(dataIndex, 1, voiceData);
-      return { ...prevResults, content: updatedContent };
-    });
-  };
-
-  const modelConfigsById: ModelConfigsById = React.useMemo(
+  const modelConfigsById: GenericById<ModelConfig> = React.useMemo(
     () => {
       const modelConfigsByIdTemp: { [x: string]: ModelConfig; } = {};
       modelConfigs.forEach(modelConfig => modelConfigsByIdTemp[modelConfig.id] = modelConfig);
       return modelConfigsByIdTemp;
     },
     [modelConfigs]
+  );
+
+  const dataSetsById: GenericById<DataSet> = React.useMemo(
+    () => {
+      const dataSetsByIdTemp: { [x: string]: DataSet; } = {};
+      dataSets.forEach(dataSet => dataSetsByIdTemp[dataSet.id] = dataSet);
+      return dataSetsByIdTemp;
+    },
+    [dataSets]
   );
 
   const openUploadDialog = () => setIsUploadOpen(true);
@@ -158,8 +212,8 @@ export function TDP(props: TDPProps) {
   const renderContent = () => {
     return (<Card elevation={0} className={classes.card} >
       <CardHeader
-        action={canModify && <Grid container spacing={1}>
-          <Grid item>
+        action={<Grid container spacing={1}>
+          {hasTdpPermission && <Grid item>
             <Button
               variant='outlined'
               color="primary"
@@ -169,8 +223,8 @@ export function TDP(props: TDPProps) {
             >
               {translate('SET.createSetFromFilter')}
             </Button>
-          </Grid>
-          <Grid item>
+          </Grid>}
+          {canUpload && <Grid item>
             <Button
               variant='contained'
               color="primary"
@@ -179,24 +233,24 @@ export function TDP(props: TDPProps) {
             >
               {translate('TDP.uploadData')}
             </Button>
-          </Grid>
+          </Grid>}
         </Grid>}
       />
-      <CardContent className={classes.cardContent} >
+      {hasTdpPermission && <CardContent className={classes.cardContent} >
         {(!project || initialVoiceDataLoading) ? <BulletList /> :
           <TDPTable
             projectId={projectId}
-            projectName={project?.name}
             modelConfigsById={modelConfigsById}
+            dataSetsById={dataSetsById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
-            onlyAssignedData={onlyAssignedData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
-            loading={voiceDataLoading}
+            loading={voiceDataLoading || voiceDataDeleteLoading}
             setFilterParams={setFilterParams}
+            deleteUnconfirmedVoiceData={deleteUnconfirmedVoiceData}
           />
         }
-      </CardContent>
+      </CardContent>}
     </Card>);
   };
 

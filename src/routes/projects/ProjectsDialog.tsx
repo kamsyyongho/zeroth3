@@ -81,7 +81,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
 
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
 
   const handleClose = () => {
     setfilteredProjects([]);

@@ -1,4 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
+import { AxiosRequestConfig } from 'axios';
+import { UPLOAD_REQUEST_TIMEOUT } from '../../../constants';
 import {
   AcousticModel,
   LanguageModel,
@@ -514,6 +516,7 @@ export class Models extends ParentApi {
 
   /**
    * Create a new subgraph using a file to upload
+   * - 30 second timeout
    * @param name - the subgraph name
    * @param file - multipart file to upload
    * @param topGraphId
@@ -532,17 +535,18 @@ export class Models extends ParentApi {
     const request = new FormData();
     request.append('name', name);
     request.append('file', file);
-    request.append('topGraphId', topGraphId);
+    request.append('top-graph-id', topGraphId);
     if (typeof isPublic === 'boolean') {
       request.append('public', JSON.stringify(isPublic));
     }
     if (typeof isImmutable === 'boolean') {
       request.append('public', JSON.stringify(isImmutable));
     }
-    const config = {
+    const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
+      timeout: UPLOAD_REQUEST_TIMEOUT,
     };
     // make the api call
     const response: ApiResponse<
@@ -577,7 +581,7 @@ export class Models extends ParentApi {
    * @param projectId
    * @param name
    * @param modelConfigId
-   * @param dataSetId
+   * @param dataSetIds
    * @param shared
    * @param hrOnly - only high risk segments will be used in training
    */
@@ -585,7 +589,7 @@ export class Models extends ParentApi {
     projectId: string,
     name: string,
     modelConfigId: string,
-    dataSetId: string,
+    dataSetIds: string[],
     shared: boolean,
     hrOnly: boolean,
   ): Promise<transferLearningResult> {
@@ -593,7 +597,7 @@ export class Models extends ParentApi {
     const request: TransferLearningRequest = {
       name,
       modelConfigId,
-      dataSetId,
+      dataSetIds,
       shared,
       hrOnly,
     };

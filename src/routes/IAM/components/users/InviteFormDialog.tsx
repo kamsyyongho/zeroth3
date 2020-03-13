@@ -58,7 +58,7 @@ export function InviteFormDialog(props: InviteFormDialogProps) {
     if (api?.IAM && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.IAM.inviteUser(values.email.trim());
+      const response = await api.IAM.inviteUser(values.email.trim(), true);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;

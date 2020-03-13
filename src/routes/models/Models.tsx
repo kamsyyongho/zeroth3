@@ -38,13 +38,15 @@ export function Models() {
 
   const classes = useStyles();
 
-  const canSeeModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models), [roles]);
+  const canSeeAcousticModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.acoustic), [roles]);
+  const canSeeLanguageModels = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.language), [roles]);
+  const canSeeSubGraphs = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.subGraph), [roles]);
 
   React.useEffect(() => {
     document.title = translate('path.models');
   }, []);
 
-  if (!canSeeModels) {
+  if (!canSeeAcousticModels && !canSeeLanguageModels && !canSeeSubGraphs) {
     return <Forbidden />;
   }
 

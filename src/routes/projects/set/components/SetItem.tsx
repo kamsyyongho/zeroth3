@@ -1,16 +1,24 @@
 import { Grid, TableCell, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import EditIcon from '@material-ui/icons/Edit';
+import { useSnackbar } from 'notistack';
+import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { ServerError } from '../../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
+import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
+import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 
 interface SetItemProps {
+  projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
   openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
@@ -30,14 +38,51 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { dataSet, dataSetIndex, openTranscriberDialog } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
+  const api = React.useContext(ApiContext);
+  const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
+  const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
+  const [downloadLink, setDownloadLink] = React.useState('');
 
   const classes = useStyles();
+  const theme: CustomTheme = useTheme();
 
   const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
+
+  const startDownload = (url: string) => window.open(url);
+
+  const getDownloadLink = async () => {
+    if (downloadLink) {
+      startDownload(downloadLink);
+      return;
+    }
+    if (api?.dataSet && !downloadLinkPending) {
+      setDownloadLinkPending(true);
+      setDownloadLink('');
+      let serverError: ServerError | undefined;
+      const response = await api.dataSet.getDownloadLink(projectId, dataSet.id);
+      if (response.kind === 'ok') {
+        startDownload(response.url);
+      } else {
+        log({
+          file: `SetItem.tsx`,
+          caller: `getDownloadLink - failed to get download link`,
+          value: response,
+          important: true,
+        });
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error');
+        if (serverError?.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
+      }
+      setDownloadLinkPending(false);
+    }
+  };
 
   // must be a number from 0 to 100
   const progress = processed / total * 100;
@@ -100,6 +145,19 @@ export function SetItem(props: SetItemProps) {
       </TableCell>
       <TableCell>
         {renderTranscriberEdit()}
+      </TableCell>
+      <TableCell>
+        <IconButton
+          color='primary'
+          onClick={getDownloadLink}
+        >
+          {downloadLinkPending ? <MoonLoader
+            sizeUnit={"px"}
+            size={15}
+            color={theme.palette.primary.main}
+            loading={true}
+          /> : <CloudDownloadIcon />}
+        </IconButton>
       </TableCell>
     </TableRow>
   );

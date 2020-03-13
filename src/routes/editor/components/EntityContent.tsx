@@ -6,8 +6,10 @@ import RecordVoiceOverIcon from '@material-ui/icons/RecordVoiceOver';
 import { ContentState, DraftEntityMutability } from 'draft-js';
 import VisibilitySensor from 'react-visibility-sensor';
 import React, { useGlobal } from 'reactn';
+import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../../theme/index';
 import { DEFAULT_OFFSET, ENTITY_TYPE, LOCAL_STORAGE_KEYS, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
+import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -79,13 +81,18 @@ interface EntityContentProps extends React.DetailedHTMLProps<React.HTMLAttribute
   end: number,
 }
 
+
 export const EntityContent = (props: EntityContentProps) => {
   const { contentState, offsetKey, entityKey } = props;
   const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
+  const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
+  const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const segmentRef = React.useRef<HTMLButtonElement | null>(null);
   const classes = useStyles();
+  const windowSize = useWindowSize();
+  const windowHeight = windowSize.height;
   const theme: CustomTheme = useTheme();
   const tokenEntity = contentState.getEntity(entityKey);
   const type = tokenEntity.getType();
@@ -96,8 +103,11 @@ export const EntityContent = (props: EntityContentProps) => {
   const confidence = wordAlignment?.confidence ?? 0;
   const LC = confidence < (wordConfidenceThreshold ?? 0.85);
   const entityClassName = getEntityClassName(mutability, classes, isLongWord);
+
+  const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
   const playing = React.useMemo(() => playingWordKey === wordKey, [playingWordKey]);
-  let style = {};
+
+  let style: React.CSSProperties = {};
   if (LC) {
     style = { backgroundImage: theme.editor.LowConfidenceGradient };
   }
@@ -110,6 +120,7 @@ export const EntityContent = (props: EntityContentProps) => {
       color: theme.editor.playing,
       boxShadow: theme.editor.playingShadow,
     };
+    checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
   }
 
   React.useEffect(() => {

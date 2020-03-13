@@ -23,6 +23,10 @@ export type getAllResult =
   | { kind: 'ok'; dataSets: DataSet[] }
   | GeneralApiProblem;
 
+export type getDownloadLinkResult =
+  | { kind: 'ok'; url: string }
+  | GeneralApiProblem;
+
 export type postDataSetResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type assignTranscribersToDataSetResult =

@@ -49,7 +49,7 @@ export function TDPMemoTextField(props: TDPMemoTextFieldProps) {
   const classes = useStyles();
   const theme = useTheme();
 
-  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.crud), [roles]);
+  const canModify = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
   const updateMemo = async () => {
     if (api?.voiceData && canModify && !loading) {

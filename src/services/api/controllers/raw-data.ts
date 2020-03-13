@@ -1,4 +1,6 @@
 import { ApisauceInstance } from 'apisauce';
+import { AxiosRequestConfig } from 'axios';
+import { UPLOAD_REQUEST_TIMEOUT } from '../../../constants';
 import { RawDataQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
@@ -67,10 +69,11 @@ export class RawData extends ParentApi {
     const request = new FormData();
     request.append('model-config', modelConfigId.toString());
     files.forEach(file => request.append('files', file));
-    const config = {
+    const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
+      timeout: UPLOAD_REQUEST_TIMEOUT,
     };
     // make the api call
     const response = await this.apisauce.post<string | undefined, ServerError>(

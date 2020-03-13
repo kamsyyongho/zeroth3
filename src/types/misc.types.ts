@@ -7,6 +7,10 @@ export enum LOCAL_STORAGE_KEYS {
   'WORD_CONFIDENCE_THRESHOLD' = 'WORD_CONFIDENCE_THRESHOLD',
 }
 
+export interface StringById {
+  [id: string]: string;
+}
+
 export interface BooleanById {
   [id: string]: boolean;
 }

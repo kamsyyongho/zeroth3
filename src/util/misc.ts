@@ -114,3 +114,5 @@ export function generateWordKeyString(location: SegmentAndWordIndex) {
   const key = `${location[0]}${WORD_KEY_SEPARATOR}${location[1]}`;
   return key;
 }
+
+export const isMacOs = () => navigator.userAgent.includes('Mac');

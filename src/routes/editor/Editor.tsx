@@ -7,6 +7,7 @@ import 'draft-js/dist/Draft.css';
 import { useSnackbar, VariantType } from 'notistack';
 import Draggable from 'react-draggable';
 import React, { useGlobal } from 'reactn';
+import { SPLITTABLE_CHARACTERS, SPLIT_CHARACTER, SPLIT_CHARACTER_REGEX } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
@@ -100,9 +101,6 @@ const getSegmentIdFromBlockKey = (blockKey: string) => blockKeyToSegmentIdMap[bl
 const getBlockKeyFromSegmentId = (segmentId: string) => segmentIdToBlockKeyMap[segmentId];
 const getWordKeyFromEntityKey = (entityKey: number) => entityKeyToWordKeyMap[entityKey];
 const getEntityKeyFromWordKey = (wordKey: number) => wordKeyToEntityKeyMap[wordKey];
-const SPLIT_CHARACTER = '•';
-const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
-const SPLIT_CHARACTER_REGEX = new RegExp(SPLIT_CHARACTER, "g");
 let entityKeyCounter = 0;
 const prevPlayingEntityKey = -1;
 // used to force updating of the segment
@@ -292,6 +290,7 @@ interface EditorProps {
   onCommandHandled: () => void;
   onReady: (ready: boolean) => void;
   onWordTimeCreationClose: () => void;
+  onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   loading?: boolean;
   segments: Segment[];
@@ -299,6 +298,7 @@ interface EditorProps {
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
   assignSpeaker: (segmentIndex: number) => void;
+  removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
   splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
@@ -317,6 +317,7 @@ export function Editor(props: EditorProps) {
     onCommandHandled,
     onReady,
     onWordTimeCreationClose,
+    onSpeakersUpdate,
     onUpdateUndoRedoStack,
     loading,
     segments,
@@ -324,6 +325,7 @@ export function Editor(props: EditorProps) {
     updateSegment,
     updateSegmentTime,
     assignSpeaker,
+    removeHighRiskFromSegment,
     onWordClick,
     splitSegment,
     splitSegmentByTime,
@@ -332,6 +334,7 @@ export function Editor(props: EditorProps) {
     splitTimePickerRootProps,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+  const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -374,6 +377,32 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  /**
+   * gets the segment location from the cursor location
+   * - saves the current cursor selection so we can restore 
+   * it after the dialog is closed
+   */
+  const assignSpeakerFromShortcut = (incomingEditorState: EditorState) => {
+    const { blockObject } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    const segmentId = getSegmentIdFromBlockKey(blockObject.key);
+    const segmentIndex = getIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      assignSpeaker(segmentIndex);
+      // save selection so we can focus after assign success
+      setPreviousSelectionState(incomingEditorState.getSelection());
+    }
+  };
+
+  /**
+   * used in the custom block to delete high-risk segment value
+   */
+  const removeHighRiskValueFromSegment = (segmentId: string) => {
+    const segmentIndex = getIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      removeHighRiskFromSegment(segmentIndex, segmentId);
+    }
+  };
+
   const styleMap = React.useMemo(() => {
     return buildStyleMap(theme);
   }, []);
@@ -388,6 +417,7 @@ export function Editor(props: EditorProps) {
         props: {
           readOnly,
           assignSpeakerForSegment,
+          removeHighRiskValueFromSegment,
         } as SegmentBlockSubProps,
       };
     }
@@ -408,14 +438,21 @@ export function Editor(props: EditorProps) {
   };
 
   const generateStateFromSegments = () => {
+    const speakers = new Set<string>();
     let textString = '';
     segments.forEach((segment: Segment, index: number) => {
+      if (segment.speaker) {
+        speakers.add(segment.speaker);
+      }
       if (!index) {
         textString = `${index}`;
       } else {
         textString = textString + `***${index}`;
       }
     });
+    if (speakers.size) {
+      onSpeakersUpdate(Array.from(speakers));
+    }
     wordKeyBank.init(segments);
     const content = ContentState.createFromText(textString, '***');
     const rawContent = convertToRaw(content);
@@ -968,7 +1005,7 @@ export function Editor(props: EditorProps) {
       validEntity = { ...splitEntity };
     }
     // to check that we still have a valid entity to use
-    if (validEntity) {
+    if (validEntity && validEntity.data) {
       // use the entity data to get split location
       const { wordKey } = validEntity.data;
       const [segmentIndex, wordIndex] = wordKeyBank.getLocation(wordKey);
@@ -1095,7 +1132,6 @@ export function Editor(props: EditorProps) {
     let cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined;
     switch (command) {
       case KEY_COMMANDS['toggle-popups']:
-        togglePopups();
         break;
       case KEY_COMMANDS.delete:
       case KEY_COMMANDS['delete-word']:
@@ -1523,15 +1559,29 @@ export function Editor(props: EditorProps) {
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
-      const { segment } = payload;
+      const segment = payload?.segment;
       const currentContentState = editorState.getCurrentContent();
       let blockKey: string | undefined;
       let updatedContentState: ContentState | undefined;
       switch (type) {
         case PARENT_METHOD_TYPES.speaker:
+        case PARENT_METHOD_TYPES.highRisk:
+          if (!segment) break;
           blockKey = getBlockKeyFromSegmentId(segment.id);
           if (blockKey) {
             updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
+          }
+          break;
+        case PARENT_METHOD_TYPES.speakerCancel:
+          // refocus editor on speaker assign cancel
+          if (previousSelectionState) {
+            const updatedEditorState = EditorState.forceSelection(
+              editorState,
+              previousSelectionState,
+            );
+            setPreviousSelectionState(undefined);;
+            setEditorState(updatedEditorState);
+            focusEditor();
           }
           break;
       }
@@ -1540,7 +1590,16 @@ export function Editor(props: EditorProps) {
         const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
         const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
         const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
-        setEditorState(allowUndoEditorState);
+        let editorStateToUse = allowUndoEditorState;
+        if (previousSelectionState) {
+          editorStateToUse = EditorState.forceSelection(
+            allowUndoEditorState,
+            previousSelectionState,
+          );
+        }
+        setPreviousSelectionState(undefined);;
+        setEditorState(editorStateToUse);
+        focusEditor();
       }
     }
   }, [responseFromParent]);
@@ -1578,6 +1637,9 @@ export function Editor(props: EditorProps) {
         case EDITOR_CONTROLS.redo:
           updatedEditorState = EditorState.redo(editorState);
           break;
+        case EDITOR_CONTROLS.speaker:
+          assignSpeakerFromShortcut(editorState);
+          break;
         default:
           break;
       }
@@ -1599,6 +1661,7 @@ export function Editor(props: EditorProps) {
         height: offsetHeight,
       };
       setOverlayStyle(overlayPositionStyle);
+      setEditorContentHeight(offsetHeight);
     }
   }, [containerRef, windowWidth]);
 
@@ -1643,6 +1706,7 @@ export function Editor(props: EditorProps) {
 
   return (
     <div
+      id={'scroll-container'}
       ref={containerRef}
       onClick={handleClickInsideEditor}
       style={{

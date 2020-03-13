@@ -13,6 +13,7 @@ const FULL_ROW_COL_SPAN = 3;
 
 interface SetTableProps {
   dataSets: DataSet[];
+  projectId: string;
   openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetTable(props: SetTableProps) {
-  const { dataSets, openTranscriberDialog } = props;
+  const { dataSets, projectId, openTranscriberDialog } = props;
   const { translate } = React.useContext(I18nContext);
 
   const classes = useStyles();
@@ -46,6 +47,7 @@ export function SetTable(props: SetTableProps) {
   >
     {index > 0 && renderRowFiller}
     <SetItem
+      projectId={projectId}
       dataSet={dataSet}
       dataSetIndex={index}
       openTranscriberDialog={openTranscriberDialog}
@@ -63,6 +65,7 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
+      <TableCell />
     </TableRow>
   </TableHead>);
 

@@ -11,9 +11,10 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
+import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, StringById, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
+import { ChipSelectFormField } from '../shared/form-fields/ChipSelectFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
 
@@ -60,13 +61,16 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     return { label: modelConfig.name, value: modelConfig.id, disabled };
   });
   let allDataSetsStillTranscribing = true;
+  const dataSetNamesById: StringById = {};
   const dataSetFormSelectOptions: SelectFormFieldOptions = dataSets.map((dataSets) => {
+    dataSetNamesById[dataSets.id] = dataSets.name;
     const disabled = (dataSets.total !== dataSets.processed);
     if (!disabled) {
       allDataSetsStillTranscribing = false;
     }
     return { label: dataSets.name, value: dataSets.id, disabled };
   });
+
   const trainingMethodFormSelectOptions: SelectFormFieldOptions = trainingMethods.map((method) => ({ label: method, value: method }));
 
   // validation translated text
@@ -78,7 +82,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
-    selectedDataSetId: yup.string().nullable().required(requiredTranslationText),
+    selectedDataSetIds: yup.array().of(yup.string().required(requiredTranslationText)),
     selectedTrainingMethod: yup.string().nullable().required(requiredTranslationText),
     shared: yup.boolean().required(requiredTranslationText),
     hrOnly: yup.boolean().required(requiredTranslationText),
@@ -87,7 +91,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const initialValues: FormValues = {
     name: "",
     selectedModelConfigId: null,
-    selectedDataSetId: null,
+    selectedDataSetIds: [],
     selectedTrainingMethod: null,
     shared: true,
     hrOnly: false,
@@ -95,15 +99,14 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
 
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, selectedModelConfigId, selectedDataSetId, selectedTrainingMethod, shared, hrOnly } = values;
+    const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly } = values;
     if (selectedModelConfigId === null ||
-      selectedDataSetId === null ||
       selectedTrainingMethod === null
     ) return;
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(projectId, name.trim(), selectedModelConfigId, selectedDataSetId, shared, hrOnly);
+      const response = await api.models.transferLearning(projectId, name.trim(), selectedModelConfigId, selectedDataSetIds, shared, hrOnly);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -128,18 +131,26 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     }
   };
 
+  const getNumberOfTranscribersHelperText = (selectedDataSets: string[], dataSetsById: GenericById<DataSet>) => {
+    if (!selectedDataSets.length) return ' ';
+    let count = 0;
+    selectedDataSets.forEach((dataSetId) => {
+      count += dataSetsById[dataSetId].transcribers.length;
+    });
+    return translate('SET.numberTranscribers', { count });
+  };
+
+  const getModelHelperText = (modelConfigId: string | null, modelConfigsById: GenericById<ModelConfig>) => {
+    if (!modelConfigId) return ' ';
+    return modelConfigsById[modelConfigId].description || ' ';
+  };
+
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
       {(formikProps) => {
-        let modelHelperText = ' ';
-        if (formikProps.values.selectedModelConfigId) {
-          modelHelperText = modelConfigsById[formikProps.values.selectedModelConfigId].description || ' ';
-        }
-        let transcriberHelperText = ' ';
-        if (formikProps.values.selectedDataSetId && dataSetsById[formikProps.values.selectedDataSetId].transcribers.length) {
-          transcriberHelperText = translate('SET.numberTranscribers', { count: dataSetsById[formikProps.values.selectedDataSetId].transcribers.length });
-        }
+        const modelHelperText = getModelHelperText(formikProps.values.selectedModelConfigId, modelConfigsById);
+        const transcriberHelperText = getNumberOfTranscribersHelperText(formikProps.values.selectedDataSetIds, dataSetsById);
         return (<>
           <CardContent >
             <Form>
@@ -158,12 +169,14 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 helperText={noAvailableModelConfigText || modelHelperText}
               />
               <Field
-                name='selectedDataSetId'
-                component={SelectFormField}
+                name='selectedDataSetIds'
+                component={ChipSelectFormField}
                 options={dataSetFormSelectOptions}
+                labelsByValue={dataSetNamesById}
                 label={translate("modelTraining.trainingData")}
                 errorOverride={isError || noAvailableDataSetsText}
                 helperText={noAvailableDataSetsText || transcriberHelperText}
+                light
               />
               <Field
                 name='selectedTrainingMethod'

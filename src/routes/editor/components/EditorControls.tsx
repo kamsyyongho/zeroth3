@@ -16,6 +16,7 @@ import ScaleLoader from 'react-spinners/ScaleLoader';
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
+import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
 
 const useStyles = makeStyles((theme) =>
@@ -67,6 +68,7 @@ export enum EDITOR_CONTROLS {
   createWord,
   editSegmentTime,
   setThreshold,
+  speaker,
   debug,
 }
 
@@ -108,14 +110,6 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [sliderOpen, setSliderOpen] = React.useState(false);
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-
-  // reset values on unmount
-  React.useEffect(() => {
-    return () => {
-      setEditorDebugMode(false);
-      setShowEditorPopups(false);
-    };
-  }, []);
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -170,6 +164,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.save:
           label = translate('common.save');
           icon = <ICONS.Save />;
+          tooltipText = osText('save');
           props = {
             onClick: () => onCommandClick(EDITOR_CONTROLS.save),
             disabled: disabledControls.includes(EDITOR_CONTROLS.save),
@@ -281,6 +276,68 @@ export const EditorControls = (props: EditorControlsProps) => {
       return renderButton(label, icon, tooltipText, props, selected);
     });
   };
+
+  /**
+   * handle shortcut key presses
+   */
+  const handleKeyPress = (event: KeyboardEvent) => {
+    const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+    const { key, ctrlKey, altKey, metaKey, shiftKey } = event;
+    switch (key) {
+      case 'a':
+        if (shiftKey && event[keyName]) {
+          event.preventDefault();
+          onCommandClick(EDITOR_CONTROLS.speaker);
+        }
+        break;
+      case 's':
+        if (event[keyName]) {
+          event.preventDefault();
+          onCommandClick(EDITOR_CONTROLS.save);
+        }
+        break;
+      case 'z':
+        if (event[keyName]) {
+          if (shiftKey) {
+            onCommandClick(EDITOR_CONTROLS.redo);
+          } else {
+            onCommandClick(EDITOR_CONTROLS.undo);
+          }
+          event.preventDefault();
+        }
+        break;
+      case 'Backspace':
+        if (shiftKey) {
+          onCommandClick(EDITOR_CONTROLS.merge);
+          event.preventDefault();
+        }
+        break;
+      case 'Enter':
+        if (shiftKey) {
+          onCommandClick(EDITOR_CONTROLS.split);
+          event.preventDefault();
+        }
+        break;
+      case 'Alt':
+        if (shiftKey) {
+          onCommandClick(EDITOR_CONTROLS.editSegmentTime);
+        } else {
+          onCommandClick(EDITOR_CONTROLS.toggleMore);
+        }
+        event.preventDefault();
+        break;
+    }
+  };
+
+  // set on mount and reset values on unmount
+  React.useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+      setEditorDebugMode(false);
+      setShowEditorPopups(false);
+    };
+  }, []);
 
   return (
     <Grid

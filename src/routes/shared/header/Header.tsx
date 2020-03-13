@@ -158,7 +158,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       }
     }
   };
-  const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.organization), [roles]);
+  const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.profile.renameOrganization), [roles]);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
   React.useEffect(() => {

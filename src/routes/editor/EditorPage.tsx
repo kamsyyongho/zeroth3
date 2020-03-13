@@ -7,14 +7,17 @@ import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
 import React, { useGlobal } from "reactn";
+import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS, DataSet, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
+import { Forbidden } from '../shared/Forbidden';
 import { NotFound } from '../shared/NotFound';
 import { PageErrorFallback } from '../shared/PageErrorFallback';
 import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
@@ -48,11 +51,13 @@ let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
 
 export enum PARENT_METHOD_TYPES {
-  speaker
+  speaker,
+  highRisk,
+  speakerCancel,
 }
 
 export interface ParentMethodResponse {
-  payload: {
+  payload?: {
     segment: Segment,
     index: number,
   };
@@ -82,6 +87,7 @@ export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
+  const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
@@ -109,11 +115,14 @@ export function EditorPage() {
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
   const [segmentsLoading, setSegmentsLoading] = React.useState(true);
   const [saveSegmentsLoading, setSaveSegmentsLoading] = React.useState(false);
+  const [highRiskRemoveLoading, setHighRiskRemoveLoading] = React.useState(false);
   const [confirmSegmentsLoading, setConfirmSegmentsLoading] = React.useState(false);
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
+  const [speakers, setSpeakers] = React.useState<string[]>([]);
+  const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -133,8 +142,17 @@ export function EditorPage() {
    */
   const alreadyConfirmed = React.useMemo(() => voiceData && voiceData.status === CONTENT_STATUS.CONFIRMED, [voiceData]);
 
+  const canUseEditor = React.useMemo(() => hasPermission(roles, PERMISSIONS.editor.edit), [roles]);
+  const canSeeReadOnlyEditor = React.useMemo(() => hasPermission(roles, PERMISSIONS.editor.readOnly), [roles]);
+
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
+
+  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
+    const updatedSegments = [...segments];
+    updatedSegments[segmentIndex] = updatedSegment;
+    setSegments(updatedSegments);
+  };
 
   const getAssignedData = async () => {
     if (api?.voiceData) {
@@ -159,10 +177,10 @@ export function EditorPage() {
     }
   };
 
-  const fetchMoreVoiceData = async () => {
+  const fetchMoreVoiceData = async (dataSetId?: string) => {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
-      const response = await api.voiceData.fetchUnconfirmedData();
+      const response = await api.voiceData.fetchUnconfirmedData(dataSetId);
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setNoRemainingContent(response.noContent);
@@ -198,6 +216,22 @@ export function EditorPage() {
         });
       }
       setSegmentsLoading(false);
+    }
+  };
+
+  const getDataSetsToFetchFrom = async () => {
+    if (api?.user) {
+      const response = await api.user.getDataSetsToFetchFrom();
+      if (response.kind === 'ok') {
+        setDataSets(response.dataSets);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getDataSetsToFetchFrom - failed to get data sets`,
+          value: response,
+          important: true,
+        });
+      }
     }
   };
 
@@ -393,6 +427,39 @@ export function EditorPage() {
     }
   };
 
+  const removeHighRiskFlagFromSegment = async (segmentIndex: number, segmentId: string) => {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
+      setHighRiskRemoveLoading(true);
+      const response = await api.voiceData.removeHighRiskFlagFromSegment(projectId, voiceData.id, segmentId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+
+        const updatedSegment = { ...segments[segmentIndex], highRisk: false };
+        handleSegmentUpdate(updatedSegment, segmentIndex);
+        const dispatchResponse: ParentMethodResponse = {
+          type: PARENT_METHOD_TYPES.highRisk,
+          payload: { segment: updatedSegment, index: segmentIndex },
+        };
+        setResponseToPassToEditor(dispatchResponse);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `submitSegmentSplitByTime - failed to split segment by time`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setHighRiskRemoveLoading(false);
+    }
+  };
+
   /**
    * Calculates start and end of the current playing word
    * - updates the state so it can be passed to the audio player
@@ -502,12 +569,6 @@ export function EditorPage() {
     setDisabledTimes(disabledTimes);
   };
 
-  const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
-    const updatedSegments = [...segments];
-    updatedSegments[segmentIndex] = updatedSegment;
-    setSegments(updatedSegments);
-  };
-
   /** 
    * will be called in the editor to get the updated info
    * - used to update the attached segment data for the block
@@ -537,7 +598,15 @@ export function EditorPage() {
 
   const openSpeakerAssignDialog = (segmentIndex: number) => setSegmentIndexToAssignSpeakerTo(segmentIndex);
 
-  const closeSpeakerAssignDialog = () => setSegmentIndexToAssignSpeakerTo(undefined);
+  const removeHighRiskFromSegment = (segmentIndex: number, segmentId: string) => removeHighRiskFlagFromSegment(segmentIndex, segmentId);
+
+  const closeSpeakerAssignDialog = () => {
+    setSegmentIndexToAssignSpeakerTo(undefined);
+    const dispatchResponse: ParentMethodResponse = {
+      type: PARENT_METHOD_TYPES.speakerCancel,
+    };
+    setResponseToPassToEditor(dispatchResponse);
+  };
 
   const handleEditorResponseHandled = () => setResponseToPassToEditor(undefined);
 
@@ -592,6 +661,10 @@ export function EditorPage() {
     setTimeFromPlayer(time);
   };
 
+  const handleSpeakersUpdate = (speakers: string[]) => {
+    setSpeakers(speakers);
+  };
+
   const onUpdateUndoRedoStack = (canUndo: boolean, canRedo: boolean) => {
     setCanUndo(canUndo);
     setCanRedo(canRedo);
@@ -602,6 +675,8 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
+    setSpeakers([]);
+    setDataSets([]);
     setPlaybackTime(0);
     setCanPlayAudio(false);
     setCanUndo(false);
@@ -635,16 +710,18 @@ export function EditorPage() {
     if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
+      getDataSetsToFetchFrom();
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
   // initial fetch and dismount logic
   React.useEffect(() => {
     document.title = translate('path.editor');
-    if (readOnly) {
+    if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
-    } else {
+    } else if (canUseEditor) {
       getAssignedData();
+      getDataSetsToFetchFrom();
     }
     return () => {
       resetVariables();
@@ -654,12 +731,18 @@ export function EditorPage() {
     };
   }, []);
 
+  // if we don't have the correct permissions
+  if ((readOnly && !canSeeReadOnlyEditor) ||
+    (!readOnly && !canUseEditor)) {
+    return <Forbidden />;
+  }
+
   if (voiceDataLoading) {
     return <SiteLoadingIndicator />;
   }
 
   if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent) {
-    return <EditorFetchButton onClick={fetchMoreVoiceData} />;
+    return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
   if (noRemainingContent || !voiceData || !projectId) {
@@ -706,6 +789,7 @@ export function EditorPage() {
                 onReady={setEditorReady}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
+                onSpeakersUpdate={handleSpeakersUpdate}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
                 updateSegment={submitSegmentUpdate}
@@ -714,6 +798,7 @@ export function EditorPage() {
                 splitSegmentByTime={submitSegmentSplitByTime}
                 mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
+                removeHighRiskFromSegment={removeHighRiskFromSegment}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
                 timePickerRootProps={{
                   setDisabledTimes: handleDisabledTimesSet,
@@ -773,6 +858,8 @@ export function EditorPage() {
       <AssignSpeakerDialog
         projectId={projectId}
         dataId={voiceData.id}
+        speakers={speakers}
+        onSpeakersUpdate={handleSpeakersUpdate}
         segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
         segmentIndex={segmentIndexToAssignSpeakerTo}
         open={segmentIndexToAssignSpeakerTo !== undefined}

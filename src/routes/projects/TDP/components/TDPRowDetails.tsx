@@ -1,13 +1,14 @@
-import { Typography } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import DeleteIcon from '@material-ui/icons/Delete';
 import { Row } from 'react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { VoiceData } from '../../../../types';
+import { CONTENT_STATUS, VoiceData } from '../../../../types';
 import { TDPMemoTextField } from './TDPMemoTextField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -41,16 +42,26 @@ interface TDPRowDetailsProps {
   row: Row<VoiceData>;
   detailsRowColSpan: number;
   projectId: string;
+  onDelete: (voiceDataId: string, dataIndex: number) => void;
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 export function TDPRowDetails(props: TDPRowDetailsProps) {
   const classes = useStyles();
   const { translate, formatDate } = React.useContext(I18nContext);
-  const { row, detailsRowColSpan, projectId, onSuccess } = props;
+  const {
+    row,
+    detailsRowColSpan,
+    projectId,
+    onDelete,
+    onSuccess,
+  } = props;
   const {
     startAt,
     endAt,
+    fetchedAt,
+    confirmedAt,
+    originalFilename,
     sessionId,
     ip,
     webSocketCloseReason,
@@ -58,8 +69,19 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     transcriber,
     transferedBytes,
   } = row.original;
+
   const startDate = new Date(startAt);
   const endDate = new Date(endAt);
+  const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
+  const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
+  const confirmed = row.values.status === CONTENT_STATUS.CONFIRMED;
+
+  const handleDeleteClick = () => {
+    const rowIndex = row.index;
+    const voiceDataId = row.original.id;
+    onDelete(voiceDataId, rowIndex);
+  };
+
   return (<TableRow
     className={classes.row}
   >
@@ -146,6 +168,40 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             </Typography>
             <Typography>{ip}</Typography>
           </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
+              {`${translate('common.fetchedAt')}:`}
+            </Typography>
+            <Typography>{fetchedDate ? formatDate(fetchedDate) : ''}</Typography>
+          </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
+              {`${translate('common.confirmedAt')}:`}
+            </Typography>
+            <Typography>{confirmedDate ? formatDate(confirmedDate) : ''}</Typography>
+          </Grid>
         </Grid>
         <Grid
           container
@@ -221,9 +277,45 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               className={classes.category}
               variant='subtitle2'
             >
+              {`${translate('TDP.originalFilename')}:`}
+            </Typography>
+            <Typography>{originalFilename}</Typography>
+          </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            <Typography
+              className={classes.category}
+              variant='subtitle2'
+            >
               {`${translate('forms.transcriber')}:`}
             </Typography>
             <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
+          </Grid>
+          <Grid
+            container
+            item
+            wrap='nowrap'
+            direction='row'
+            alignContent='center'
+            alignItems='center'
+            justify='flex-start'
+          >
+            {!confirmed && <Button
+              color='secondary'
+              variant='contained'
+              size='small'
+              onClick={handleDeleteClick}
+              startIcon={<DeleteIcon />}
+            >
+              {translate('common.delete')}
+            </Button>}
           </Grid>
         </Grid>
         <Grid

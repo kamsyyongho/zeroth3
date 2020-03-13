@@ -13,3 +13,6 @@ export const DEFAULT_EMPTY_TIME = '00:00.00';
 export const WORD_KEY_SEPARATOR = '-';
 
 export const CONTACT_EMAIL = 'support@atlaslabs.ai';
+
+/** in ms */
+export const UPLOAD_REQUEST_TIMEOUT = 30000;
