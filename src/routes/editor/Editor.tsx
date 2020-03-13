@@ -1694,6 +1694,7 @@ export function Editor(props: EditorProps) {
     }
   }, [playingLocation, ready]);
 
+  // initial mount and unmount logic
   React.useEffect(() => {
     generateStateFromSegments();
     focusEditor();
