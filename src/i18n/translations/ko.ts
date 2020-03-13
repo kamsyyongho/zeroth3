@@ -301,6 +301,13 @@ export const ko: ResourceLanguage = {
     },
     audioPlayer: {
       noUrl: '오디오 URL이 없습니다',
+      zoomIn: '확대하기',
+      zoomOut: '축소하기',
+      loop: '루프하기',
+      playbackSpeed: '재생 속도',
+      mute: '음소거하기',
+      lockNavigateOnClick: '클릭 탐색하기 잠기',
+      disableAutoScroll: '자동 스크롤 사용 안 하기',
     },
     home: {
       header: 'Welcome to Zeroth',
