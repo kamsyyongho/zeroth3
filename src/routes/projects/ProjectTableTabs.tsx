@@ -73,18 +73,16 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
 
   return (
     <Paper square elevation={0} className={classes.root} >
-      <Tabs
+      {hasSetPermissions && <Tabs
         centered={false}
         value={activeTab}
         indicatorColor="primary"
         textColor="primary"
         onChange={handleChange}
       >
-        {hasSetPermissions && <>
-          <Tab label={translate('TDP.TDP')} />
-          <Tab label={translate('SET.SET')} />
-        </>}
-      </Tabs>
+        <Tab label={translate('TDP.TDP')} />
+        <Tab label={translate('SET.SET')} />
+      </Tabs>}
       <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
         {tabsThatShouldRender.has(TAB_INDEX.TDP) &&
           <TDP
@@ -103,7 +101,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             refreshCounter={refreshCounterForSet}
             projectId={projectId}
           />}
-
       </TabPanel>}
     </Paper>
   );
