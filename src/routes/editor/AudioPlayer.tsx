@@ -1089,35 +1089,49 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [segmentSplitTimeBoundary]);
 
-  /**
-   * handle shortcut key presses
-   */
-  const handleKeyPress = (event: KeyboardEvent) => {
-    const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    const { key, shiftKey } = event;
-    switch (key) {
-      case 'a':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handleSkip(true);
-        }
-        break;
-      case 'd':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handleSkip();
-        }
-        break;
-      case 's':
-        if (event[keyName] && shiftKey) {
-          event.preventDefault();
-          handlePlayPause();
-        }
-        break;
-    }
-  };
-
+  // initial mount and unmount logic
   React.useEffect(() => {
+    /**
+     * handle shortcut key presses
+     */
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+      const { key, shiftKey } = event;
+      switch (key) {
+        case 'a':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handleSkip(true);
+          }
+          break;
+        case 'd':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handleSkip();
+          }
+          break;
+        case 's':
+          if (event[keyName] && shiftKey) {
+            event.preventDefault();
+            handlePlayPause();
+          }
+          break;
+      }
+    };
+    /**
+     * start playing on double click
+     * - there is no easy way to prevent selecting text
+     * on doubleclick, so we will immediately remove the selection
+     */
+    const handleDoubleClick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.getSelection()?.empty();
+      if (!playing) {
+        handlePlayPause();
+      }
+    };
+
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
@@ -1169,6 +1183,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
       document.addEventListener('keydown', handleKeyPress);
+      document.addEventListener('dblclick', handleDoubleClick);
     };
 
     const initPlayer = () => {
@@ -1197,10 +1212,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (url) {
       initPlayer();
     }
-  }, []);
 
-  // to clear the component on unmount
-  React.useEffect(() => {
+    // to clear the component on unmount
     return () => {
       try {
         if (getTimeIntervalId) {
@@ -1226,6 +1239,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         document.removeEventListener('keydown', handleKeyPress);
+        document.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,

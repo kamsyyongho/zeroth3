@@ -277,60 +277,60 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
-  /**
-   * handle shortcut key presses
-   */
-  const handleKeyPress = (event: KeyboardEvent) => {
-    const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    const { key, shiftKey } = event;
-    switch (key) {
-      case 'x':
-        if (shiftKey && event[keyName]) {
-          event.preventDefault();
-          onCommandClick(EDITOR_CONTROLS.speaker);
-        }
-        break;
-      case 's':
-        if (event[keyName]) {
-          event.preventDefault();
-          onCommandClick(EDITOR_CONTROLS.save);
-        }
-        break;
-      case 'z':
-        if (event[keyName]) {
-          event.preventDefault();
-          if (shiftKey) {
-            onCommandClick(EDITOR_CONTROLS.redo);
-          } else {
-            onCommandClick(EDITOR_CONTROLS.undo);
-          }
-        }
-        break;
-      case 'Backspace':
-        if (shiftKey) {
-          event.preventDefault();
-          onCommandClick(EDITOR_CONTROLS.merge);
-        }
-        break;
-      case 'Enter':
-        if (shiftKey) {
-          event.preventDefault();
-          onCommandClick(EDITOR_CONTROLS.split);
-        }
-        break;
-      case 'Alt':
-        event.preventDefault();
-        if (shiftKey) {
-          onCommandClick(EDITOR_CONTROLS.editSegmentTime);
-        } else {
-          onCommandClick(EDITOR_CONTROLS.toggleMore);
-        }
-        break;
-    }
-  };
 
   // set on mount and reset values on unmount
-  React.useEffect(() => {
+  React.useEffect(() => {/**
+    * handle shortcut key presses
+    */
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+      const { key, shiftKey } = event;
+      switch (key) {
+        case 'x':
+          if (shiftKey && event[keyName]) {
+            event.preventDefault();
+            onCommandClick(EDITOR_CONTROLS.speaker);
+          }
+          break;
+        case 's':
+          if (event[keyName]) {
+            event.preventDefault();
+            onCommandClick(EDITOR_CONTROLS.save);
+          }
+          break;
+        case 'z':
+          if (event[keyName]) {
+            event.preventDefault();
+            if (shiftKey) {
+              onCommandClick(EDITOR_CONTROLS.redo);
+            } else {
+              onCommandClick(EDITOR_CONTROLS.undo);
+            }
+          }
+          break;
+        case 'Backspace':
+          if (shiftKey) {
+            event.preventDefault();
+            onCommandClick(EDITOR_CONTROLS.merge);
+          }
+          break;
+        case 'Enter':
+          if (shiftKey) {
+            event.preventDefault();
+            onCommandClick(EDITOR_CONTROLS.split);
+          }
+          break;
+        case 'Alt':
+          event.preventDefault();
+          if (shiftKey) {
+            onCommandClick(EDITOR_CONTROLS.editSegmentTime);
+          } else {
+            onCommandClick(EDITOR_CONTROLS.toggleMore);
+          }
+          break;
+      }
+    };
+
     document.addEventListener('keydown', handleKeyPress);
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
