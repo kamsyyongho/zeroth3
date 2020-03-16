@@ -38,6 +38,7 @@ let duration = 0;
 /** current playback time in seconds */
 let currentPlaybackTime = 0;
 let playing = false;
+let isReady = false;
 /** the timeout used to display the streaming indicator for a minimum time */
 let waitingTimeoutId: NodeJS.Timeout | undefined;
 /** the interval used to get the current time */
@@ -286,6 +287,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onReady();
       }
       setReady(true);
+      isReady = true;
     } catch (error) {
       handleError(error);
     }
@@ -1098,6 +1100,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * handle shortcut key presses
      */
     const handleKeyPress = (event: KeyboardEvent) => {
+      if (!isReady) return;
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
@@ -1127,6 +1130,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
+      if (!isReady) return;
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1255,6 +1259,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       duration = 0;
       currentPlaybackTime = 0;
       playing = false;
+      isReady = false;
       waitingTimeoutId = undefined;
       getTimeIntervalId = undefined;
       fatalError = false;
