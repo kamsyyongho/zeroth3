@@ -7,6 +7,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { ICONS } from '../../theme/icons';
 import { IMAGES } from '../../theme/images';
 import { CustomTheme } from '../../theme/index';
+import { setPageTitle } from '../../util/misc';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -37,7 +38,7 @@ export function Home() {
   const classes = useStyles();
 
   React.useEffect(() => {
-    document.title = translate('common.zeroth');
+    setPageTitle(translate('common.zeroth'));
   }, []);
 
   return (

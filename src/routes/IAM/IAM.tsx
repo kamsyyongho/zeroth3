@@ -8,6 +8,7 @@ import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
+import { setPageTitle } from '../../util/misc';
 import { Forbidden } from '../shared/Forbidden';
 import { IAMTabs } from './IAMTabs';
 
@@ -43,7 +44,7 @@ export function IAM() {
   const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
 
   React.useEffect(() => {
-    document.title = translate('path.IAM');
+    setPageTitle(translate('path.IAM'));
   }, []);
 
   if (!transcribersAccess && !usersAccess) {

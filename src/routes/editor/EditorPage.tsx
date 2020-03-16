@@ -16,6 +16,7 @@ import { CustomTheme } from '../../theme/index';
 import { CONTENT_STATUS, DataSet, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
+import { setPageTitle } from '../../util/misc';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Forbidden } from '../shared/Forbidden';
 import { NotFound } from '../shared/NotFound';
@@ -719,7 +720,7 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
-    document.title = translate('path.editor');
+    setPageTitle(translate('path.editor'));
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
     } else if (canUseEditor) {

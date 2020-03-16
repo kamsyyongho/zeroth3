@@ -11,6 +11,7 @@ import { ProblemKind } from '../../services/api/types';
 import { ModelConfig, Project, SubGraph, TopGraph } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
+import { setPageTitle } from '../../util/misc';
 import { Forbidden } from '../shared/Forbidden';
 import { NotFound } from '../shared/NotFound';
 import { ModelConfigList } from './ModelConfigList';
@@ -268,7 +269,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         }
       }
     }
-    document.title = translate('modelConfig.header');
+    setPageTitle(translate('modelConfig.header'));
     return () => {
       // to remove the navigation props that were received from the previous page
       setNavigationProps({});

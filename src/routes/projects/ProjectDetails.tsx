@@ -16,6 +16,7 @@ import { ProblemKind } from '../../services/api/types';
 import { CustomTheme } from '../../theme/index';
 import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
 import log from '../../util/log/logger';
+import { setPageTitle } from '../../util/misc';
 import { ModelConfigDialog } from '../model-config/ModelConfigDialog';
 import { NotFound } from '../shared/NotFound';
 import { ProjectTableTabs } from './ProjectTableTabs';
@@ -291,7 +292,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   }, [api, projectId]);
 
   React.useEffect(() => {
-    document.title = translate('path.projects');
+    setPageTitle(translate('path.projects'));
   }, []);
 
   const handleModelConfigUpdate = (modelConfig: ModelConfig) => {
