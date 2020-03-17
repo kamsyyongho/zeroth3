@@ -517,6 +517,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   /**
    * display a loading indicator when the player is waiting
    * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
+   * - attempts to prevent stuck buffering state by triggering 
+   * pause and play after the initial timeout is cleared
    */
   function handleWaiting() {
     setWaiting(true);
@@ -1153,7 +1155,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const options: PeaksOptions = {
         containers: {
           zoomview: document.getElementById(WAVEFORM_DOM_IDS['zoomview-container']) as HTMLElement,
-          overview: document.getElementById(WAVEFORM_DOM_IDS['overview-container']) as HTMLElement
+          overview: document.getElementById(WAVEFORM_DOM_IDS['overview-container']) as HTMLElement,
         },
         mediaElement: mediaElement as HTMLAudioElement,
         dataUri: {
