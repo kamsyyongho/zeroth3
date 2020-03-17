@@ -8,6 +8,7 @@ import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
+import { setPageTitle } from '../../util/misc';
 import { Forbidden } from '../shared/Forbidden';
 import { ModelTabs } from './components/ModelTabs';
 
@@ -43,7 +44,7 @@ export function Models() {
   const canSeeSubGraphs = React.useMemo(() => hasPermission(roles, PERMISSIONS.models.subGraph), [roles]);
 
   React.useEffect(() => {
-    document.title = translate('path.models');
+    setPageTitle(translate('path.models'));
   }, []);
 
   if (!canSeeAcousticModels && !canSeeLanguageModels && !canSeeSubGraphs) {

@@ -20,6 +20,7 @@ import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
 import { Organization, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import log from '../../util/log/logger';
+import { setPageTitle } from '../../util/misc';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 import { OrganizationPickerDialog } from './components/OrganizationPickerDialog';
@@ -155,7 +156,7 @@ export function Profile() {
   };
 
   React.useEffect(() => {
-    document.title = translate('menu.profile');
+    setPageTitle(translate('menu.profile'));
     if (currentOrganizationId && !organizations) {
       getOrganizations();
     }

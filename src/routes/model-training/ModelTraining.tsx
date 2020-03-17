@@ -12,6 +12,7 @@ import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
 import { AcousticModel, DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
+import { setPageTitle } from '../../util/misc';
 import { Forbidden } from '../shared/Forbidden';
 import { ModelTrainingForm } from './ModelTrainingForm';
 
@@ -127,7 +128,7 @@ export function ModelTraining() {
   };
 
   React.useEffect(() => {
-    document.title = translate('path.modelTraining');
+    setPageTitle(translate('path.modelTraining'));
   }, []);
 
   React.useEffect(() => {

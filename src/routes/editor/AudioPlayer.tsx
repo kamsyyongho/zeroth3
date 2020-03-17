@@ -38,6 +38,7 @@ let duration = 0;
 /** current playback time in seconds */
 let currentPlaybackTime = 0;
 let playing = false;
+let isReady = false;
 /** the timeout used to display the streaming indicator for a minimum time */
 let waitingTimeoutId: NodeJS.Timeout | undefined;
 /** the interval used to get the current time */
@@ -286,6 +287,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         onReady();
       }
       setReady(true);
+      isReady = true;
     } catch (error) {
       handleError(error);
     }
@@ -515,6 +517,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   /**
    * display a loading indicator when the player is waiting
    * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
+   * - attempts to prevent stuck buffering state by triggering 
+   * pause and play after the initial timeout is cleared
    */
   function handleWaiting() {
     setWaiting(true);
@@ -1098,6 +1102,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * handle shortcut key presses
      */
     const handleKeyPress = (event: KeyboardEvent) => {
+      if (!isReady) return;
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
@@ -1127,6 +1132,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
+      if (!isReady) return;
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1149,7 +1155,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const options: PeaksOptions = {
         containers: {
           zoomview: document.getElementById(WAVEFORM_DOM_IDS['zoomview-container']) as HTMLElement,
-          overview: document.getElementById(WAVEFORM_DOM_IDS['overview-container']) as HTMLElement
+          overview: document.getElementById(WAVEFORM_DOM_IDS['overview-container']) as HTMLElement,
         },
         mediaElement: mediaElement as HTMLAudioElement,
         dataUri: {
@@ -1255,6 +1261,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       duration = 0;
       currentPlaybackTime = 0;
       playing = false;
+      isReady = false;
       waitingTimeoutId = undefined;
       getTimeIntervalId = undefined;
       fatalError = false;

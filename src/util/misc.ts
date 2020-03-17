@@ -116,3 +116,7 @@ export function generateWordKeyString(location: SegmentAndWordIndex) {
 }
 
 export const isMacOs = () => navigator.userAgent.includes('Mac');
+
+export const setPageTitle = (title: string) => {
+  document.title = title;
+};
