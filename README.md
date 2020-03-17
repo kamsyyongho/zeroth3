@@ -29,7 +29,7 @@
 │   │       └── shortcuts.ts // editor shortcuts for macOS and Windows
 │   ├── index.tsx
 │   ├── react-app-env.d.ts
-│   ├── routes // all comonents - sorted by the routes they are used
+│   ├── routes // all components - sorted by the routes they are used
 │   │   ├── IAM
 │   │   │   ├── IAM.tsx // main page that contains fetch logic and tabs
 │   │   │   ├── IAMTabs.tsx // tab management logic
