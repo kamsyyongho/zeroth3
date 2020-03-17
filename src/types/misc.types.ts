@@ -41,3 +41,18 @@ export enum HUES {
 export const HUE_VALUES: string[] = Object.keys(HUES).map(hue => hue);
 
 export const DEFAULT_HUES = [HUES.red, HUES.orange, HUES.purple];
+export interface RandomColorOptions {
+  hue?: number | string;
+  luminosity?: 'bright' | 'light' | 'dark' | 'random';
+  seed?: number | string;
+  format?:
+    | 'hsvArray'
+    | 'hslArray'
+    | 'hsl'
+    | 'hsla'
+    | 'rgbArray'
+    | 'rgb'
+    | 'rgba'
+    | 'hex';
+  alpha?: number;
+}

@@ -1,7 +1,11 @@
 import randomColor from 'randomcolor';
 import { WORD_KEY_SEPARATOR } from '../constants/misc.constants';
-import { SegmentAndWordIndex } from '../types';
-import { DEFAULT_HUES, HUES } from '../types/misc.types';
+import {
+  DEFAULT_HUES,
+  HUES,
+  RandomColorOptions,
+  SegmentAndWordIndex,
+} from '../types';
 
 /**
  * Checks if the contents of two sets are equal.
@@ -87,7 +91,7 @@ export function getRandomInt(max: number) {
  * @param huesToUse - default is `'red'`, `'orange'`, `'purple'`
  */
 export function getRandomColor(
-  options?: RandomColorOptionsSingle,
+  options?: RandomColorOptions,
   huesToUse?: HUES[],
 ) {
   if (options) {
@@ -99,7 +103,7 @@ export function getRandomColor(
 
   const hues = Object.keys(huesToUse).map(hue => hue);
   const hue = hues[getRandomInt(hues.length)];
-  const defaultOptions: RandomColorOptionsSingle = {
+  const defaultOptions: RandomColorOptions = {
     hue,
   };
   return randomColor(defaultOptions);
