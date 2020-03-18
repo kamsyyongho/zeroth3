@@ -287,18 +287,11 @@ export function TDPTable(props: TDPTableProps) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
-    getTableBodyProps,
     headerGroups,
     prepareRow,
-    page,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
     pageCount,
     gotoPage,
     flatColumns,
-    nextPage,
-    previousPage,
     setPageSize,
     rows,
     // Get the state from the instance
@@ -315,7 +308,6 @@ export function TDPTable(props: TDPTableProps) {
       // This means we'll also have to provide our own
       // pageCount.
       pageCount: voiceDataResults.totalPages,
-
     },
     useFilters,
     usePagination,

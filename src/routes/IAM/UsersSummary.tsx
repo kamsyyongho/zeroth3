@@ -1,6 +1,6 @@
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { useSnackbar } from 'notistack';
 import { BulletList } from 'react-content-loader';
 import React from 'reactn';
@@ -58,7 +58,6 @@ export function UsersSummary(props: UsersSummaryProps) {
   const [userEmails, setUserEmails] = React.useState<UserEmailsByUserId>({});
 
   const classes = useStyles();
-  const theme = useTheme();
 
   const getUserEmailsById = (users: User[]) => {
     const tempUserEmails: UserEmailsByUserId = {};

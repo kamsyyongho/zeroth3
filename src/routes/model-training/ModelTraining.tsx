@@ -10,7 +10,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
-import { AcousticModel, DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
+import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, TRAINING_METHODS } from '../../types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { Forbidden } from '../shared/Forbidden';
@@ -39,8 +39,6 @@ export function ModelTraining() {
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [projectId, setProjectId] = React.useState<string | undefined>(currentProject?.id);
   const [initialLoad, setInitialLoad] = React.useState(false);
-  const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
-  const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
   const [modelConfigsById, setModelConfigsById] = React.useState<GenericById<ModelConfig>>({});
   const [dataSetsById, setDataSetsById] = React.useState<GenericById<DataSet>>({});
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);

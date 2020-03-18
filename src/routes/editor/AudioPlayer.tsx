@@ -46,7 +46,7 @@ let getTimeIntervalId: NodeJS.Timeout | undefined;
 /** 
  * if there was an error in the component 
  * - lives outside the component, so it doesn't wait on state changes
- * - used for the meida listeners
+ * - used for the media listeners
  */
 let fatalError = false;
 let mediaElement: HTMLAudioElement | null = null;
