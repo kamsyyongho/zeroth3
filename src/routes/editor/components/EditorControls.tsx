@@ -89,6 +89,11 @@ const secondaryControlOrder = [
   EDITOR_CONTROLS.confirm,
 ];
 
+/** keeps track of the editor state for the keyboard listener
+ * - outside the component to keep it out of the react lifecycle
+ */
+let editorInFocus = false;
+
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
   onConfirm: () => void;
@@ -110,6 +115,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [sliderOpen, setSliderOpen] = React.useState(false);
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+  const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -125,6 +131,12 @@ export const EditorControls = (props: EditorControlsProps) => {
 
   const classes = useStyles();
   const theme = useTheme();
+
+  // to prevent the keypress listeners from firing twice
+  // the editor will handle the shortcuts when it is focussed
+  React.useEffect(() => {
+    editorInFocus = !!editorFocussed;
+  }, [editorFocussed]);
 
   const renderButton = (label: string, Icon: JSX.Element | null, tooltipText: string, buttonProps?: ButtonProps, selected?: boolean) => (
     <Button
@@ -299,7 +311,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           }
           break;
         case 'z':
-          if (event[keyName]) {
+          if (event[keyName] && !editorInFocus) {
             event.preventDefault();
             if (shiftKey) {
               onCommandClick(EDITOR_CONTROLS.redo);
@@ -309,20 +321,20 @@ export const EditorControls = (props: EditorControlsProps) => {
           }
           break;
         case 'Backspace':
-          if (shiftKey) {
+          if (shiftKey && !editorInFocus) {
             event.preventDefault();
             onCommandClick(EDITOR_CONTROLS.merge);
           }
           break;
         case 'Enter':
-          if (shiftKey) {
+          if (shiftKey && !editorInFocus) {
             event.preventDefault();
             onCommandClick(EDITOR_CONTROLS.split);
           }
           break;
         case 'Alt':
           event.preventDefault();
-          if (shiftKey) {
+          if (shiftKey && !editorInFocus) {
             onCommandClick(EDITOR_CONTROLS.editSegmentTime);
           } else {
             onCommandClick(EDITOR_CONTROLS.toggleMore);
@@ -336,6 +348,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       document.removeEventListener('keydown', handleKeyPress);
       setEditorDebugMode(false);
       setShowEditorPopups(false);
+      editorInFocus = false;
     };
   }, []);
 

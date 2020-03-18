@@ -336,6 +336,7 @@ export function Editor(props: EditorProps) {
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
+  const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
@@ -1665,21 +1666,6 @@ export function Editor(props: EditorProps) {
     }
   }, [containerRef, windowWidth]);
 
-  // reset everything on dismount
-  React.useEffect(() => {
-    return () => {
-      wordKeyBank = new WordKeyStore();
-      entityMap = {};
-      entityKeyToWordKeyMap = {};
-      wordKeyToEntityKeyMap = {};
-      blockKeyToSegmentIdMap = {};
-      segmentIdToBlockKeyMap = {};
-      segmentOrderById = [];
-      newWordWasCreated = false;
-      onReady(false);
-    };
-  }, []);
-
   // update the playing location
   React.useEffect(() => {
     if (playingLocation && ready) {
@@ -1698,7 +1684,26 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     generateStateFromSegments();
     focusEditor();
+    // reset everything on dismount;
+    return () => {
+      wordKeyBank = new WordKeyStore();
+      entityMap = {};
+      entityKeyToWordKeyMap = {};
+      wordKeyToEntityKeyMap = {};
+      blockKeyToSegmentIdMap = {};
+      segmentIdToBlockKeyMap = {};
+      segmentOrderById = [];
+      newWordWasCreated = false;
+      onReady(false);
+      setEditorFocussed(false);
+    };
   }, []);
+
+  // keep track of focus to prevent the keypress listeners
+  // from firing twice in the editor controls component
+  React.useEffect(() => {
+    setEditorFocussed(focussed);
+  }, [focussed]);
 
   // handle editor state changes
   React.useEffect(() => {
