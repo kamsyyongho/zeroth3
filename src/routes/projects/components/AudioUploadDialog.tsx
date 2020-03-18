@@ -99,7 +99,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       let label = uploadType;
       switch (uploadType) {
         case AUDIO_UPLOAD_TYPE.FILE as string:
-          label = translate('common.upload');
+          label = translate('common.decode');
           break;
         case AUDIO_UPLOAD_TYPE.URL as string:
           label = translate('common.url');
@@ -243,7 +243,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
         container: clsx(modelConfigDialogOpen && classes.hidden)
       }}
     >
-      <DialogTitle id="audio-upload-dialog">{translate(`TDP.uploadData`)}</DialogTitle>
+      <DialogTitle id="audio-upload-dialog">{translate(`TDP.decodeData`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => {
           const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.FILE as string;
@@ -316,7 +316,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                       loading={true}
                     /> : <BackupIcon />}
                 >
-                  {translate("common.upload")}
+                  {translate("common.decode")}
                 </Button>
               </DialogActions>
             </>

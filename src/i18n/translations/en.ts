@@ -28,6 +28,7 @@ export const en: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      decode: 'Decode',
       decoded: 'Decoded',
       decoding: 'Decoding',
       forbidden: 'Forbidden',
@@ -183,7 +184,7 @@ export const en: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      uploadData: 'Upload data',
+      decodeData: 'Decode data',
       highRiskSegments: 'High Risk Segments',
       memo: 'Memo',
       sessionId: 'Session ID',

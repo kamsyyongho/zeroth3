@@ -28,6 +28,7 @@ export const ko: ResourceLanguage = {
       length: '길이',
       score: '점수',
       upload: '업로드',
+      decode: '디코딩',
       decoded: '오디오 디코딩 완료',
       decoding: '오디오 디코딩 진행중',
       forbidden: '금지',
@@ -185,7 +186,7 @@ export const ko: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      uploadData: '데이터 업로드',
+      decodeData: '데이터 디코딩',
       highRiskSegments: 'High Risk 세그먼트',
       memo: '메모',
       sessionId: '세션 ID',

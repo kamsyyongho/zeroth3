@@ -231,7 +231,7 @@ export function TDP(props: TDPProps) {
               onClick={openUploadDialog}
               startIcon={<BackupIcon />}
             >
-              {translate('TDP.uploadData')}
+              {translate('TDP.decodeData')}
             </Button>
           </Grid>}
         </Grid>}
