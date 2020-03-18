@@ -5,6 +5,8 @@ import { RawDataQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getRawDataQueueResult,
+  PostDownloadLinkRequest,
+  PostDownloadLocationRequest,
   ProblemKind,
   ServerError,
   uploadRawDataResult,
@@ -93,6 +95,74 @@ export class RawData extends ParentApi {
             return { kind: ProblemKind['bad-data'] };
           }
         }
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Send the path of the audio file to use that is already on the server
+   * @param projectId
+   * @param modelConfigName - **NOT** the ID
+   * @param path - the path of the file on the server
+   */
+  async postDownloadLocation(
+    projectId: string,
+    modelConfigName: string,
+    path: string,
+  ): Promise<uploadRawDataResult> {
+    // compile data
+    const request: PostDownloadLocationRequest = {
+      modelConfigName,
+      path,
+    };
+    // make the api call
+    const response = await this.apisauce.post<undefined, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data/location`),
+      request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
+   * Send the url of the audio file to use that is from some online source
+   * @param projectId
+   * @param modelConfigName - **NOT** the ID
+   * @param url - the url of the file online
+   */
+  async postDownloadLink(
+    projectId: string,
+    modelConfigName: string,
+    url: string,
+  ): Promise<uploadRawDataResult> {
+    // compile data
+    const request: PostDownloadLinkRequest = {
+      modelConfigName,
+      url,
+    };
+    // make the api call
+    const response = await this.apisauce.post<undefined, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/raw-data/url`),
+      request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }

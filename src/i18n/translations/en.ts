@@ -28,6 +28,7 @@ export const en: ResourceLanguage = {
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
+      decode: 'Decode',
       decoded: 'Decoded',
       decoding: 'Decoding',
       forbidden: 'Forbidden',
@@ -42,6 +43,8 @@ export const en: ResourceLanguage = {
       refresh: 'Refresh',
       close: 'Close',
       zeroth: 'Zeroth EE',
+      url: 'URL',
+      path: 'Path',
     },
     table: {
       page: 'Page',
@@ -151,6 +154,8 @@ export const en: ResourceLanguage = {
       today: 'Today',
       assign: 'Assign',
       length: 'Length',
+      filePath: 'File path',
+      fileUrl: 'File URL',
     },
     IAM: {
       users: 'Users',
@@ -179,7 +184,7 @@ export const en: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      uploadData: 'Upload data',
+      decodeData: 'Decode data',
       highRiskSegments: 'High Risk Segments',
       memo: 'Memo',
       sessionId: 'Session ID',

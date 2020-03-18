@@ -2,6 +2,20 @@ import { RawDataQueue } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 /////////////
+// REQUEST //
+/////////////
+
+export interface PostDownloadLocationRequest {
+  modelConfigName: string;
+  path: string;
+}
+
+export interface PostDownloadLinkRequest {
+  modelConfigName: string;
+  url: string;
+}
+
+/////////////
 // RESULTS //
 /////////////
 
@@ -11,3 +25,5 @@ export type getRawDataQueueResult =
 export type uploadRawDataResult =
   | { kind: 'ok'; warningMessage?: string }
   | GeneralApiProblem;
+export type postDownloadLocationResult = { kind: 'ok' } | GeneralApiProblem;
+export type postDownloadLinkResult = { kind: 'ok' } | GeneralApiProblem;

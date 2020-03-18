@@ -438,7 +438,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const isValidSection = checkIfValidSegmentArea(startTime, endTime);
     switch (id) {
       case PLAYER_SEGMENT_IDS.LOOP:
-      case PLAYER_SEGMENT_IDS.SEGMENT_EDIT:
         validTimeBondaries = time;
         break;
       case PLAYER_SEGMENT_IDS.DISABLED_0:
