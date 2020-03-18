@@ -15,16 +15,20 @@ import React, { useGlobal } from 'reactn';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { ProblemKind } from '../../../services/api/types';
-import { ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
+import { ProblemKind, uploadRawDataResult } from '../../../services/api/types';
+import { AUDIO_UPLOAD_TYPE, AUDIO_UPLOAD_TYPE_VALUES, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
+import { TextFormField } from '../../shared/form-fields/TextFormField';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
     hidden: {
       visibility: 'hidden',
+    },
+    hiddenTextInput: {
+      height: 0,
     },
   }),
 );
@@ -75,14 +79,39 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
+  /** the api requires sending names instead of IDs for non-upload requests */
+  const modelConfigsById: GenericById<ModelConfig> = {};
+
   let allModelConfigsStillTraining = true;
   const formSelectOptions: SelectFormFieldOptions = modelConfigs.map((modelConfig) => {
+    // build our model config map
+    modelConfigsById[modelConfig.id] = modelConfig;
+
     const disabled = modelConfig.progress < 100;
     if (!disabled) {
       allModelConfigsStillTraining = false;
     }
     return { label: modelConfig.name, value: modelConfig.id, disabled };
   });
+
+  const uploadTypeFormSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = AUDIO_UPLOAD_TYPE_VALUES.map((uploadType) => {
+      let label = uploadType;
+      switch (uploadType) {
+        case AUDIO_UPLOAD_TYPE.FILE as string:
+          label = translate('common.upload');
+          break;
+        case AUDIO_UPLOAD_TYPE.URL as string:
+          label = translate('common.url');
+          break;
+        case AUDIO_UPLOAD_TYPE.PATH as string:
+          label = translate('common.path');
+          break;
+      }
+      return { label, value: uploadType };
+    });
+    return tempFormSelectOptions;
+  }, [translate]);
 
   const validFilesCheck = (files: File[]) => !!files.length && files.every(file => file instanceof File);
 
@@ -124,23 +153,43 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
 
   const formSchema = yup.object({
     selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
-    files: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
+    uploadType: yup.mixed().oneOf(AUDIO_UPLOAD_TYPE_VALUES.concat([''])).notRequired(),
+    files: yup.array<File>().when('uploadType', {
+      is: AUDIO_UPLOAD_TYPE.FILE as string,
+      then: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
+      otherwise: yup.array<File>().notRequired(),
+    }),
+    text: yup.string().when('uploadType', {
+      is: AUDIO_UPLOAD_TYPE.FILE as string,
+      then: yup.string().notRequired(),
+      otherwise: yup.string().required(requiredTranslationText).trim(),
+    }),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
     selectedModelConfigId: null,
+    uploadType: AUDIO_UPLOAD_TYPE.FILE as string,
     files: [],
+    text: '',
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { files, selectedModelConfigId } = values;
-    if (!validFilesCheck(files) || selectedModelConfigId === null) {
+    const { files, selectedModelConfigId, uploadType, text } = values;
+    const shouldUploadFiles = uploadType === AUDIO_UPLOAD_TYPE.FILE as string;
+    if (shouldUploadFiles && !validFilesCheck(files) || selectedModelConfigId === null) {
       return;
     }
     if (api?.rawData && !loading && !duplicateError && !maxSizeError) {
       setLoading(true);
       setIsError(false);
-      const response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
+      let response: uploadRawDataResult;
+      if (shouldUploadFiles) {
+        response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
+      } else if (uploadType === AUDIO_UPLOAD_TYPE.URL as string) {
+        response = await api.rawData.postDownloadLink(projectId, modelConfigsById[selectedModelConfigId].name, text);
+      } else {
+        response = await api.rawData.postDownloadLocation(projectId, modelConfigsById[selectedModelConfigId].name, text);
+      }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         // to trigger polling for upload progress
@@ -196,63 +245,83 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
     >
       <DialogTitle id="audio-upload-dialog">{translate(`TDP.uploadData`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
-        {(formikProps) => (
-          <>
-            <DialogContent>
-              <Form>
-                <Field
-                  name='selectedModelConfigId'
-                  component={SelectFormField}
-                  options={formSelectOptions}
-                  label={translate("forms.modelConfig")}
-                  errorOverride={isError || noAvailableModelConfigText}
-                  helperText={noAvailableModelConfigText}
-                />
-                {(typeof openModelConfigDialog === 'function') && <Button
-                  fullWidth
+        {(formikProps) => {
+          const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.FILE as string;
+          const textInputLabel = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.URL as string ? translate('forms.fileUrl') : translate('forms.filePath');
+          return (
+            <>
+              <DialogContent>
+                <Form>
+                  <Field
+                    name='selectedModelConfigId'
+                    component={SelectFormField}
+                    options={formSelectOptions}
+                    label={translate("forms.modelConfig")}
+                    errorOverride={isError || noAvailableModelConfigText}
+                    helperText={noAvailableModelConfigText}
+                  />
+                  {(typeof openModelConfigDialog === 'function') && <Button
+                    fullWidth
+                    color="primary"
+                    onClick={() => openModelConfigDialog(true)}
+                    startIcon={<AddIcon />}
+                  >
+                    {translate('modelConfig.create')}
+                  </Button>}
+                  <Field
+                    fullWidth
+                    name='uploadType'
+                    component={SelectFormField}
+                    options={uploadTypeFormSelectOptions}
+                    label={translate("forms.source")}
+                  />
+                  <Field
+                    className={clsx(shouldUploadFile && classes.hiddenTextInput)}
+                    name='text'
+                    component={TextFormField}
+                    label={textInputLabel}
+                    variant="outlined"
+                    margin="normal"
+                  />
+                  <Field
+                    hidden={!shouldUploadFile}
+                    showPreviews
+                    maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
+                    acceptedFiles={ACCEPTED_FILE_TYPES}
+                    name='files'
+                    dropZoneText={translate('forms.dropZone.audio_plural')}
+                    component={DropZoneFormField}
+                    onDuplicateFileNames={handleDuplicateFileNames}
+                    onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
+                    helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
+                    errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
+                    errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
+                  />
+                </Form>
+              </DialogContent>
+              <DialogActions>
+                <Button disabled={loading} onClick={handleClose} color="primary">
+                  {translate("common.cancel")}
+                </Button>
+                <Button
+                  disabled={!formikProps.isValid || isError || loading || !!duplicateError || !!maxSizeError}
+                  onClick={formikProps.submitForm}
                   color="primary"
-                  onClick={() => openModelConfigDialog(true)}
-                  startIcon={<AddIcon />}
+                  variant="outlined"
+                  startIcon={loading ?
+                    <MoonLoader
+                      sizeUnit={"px"}
+                      size={15}
+                      color={theme.palette.primary.main}
+                      loading={true}
+                    /> : <BackupIcon />}
                 >
-                  {translate('modelConfig.create')}
-                </Button>}
-                <Field
-                  showPreviews
-                  maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
-                  acceptedFiles={ACCEPTED_FILE_TYPES}
-                  name='files'
-                  dropZoneText={translate('forms.dropZone.audio_plural')}
-                  component={DropZoneFormField}
-                  onDuplicateFileNames={handleDuplicateFileNames}
-                  onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
-                  helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
-                  errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
-                  errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
-                />
-              </Form>
-            </DialogContent>
-            <DialogActions>
-              <Button disabled={loading} onClick={handleClose} color="primary">
-                {translate("common.cancel")}
-              </Button>
-              <Button
-                disabled={!formikProps.isValid || isError || loading || !!duplicateError || !!maxSizeError}
-                onClick={formikProps.submitForm}
-                color="primary"
-                variant="outlined"
-                startIcon={loading ?
-                  <MoonLoader
-                    sizeUnit={"px"}
-                    size={15}
-                    color={theme.palette.primary.main}
-                    loading={true}
-                  /> : <BackupIcon />}
-              >
-                {translate("common.upload")}
-              </Button>
-            </DialogActions>
-          </>
-        )}
+                  {translate("common.upload")}
+                </Button>
+              </DialogActions>
+            </>
+          );
+        }}
       </Formik>
     </Dialog>
   );

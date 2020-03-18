@@ -42,6 +42,8 @@ export const ko: ResourceLanguage = {
       refresh: '새로고침',
       close: '닫기',
       zeroth: 'Zeroth EE',
+      url: 'URL',
+      path: '경로',
     },
     table: {
       page: '페이지',
@@ -153,6 +155,8 @@ export const ko: ResourceLanguage = {
       today: '오늘',
       assign: '할당',
       length: '길이',
+      filePath: '파일 경로',
+      fileUrl: '파일 URL',
     },
     IAM: {
       users: '사용자',

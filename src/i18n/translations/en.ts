@@ -42,6 +42,8 @@ export const en: ResourceLanguage = {
       refresh: 'Refresh',
       close: 'Close',
       zeroth: 'Zeroth EE',
+      url: 'URL',
+      path: 'Path',
     },
     table: {
       page: 'Page',
@@ -151,6 +153,8 @@ export const en: ResourceLanguage = {
       today: 'Today',
       assign: 'Assign',
       length: 'Length',
+      filePath: 'File path',
+      fileUrl: 'File URL',
     },
     IAM: {
       users: 'Users',
