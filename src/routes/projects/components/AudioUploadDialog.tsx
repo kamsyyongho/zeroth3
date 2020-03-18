@@ -99,7 +99,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       let label = uploadType;
       switch (uploadType) {
         case AUDIO_UPLOAD_TYPE.FILE as string:
-          label = translate('common.decode');
+          label = translate('common.upload');
           break;
         case AUDIO_UPLOAD_TYPE.URL as string:
           label = translate('common.url');
