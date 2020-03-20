@@ -49,6 +49,10 @@ let getTimeIntervalId: NodeJS.Timeout | undefined;
  * - used for the media listeners
  */
 let fatalError = false;
+/** keeps track of the editor state for the click listener
+ * - outside the component to keep it out of the react lifecycle
+ */
+let editorInFocus = false;
 let mediaElement: HTMLAudioElement | null = null;
 let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
@@ -159,6 +163,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+  const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
@@ -189,6 +194,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     playing = isPlay;
   }, [isPlay]);
+
+  // to prevent the keypress listeners from firing twice
+  // the editor will handle the shortcuts when it is focussed
+  React.useEffect(() => {
+    editorInFocus = !!editorFocussed;
+  }, [editorFocussed]);
 
   const checkIfFinished = () => {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -1131,7 +1142,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
-      if (!isReady) return;
+      if (!isReady || !editorInFocus) return;
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1271,6 +1282,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
+      editorInFocus = false;
     };
   }, []);
 
