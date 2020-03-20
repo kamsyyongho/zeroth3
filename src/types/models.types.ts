@@ -30,9 +30,7 @@ export enum TRAINING_METHODS {
   'TRANSFER_LEARNING' = 'TRANSFER_LEARNING',
 }
 
-export const TRAINING_METHOD_VALUES: string[] = Object.keys(
-  TRAINING_METHODS,
-).map(method => method);
+export const TRAINING_METHOD_VALUES: string[] = Object.keys(TRAINING_METHODS);
 
 export enum AUDIO_UPLOAD_TYPE {
   FILE = 'FILE',
@@ -42,4 +40,4 @@ export enum AUDIO_UPLOAD_TYPE {
 
 export const AUDIO_UPLOAD_TYPE_VALUES: string[] = Object.keys(
   AUDIO_UPLOAD_TYPE,
-).map(typeKey => typeKey);
+);
