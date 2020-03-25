@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="f11b7f0c-e28e-4fb3-87f9-a61858770667" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="ProjectId" id="1ZEb7EQYUhszgXUM44FGrnIUyS9" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f11b7f0c-e28e-4fb3-87f9-a61858770667" name="Default Changelist" comment="" />
+      <created>1584407030510</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1584407030510</updated>
+      <workItem from="1584407031889" duration="3881000" />
+      <workItem from="1584420260097" duration="75000" />
+      <workItem from="1584420344975" duration="13871000" />
+      <workItem from="1585116496906" duration="4527000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1584433229714">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1680.1050@0.0.1680.1050" timestamp="1584433229714" />
+    <state x="577" y="278" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1584432677108">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="577" y="278" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1584432677108" />
+    <state x="245" y="163" key="SettingsEditor" timestamp="1584420303026">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
+    <state x="496" y="136" width="687" height="777" key="find.popup" timestamp="1584432448996">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="496" y="136" width="687" height="777" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1584432448996" />
+  </component>
+</project>
