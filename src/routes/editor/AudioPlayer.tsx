@@ -182,6 +182,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handlePause = () => setIsPlay(false);
   const handlePlay = () => setIsPlay(true);
 
+  //audio player root wrapper element for attaching and detaching listener for audio player
+  const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
+
+
   React.useEffect(() => {
     currentPlaybackTime = currentTime;
   }, [currentTime]);
@@ -1131,10 +1135,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
-      console.log('handleDoubleClick triggered : ', event)
       if (!isReady) return;
 
-      console.log('isReady!');
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1179,7 +1181,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         axisGridlineColor: theme.audioPlayer.grid,
         axisLabelColor: theme.audioPlayer.grid,
       };
-      const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
 
           PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
         setReady(!error);
@@ -1194,7 +1195,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
-      audioPlayerContainer?.addEventListener('keydown', handleKeyPress);
+      document.addEventListener('keydown', handleKeyPress);
       audioPlayerContainer?.addEventListener('dblclick', handleDoubleClick);
     };
 
@@ -1251,7 +1252,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         document.removeEventListener('keydown', handleKeyPress);
-        document.removeEventListener('dblclick', handleDoubleClick);
+        audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
