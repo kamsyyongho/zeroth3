@@ -187,6 +187,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handlePause = () => setIsPlay(false);
   const handlePlay = () => setIsPlay(true);
 
+  //audio player root wrapper element for attaching and detaching listener for audio player
+  const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
+
+
   React.useEffect(() => {
     currentPlaybackTime = currentTime;
   }, [currentTime]);
@@ -1142,7 +1146,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
-      if (!isReady || !editorInFocus) return;
+      if (!isReady) return;
+
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1202,7 +1207,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
       document.addEventListener('keydown', handleKeyPress);
-      document.addEventListener('dblclick', handleDoubleClick);
+      audioPlayerContainer?.addEventListener('dblclick', handleDoubleClick);
     };
 
     const initPlayer = () => {
@@ -1258,7 +1263,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         document.removeEventListener('keydown', handleKeyPress);
-        document.removeEventListener('dblclick', handleDoubleClick);
+        audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
@@ -1408,6 +1413,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   return (
     <Paper
+      id='audioPlayer-root-wrapper'
       elevation={5}
       className={classes.root}
     >
