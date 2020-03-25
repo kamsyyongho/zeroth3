@@ -1131,7 +1131,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
      * on doubleclick, so we will immediately remove the selection
      */
     const handleDoubleClick = (event: MouseEvent) => {
+      console.log('handleDoubleClick triggered : ', event)
       if (!isReady) return;
+
+      console.log('isReady!');
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1176,8 +1179,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         axisGridlineColor: theme.audioPlayer.grid,
         axisLabelColor: theme.audioPlayer.grid,
       };
+      const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
 
-      PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
+          PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
         setReady(!error);
         if (error) {
           handleError(error);
@@ -1190,8 +1194,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
-      document.addEventListener('keydown', handleKeyPress);
-      document.addEventListener('dblclick', handleDoubleClick);
+      audioPlayerContainer?.addEventListener('keydown', handleKeyPress);
+      audioPlayerContainer?.addEventListener('dblclick', handleDoubleClick);
     };
 
     const initPlayer = () => {
@@ -1396,6 +1400,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   return (
     <Paper
+        id='audioPlayer-root-wrapper'
       elevation={5}
       className={classes.root}
     >
