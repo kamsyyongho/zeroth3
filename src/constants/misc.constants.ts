@@ -14,5 +14,7 @@ export const WORD_KEY_SEPARATOR = '-';
 
 export const CONTACT_EMAIL = 'support@atlaslabs.ai';
 
-/** in ms */
-export const UPLOAD_REQUEST_TIMEOUT = 30000;
+/** in ms
+ * - `0` -> no timeout
+ */
+export const UPLOAD_REQUEST_TIMEOUT = 0;
