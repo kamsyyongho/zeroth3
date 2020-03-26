@@ -43,7 +43,7 @@ export const SelectFormField = ({ field, helperText, form, label, options, error
             {op.label}
           </MenuItem>);
         })) : (
-            <MenuItem key={'empty'} value={''} >
+            <MenuItem key={'empty'} value={''} disabled >
               <em>{translate('forms.none')}</em>
             </MenuItem>
           )}

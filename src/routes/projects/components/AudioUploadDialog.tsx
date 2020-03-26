@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme) =>
     },
     hiddenTextInput: {
       height: 0,
+      visibility: 'hidden',
     },
   }),
 );

@@ -7,6 +7,7 @@ interface InputSelectFormFieldProps extends FieldProps {
   errorOverride?: boolean;
   hidden?: boolean;
   fullWidth?: boolean;
+  autoFocus?: boolean;
   margin?: "none" | "dense" | "normal";
   options: string[];
 }
@@ -19,6 +20,7 @@ export const InputSelectFormField = ({
   margin,
   fullWidth,
   options,
+  autoFocus,
   ...props
 }: InputSelectFormFieldProps) => {
   if (fullWidth === undefined) fullWidth = true;
@@ -35,6 +37,7 @@ export const InputSelectFormField = ({
         <TextField
           style={{ display: hidden ? 'none' : undefined }}
           fullWidth={fullWidth}
+          autoFocus={autoFocus}
           margin={margin || 'normal'}
           helperText={errorText}
           error={!!errorText || !!errorOverride}
