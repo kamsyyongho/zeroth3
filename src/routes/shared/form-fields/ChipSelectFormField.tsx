@@ -2,6 +2,7 @@ import { Chip, FormControl, FormHelperText, InputLabel, MenuItem, Select } from 
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { FieldProps, getIn } from "formik";
 import React from "reactn";
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { SelectFormFieldOption, SelectFormFieldOptions } from './SelectFormField';
 
 
@@ -34,6 +35,7 @@ interface ChipSelectFormFieldProps extends FieldProps {
 }
 
 export const ChipSelectFormField = ({ field, form, helperText, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
+  const { translate } = React.useContext(I18nContext);
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
@@ -58,11 +60,15 @@ export const ChipSelectFormField = ({ field, form, helperText, label, options, l
           </>
         )}
         {...field} {...props}>
-        {options.map((op: SelectFormFieldOption) => (
+        {options.length ? (options.map((op: SelectFormFieldOption) => (
           <MenuItem key={op.value} value={op.value} disabled={op.disabled} >
             {op.label}
           </MenuItem>
-        ))}
+        ))) : (
+            <MenuItem key={'empty'} value={undefined} disabled >
+              <em>{translate('forms.none')}</em>
+            </MenuItem>
+          )}
       </Select>
       <FormHelperText>{errorText || helperText}</FormHelperText>
     </FormControl>
