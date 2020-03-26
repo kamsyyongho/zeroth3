@@ -159,6 +159,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 component={TextFormField}
                 label={translate("forms.name")}
                 errorOverride={isError}
+                autoFocus
               />
               <Field
                 name='selectedModelConfigId'

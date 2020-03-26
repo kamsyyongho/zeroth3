@@ -179,8 +179,7 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
           return (<>
             <Tooltip
               placement='top-start'
-              title={<Typography variant='h6' >{osText('speaker')}</Typography>}
-              open={isOpen ? undefined : false}
+              title={isOpen ? <Typography variant='h6' >{osText('speaker')}</Typography> : ''}
               arrow={true}
             >
               <span>{speakerButton}</span>

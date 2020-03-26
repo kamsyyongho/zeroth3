@@ -38,7 +38,7 @@ export enum HUES {
   'monochrome' = 'monochrome',
 }
 
-export const HUE_VALUES: string[] = Object.keys(HUES).map(hue => hue);
+export const HUE_VALUES: string[] = Object.keys(HUES);
 
 export const DEFAULT_HUES = [HUES.red, HUES.orange, HUES.purple];
 export interface RandomColorOptions {

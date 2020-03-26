@@ -49,6 +49,10 @@ let getTimeIntervalId: NodeJS.Timeout | undefined;
  * - used for the media listeners
  */
 let fatalError = false;
+/** keeps track of the editor state for the click listener
+ * - outside the component to keep it out of the react lifecycle
+ */
+let editorInFocus = false;
 let mediaElement: HTMLAudioElement | null = null;
 let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
@@ -159,6 +163,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+  const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
@@ -182,6 +187,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handlePause = () => setIsPlay(false);
   const handlePlay = () => setIsPlay(true);
 
+  //audio player root wrapper element for attaching and detaching listener for audio player
+  const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
+
+
   React.useEffect(() => {
     currentPlaybackTime = currentTime;
   }, [currentTime]);
@@ -189,6 +198,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     playing = isPlay;
   }, [isPlay]);
+
+  // to prevent the keypress listeners from firing twice
+  // the editor will handle the shortcuts when it is focussed
+  React.useEffect(() => {
+    editorInFocus = !!editorFocussed;
+  }, [editorFocussed]);
 
   const checkIfFinished = () => {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -1132,6 +1147,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
      */
     const handleDoubleClick = (event: MouseEvent) => {
       if (!isReady) return;
+
       event.preventDefault();
       event.stopPropagation();
       window.getSelection()?.empty();
@@ -1191,7 +1207,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
       document.addEventListener('keydown', handleKeyPress);
-      document.addEventListener('dblclick', handleDoubleClick);
+      audioPlayerContainer?.addEventListener('dblclick', handleDoubleClick);
     };
 
     const initPlayer = () => {
@@ -1247,7 +1263,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         document.removeEventListener('keydown', handleKeyPress);
-        document.removeEventListener('dblclick', handleDoubleClick);
+        audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
@@ -1271,6 +1287,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
+      editorInFocus = false;
     };
   }, []);
 
@@ -1396,6 +1413,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   return (
     <Paper
+      id='audioPlayer-root-wrapper'
       elevation={5}
       className={classes.root}
     >
