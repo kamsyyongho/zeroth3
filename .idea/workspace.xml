@@ -40,7 +40,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
-    <property name="settings.editor.selected.configurable" value="preferences.editor" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Other File Types" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
   </component>
   <component name="SvnConfiguration">
@@ -56,7 +56,7 @@
       <workItem from="1584407031889" duration="3881000" />
       <workItem from="1584420260097" duration="75000" />
       <workItem from="1584420344975" duration="13871000" />
-      <workItem from="1585116496906" duration="15839000" />
+      <workItem from="1585116496906" duration="10883000" />
     </task>
     <servers />
   </component>
@@ -75,11 +75,10 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="577" y="278" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1584432677108" />
-    <state x="982" y="-912" key="SettingsEditor" timestamp="1585268348338">
-      <screen x="609" y="-1080" width="2560" height="1080" />
+    <state x="-507" y="-1216" key="SettingsEditor" timestamp="1585127129595">
+      <screen x="-880" y="-1440" width="2560" height="1440" />
     </state>
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
-    <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
     <state x="496" y="136" width="687" height="777" key="find.popup" timestamp="1584432448996">
       <screen x="0" y="0" width="1680" height="1050" />
