@@ -67,15 +67,19 @@ export class RawData extends ParentApi {
     modelConfigId: string,
     files: File[],
   ): Promise<uploadRawDataResult> {
+    // query params
+    const params = {
+      'model-config': modelConfigId,
+    };
     // compile data
     const request = new FormData();
-    request.append('model-config', modelConfigId.toString());
     files.forEach(file => request.append('files', file));
     const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
       timeout: UPLOAD_REQUEST_TIMEOUT,
+      params,
     };
     // make the api call
     const response = await this.apisauce.post<string | undefined, ServerError>(
