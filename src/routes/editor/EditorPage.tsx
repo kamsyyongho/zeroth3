@@ -854,7 +854,8 @@ export function EditorPage() {
       </Container >
       <ConfirmationDialog
         titleText={`${translate('editor.confirmTranscript')}?`}
-        submitText={translate('editor.confirm')}
+        submitText={translate('common.submit')}
+        contentText={translate('editor.confirmWarning')}
         open={confirmDialogOpen}
         onSubmit={confirmData}
         onCancel={closeConfirmDialog}
