@@ -121,9 +121,9 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     setUploadQueueEmpty(true);
   };
 
-  const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>) => {
+  const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>, progress: number) => {
     return (
-      <UploadProgressNotification key={key} message={message} onComplete={onComplete} callback={callback} />
+      <UploadProgressNotification key={key} message={message} onComplete={onComplete} callback={callback} progress={progress} />
     );
   };
 
@@ -132,21 +132,21 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       const response = await api.rawData.getRawDataQueue(projectId);
       if (response.kind === 'ok') {
         const { queue } = response;
-        const { projectUnprocessed } = queue;
-        if (projectUnprocessed < 1) {
+        const { progress } = queue;
+        if (progress === 100) {
           onComplete();
         } else {
           //!
           //TODO
           //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
-          const text = `${translate('common.decoding')}: ${projectUnprocessed}`;
+          const text = `${translate('common.decoding')}: ${progress}%`;
           enqueueSnackbar(text, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
-            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true)),
+            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), progress),
           });
         }
         if (isGetter) {
-          return projectUnprocessed;
+          return progress;
         }
       } else {
         log({
