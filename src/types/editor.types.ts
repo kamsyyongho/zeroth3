@@ -106,7 +106,7 @@ export interface CharacterProperties {
 }
 
 /**
- * The object returned from the `toJS` method of a block
+ * General information for an editor block
  */
 export interface BlockInfo<T = {}> {
   blockObject: BlockObject<T>;
