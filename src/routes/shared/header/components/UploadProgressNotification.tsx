@@ -80,6 +80,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [expanded, setExpanded] = React.useState(true);
   const [isComplete, setIsComplete] = React.useState(!!complete || progress === 100);
+  const [currentProgress, setCurrentProgress] = React.useState<number | undefined>(progress ?? 0);
   const [text, setText] = React.useState<string>(message as string);
 
   const theme = useTheme();
@@ -101,8 +102,8 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
   const checkUploadQueue = async () => {
     if (typeof callback === 'function') {
       // check again after a few seconds
-      const queue = await callback();
-      if (queue === 0) {
+      const progress = await callback();
+      if (progress === 100) {
         setIsComplete(true);
         setText(translate('common.decoded'));
         clearNotificationTimeout();
@@ -111,11 +112,12 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
         }
         setProjectTdpDataShouldRefresh(true);
       } else {
-        setText(`${translate('common.decoding')}: ${queue}`);
+        setText(`${translate('common.decoding')}: ${progress}%`);
         uploadQueueCheckTimeoutId = setTimeout(() => {
           checkUploadQueue();
         }, DEFAULT_POLLING_TIMEOUT);
       }
+      setCurrentProgress(progress);
     }
   };
 
@@ -168,7 +170,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
       </CardActions>
       {showProgress && <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Paper className={classes.collapse}>
-          <ProgressBar value={progress ?? 0} maxWidth={400} minWidth={300} />
+          <ProgressBar value={isComplete ? 100 : (currentProgress ?? 0)} maxWidth={400} minWidth={300} />
         </Paper>
       </Collapse>}
     </Card>
