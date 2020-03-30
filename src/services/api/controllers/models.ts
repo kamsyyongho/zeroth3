@@ -531,22 +531,21 @@ export class Models extends ParentApi {
     isImmutable: boolean,
   ): Promise<postSubGraphResult> {
     // compile data
-    // needs name
+    // query params
+    const params = {
+      name,
+      'top-graph-id': topGraphId,
+      public: isPublic,
+      immutable: isImmutable,
+    };
     const request = new FormData();
-    request.append('name', name);
     request.append('file', file);
-    request.append('top-graph-id', topGraphId);
-    if (typeof isPublic === 'boolean') {
-      request.append('public', JSON.stringify(isPublic));
-    }
-    if (typeof isImmutable === 'boolean') {
-      request.append('public', JSON.stringify(isImmutable));
-    }
     const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
       timeout: UPLOAD_REQUEST_TIMEOUT,
+      params,
     };
     // make the api call
     const response: ApiResponse<

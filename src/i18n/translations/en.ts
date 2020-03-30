@@ -244,6 +244,7 @@ export const en: ResourceLanguage = {
       changeSpeaker: 'Change speaker',
       calculating: 'Calculating',
       highRiskSegment: 'High Risk Segment',
+      confirmWarning: 'Transcript cannot be edited once submitted.',
       validation: {
         missingTimes: 'All words must have start and end times',
         invalidSplitLocation: 'Invalid split location',

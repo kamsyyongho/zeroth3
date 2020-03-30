@@ -759,14 +759,17 @@ export function AudioPlayer(props: AudioPlayerProps) {
     ) return;
     try {
       const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
+      const transcriptionSegmentSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.SEGMENT);
       if (isLoop) {
         PeaksPlayer.segments.removeById(PLAYER_SEGMENT_IDS.LOOP);
         setLoop(false);
         parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
       } else if (!loopSegment) {
         const color = theme.audioPlayer.loop;
-        let startTime = currentTime;
-        let endTime = startTime + DEFAULT_LOOP_LENGTH;
+        // use the current green audio segment times
+        // defaulting to current time and 5 second length
+        let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
+        let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
         if (endTime > duration) {
           endTime = duration;
           startTime = endTime - DEFAULT_LOOP_LENGTH;
