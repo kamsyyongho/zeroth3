@@ -38,7 +38,7 @@
     "history": "^4.10.1",
     "i18next": "^17.1.0",
     "i18next-browser-languagedetector": "^4.0.0",
-    "keycloak-js": "6.0.1",
+    "keycloak-js": "9.0.2",
     "match-sorter": "^4.0.2",
     "material-ui-dropzone": "^2.4.7",
     "material-ui-toggle-icon": "^1.0.6",
