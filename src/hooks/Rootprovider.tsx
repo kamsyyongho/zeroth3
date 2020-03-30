@@ -12,7 +12,7 @@ import { I18nContext, ParsedI18n } from './i18n/I18nContext';
 import { KeycloakContext, ParsedKeycloak } from "./keycloak/KeycloakContext";
 
 interface RootProviderProps {
-  children: React.ReactNode;
+  children: JSX.Element;
   api: Api;
   i18n: ParsedI18n;
   keycloak: ParsedKeycloak;
