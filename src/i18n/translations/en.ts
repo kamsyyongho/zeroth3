@@ -45,6 +45,7 @@ export const en: ResourceLanguage = {
       zeroth: 'Zeroth EE',
       url: 'URL',
       path: 'Path',
+      confirmDelete: 'Do you want to delete the selected data?',
     },
     table: {
       page: 'Page',
