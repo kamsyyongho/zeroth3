@@ -45,6 +45,7 @@ export const ko: ResourceLanguage = {
       zeroth: 'Zeroth EE',
       url: 'URL',
       path: '경로',
+      confirmDelete: '선택한 데이터를 삭제하시겠습니까?',
     },
     table: {
       page: '페이지',

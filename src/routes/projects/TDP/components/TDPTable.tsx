@@ -28,6 +28,7 @@ import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
+import { CreateDeleteSetDialog } from "./DeleteConfirmation";
 
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
@@ -108,6 +109,8 @@ export function TDPTable(props: TDPTableProps) {
   const [sortBy, setSortBy] = React.useState<string | undefined>();
   const [orderDirection, setOrderDirection] = React.useState<ORDER | undefined>();
   const [orderBy, setOrderBy] = React.useState<TDPTableColumns | undefined>();
+  const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
+  const [deleteSetInfo, setDeleteSetInfo] = React.useState({voiceDataId: '', dataIndex: -1});
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -131,10 +134,17 @@ export function TDPTable(props: TDPTableProps) {
     setExpandedRowsByIndex({});
   };
 
-  const handleDelete = (voiceDataId: string, dataIndex: number) => {
+  const handleDelete = () => {
     const shoudRefresh = voiceDataResults.content.length < 2;
-    deleteUnconfirmedVoiceData(voiceDataId, dataIndex, shoudRefresh);
+    deleteUnconfirmedVoiceData(deleteSetInfo.voiceDataId, deleteSetInfo.dataIndex, shoudRefresh);
     setExpandedRowsByIndex({});
+    setIsDeleteSetOpen(false);
+  };
+
+  const openDeleteConfirmation = (voiceDataId: string, dataIndex: number) => {
+    const deleteSetInfo = {voiceDataId, dataIndex};
+    setIsDeleteSetOpen(true);
+    setDeleteSetInfo(deleteSetInfo)
   };
 
   /**
@@ -429,7 +439,7 @@ export function TDPTable(props: TDPTableProps) {
               row={row}
               detailsRowColSpan={detailsRowColSpan}
               projectId={projectId}
-              onDelete={handleDelete}
+              onDelete={openDeleteConfirmation}
               onSuccess={handleVoiceDataUpdate}
             />
           }
@@ -493,6 +503,11 @@ export function TDPTable(props: TDPTableProps) {
       labelRowsPerPage={translate('table.labelRowsPerPage')}
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
+    />}
+    {isDeleteSetOpen && <CreateDeleteSetDialog
+        open={isDeleteSetOpen}
+        onClose={() => setIsDeleteSetOpen(false)}
+        onSuccess={handleDelete}
     />}
   </>
   );
