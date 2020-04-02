@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f11b7f0c-e28e-4fb3-87f9-a61858770667" name="Default Changelist" comment="" />
+    <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +24,7 @@
     <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProjectId" id="1ZEb7EQYUhszgXUM44FGrnIUyS9" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -48,7 +52,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="f11b7f0c-e28e-4fb3-87f9-a61858770667" name="Default Changelist" comment="" />
+      <changelist id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="" />
       <created>1584407030510</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -57,6 +61,7 @@
       <workItem from="1584420260097" duration="75000" />
       <workItem from="1584420344975" duration="13871000" />
       <workItem from="1585116496906" duration="15839000" />
+      <workItem from="1585808299304" duration="1109000" />
     </task>
     <servers />
   </component>
@@ -81,9 +86,10 @@
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
     <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
-    <state x="496" y="136" width="687" height="777" key="find.popup" timestamp="1584432448996">
-      <screen x="0" y="0" width="1680" height="1050" />
+    <state x="1365" y="-940" width="1047" height="800" key="find.popup" timestamp="1585808231591">
+      <screen x="609" y="-1080" width="2560" height="1080" />
     </state>
+    <state x="1365" y="-940" width="1047" height="800" key="find.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585808231591" />
     <state x="496" y="136" width="687" height="777" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1584432448996" />
     <state x="1552" y="-841" width="672" height="678" key="search.everywhere.popup" timestamp="1585272441089">
       <screen x="609" y="-1080" width="2560" height="1080" />
