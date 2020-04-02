@@ -65,6 +65,7 @@ export function CreateSetFormDialog(props: CreateSetFormDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
+    console.log('values in handleSubmit in CreateSetFormDialog.tsx : ',values);
     if (api?.dataSet && !loading) {
       setLoading(true);
       setIsError(false);

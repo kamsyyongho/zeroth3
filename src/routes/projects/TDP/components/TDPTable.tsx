@@ -315,11 +315,12 @@ export function TDPTable(props: TDPTableProps) {
 
 
   const setCreateSetFilterParams = (options: SearchDataRequest) => {
-    const { till, from, status, transcript } = options;
+    const { till, from, status, transcript, filename } = options;
     const filterParams: FilterParams = {
       till,
       from,
       status,
+      filename,
       transcript,
       lengthMax: options['length-max'],
       lengthMin: options['length-min'],

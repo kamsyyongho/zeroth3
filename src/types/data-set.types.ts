@@ -14,6 +14,7 @@ export interface DataSet {
 export interface FilterParams {
   from?: Date;
   till?: Date;
+  filename?: string;
   /**
    * in seconds
    */
