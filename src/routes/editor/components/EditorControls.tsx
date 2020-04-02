@@ -298,6 +298,8 @@ export const EditorControls = (props: EditorControlsProps) => {
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
+        case 'h':
+          return;
         case 'x':
           if (shiftKey && event[keyName]) {
             event.preventDefault();
