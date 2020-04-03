@@ -28,7 +28,6 @@ import { ChipSelectFormField } from '../shared/form-fields/ChipSelectFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
 import clsx from "clsx";
-import {DropZoneFormField} from "../shared/form-fields/DropZoneFormField";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
