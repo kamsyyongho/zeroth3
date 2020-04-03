@@ -11,20 +11,46 @@ import * as yup from 'yup';
 import { VALIDATION } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { DataSet, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS, StringById, TRAINING_METHODS } from '../../types';
+import {
+  DataSet,
+  GenericById,
+  ModelConfig,
+  SnackbarError,
+  SNACKBAR_VARIANTS,
+  StringById,
+  TRAINING_METHODS,
+  AUDIO_UPLOAD_TYPE_TRANS_LEARNING_VALUES,
+  AUDIO_UPLOAD_TYPE_TRANS_LEARNING,
+} from '../../types';
 import log from '../../util/log/logger';
 import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 import { ChipSelectFormField } from '../shared/form-fields/ChipSelectFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
+import clsx from "clsx";
+import {DropZoneFormField} from "../shared/form-fields/DropZoneFormField";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
     cardAction: {
       justifyContent: 'flex-end',
     },
+    hidden: {
+      visibility: 'hidden',
+    },
+    hiddenTextInput: {
+      height: 0,
+      visibility: 'hidden',
+    },
   }),
 );
+
+//subject to refactoring if seperating the source data for field
+/** this is using the same simple (incorrect) method for calculating file size as file upload library */
+const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
+const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
+const ACCEPTED_FILE_TYPES = ['audio/*'];
+
 interface ModelTrainingFormProps {
   dataSets: DataSet[];
   projectId: string;
@@ -48,6 +74,13 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+
+
+  //subject to refactoring if seperating the source data for field
+  const [dataSetSource] = React.useState(['']);
+  const [duplicateError, setDuplicateError] = React.useState('');
+  const [maxSizeError, setMaxSizeError] = React.useState('');
+  const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
   const classes = useStyles();
   const theme = useTheme();
@@ -79,29 +112,41 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const requiredTranslationText = translate("forms.validation.required");
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
-  const formSchema = yup.object({
-    name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
-    selectedDataSetIds: yup.array().of(yup.string().required(requiredTranslationText)),
-    selectedTrainingMethod: yup.string().nullable().required(requiredTranslationText),
-    shared: yup.boolean().required(requiredTranslationText),
-    hrOnly: yup.boolean().required(requiredTranslationText),
-  });
-  type FormValues = yup.InferType<typeof formSchema>;
-  const initialValues: FormValues = {
-    name: "",
-    selectedModelConfigId: null,
-    selectedDataSetIds: [],
-    selectedTrainingMethod: null,
-    shared: true,
-    hrOnly: false,
+  //subject to refactoring if seperating the source data for field
+  const testMaxTotalFileSize = (files: File[]) => {
+    let fileSizeCounter = 0;
+    let isValid = true;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      fileSizeCounter += file.size;
+      if (fileSizeCounter >= MAX_TOTAL_FILE_SIZE_LIMIT) {
+        isValid = false;
+        break;
+      }
+    }
+    return isValid;
+  };
+  const handleDuplicateFileNames = (fileName?: string) => {
+    if (!fileName) {
+      setDuplicateError('');
+    } else {
+      setDuplicateError(`${translate('forms.dropZone.reject.duplicateFileNames')}: ${fileName}`);
+    }
+  };
+  const handleMaxFileSizeExceeded = (totalSize?: string) => {
+    if (!totalSize) {
+      setMaxSizeError('');
+    } else {
+      setMaxSizeError(translate('forms.validation.maxFileSize', { value: totalSize }));
+    }
   };
 
 
+  //subject to refactoring if seperating the source data for field
   const handleSubmit = async (values: FormValues) => {
     const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly } = values;
     if (selectedModelConfigId === null ||
-      selectedTrainingMethod === null
+        selectedTrainingMethod === null
     ) return;
     if (api?.models && !loading) {
       setLoading(true);
@@ -131,6 +176,28 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     }
   };
 
+
+  const formSchema = yup.object({
+    name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
+    selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
+    selectedDataSetIds: yup.array().of(yup.string().required(requiredTranslationText)),
+    selectedTrainingMethod: yup.string().nullable().required(requiredTranslationText),
+    shared: yup.boolean().required(requiredTranslationText),
+    hrOnly: yup.boolean().required(requiredTranslationText),
+    uploadType: yup.string().nullable().required(requiredTranslationText),
+  });
+  type FormValues = yup.InferType<typeof formSchema>;
+  const initialValues: FormValues = {
+    name: "",
+    selectedModelConfigId: null,
+    selectedDataSetIds: [],
+    selectedTrainingMethod: null,
+    shared: true,
+    hrOnly: false,
+    uploadType: AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string,
+  };
+
+
   const getNumberOfTranscribersHelperText = (selectedDataSets: string[], dataSetsById: GenericById<DataSet>) => {
     if (!selectedDataSets.length) return ' ';
     let count = 0;
@@ -145,12 +212,37 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     return modelConfigsById[modelConfigId].description || ' ';
   };
 
+  const uploadTypeFormSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = AUDIO_UPLOAD_TYPE_TRANS_LEARNING_VALUES.map((uploadType) => {
+      let label = uploadType;
+      switch (uploadType) {
+        case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string:
+          label = translate('SET.dataSet');
+          break;
+        case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.URL as string:
+          label = translate('common.url');
+          break;
+        case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH as string:
+          label = translate('forms.location');
+          break;
+      }
+      return { label, value: uploadType };
+    });
+    return tempFormSelectOptions;
+  }, [translate]);
+
+
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
       {(formikProps) => {
         const modelHelperText = getModelHelperText(formikProps.values.selectedModelConfigId, modelConfigsById);
         const transcriberHelperText = getNumberOfTranscribersHelperText(formikProps.values.selectedDataSetIds, dataSetsById);
+        const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string;
+        const textInputLabel = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.URL as string
+            ? translate('forms.fileUrl')
+            : translate('forms.filePath');
+
         return (<>
           <CardContent >
             <Form>
@@ -168,6 +260,35 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                 label={translate("forms.modelConfig")}
                 errorOverride={isError || noAvailableModelConfigText}
                 helperText={noAvailableModelConfigText || modelHelperText}
+              />
+              <Field
+                  fullWidth
+                  name='uploadType'
+                  component={SelectFormField}
+                  options={uploadTypeFormSelectOptions}
+                  label={translate("forms.source")}
+              />
+              <Field
+                  className={clsx(shouldUploadFile && classes.hiddenTextInput)}
+                  name='text'
+                  component={TextFormField}
+                  label={textInputLabel}
+                  variant="outlined"
+                  margin="normal"
+              />
+              <Field
+                  hidden={!shouldUploadFile}
+                  showPreviews
+                  maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
+                  acceptedFiles={ACCEPTED_FILE_TYPES}
+                  name='files'
+                  dropZoneText={translate('forms.dropZone.audio_plural')}
+                  component={DropZoneFormField}
+                  onDuplicateFileNames={handleDuplicateFileNames}
+                  onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
+                  helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
+                  errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
+                  errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
               />
               <Field
                 name='selectedDataSetIds'
