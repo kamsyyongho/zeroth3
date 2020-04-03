@@ -32,9 +32,21 @@ interface ChipSelectFormFieldProps extends FieldProps {
   light?: boolean;
   labelsByValue: LabelsByValue;
   options: SelectFormFieldOptions;
+  //hidden prop for adding display toggle for transfer learning dataset selection option
+    hidden?: boolean;
 }
 
-export const ChipSelectFormField = ({ field, form, helperText, label, options, labelsByValue, errorOverride, fullWidth, light, ...props }: ChipSelectFormFieldProps) => {
+export const ChipSelectFormField = ({ field,
+                                        form,
+                                        helperText,
+                                        label,
+                                        options,
+                                        labelsByValue,
+                                        errorOverride,
+                                        fullWidth,
+                                        light,
+                                        hidden = false,
+                                        ...props }: ChipSelectFormFieldProps) => {
   const { translate } = React.useContext(I18nContext);
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
@@ -42,7 +54,9 @@ export const ChipSelectFormField = ({ field, form, helperText, label, options, l
 
   const classes = useStyles();
   return (
-    <FormControl fullWidth={fullWidth} error={!!errorText || !!errorOverride}>
+    <FormControl fullWidth={fullWidth}
+                 error={!!errorText || !!errorOverride}
+                 style={{ display: hidden ? 'none' : undefined }}>
       {label && <InputLabel>{label}</InputLabel>}
       <Select
         multiple

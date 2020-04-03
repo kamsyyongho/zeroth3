@@ -238,10 +238,11 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
       {(formikProps) => {
         const modelHelperText = getModelHelperText(formikProps.values.selectedModelConfigId, modelConfigsById);
         const transcriberHelperText = getNumberOfTranscribersHelperText(formikProps.values.selectedDataSetIds, dataSetsById);
-        const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string;
+        const isDataSet = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string;
         const textInputLabel = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.URL as string
             ? translate('forms.fileUrl')
             : translate('forms.filePath');
+        console.log('isDataSet : ', isDataSet);
 
         return (<>
           <CardContent >
@@ -269,7 +270,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                   label={translate("forms.source")}
               />
               <Field
-                  className={clsx(shouldUploadFile && classes.hiddenTextInput)}
+                  className={clsx(isDataSet && classes.hiddenTextInput)}
                   name='text'
                   component={TextFormField}
                   label={textInputLabel}
@@ -277,20 +278,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                   margin="normal"
               />
               <Field
-                  hidden={!shouldUploadFile}
-                  showPreviews
-                  maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
-                  acceptedFiles={ACCEPTED_FILE_TYPES}
-                  name='files'
-                  dropZoneText={translate('forms.dropZone.audio_plural')}
-                  component={DropZoneFormField}
-                  onDuplicateFileNames={handleDuplicateFileNames}
-                  onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
-                  helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
-                  errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
-                  errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
-              />
-              <Field
+                hidden={!isDataSet}
                 name='selectedDataSetIds'
                 component={ChipSelectFormField}
                 options={dataSetFormSelectOptions}
