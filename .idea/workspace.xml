@@ -4,7 +4,9 @@
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/model-training/ModelTrainingForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-training/ModelTrainingForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/ChipSelectFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/ChipSelectFormField.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/models.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/models.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/models.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/models.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +65,7 @@
       <workItem from="1584420344975" duration="13871000" />
       <workItem from="1585116496906" duration="15839000" />
       <workItem from="1585808299304" duration="1109000" />
-      <workItem from="1585887852651" duration="5029000" />
+      <workItem from="1585887852651" duration="8513000" />
     </task>
     <servers />
   </component>
@@ -88,10 +90,10 @@
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
     <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
-    <state x="366" y="-940" width="824" height="800" key="find.popup" timestamp="1585888198245">
+    <state x="366" y="-940" width="824" height="800" key="find.popup" timestamp="1585898738643">
       <screen x="-201" y="-1080" width="1920" height="1080" />
     </state>
-    <state x="366" y="-940" width="824" height="800" key="find.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1585888198245" />
+    <state x="366" y="-940" width="824" height="800" key="find.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1585898738643" />
     <state x="1365" y="-940" width="1047" height="800" key="find.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585823228110" />
     <state x="496" y="136" width="687" height="777" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1584432448996" />
     <state x="506" y="-841" width="670" height="678" key="search.everywhere.popup" timestamp="1585888582618">

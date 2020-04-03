@@ -45,12 +45,6 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-//subject to refactoring if seperating the source data for field
-/** this is using the same simple (incorrect) method for calculating file size as file upload library */
-const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
-const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
-const ACCEPTED_FILE_TYPES = ['audio/*'];
-
 interface ModelTrainingFormProps {
   dataSets: DataSet[];
   projectId: string;
@@ -74,13 +68,6 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
-
-
-  //subject to refactoring if seperating the source data for field
-  const [dataSetSource] = React.useState(['']);
-  const [duplicateError, setDuplicateError] = React.useState('');
-  const [maxSizeError, setMaxSizeError] = React.useState('');
-  const maxFileSizeText = translate("forms.validation.maxFileSize", { value: MAX_TOTAL_FILE_SIZE_LIMIT_STRING });
 
   const classes = useStyles();
   const theme = useTheme();
@@ -113,45 +100,36 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
   const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
 
   //subject to refactoring if seperating the source data for field
-  const testMaxTotalFileSize = (files: File[]) => {
-    let fileSizeCounter = 0;
-    let isValid = true;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      fileSizeCounter += file.size;
-      if (fileSizeCounter >= MAX_TOTAL_FILE_SIZE_LIMIT) {
-        isValid = false;
-        break;
-      }
-    }
-    return isValid;
-  };
-  const handleDuplicateFileNames = (fileName?: string) => {
-    if (!fileName) {
-      setDuplicateError('');
-    } else {
-      setDuplicateError(`${translate('forms.dropZone.reject.duplicateFileNames')}: ${fileName}`);
-    }
-  };
-  const handleMaxFileSizeExceeded = (totalSize?: string) => {
-    if (!totalSize) {
-      setMaxSizeError('');
-    } else {
-      setMaxSizeError(translate('forms.validation.maxFileSize', { value: totalSize }));
-    }
-  };
-
-
-  //subject to refactoring if seperating the source data for field
   const handleSubmit = async (values: FormValues) => {
-    const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly } = values;
+    const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly, uploadType, text } = values;
+    const isDataSet = uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string;
+    let response!: any;
+
     if (selectedModelConfigId === null ||
         selectedTrainingMethod === null
     ) return;
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.models.transferLearning(projectId, name.trim(), selectedModelConfigId, selectedDataSetIds, shared, hrOnly);
+      if(isDataSet) {
+        response = await api.models.transferLearningByDataSet(
+            projectId,
+            name.trim(),
+            selectedModelConfigId,
+            selectedDataSetIds,
+            shared,
+            hrOnly,
+        );
+      } else {
+        response = await api.models.transferLearningByUrl(
+            projectId,
+            name.trim(),
+            selectedModelConfigId,
+            shared,
+            hrOnly,
+            text
+        )
+      }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -185,6 +163,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     shared: yup.boolean().required(requiredTranslationText),
     hrOnly: yup.boolean().required(requiredTranslationText),
     uploadType: yup.string().nullable().required(requiredTranslationText),
+    text: yup.string(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -194,6 +173,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     selectedTrainingMethod: null,
     shared: true,
     hrOnly: false,
+    text: '',
     uploadType: AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string,
   };
 
@@ -222,9 +202,11 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
         case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.URL as string:
           label = translate('common.url');
           break;
-        case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH as string:
-          label = translate('forms.location');
-          break;
+
+          //file path is not supported for now will change latro
+        // case AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH as string:
+        //   label = translate('forms.location');
+        //   break;
       }
       return { label, value: uploadType };
     });
@@ -242,7 +224,6 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
         const textInputLabel = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.URL as string
             ? translate('forms.fileUrl')
             : translate('forms.filePath');
-        console.log('isDataSet : ', isDataSet);
 
         return (<>
           <CardContent >

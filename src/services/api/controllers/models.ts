@@ -26,7 +26,8 @@ import {
   refreshAndGetTopGraphResult,
   ServerError,
   SubGraphRequest,
-  TransferLearningRequest,
+  TransferLearningRequestUrl,
+  TransferLearningRequestDataSet,
   transferLearningResult,
   updateAcousticModelResult,
   updateLanguageModelResult,
@@ -584,7 +585,7 @@ export class Models extends ParentApi {
    * @param shared
    * @param hrOnly - only high risk segments will be used in training
    */
-  async transferLearning(
+  async transferLearningByDataSet(
     projectId: string,
     name: string,
     modelConfigId: string,
@@ -593,7 +594,7 @@ export class Models extends ParentApi {
     hrOnly: boolean,
   ): Promise<transferLearningResult> {
     // compile data
-    const request: TransferLearningRequest = {
+    const request: TransferLearningRequestDataSet = {
       name,
       modelConfigId,
       dataSetIds,
@@ -607,6 +608,43 @@ export class Models extends ParentApi {
     > = await this.apisauce.post(
       this.getPathWithOrganization(`/projects/${projectId}/transfer`),
       request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async transferLearningByUrl(
+      projectId: string,
+      name: string,
+      modelConfigId: string,
+      shared: boolean,
+      hrOnly: boolean,
+      text: string,
+  ): Promise<transferLearningResult> {
+    // compile data
+    const request: TransferLearningRequestUrl = {
+      name,
+      modelConfigId,
+      shared,
+      hrOnly,
+      url: text
+    };
+    // make the api call
+    const response: ApiResponse<
+        undefined,
+        ServerError
+        > = await this.apisauce.post(
+        this.getPathWithOrganization(`/projects/${projectId}/transfer-url`),
+        request,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

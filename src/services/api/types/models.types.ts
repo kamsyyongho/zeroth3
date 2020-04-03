@@ -22,12 +22,20 @@ export interface LanguageModelRequest {
   subGraphIds: string[];
 }
 
-export interface TransferLearningRequest {
+export interface TransferLearningRequestDataSet {
   name: string;
   modelConfigId: string;
   dataSetIds: string[];
   shared: boolean;
   hrOnly: boolean;
+}
+
+export interface TransferLearningRequestUrl {
+  name: string;
+  modelConfigId: string;
+  shared: boolean;
+  hrOnly: boolean;
+  url: string;
 }
 
 export interface SubGraphRequest {
