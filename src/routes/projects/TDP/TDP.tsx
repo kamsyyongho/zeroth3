@@ -10,7 +10,15 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import {
+  DataSet,
+  FilterParams,
+  GenericById,
+  LOCAL_STORAGE_KEYS,
+  ModelConfig,
+  Project,
+  VoiceData,
+  VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -98,16 +106,6 @@ export function TDP(props: TDPProps) {
     });
   };
 
-  const handleDeleteAll = async () => {
-    setIsDeleteSetOpen(false);
-    if(api?.voiceData && projectId) {
-      setVoiceDataLoading(true);
-      const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
-    }
-    setVoiceDataLoading(false);
-    setInitialVoiceDataLoading(false);
-  };
-
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
@@ -130,6 +128,18 @@ export function TDP(props: TDPProps) {
     }
   }, [api, projectId]);
 
+  /**
+   * Removes all data in given filter setting
+   */
+  const handleDeleteAll = async () => {
+    setIsDeleteSetOpen(false);
+    if(api?.voiceData && projectId) {
+      setVoiceDataLoading(true);
+      const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
+    }
+    setVoiceDataLoading(false);
+    setInitialVoiceDataLoading(false);
+  };
   /**
    * Removes a single item after deleting
    */
