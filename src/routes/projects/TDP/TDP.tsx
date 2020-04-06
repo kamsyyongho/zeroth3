@@ -240,7 +240,7 @@ export function TDP(props: TDPProps) {
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}
             >
-              {translate('common.delete')}
+              {translate('SET.deleteAll')}
             </Button>
           </Grid>}
           {canUpload && <Grid item>

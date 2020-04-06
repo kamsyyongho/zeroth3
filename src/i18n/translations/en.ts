@@ -198,6 +198,7 @@ export const en: ResourceLanguage = {
     },
     SET: {
       SET: 'SET',
+      deleteAll: 'Delete All',
       dataSet: 'Data set',
       createSetFromFilter: 'Create SET from filter',
       createSet: 'Create SET',

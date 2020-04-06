@@ -200,6 +200,7 @@ export const ko: ResourceLanguage = {
     SET: {
       SET: '전사세트',
       dataSet: '데이터 전사',
+      deleteAll: '전체 삭제',
       createSetFromFilter: '필터로 전사세트 만들기',
       createSet: '전사세트 만들기',
       numberTranscribers: '{{count}} 전사자',
