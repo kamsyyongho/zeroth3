@@ -100,10 +100,12 @@ export function TDP(props: TDPProps) {
 
   const handleDeleteAll = async () => {
     setIsDeleteSetOpen(false);
-
     if(api?.voiceData && projectId) {
-      await api.voiceData.deleteAllDataSet(projectId, filterParams);
+      setVoiceDataLoading(true);
+      const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
     }
+    setVoiceDataLoading(false);
+    setInitialVoiceDataLoading(false);
   };
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
