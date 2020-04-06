@@ -24,6 +24,7 @@ export interface FilterParams {
    * - from `0`
    */
   lengthMin?: number;
+  dataSetId?: string;
   modelConfig?: string;
   status?: CONTENT_STATUS;
   transcript?: string;
