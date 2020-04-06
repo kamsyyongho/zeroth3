@@ -44,11 +44,11 @@ export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
         >
             <DialogTitle id="create-set-dialog">{translate(deleteMsg)}</DialogTitle>
                 <DialogActions>
-                    <Button disabled={loading} onClick={() => onClose()} color="primary">
+                    <Button disabled={loading} onClick={onClose} color="primary">
                         {translate("common.cancel")}
                     </Button>
                     <Button
-                        onClick={() => onSuccess()}
+                        onClick={onSuccess}
                         color="primary"
                         variant="outlined"
                         startIcon={loading ?

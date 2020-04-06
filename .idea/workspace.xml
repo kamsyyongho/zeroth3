@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +63,7 @@
       <workItem from="1585116496906" duration="15839000" />
       <workItem from="1585808299304" duration="1109000" />
       <workItem from="1585887852651" duration="9559000" />
-      <workItem from="1586013911430" duration="12900000" />
+      <workItem from="1586013911430" duration="13121000" />
     </task>
     <servers />
   </component>
@@ -87,6 +88,10 @@
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
     <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
+    <state width="500" height="445" key="SwitcherDM" timestamp="1586155584785">
+      <screen x="-1920" y="0" width="1920" height="1080" />
+    </state>
+    <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
     <state x="-1353" y="140" width="824" height="800" key="find.popup" timestamp="1586153753313">
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
