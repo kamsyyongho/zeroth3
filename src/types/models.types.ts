@@ -36,8 +36,20 @@ export enum AUDIO_UPLOAD_TYPE {
   FILE = 'FILE',
   PATH = 'PATH',
   URL = 'URL',
+  DATASET = 'DATASET',
+}
+
+export enum AUDIO_UPLOAD_TYPE_TRANS_LEARNING {
+  //file path is not supported for now will change latro
+  // PATH = 'PATH',
+  URL = 'URL',
+  DATASET = 'DATASET',
 }
 
 export const AUDIO_UPLOAD_TYPE_VALUES: string[] = Object.keys(
   AUDIO_UPLOAD_TYPE,
+);
+
+export const AUDIO_UPLOAD_TYPE_TRANS_LEARNING_VALUES: string[] = Object.keys(
+    AUDIO_UPLOAD_TYPE_TRANS_LEARNING,
 );

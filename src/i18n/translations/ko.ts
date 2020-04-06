@@ -45,6 +45,7 @@ export const ko: ResourceLanguage = {
       zeroth: 'Zeroth EE',
       url: 'URL',
       path: '경로',
+      confirmDelete: '선택한 데이터를 삭제하시겠습니까?',
     },
     table: {
       page: '페이지',
@@ -199,6 +200,8 @@ export const ko: ResourceLanguage = {
     SET: {
       SET: '전사세트',
       dataSet: '데이터 전사',
+      deleteAll: '전체 삭제',
+      deleteAllMsg: '아래의 모든 데이터를 삭제하시겠습니까?',
       createSetFromFilter: '필터로 전사세트 만들기',
       createSet: '전사세트 만들기',
       numberTranscribers: '{{count}} 전사자',

@@ -294,7 +294,8 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                     component={DropZoneFormField}
                     onDuplicateFileNames={handleDuplicateFileNames}
                     onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
-                    helperText={!!formikProps.values.files.length && translate('forms.numberFiles', { count: formikProps.values.files.length })}
+                    helperText={!!formikProps.values.files.length
+                    && translate('forms.numberFiles', { count: formikProps.values.files.length })}
                     errorOverride={isError || !!formikProps.errors.files || duplicateError || maxSizeError}
                     errorTextOverride={formikProps.errors.files || duplicateError || maxSizeError}
                   />

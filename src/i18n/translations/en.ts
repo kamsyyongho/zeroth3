@@ -45,6 +45,7 @@ export const en: ResourceLanguage = {
       zeroth: 'Zeroth EE',
       url: 'URL',
       path: 'Path',
+      confirmDelete: 'Do you want to delete the selected data?',
     },
     table: {
       page: 'Page',
@@ -197,6 +198,8 @@ export const en: ResourceLanguage = {
     },
     SET: {
       SET: 'SET',
+      deleteAll: 'Delete All',
+      deleteAllMsg: 'Do you want to delete all the data below?',
       dataSet: 'Data set',
       createSetFromFilter: 'Create SET from filter',
       createSet: 'Create SET',
