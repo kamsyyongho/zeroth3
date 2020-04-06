@@ -21,14 +21,12 @@ export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
     const { deleteMsg ,open, onClose, onSuccess } = props;
     const { translate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);
-    const [isError, setIsError] = React.useState(false);
 
     const theme = useTheme();
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
     const handleClose = () => {
-        setIsError(false);
         setLoading(false);
         onClose();
     };
