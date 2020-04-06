@@ -240,7 +240,7 @@ export function TDP(props: TDPProps) {
                 color='secondary'
                 variant='contained'
                 size='small'
-                disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
+                // disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}
             >
