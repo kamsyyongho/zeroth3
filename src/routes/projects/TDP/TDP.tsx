@@ -98,9 +98,12 @@ export function TDP(props: TDPProps) {
     });
   };
 
-  const handleDeleteAll = () => {
+  const handleDeleteAll = async () => {
     setIsDeleteSetOpen(false);
-    return;
+
+    if(api?.voiceData && projectId) {
+      await api.voiceData.deleteAllDataSet(projectId, filterParams);
+    }
   };
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {

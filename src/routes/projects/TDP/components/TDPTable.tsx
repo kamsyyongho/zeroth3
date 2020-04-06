@@ -332,6 +332,7 @@ export function TDPTable(props: TDPTableProps) {
       status,
       filename,
       transcript,
+      dataSetId: options['data-set'],
       lengthMax: options['length-max'],
       lengthMin: options['length-min'],
       modelConfig: options['model-config'],

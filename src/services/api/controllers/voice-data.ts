@@ -828,4 +828,23 @@ export class VoiceData extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async deleteAllDataSet(projectId: string, filterParams: any = {}) {
+    const response = await this.apisauce.delete<undefined, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data`),{
+          filterParams,
+        }
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
 }
