@@ -16,7 +16,7 @@ interface CreateSetFormDialogProps {
 }
 
 
-export function CreateDeleteSetDialog(props: CreateSetFormDialogProps) {
+export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
     const { open, onClose, onSuccess } = props;
     const { translate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);

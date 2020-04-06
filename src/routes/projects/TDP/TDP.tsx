@@ -15,6 +15,8 @@ import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
 import { TDPTable } from './components/TDPTable';
+import { DeleteConfirmationDialog } from "./components/DeleteConfirmation";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 interface TDPProps {
   projectId: string;
@@ -68,6 +70,7 @@ export function TDP(props: TDPProps) {
   const [voiceDataDeleteLoading, setVoiceDataDeleteLoading] = React.useState(false);
   const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+  const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
 
   const classes = useStyles();
 
@@ -93,6 +96,11 @@ export function TDP(props: TDPProps) {
       updatedContent.splice(dataIndex, 1, voiceData);
       return { ...prevResults, content: updatedContent };
     });
+  };
+
+  const handleDeleteAll = () => {
+    setIsDeleteSetOpen(false);
+    return;
   };
 
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
@@ -226,8 +234,20 @@ export function TDP(props: TDPProps) {
           </Grid>}
           {canUpload && <Grid item>
             <Button
+                color='secondary'
+                variant='contained'
+                size='small'
+                onClick={() => setIsDeleteSetOpen(true)}
+                startIcon={<DeleteIcon />}
+            >
+              {translate('common.delete')}
+            </Button>
+          </Grid>}
+          {canUpload && <Grid item>
+            <Button
               variant='contained'
-              color="primary"
+              color="secondary"
+              size='small'
               onClick={openUploadDialog}
               startIcon={<BackupIcon />}
             >
@@ -275,6 +295,10 @@ export function TDP(props: TDPProps) {
         projectId={projectId}
         filterParams={filterParams as FilterParams}
       />
+      <DeleteConfirmationDialog
+          open={isDeleteSetOpen}
+          onClose={() => setIsDeleteSetOpen(false)}
+          onSuccess={handleDeleteAll}/>
     </>
   );
 }

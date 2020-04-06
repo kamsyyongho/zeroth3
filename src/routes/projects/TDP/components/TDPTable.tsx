@@ -28,7 +28,7 @@ import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
-import { CreateDeleteSetDialog } from "./DeleteConfirmation";
+import { DeleteConfirmationDialog } from "./DeleteConfirmation";
 
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
@@ -504,7 +504,7 @@ export function TDPTable(props: TDPTableProps) {
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
     />}
-    {isDeleteSetOpen && <CreateDeleteSetDialog
+    {isDeleteSetOpen && <DeleteConfirmationDialog
         open={isDeleteSetOpen}
         onClose={() => setIsDeleteSetOpen(false)}
         onSuccess={handleDelete}
