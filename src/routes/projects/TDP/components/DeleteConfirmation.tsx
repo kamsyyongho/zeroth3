@@ -11,13 +11,14 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
 interface CreateSetFormDialogProps {
     open: boolean;
+    deleteMsg: string;
     onClose: () => void;
     onSuccess: () => void;
 }
 
 
 export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
-    const { open, onClose, onSuccess } = props;
+    const { deleteMsg ,open, onClose, onSuccess } = props;
     const { translate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
@@ -41,7 +42,7 @@ export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
             disableEscapeKeyDown={loading}
             aria-labelledby="create-set-dialog"
         >
-            <DialogTitle id="create-set-dialog">{translate("common.confirmDelete")}</DialogTitle>
+            <DialogTitle id="create-set-dialog">{translate(deleteMsg)}</DialogTitle>
                 <DialogActions>
                     <Button disabled={loading} onClick={() => onClose()} color="primary">
                         {translate("common.cancel")}

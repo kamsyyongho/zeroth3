@@ -506,6 +506,7 @@ export function TDPTable(props: TDPTableProps) {
       ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
     />}
     {isDeleteSetOpen && <DeleteConfirmationDialog
+        deleteMsg={'common.confirmDelete'}
         open={isDeleteSetOpen}
         onClose={() => setIsDeleteSetOpen(false)}
         onSuccess={handleDelete}

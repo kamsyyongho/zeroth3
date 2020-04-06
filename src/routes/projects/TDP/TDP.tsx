@@ -299,6 +299,7 @@ export function TDP(props: TDPProps) {
         filterParams={filterParams as FilterParams}
       />
       <DeleteConfirmationDialog
+          deleteMsg={'SET.deleteAllMsg'}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll}/>

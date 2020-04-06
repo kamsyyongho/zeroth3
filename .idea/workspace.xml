@@ -3,10 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/data-set.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +67,7 @@
       <workItem from="1585116496906" duration="15839000" />
       <workItem from="1585808299304" duration="1109000" />
       <workItem from="1585887852651" duration="9559000" />
-      <workItem from="1586013911430" duration="11052000" />
+      <workItem from="1586013911430" duration="11874000" />
     </task>
     <servers />
   </component>
@@ -91,10 +92,10 @@
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
     <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
-    <state x="-1353" y="140" width="824" height="800" key="find.popup" timestamp="1586150460315">
+    <state x="-1353" y="140" width="824" height="800" key="find.popup" timestamp="1586153753313">
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="-1353" y="140" width="824" height="800" key="find.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586150460315" />
+    <state x="-1353" y="140" width="824" height="800" key="find.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586153753313" />
     <state x="366" y="-940" width="824" height="800" key="find.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586138109425" />
     <state x="1365" y="-940" width="1047" height="800" key="find.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585823228110" />
     <state x="496" y="136" width="687" height="777" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1584432448996" />
