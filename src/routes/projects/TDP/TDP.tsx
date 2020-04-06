@@ -228,7 +228,7 @@ export function TDP(props: TDPProps) {
             <Button
               variant='outlined'
               color="primary"
-              disabled={!filterParams || voiceDataResults.empty === true || !voiceDataResults.content?.length}
+              disabled={!filterParams || voiceDataResults.empty || !voiceDataResults.content?.length}
               onClick={openCreateSetDialog}
               startIcon={<AddIcon />}
             >
@@ -240,6 +240,7 @@ export function TDP(props: TDPProps) {
                 color='secondary'
                 variant='contained'
                 size='small'
+                disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}
             >
