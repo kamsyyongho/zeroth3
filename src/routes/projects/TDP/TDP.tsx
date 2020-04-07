@@ -134,11 +134,21 @@ export function TDP(props: TDPProps) {
   const handleDeleteAll = async () => {
     setIsDeleteSetOpen(false);
     if(api?.voiceData && projectId) {
-      setVoiceDataLoading(true);
+      setVoiceDataDeleteLoading(true);
       const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
+      if(response.kind === 'ok') {
+        setInitialVoiceDataLoading(true);
+        getVoiceData({...previousSearchOptions, page: 0});
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `handleDeleteAll - failed to delete voice data`,
+          value: response,
+          important: true,
+        });
+      }
     }
-    setVoiceDataLoading(false);
-    setInitialVoiceDataLoading(false);
+    setVoiceDataDeleteLoading(false);
   };
   /**
    * Removes a single item after deleting
