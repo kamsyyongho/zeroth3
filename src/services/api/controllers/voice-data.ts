@@ -830,9 +830,12 @@ export class VoiceData extends ParentApi {
   }
 
   async deleteAllDataSet(projectId: string, filterParams: any = {}) {
+    //over ride no request body in delete request in axios
     const response = await this.apisauce.delete<undefined, ServerError>(
-        this.getPathWithOrganization(`/projects/${projectId}/data`),{
-          filterParams,
+        this.getPathWithOrganization(`/projects/${projectId}/data`),
+        {},
+        {
+          data: {filterParams},
         }
     );
 

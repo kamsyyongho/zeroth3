@@ -3,7 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" afterDir="false" />
+>>>>>>> 839be0ba710b303b65a31bd99ef8e94f9ce31b5e
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
