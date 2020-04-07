@@ -13,7 +13,17 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS, DataSet, Segment, SegmentAndWordIndex, SnackbarError, SNACKBAR_VARIANTS, Time, VoiceData, Word, WordAlignment, WordToCreateTimeFor } from '../../types';
+import { CONTENT_STATUS,
+  DataSet,
+  Segment,
+  SegmentAndWordIndex,
+  SnackbarError,
+  SNACKBAR_VARIANTS,
+  Time,
+  VoiceData,
+  Word,
+  WordAlignment,
+  WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
@@ -265,7 +275,11 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentUpdate = async (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => {
+  const submitSegmentUpdate = async (segmentId: string,
+                                     wordAlignments: WordAlignment[],
+                                     transcript: string,
+                                     segmentIndex: number,
+                                     onSuccess: (segment: Segment) => void) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
@@ -295,7 +309,11 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentTimeUpdate = async (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => {
+  const submitSegmentTimeUpdate = async (segmentId: string,
+                                         segmentIndex: number,
+                                         start: number,
+                                         length: number,
+                                         onSuccess: (segment: Segment) => void) => {
     if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegmentTime(projectId, voiceData.id, segmentId, start, length);
@@ -360,7 +378,10 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentSplit = async (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
+  const submitSegmentSplit = async (segmentId: string,
+                                    segmentIndex: number,
+                                    splitIndex: number,
+                                    onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.splitSegment(projectId, voiceData.id, segmentId, splitIndex);
@@ -394,7 +415,11 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentSplitByTime = async (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
+  const submitSegmentSplitByTime = async (segmentId: string,
+                                          segmentIndex: number,
+                                          time: number,
+                                          wordStringSplitIndex: number,
+                                          onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.splitSegmentByTime(projectId, voiceData.id, segmentId, time, wordStringSplitIndex);
