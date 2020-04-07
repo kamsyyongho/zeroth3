@@ -1,8 +1,7 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { ContentBlock, EditorBlock } from 'draft-js';
+import TextField from '@material-ui/core/TextField'
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
-import { MemoizedSegmentBlockHead } from './SegmentBlockHead';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -15,32 +14,19 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }),
 );
 
-export interface SegmentBlockSubProps {
-    readOnly?: boolean;
-    /** opens the assign speaker dialog for the segment */
-    assignSpeakerForSegment: (segmentId: string) => void;
-    /** deletes high-risk segment value */
-    removeHighRiskValueFromSegment: (segmentId: string) => void;
+export interface WordAlignmentProp {
+    start: number,
+    length: number,
+    word: string,
+    confidence: number,
 }
 
-interface SegmentBlockProps extends EditorBlock {
-    block: ContentBlock,
-    blockProps: SegmentBlockSubProps,
-}
-
-export const SegmentBlock = (props: SegmentBlockProps) => {
+export const SegmentBlock = (props: WordAlignmentProp) => {
     const classes = useStyles();
-    const { blockProps, block } = props;
-    return (<div
-        className={classes.root}
-    >
-        <MemoizedSegmentBlockHead
-            block={block}
-            showEditorPopups={false}
-            {...blockProps}
-        />
-        <div className={classes.block} >
-            <EditorBlock {...props} />
-        </div>
-    </div >);
+    const { start, length, word, confidence } = props;
+    return (
+        <div className={classes.root}>
+            <TextField />
+        </div >
+    );
 };
