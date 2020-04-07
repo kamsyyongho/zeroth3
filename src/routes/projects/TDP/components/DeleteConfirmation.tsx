@@ -31,6 +31,12 @@ export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
         onClose();
     };
 
+    const handleSuccess = async () => {
+        setLoading(true);
+        await onSuccess();
+        setLoading(false);
+    };
+
     return (
         <Dialog
             fullScreen={fullScreen}
@@ -46,7 +52,7 @@ export function DeleteConfirmationDialog(props: CreateSetFormDialogProps) {
                         {translate("common.cancel")}
                     </Button>
                     <Button
-                        onClick={onSuccess}
+                        onClick={handleSuccess}
                         color="primary"
                         variant="outlined"
                         startIcon={loading ?
