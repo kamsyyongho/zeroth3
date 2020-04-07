@@ -1,5 +1,5 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField'
+import Input from '@material-ui/core/Input'
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 
@@ -21,12 +21,18 @@ export interface WordAlignmentProp {
     confidence: number,
 }
 
-export const SegmentBlock = (props: WordAlignmentProp) => {
+export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     const classes = useStyles();
     const { start, length, word, confidence } = props;
+    const [isEditMode, setIsEditMode] = React.useState(false);
+
+    const handleClick = () => {
+        setIsEditMode(!isEditMode);
+    };
+
     return (
         <div className={classes.root}>
-            <TextField />
+            <Input defaultValue={word} disabled={!isEditMode} onClick={handleClick} />
         </div >
     );
 };

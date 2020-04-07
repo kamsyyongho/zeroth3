@@ -3,6 +3,8 @@ import { ContentBlock, EditorBlock } from 'draft-js';
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHead } from './SegmentBlockHead';
+import { WordAlignmentBlock } from './WordAlignmentBlock';
+import { Segment } from "../../../types";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -23,24 +25,31 @@ export interface SegmentBlockSubProps {
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
 
-interface SegmentBlockProps extends EditorBlock {
-    block: ContentBlock,
-    blockProps: SegmentBlockSubProps,
+interface SegmentBlockProps  {
+    segment: Segment
 }
 
-export const SegmentBlock = (props: SegmentBlockProps) => {
+export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
-    const { blockProps, block } = props;
+    const { id, length, number, start, transcript, decoderTranscript, speaker, highRisk, wordAlignments } = props.segment;
     return (<div
         className={classes.root}
     >
-        <MemoizedSegmentBlockHead
-            block={block}
-            showEditorPopups={false}
-            {...blockProps}
-        />
+        {/*<MemoizedSegmentBlockHead*/}
+        {/*    block={block}*/}
+        {/*    showEditorPopups={false}*/}
+        {/*    {...blockProps}*/}
+        {/*/>*/}
         <div className={classes.block} >
-            <EditorBlock {...props} />
+            {/*<EditorBlock {...props} />*/}
+            {wordAlignments.map((word, index: number) => {
+                return <WordAlignmentBlock
+                    key={`word-alignment-${index}`}
+                    start={word.start}
+                    length={word.length}
+                    word={word.word}
+                    confidence={word.confidence} />
+            })}
         </div>
     </div >);
 };

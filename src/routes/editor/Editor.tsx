@@ -23,6 +23,7 @@ import { WordTimePicker } from './components/WordTimePicker';
 import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
 import { buildStyleMap, cloneEditorState, customKeyBindingFunction, editorChangeNoop, generateDecorators, getWithinSegmentTimes, updateBlockSegmentData, WordKeyStore } from './helpers/editor.helper';
 import './styles/editor.css';
+import { SegmentBlockV2} from './components/SegmentBlockV2';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -1590,7 +1591,8 @@ export function Editor(props: EditorProps) {
       // set our updated state
       if (updatedContentState) {
         const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
-        const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
+        const updatedContentEditorState = EditorState.push(noUndoEditorState,
+            updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
         const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
         let editorStateToUse = allowUndoEditorState;
         if (previousSelectionState) {
@@ -1767,20 +1769,25 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
+      {/*{ready &&*/}
+      {/*  <DraftEditor*/}
+      {/*    ref={editorRef}*/}
+      {/*    editorState={editorState}*/}
+      {/*    customStyleMap={styleMap}*/}
+      {/*    keyBindingFn={customKeyBindingFunction}*/}
+      {/*    blockRendererFn={customBlockRenderer}*/}
+      {/*    onChange={readOnly ? editorChangeNoop : handleChange}*/}
+      {/*    onFocus={handleFocus}*/}
+      {/*    onBlur={handleBlur}*/}
+      {/*    handleReturn={readOnly ? editorChangeNoop : handleReturnPress}*/}
+      {/*    handleKeyCommand={readOnly ? editorChangeNoop : handleKeyCommand}*/}
+      {/*    handlePastedText={editorChangeNoop}*/}
+      {/*  />*/}
+      {/*}*/}
       {ready &&
-        <DraftEditor
-          ref={editorRef}
-          editorState={editorState}
-          customStyleMap={styleMap}
-          keyBindingFn={customKeyBindingFunction}
-          blockRendererFn={customBlockRenderer}
-          onChange={readOnly ? editorChangeNoop : handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          handleReturn={readOnly ? editorChangeNoop : handleReturnPress}
-          handleKeyCommand={readOnly ? editorChangeNoop : handleKeyCommand}
-          handlePastedText={editorChangeNoop}
-        />
+        segments.map( (segment: Segment, index: number) => {
+          return <SegmentBlockV2 key={`segment-block-${index}`} segment={segment} />
+        })
       }
     </div>
   );
