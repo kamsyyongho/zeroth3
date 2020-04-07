@@ -2,7 +2,20 @@ import { Backdrop } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftHandleValue, Editor as DraftEditor, EditorState, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import {
+    ContentBlock,
+    ContentState,
+    convertFromRaw,
+    convertToRaw,
+    DraftHandleValue,
+    Editor as
+        DraftEditor,
+    EditorState,
+    Modifier,
+    RawDraftEntity,
+    RawDraftEntityRange,
+    RichUtils,
+    SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { useSnackbar, VariantType } from 'notistack';
 import Draggable from 'react-draggable';

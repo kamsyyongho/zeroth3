@@ -13,7 +13,8 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { CONTENT_STATUS,
+import {
+  CONTENT_STATUS,
   DataSet,
   Segment,
   SegmentAndWordIndex,
