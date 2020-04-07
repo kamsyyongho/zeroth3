@@ -10,7 +10,15 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { SearchDataRequest } from '../../../services/api/types';
-import { DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, Project, VoiceData, VoiceDataResults } from '../../../types';
+import {
+  DataSet,
+  FilterParams,
+  GenericById,
+  LOCAL_STORAGE_KEYS,
+  ModelConfig,
+  Project,
+  VoiceData,
+  VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -98,14 +106,6 @@ export function TDP(props: TDPProps) {
     });
   };
 
-  const handleDeleteAll = async () => {
-    setIsDeleteSetOpen(false);
-
-    if(api?.voiceData && projectId) {
-      await api.voiceData.deleteAllDataSet(projectId, filterParams);
-    }
-  };
-
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
@@ -128,6 +128,28 @@ export function TDP(props: TDPProps) {
     }
   }, [api, projectId]);
 
+  /**
+   * Removes all data in given filter setting
+   */
+  const handleDeleteAll = async () => {
+    setIsDeleteSetOpen(false);
+    if(api?.voiceData && projectId) {
+      setVoiceDataDeleteLoading(true);
+      const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
+      if(response.kind === 'ok') {
+        setInitialVoiceDataLoading(true);
+        getVoiceData({...previousSearchOptions, page: 0});
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `handleDeleteAll - failed to delete voice data`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+    setVoiceDataDeleteLoading(false);
+  };
   /**
    * Removes a single item after deleting
    */
@@ -240,7 +262,7 @@ export function TDP(props: TDPProps) {
                 color='secondary'
                 variant='contained'
                 size='small'
-                disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
+                // disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}
             >
