@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         block: {
             marginLeft: theme.spacing(1),
         },
+        wordAlignment: {
+            width: '300px',
+        }
     }),
 );
 
@@ -31,8 +34,12 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     };
 
     return (
-        <div className={classes.root}>
-            <Input defaultValue={word} disabled={!isEditMode} onClick={handleClick} />
+        <div>
+            <Input style={{width: 100}}
+                   className={classes.wordAlignment}
+                   defaultValue={word}
+                   disabled={!isEditMode}
+                   onClick={handleClick} />
         </div >
     );
 };

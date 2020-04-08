@@ -1,8 +1,7 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { ContentBlock, EditorBlock } from 'draft-js';
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
-import { MemoizedSegmentBlockHead } from './SegmentBlockHead';
+import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
 import { WordAlignmentBlock } from './WordAlignmentBlock';
 import { Segment } from "../../../types";
 
@@ -22,27 +21,29 @@ export interface SegmentBlockSubProps {
     /** opens the assign speaker dialog for the segment */
     assignSpeakerForSegment: (segmentId: string) => void;
     /** deletes high-risk segment value */
-    removeHighRiskValueFromSegment: (segmentId: string) => void;
-}
+    removeHighRiskValueFromSegment: (segmenttId: string) => void;
+};
 
 interface SegmentBlockProps  {
-    segment: Segment
-}
+    segment: Segment;
+    assignSpeakerForSegment: (segmentIndex: string) => void;
+    readOnly?: boolean;
+    removeHighRiskValueFromSegment: (segmentId: string) => void;
+};
 
 export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
-    const { id, length, number, start, transcript, decoderTranscript, speaker, highRisk, wordAlignments } = props.segment;
-    return (<div
-        className={classes.root}
-    >
-        {/*<MemoizedSegmentBlockHead*/}
-        {/*    block={block}*/}
-        {/*    showEditorPopups={false}*/}
-        {/*    {...blockProps}*/}
-        {/*/>*/}
+    const { segment, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment } = props;
+    return (<div className={classes.root}>
+        <MemoizedSegmentBlockHeadV2
+            readOnly={readOnly}
+            assignSpeakerForSegment={assignSpeakerForSegment}
+            removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+            segment={segment}
+        />
         <div className={classes.block} >
             {/*<EditorBlock {...props} />*/}
-            {wordAlignments.map((word, index: number) => {
+            {segment.wordAlignments.map((word, index: number) => {
                 return <WordAlignmentBlock
                     key={`word-alignment-${index}`}
                     start={word.start}
