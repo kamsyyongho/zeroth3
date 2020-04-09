@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 
-interface SegmentBlockHeadProps {
+interface SegmentBlockHeadPropsV2 {
     segment: Segment;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     readOnly?: boolean;
@@ -75,14 +75,11 @@ interface SegmentBlockHeadProps {
 }
 
 
-const SegmentBlockHeadV2 = (props: SegmentBlockHeadProps) => {
+const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     const classes = useStyles();
     const { translate, osText } = React.useContext(I18nContext);
     const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
     const { readOnly, assignSpeakerForSegment, removeHighRiskValueFromSegment, segment } = props;
-    // const rawBlockData = block.getData();
-    // const blockData: SegmentBlockData = rawBlockData.toJS();
-    // const segment = blockData.segment || {} as Segment;
     const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
     const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
     const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;

@@ -684,7 +684,9 @@ export function Editor(props: EditorProps) {
   /**
    * builds the callback to the manually split blocks with the updated segment Ids response
    */
-  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, newBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
+  const buildSplitSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>,
+                                     newBlock: BlockObject<SegmentBlockData>,
+                                     incomingEditorState: EditorState) => {
     const onSplitSegmentResponse = (updatedSegments: [Segment, Segment]) => {
       const [updatedSegment, newSegment] = updatedSegments;
       const blockKey = targetBlock.key;

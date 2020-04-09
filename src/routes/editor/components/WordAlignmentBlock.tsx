@@ -12,7 +12,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             marginLeft: theme.spacing(1),
         },
         wordAlignment: {
-            width: '300px',
+            width: 'fit-content',
+            alignSelf: 'flex-start',
         }
     }),
 );
@@ -35,8 +36,7 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
 
     return (
         <div>
-            <Input style={{width: 100}}
-                   className={classes.wordAlignment}
+            <Input className={classes.wordAlignment}
                    defaultValue={word}
                    disabled={!isEditMode}
                    onClick={handleClick} />
