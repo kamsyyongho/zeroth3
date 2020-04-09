@@ -1,5 +1,6 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input'
+import Grid from "@material-ui/core/Grid";
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 
@@ -12,8 +13,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             marginLeft: theme.spacing(1),
         },
         wordAlignment: {
+            minWidth: 0,
+            display: 'inline-block',
             width: 'fit-content',
-            alignSelf: 'flex-start',
+            margin: 0,
+            padding: 0,
+            fontSize: '14px',
         }
     }),
 );
@@ -23,23 +28,29 @@ export interface WordAlignmentProp {
     length: number,
     word: string,
     confidence: number,
+    totalLength: number,
 }
 
 export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     const classes = useStyles();
-    const { start, length, word, confidence } = props;
+    const { start, length, word, confidence, totalLength } = props;
     const [isEditMode, setIsEditMode] = React.useState(false);
+
+    React.useEffect(() => {
+        console.log(`word length = ${word.length} and word : `, word)
+        console.log('total word length : ', totalLength);
+    });
 
     const handleClick = () => {
         setIsEditMode(!isEditMode);
     };
 
     return (
-        <div>
-            <Input className={classes.wordAlignment}
-                   defaultValue={word}
-                   disabled={!isEditMode}
-                   onClick={handleClick} />
-        </div >
+        <Input className={classes.wordAlignment}
+               defaultValue={word}
+               disabled={!isEditMode}
+               style={{ width: `${word.length / totalLength * 100}%` }}
+               fullWidth={true}
+               onClick={handleClick} />
     );
 };
