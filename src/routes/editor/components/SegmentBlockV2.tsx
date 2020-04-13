@@ -15,12 +15,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         block: {
             marginLeft: theme.spacing(1),
-            display: 'flex',
+            // display: 'flex',
             minWidth: 0,
-            // maxWidth: '1076px',
-            flexDirection: 'row',
-            alignContent: 'flex-wrap',
-            flexWrap: 'wrap',
+            maxWidth: '1076px',
+            // flexDirection: 'row',
+            // alignContent: 'flex-wrap',
+            // flexWrap: 'wrap',
         },
     }),
 );
@@ -58,7 +58,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }
 
     return (
-        <div className={classes.root} contentEditable={true}>
+        <div className={classes.root}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
                 assignSpeakerForSegment={assignSpeakerForSegment}
@@ -66,7 +66,6 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 segment={segment}
             />
                 {/*<EditorBlock {...props} />*/}
-
             {segment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
@@ -78,6 +77,8 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         totalLength={totalLength} />
                 )
             })}
+
+
             {/*{totalLength <= wordPerLine*/}
             {/*    ? <div className={classes.block}*/}
             {/*           style={{ width: `${totalLength / wordPerLine * 100}%` }}>*/}

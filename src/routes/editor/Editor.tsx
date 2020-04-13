@@ -1786,7 +1786,8 @@ export function Editor(props: EditorProps) {
       {/*    handlePastedText={editorChangeNoop}*/}
       {/*  />*/}
       {/*}*/}
-      {ready &&
+      <div contentEditable={true}>
+        {ready &&
         segments.map( (segment: Segment, index: number) => {
           return <SegmentBlockV2 key={`segment-block-${index}`}
                                  segment={segment}
@@ -1794,7 +1795,9 @@ export function Editor(props: EditorProps) {
                                  readOnly={readOnly}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />
         })
-      }
+        }
+      </div>
+
     </div>
   );
 };
