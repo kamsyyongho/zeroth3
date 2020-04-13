@@ -11,13 +11,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         root: {
             margin: theme.spacing(1),
             minWidth: 0,
-            width: '1076px'
+            maxWidth: '1076px'
         },
         block: {
             marginLeft: theme.spacing(1),
             // display: 'flex',
             minWidth: 0,
-            maxWidth: '1076px',
             // flexDirection: 'row',
             // alignContent: 'flex-wrap',
             // flexWrap: 'wrap',
