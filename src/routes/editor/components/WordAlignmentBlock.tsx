@@ -1,8 +1,8 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input'
-import Grid from "@material-ui/core/Grid";
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
+import ContentEditable from "react-contenteditable";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -46,11 +46,15 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     };
 
     return (
-        <Input className={classes.wordAlignment}
-               defaultValue={word}
-               disabled={!isEditMode}
-               style={{ width: `${word.length / totalLength * 100}%` }}
-               fullWidth={true}
-               onClick={handleClick} />
+        // <Input className={classes.wordAlignment}
+        //        defaultValue={word}
+        //        disabled={!isEditMode}
+        //        style={{ width: `${word.length / totalLength * 100}%` }}
+        //        fullWidth={true}
+        //        onClick={handleClick} />
+        <span contentEditable={true} className={classes.wordAlignment}>
+            {word}
+        </span>
+
     );
 };
