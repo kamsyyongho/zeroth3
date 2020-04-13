@@ -1458,23 +1458,23 @@ export function Editor(props: EditorProps) {
   };
 
   const handleChange = (incomingEditorState: EditorState) => {
-    if (readOnlyEditorState) {
-      return;
-    }
-    let canUpdate = true;
-    const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-    if (loading || !previousSelectedCursorContent || !previousSelectionState) {
-      setPreviousSelectedCursorContent(cursorContent);
-      setPreviousSelectionState(incomingEditorState.getSelection());
-    } else if (previousSelectedCursorContent && previousSelectionState) {
-      canUpdate = updateSegmentOnChange(incomingEditorState, cursorContent);
-    }
-    if (!loading && canUpdate) {
-      // update location since we are still in same block
-      setPreviousSelectionState(incomingEditorState.getSelection());
-      setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
-      setEditorState(incomingEditorState);
-    }
+    // if (readOnlyEditorState) {
+    //   return;
+    // }
+    // let canUpdate = true;
+    // const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+    // if (loading || !previousSelectedCursorContent || !previousSelectionState) {
+    //   setPreviousSelectedCursorContent(cursorContent);
+    //   setPreviousSelectionState(incomingEditorState.getSelection());
+    // } else if (previousSelectedCursorContent && previousSelectionState) {
+    //   canUpdate = updateSegmentOnChange(incomingEditorState, cursorContent);
+    // }
+    // if (!loading && canUpdate) {
+    //   // update location since we are still in same block
+    //   setPreviousSelectionState(incomingEditorState.getSelection());
+    //   setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
+    //   setEditorState(incomingEditorState);
+    // }
   };
 
   /**
@@ -1547,14 +1547,14 @@ export function Editor(props: EditorProps) {
    * navigate to the correct timestamp if there is an entity at the cursor
    */
   const handleClickInsideEditor = () => {
-    if (readOnlyEditorState || readOnly) {
-      return;
-    }
-    const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(editorState);
-    if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
-      const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
-      onWordClick(segmentAndWordIndex);
-    }
+    // if (readOnlyEditorState || readOnly) {
+    //   return;
+    // }
+    // const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(editorState);
+    // if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
+    //   const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
+    //   onWordClick(segmentAndWordIndex);
+    // }
   };
 
   // handle any api requests made by the parent
