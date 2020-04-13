@@ -29,7 +29,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             marginBottom: theme.spacing(1),
             "&:hover": {
                 cursor: 'default',
-            }
+            },
+            display: 'inline-block',
         },
         block: {
             marginLeft: theme.spacing(1),
@@ -131,6 +132,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                     invisible={!displayTextChangedHover}
                     variant="dot"
                     color='error'
+                    contentEditable={false}
                     anchorOrigin={{
                         vertical: 'bottom',
                         horizontal: 'left',
@@ -143,6 +145,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                         invisible={!highRisk}
                         variant="dot"
                         color='error'
+                        contentEditable={false}
                         anchorOrigin={{
                             vertical: 'bottom',
                             horizontal: 'left',
@@ -176,6 +179,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                         <Tooltip
                             placement='top-start'
                             title={isOpen ? <Typography variant='h6' >{osText('speaker')}</Typography> : ''}
+                            contentEditable={false}
                             arrow={true}
                         >
                             <span>{speakerButton}</span>
@@ -186,6 +190,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                             title={tooltipText}
                             open={isOpen}
                             arrow={false}
+                            contentEditable={false}
                             classes={{ tooltip: classes.tooltipContent }}
                         >
                             <Chip

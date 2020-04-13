@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         wordAlignment: {
             minWidth: 0,
-            display: 'inline-block',
+            display: 'inline',
             width: 'fit-content',
             margin: 0,
             padding: 0,
@@ -52,9 +52,9 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
         //        style={{ width: `${word.length / totalLength * 100}%` }}
         //        fullWidth={true}
         //        onClick={handleClick} />
-        <span contentEditable={true} className={classes.wordAlignment}>
+        <p contentEditable={true} className={classes.wordAlignment}>
             {word}
-        </span>
+        </p>
 
     );
 };
