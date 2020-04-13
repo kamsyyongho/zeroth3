@@ -1,5 +1,4 @@
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import Grid from "@material-ui/core/Grid";
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
@@ -40,6 +39,19 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const totalLength = wordLengthArray.reduce(sumReducer, 0);
     const wordPerLine = 60;
 
+    const splitWordAlignments = () => {
+        // let hardCopyWordAlignments = JSON.parse(JSON.stringify(segment.wordAlignments));
+        // let wordSplitArray = [];
+        let wordCount = 0;
+        for (let i = 0; i < wordLengthArray.length; i++) {
+            if (wordCount + wordLengthArray[i] <= wordPerLine) {
+                wordCount += wordLengthArray[i]
+            } else {
+                return;
+            }
+        }
+    };
+
     return (
         <div className={classes.root}>
             <MemoizedSegmentBlockHeadV2
@@ -51,7 +63,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 {/*<EditorBlock {...props} />*/}
             {totalLength <= wordPerLine
                 ? <div className={classes.block}
-                       style={{ width: `${ totalLength / wordPerLine * 100}%` }}>
+                       style={{ width: `${totalLength / wordPerLine * 100}%` }}>
                     {segment.wordAlignments.map((word: WordAlignment, index: number) => {
                         return (
                             <WordAlignmentBlock

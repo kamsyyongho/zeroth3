@@ -42,7 +42,7 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     });
 
     const handleClick = () => {
-        setIsEditMode(!isEditMode);
+        setIsEditMode(true);
     };
 
     return (
