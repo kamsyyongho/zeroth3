@@ -35,11 +35,16 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
     const classes = useStyles();
     const { start, length, word, confidence, totalLength } = props;
     const [isEditMode, setIsEditMode] = React.useState(false);
+    const [wordAlignment, setWordAlignment] = React.useState(word);
 
     React.useEffect(() => {
         console.log(`word length = ${word.length} and word : `, word)
         console.log('total word length : ', totalLength);
     });
+
+    const handleChange = (event: Event) => {
+        console.log('event inside onChange : ', event)
+    }
 
     const handleClick = () => {
         setIsEditMode(true);
@@ -52,9 +57,10 @@ export const WordAlignmentBlock = (props: WordAlignmentProp) => {
         //        style={{ width: `${word.length / totalLength * 100}%` }}
         //        fullWidth={true}
         //        onClick={handleClick} />
-        <p contentEditable={true} className={classes.wordAlignment}>
-            {word}
-        </p>
+        <span contentEditable={true} className={classes.wordAlignment}
+              onChange={handleChange}>
+            {wordAlignment}
+        </span>
 
     );
 };

@@ -4,7 +4,6 @@ import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
 import { WordAlignmentBlock } from './WordAlignmentBlock';
 import { Segment } from "../../../types";
-import ContentEditable from "react-contenteditable";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -40,23 +39,6 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const totalLength = wordLengthArray.reduce(sumReducer, 0);
     const wordPerLine = 60;
 
-    const splitWordAlignments = () => {
-        // let hardCopyWordAlignments = JSON.parse(JSON.stringify(segment.wordAlignments));
-        // let wordSplitArray = [];
-        let wordCount = 0;
-        for (let i = 0; i < wordLengthArray.length; i++) {
-            if (wordCount + wordLengthArray[i] <= wordPerLine) {
-                wordCount += wordLengthArray[i]
-            } else {
-                return;
-            }
-        }
-    };
-
-    const handleChange = (event: Event) => {
-        return;
-    }
-
     return (
         <div className={classes.root}>
             <MemoizedSegmentBlockHeadV2
@@ -77,38 +59,6 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         totalLength={totalLength} />
                 )
             })}
-
-
-            {/*{totalLength <= wordPerLine*/}
-            {/*    ? <div className={classes.block}*/}
-            {/*           style={{ width: `${totalLength / wordPerLine * 100}%` }}>*/}
-            {/*        {segment.wordAlignments.map((word: WordAlignment, index: number) => {*/}
-            {/*            return (*/}
-            {/*                <WordAlignmentBlock*/}
-            {/*                    key={`word-alignment-${index}`}*/}
-            {/*                    start={word.start}*/}
-            {/*                    length={word.length}*/}
-            {/*                    word={word.word}*/}
-            {/*                    confidence={word.confidence}*/}
-            {/*                    totalLength={totalLength} />*/}
-            {/*            )*/}
-            {/*        })}*/}
-            {/*    </div>*/}
-            {/*    : <div className={classes.block}*/}
-            {/*           style={{ width: `${ totalLength > wordPerLine ? 100 : totalLength / wordPerLine * 100}%` }}>*/}
-            {/*        {segment.wordAlignments.map((word: WordAlignment, index: number) => {*/}
-            {/*            return (*/}
-            {/*                <WordAlignmentBlock*/}
-            {/*                    key={`word-alignment-${index}`}*/}
-            {/*                    start={word.start}*/}
-            {/*                    length={word.length}*/}
-            {/*                    word={word.word}*/}
-            {/*                    confidence={word.confidence}*/}
-            {/*                    totalLength={totalLength} />*/}
-            {/*            )*/}
-            {/*        })}*/}
-            {/*    </div>*/}
-            {/*}*/}
         </div>
     );
 };

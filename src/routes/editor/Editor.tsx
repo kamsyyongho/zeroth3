@@ -176,89 +176,89 @@ function getBlockInfoForBlockKey<U>(blockKey: string, contentState: ContentState
  * @returns entity is `null` if there is no enity at the selection
  */
 const getCursorContent = <T, U>(incomingEditorState: EditorState): CursorContent<T, U> => {
-  const selectionState = incomingEditorState.getSelection();
-  const selectionBlockStartKey = selectionState.getStartKey();
-  const selectionBlockEndKey = selectionState.getEndKey();
-  const startOffset = selectionState.getStartOffset();
-  const endOffset = selectionState.getEndOffset();
-  const contentState = incomingEditorState.getCurrentContent();
-
-  const isNoSelection = (selectionBlockStartKey === selectionBlockEndKey && startOffset === endOffset);
-
-  // The block in which the selection starts
-  const { blockObject, block, entityRanges, inlineStyleRanges } = getBlockInfoForBlockKey<U>(selectionBlockStartKey, contentState);
-  const blockText = blockObject.text;
-
-  const cursorLocationWithinBlock = selectionState.getAnchorOffset();
-  const characterPropertiesAtCursor = blockObject.characterList[cursorLocationWithinBlock];
-
-  const selectionCharacterDetails: CharacterDetails[] = [];
-  if (startOffset < endOffset) {
-    for (let i = startOffset; i < endOffset; i++) {
-      const character = blockText[i];
-      const characterProperties = blockObject.characterList[i];
-      const characterDetails: CharacterDetails = {
-        character: character,
-        properties: characterProperties,
-      };
-      selectionCharacterDetails.push(characterDetails);
-    }
-  }
-  let characterAtCursor = blockText[cursorLocationWithinBlock];
-  let characterPropertiesBeforeCursor = {} as CharacterProperties;
-  let isEndOfBlock = false;
-  let isStartOfBlock = false;
-  let characterBeforeCursor = '';
-  // to handle selecting the end of a block
-  if (characterAtCursor === undefined ||
-    characterPropertiesAtCursor === undefined ||
-    blockObject.characterList.length <= cursorLocationWithinBlock) {
-    isEndOfBlock = true;
-    characterAtCursor = '';
-  }
-  if (cursorLocationWithinBlock === 0) {
-    isStartOfBlock = true;
-  } else {
-    characterBeforeCursor = blockText[cursorLocationWithinBlock - 1];
-    characterPropertiesBeforeCursor = blockObject.characterList[cursorLocationWithinBlock - 1];
-  }
-  const characterDetailsAtCursor: CharacterDetails = {
-    character: characterAtCursor,
-    properties: characterPropertiesAtCursor,
-  };
-  const characterDetailsBeforeCursor: CharacterDetails = {
-    character: characterBeforeCursor,
-    properties: characterPropertiesBeforeCursor,
-  };
-  let entity: RawDraftEntity<T> | null = null;
-  // Entity key at the start selection
-  const entityKey = block.getEntityAt(startOffset);
-  if (entityKey) {
-    // The actual entity instance
-    const entityInstance = contentState.getEntity(entityKey);
-    const type = entityInstance.getType();
-    const mutability = entityInstance.getMutability();
-    const data: T = entityInstance.getData();
-    entity = {
-      type,
-      mutability,
-      data,
-    };
-  }
-  const cursorContent = {
-    isNoSelection,
-    entity,
-    isEndOfBlock,
-    isStartOfBlock,
-    characterDetailsBeforeCursor,
-    characterDetailsAtCursor,
-    cursorOffset: cursorLocationWithinBlock,
-    selectionCharacterDetails,
-    blockObject,
-    blockEntityRanges: entityRanges,
-    blockInlineStyleRanges: inlineStyleRanges,
-  };
-  return cursorContent;
+  // const selectionState = incomingEditorState.getSelection();
+  // const selectionBlockStartKey = selectionState.getStartKey();
+  // const selectionBlockEndKey = selectionState.getEndKey();
+  // const startOffset = selectionState.getStartOffset();
+  // const endOffset = selectionState.getEndOffset();
+  // const contentState = incomingEditorState.getCurrentContent();
+  //
+  // const isNoSelection = (selectionBlockStartKey === selectionBlockEndKey && startOffset === endOffset);
+  //
+  // // The block in which the selection starts
+  // const { blockObject, block, entityRanges, inlineStyleRanges } = getBlockInfoForBlockKey<U>(selectionBlockStartKey, contentState);
+  // const blockText = blockObject.text;
+  //
+  // const cursorLocationWithinBlock = selectionState.getAnchorOffset();
+  // const characterPropertiesAtCursor = blockObject.characterList[cursorLocationWithinBlock];
+  //
+  // const selectionCharacterDetails: CharacterDetails[] = [];
+  // if (startOffset < endOffset) {
+  //   for (let i = startOffset; i < endOffset; i++) {
+  //     const character = blockText[i];
+  //     const characterProperties = blockObject.characterList[i];
+  //     const characterDetails: CharacterDetails = {
+  //       character: character,
+  //       properties: characterProperties,
+  //     };
+  //     selectionCharacterDetails.push(characterDetails);
+  //   }
+  // }
+  // let characterAtCursor = blockText[cursorLocationWithinBlock];
+  // let characterPropertiesBeforeCursor = {} as CharacterProperties;
+  // let isEndOfBlock = false;
+  // let isStartOfBlock = false;
+  // let characterBeforeCursor = '';
+  // // to handle selecting the end of a block
+  // if (characterAtCursor === undefined ||
+  //   characterPropertiesAtCursor === undefined ||
+  //   blockObject.characterList.length <= cursorLocationWithinBlock) {
+  //   isEndOfBlock = true;
+  //   characterAtCursor = '';
+  // }
+  // if (cursorLocationWithinBlock === 0) {
+  //   isStartOfBlock = true;
+  // } else {
+  //   characterBeforeCursor = blockText[cursorLocationWithinBlock - 1];
+  //   characterPropertiesBeforeCursor = blockObject.characterList[cursorLocationWithinBlock - 1];
+  // }
+  // const characterDetailsAtCursor: CharacterDetails = {
+  //   character: characterAtCursor,
+  //   properties: characterPropertiesAtCursor,
+  // };
+  // const characterDetailsBeforeCursor: CharacterDetails = {
+  //   character: characterBeforeCursor,
+  //   properties: characterPropertiesBeforeCursor,
+  // };
+  // let entity: RawDraftEntity<T> | null = null;
+  // // Entity key at the start selection
+  // const entityKey = block.getEntityAt(startOffset);
+  // if (entityKey) {
+  //   // The actual entity instance
+  //   const entityInstance = contentState.getEntity(entityKey);
+  //   const type = entityInstance.getType();
+  //   const mutability = entityInstance.getMutability();
+  //   const data: T = entityInstance.getData();
+  //   entity = {
+  //     type,
+  //     mutability,
+  //     data,
+  //   };
+  // }
+  // const cursorContent = {
+  //   isNoSelection,
+  //   entity,
+  //   isEndOfBlock,
+  //   isStartOfBlock,
+  //   characterDetailsBeforeCursor,
+  //   characterDetailsAtCursor,
+  //   cursorOffset: cursorLocationWithinBlock,
+  //   selectionCharacterDetails,
+  //   blockObject,
+  //   blockEntityRanges: entityRanges,
+  //   blockInlineStyleRanges: inlineStyleRanges,
+  // };
+  // return cursorContent;
 };
 
 
