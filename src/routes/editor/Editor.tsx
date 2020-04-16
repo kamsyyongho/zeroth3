@@ -1786,7 +1786,7 @@ export function Editor(props: EditorProps) {
       {/*    handlePastedText={editorChangeNoop}*/}
       {/*  />*/}
       {/*}*/}
-      <div contentEditable={true}>
+      <div>
         {ready &&
         segments.map( (segment: Segment, index: number) => {
           return <SegmentBlockV2 key={`segment-block-${index}`}

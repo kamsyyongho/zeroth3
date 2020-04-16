@@ -2,8 +2,9 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
-import { WordAlignmentBlock } from './WordAlignmentBlock';
+// import { WordAlignmentBlock } from './WordAlignmentBlock';
 import { Segment } from "../../../types";
+import WordAlignmentBlock from './WordAlignmentBlock';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
