@@ -1528,34 +1528,17 @@ export function Editor(props: EditorProps) {
     return HANDLE_VALUES.handled;
   };
 
-  const handleFocus = () => {
-    setFocussed(true);
-  };
+  const findWordAlignmentIndexToPrevSegment = (segmentIndex: number,
+                                               wordAlignmentIndex: number,
+                                               offset: number) => {
+    const prevSegment = segments[segmentIndex - 1];
+    let wordCount = 0;
 
-  /** saves a copy of the editor state that can be used if 
-   * the user triggers commands while the editor is not focussed
-   * @example if the user clicks an editor command button
-   */
-  const handleBlur = () => {
-    if (focussed) {
-      setFocussed(false);
-      setEditorStateBeforeBlur(cloneEditorState(editorState));
+    for(let i = 0; i < wordAlignmentIndex; i++) {
+
     }
-  };
 
-  /**
-   * navigate to the correct timestamp if there is an entity at the cursor
-   */
-  const handleClickInsideEditor = () => {
-    // if (readOnlyEditorState || readOnly) {
-    //   return;
-    // }
-    // const { isNoSelection, entity } = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(editorState);
-    // if (isNoSelection && typeof entity?.data?.wordKey === 'number') {
-    //   const segmentAndWordIndex = wordKeyBank.getLocation(entity.data.wordKey);
-    //   onWordClick(segmentAndWordIndex);
-    // }
-  };
+  }
 
   // handle any api requests made by the parent
   // used for updating after the speaker has been set

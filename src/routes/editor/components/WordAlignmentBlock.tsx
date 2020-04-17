@@ -105,18 +105,18 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     };
     handleArrowLeft = () => {
         const selectCaretLocation = window.getSelection();
-        const nextWordAlignmentBlock = document.getElementById
-        (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`);
+        const prevWordAlignmentBlock = document.getElementById
+        (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`);
         const lastBlockPreviousSegment = document.getElementById
         (`word-alignment-${this.props.segmentIndex - 1}-0`);
 
         console.log('wordAlignmentIndex : ', this.props.wordAlignmentIndex);
         console.log('wordAlignmentsLength : ', this.props.wordAlignmentsLength);
         if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode?.length) {
-            selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
+            selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
 
             if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
-                selectCaretLocation?.setPosition(previousSegment, 0);
+                selectCaretLocation?.setPosition(lastBlockPreviousSegment, 0);
             }
         }
         return;
