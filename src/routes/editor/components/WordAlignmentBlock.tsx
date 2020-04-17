@@ -24,12 +24,14 @@ export interface WordAlignmentProp {
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
+    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => void;
     classes: any,
     start: number,
     length: number,
     word: string,
     confidence: number,
     totalLength: number,
+    lengthBeforeBlock: number,
 }
 
 export interface State {
@@ -74,10 +76,21 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 // type: "Caret"
 // __proto__: Selection
     handleArrowUp = () => {
-        // const selection = window.getSelection();
-        // const previousSegmentNode = document.getElementById
-        // (`word-alignment=${this.props.segmentIndex - 1}-${selection?.anchorOffset}`);
-        return;
+        const selection = window.getSelection();
+        const currentLocation = selection?.anchorOffset;
+        const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
+        (this.props.segmentIndex, currentLocation + this.props.lengthBeforeBlock);
+        const previousSegmentNode = document.getElementById
+        (`word-alignment=${this.props.segmentIndex - 1}-${wordAlignmentIndex}`);
+        const currentNode = document.getElementById(this.state.wordAlignmentId);
+
+        console.log('selection : ', selection);
+        console.log('currentNode : ', this.state.element);
+        console.log('lengthBeforeBlock : ', this.props.lengthBeforeBlock);
+        console.log('wordAlignmentIndex : ', wordAlignmentIndex);
+
+        currentNode?.blur();
+        selection?.setPosition(previousSegmentNode, 0)
     };
 
     handleArrowDown = () => {

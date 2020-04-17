@@ -1529,16 +1529,23 @@ export function Editor(props: EditorProps) {
   };
 
   const findWordAlignmentIndexToPrevSegment = (segmentIndex: number,
-                                               wordAlignmentIndex: number,
-                                               offset: number) => {
-    const prevSegment = segments[segmentIndex - 1];
+                                               currentLocation: number) => {
+    const prevSegmentWordAlignments = segments[segmentIndex - 1].wordAlignments;
     let wordCount = 0;
 
-    for(let i = 0; i < wordAlignmentIndex; i++) {
+    for(let i = 0; i < prevSegmentWordAlignments.length + 1; i++) {
+      if(wordCount < currentLocation) {
+        if(i === prevSegmentWordAlignments.length) return prevSegmentWordAlignments.length - 1;
 
+        const word = prevSegmentWordAlignments[i].word;
+        wordCount += word.length;
+      } else if (wordCount > currentLocation) {
+        return i - 1;
+      }else {
+        return i;
+      }
     }
-
-  }
+  };
 
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
@@ -1701,7 +1708,7 @@ export function Editor(props: EditorProps) {
     <div
       id={'scroll-container'}
       ref={containerRef}
-      onClick={handleClickInsideEditor}
+      // onClick={handleClickInsideEditor}
       style={{
         height,
         overflowY: 'auto',
@@ -1777,6 +1784,7 @@ export function Editor(props: EditorProps) {
                                  segmentIndex={index}
                                  assignSpeakerForSegment={assignSpeakerForSegment}
                                  readOnly={readOnly}
+                                 findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />
         })
         }

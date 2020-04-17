@@ -28,16 +28,33 @@ interface SegmentBlockProps  {
     segment: Segment;
     segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
+    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => void;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
 
 export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
-    const { segment, segmentIndex, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment } = props;
+    const { segment, segmentIndex, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment, findWordAlignmentIndexToPrevSegment } = props;
+    const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const sumReducer = (accumulator: number, currentValue: number) => accumulator + currentValue;
     const wordLengthArray = segment.wordAlignments.map(word => word.word.length);
     const totalLength = wordLengthArray.reduce(sumReducer, 0);
+
+    const setLengthBeforeEachBlockArray = () => {
+        const result = [0,];
+        let count = 0;
+        for(let i = 1; i < segment.wordAlignments.length; i ++) {
+            const alignment = segment.wordAlignments[i];
+            count += alignment.word.length;
+            result.push(count);
+        }
+        setLengthBeforeBlockArray(result);
+    };
+
+    React.useEffect(() => {
+        setLengthBeforeEachBlockArray();
+    }, []);
 
     return (
         <div className={classes.root}>
@@ -52,9 +69,11 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 return (
                     <WordAlignmentBlock
                         key={`word-alignment-${index}`}
+                        findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         segmentIndex={segmentIndex}
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}
+                        lengthBeforeBlock={lengthBeforeBlockArray[index]}
                         start={word.start}
                         length={word.length}
                         word={word.word}
