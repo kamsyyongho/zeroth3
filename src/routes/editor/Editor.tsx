@@ -1530,7 +1530,7 @@ export function Editor(props: EditorProps) {
 
   const findWordAlignmentIndexToPrevSegment = (segmentIndex: number,
                                                currentLocation: number) => {
-    const prevSegmentWordAlignments = segments[segmentIndex - 1].wordAlignments;
+    const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
     let wordCount = 0;
 
     for(let i = 0; i < prevSegmentWordAlignments.length + 1; i++) {

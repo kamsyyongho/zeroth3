@@ -61,40 +61,30 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         // selected?.setPosition(this.state.node, 0);
     };
 
-    // window.getSelection
-//     Selection {anchorNode: text, anchorOffset: 4, focusNode: text, focusOffset: 4, isCollapsed: true, …}
-// anchorNode: text
-// anchorOffset: 4
-// baseNode: text
-// baseOffset: 4
-// extentNode: text
-// extentOffset: 4
-// focusNode: text
-// focusOffset: 4
-// isCollapsed: true
-// rangeCount: 1
-// type: "Caret"
-// __proto__: Selection
     handleArrowUp = () => {
         const selection = window.getSelection();
         const currentLocation = selection?.anchorOffset;
         const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
-        (this.props.segmentIndex, currentLocation + this.props.lengthBeforeBlock);
+        (this.props.segmentIndex - 1, currentLocation + this.props.lengthBeforeBlock);
         const previousSegmentNode = document.getElementById
-        (`word-alignment=${this.props.segmentIndex - 1}-${wordAlignmentIndex}`);
-        const currentNode = document.getElementById(this.state.wordAlignmentId);
+        (`word-alignment-${this.props.segmentIndex - 1}-${wordAlignmentIndex}`);
+        const currentNode = this.state.element;
 
-        console.log('selection : ', selection);
-        console.log('currentNode : ', this.state.element);
-        console.log('lengthBeforeBlock : ', this.props.lengthBeforeBlock);
-        console.log('wordAlignmentIndex : ', wordAlignmentIndex);
-
-        currentNode?.blur();
+        currentNode.current.blur();
         selection?.setPosition(previousSegmentNode, 0)
     };
 
     handleArrowDown = () => {
-      return;
+        const selection = window.getSelection();
+        const currentLocation = selection?.anchorOffset;
+        const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
+        (this.props.segmentIndex + 1, currentLocation + this.props.lengthBeforeBlock);
+        const nextSegmentNode = document.getElementById
+        (`word-alignment-${this.props.segmentIndex + 1}-${wordAlignmentIndex}`);
+        const currentNode = this.state.element;
+
+        currentNode.current.blur();
+        selection?.setPosition(nextSegmentNode, 0);
     };
 
 
@@ -105,8 +95,6 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const firstBlockNextSegment = document.getElementById
         (`word-alignment-${this.props.segmentIndex + 1}-0`);
 
-        console.log('wordAlignmentIndex : ', this.props.wordAlignmentIndex);
-        console.log('wordAlignmentsLength : ', this.props.wordAlignmentsLength);
         if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode?.length) {
             selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
 
@@ -123,8 +111,6 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const lastBlockPreviousSegment = document.getElementById
         (`word-alignment-${this.props.segmentIndex - 1}-0`);
 
-        console.log('wordAlignmentIndex : ', this.props.wordAlignmentIndex);
-        console.log('wordAlignmentsLength : ', this.props.wordAlignmentsLength);
         if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode?.length) {
             selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
 
@@ -155,10 +141,17 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         }
     };
 
+    handleOnFocus = () => {
+        console.log('what');
+    };
+
+    handleOnBlur = () => {
+        console.log('does it get called?');
+        document.removeEventListener('keydown', this.handleKeyDown);
+    };
+
     componentDidMount = () => {
-        // this.node = document.getElementById(this.state.wordAlignmentId);
         console.log('node, inside componenDidMount : ', this.state.element);
-        // this.node?.addEventListener('keydown', this.handleKeyDown);
         this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
 
@@ -170,6 +163,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                              innerRef={element}
                              className={classes.wordAlignment}
                              onChange={this.handleChange}
+                             onBlur={this.handleOnBlur}
                              html={text}
                              disabled={false} />
         )
