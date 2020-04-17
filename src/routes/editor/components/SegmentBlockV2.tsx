@@ -2,8 +2,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
-// import { WordAlignmentBlock } from './WordAlignmentBlock';
-import { Segment } from "../../../types";
+import {Segment, WordAlignment} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -27,6 +26,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface SegmentBlockProps  {
     segment: Segment;
+    segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
@@ -34,11 +34,10 @@ interface SegmentBlockProps  {
 
 export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
-    const { segment, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment } = props;
+    const { segment, segmentIndex, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment } = props;
     const sumReducer = (accumulator: number, currentValue: number) => accumulator + currentValue;
     const wordLengthArray = segment.wordAlignments.map(word => word.word.length);
     const totalLength = wordLengthArray.reduce(sumReducer, 0);
-    const wordPerLine = 60;
 
     return (
         <div className={classes.root}>
@@ -53,6 +52,8 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 return (
                     <WordAlignmentBlock
                         key={`word-alignment-${index}`}
+                        segmentIndex={segmentIndex}
+                        wordAlignmentindex={index}
                         start={word.start}
                         length={word.length}
                         word={word.word}

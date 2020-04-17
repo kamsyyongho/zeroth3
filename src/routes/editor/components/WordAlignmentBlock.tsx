@@ -40,6 +40,8 @@ const styles = (theme: CustomTheme) => ({
 });
 
 export interface WordAlignmentProp {
+    segmentIndex: number,
+    wordAlignmentIndex: number,
     classes: any,
     start: number,
     length: number,
@@ -48,60 +50,31 @@ export interface WordAlignmentProp {
     totalLength: number,
 }
 
-// export const WordAlignmentBlock = (props: WordAlignmentProp) => {
-//     const classes = useStyles();
-//     const { start, length, word, confidence, totalLength } = props;
-//     const [isEditMode, setIsEditMode] = React.useState(false);
-//     const [wordAlignment, setWordAlignment] = React.useState(word);
-//
-//     React.useEffect(() => {
-//         console.log(`word length = ${word.length} and word : `, word)
-//         console.log('total word length : ', totalLength);
-//     });
-//
-//     const handleChange = (event: Event) => {
-//         console.log('event inside onChange : ', event)
-//     }
-//
-//     const handleClick = () => {
-//         setIsEditMode(true);
-//     };
-//
-//     return (
-//         // <Input className={classes.wordAlignment}
-//         //        defaultValue={word}
-//         //        disabled={!isEditMode}
-//         //        style={{ width: `${word.length / totalLength * 100}%` }}
-//         //        fullWidth={true}
-//         //        onClick={handleClick} />
-//         <span contentEditable={true} className={classes.wordAlignment}
-//               onChange={handleChange}>
-//             {wordAlignment}
-//         </span>
-//
-//     );
-// };
-
 class WordAlignmentBlock extends React.Component <WordAlignmentProp>{
     constructor(props: any) {
         super();
         this.state = {
-            index: props.index,
             text: props.word,
         }
     }
 
     handleChange = (event: SyntheticEvent) => {
         const text: string = event?.target?.value;
+        const node = document.getElementById
+        (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex}`);
         console.log('handle change by ContentEditable : ', event);
-        this.setState({ text: text })
+        this.setState({ text: text });
+        const selected = window.getSelection();
+        console.log('window.getSelection : ', selected);
+        selected?.setPosition(node, 0);
     };
 
     render() {
-        const { classes } = this.props;
+        const { segmentIndex, wordAlignmentIndex, classes } = this.props;
         const { text } = this.state;
         return (
-            <ContentEditable className={classes.wordAlignment}
+            <ContentEditable id={`word-alignment-${segmentIndex}-${wordAlignmentIndex}`}
+                             className={classes.wordAlignment}
                              onChange={this.handleChange}
                              html={text}
                              disabled={false} />

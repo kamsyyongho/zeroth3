@@ -1791,6 +1791,7 @@ export function Editor(props: EditorProps) {
         segments.map( (segment: Segment, index: number) => {
           return <SegmentBlockV2 key={`segment-block-${index}`}
                                  segment={segment}
+                                 segmentIndex={index}
                                  assignSpeakerForSegment={assignSpeakerForSegment}
                                  readOnly={readOnly}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />
