@@ -53,7 +53,8 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     <WordAlignmentBlock
                         key={`word-alignment-${index}`}
                         segmentIndex={segmentIndex}
-                        wordAlignmentindex={index}
+                        wordAlignmentIndex={index}
+                        wordAlignmentsLength={segment.wordAlignments.length}
                         start={word.start}
                         length={word.length}
                         word={word.word}
