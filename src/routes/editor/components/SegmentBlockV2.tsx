@@ -29,13 +29,21 @@ interface SegmentBlockProps  {
     segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => void;
+    getLastAlignmentIndexInSegment: (segmentIndex: number) => void,
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
 
 export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
-    const { segment, segmentIndex, assignSpeakerForSegment, readOnly, removeHighRiskValueFromSegment, findWordAlignmentIndexToPrevSegment } = props;
+    const {
+        segment,
+        segmentIndex,
+        assignSpeakerForSegment,
+        readOnly,
+        removeHighRiskValueFromSegment,
+        findWordAlignmentIndexToPrevSegment,
+        getLastAlignmentIndexInSegment } = props;
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const sumReducer = (accumulator: number, currentValue: number) => accumulator + currentValue;
     const wordLengthArray = segment.wordAlignments.map(word => word.word.length);
@@ -64,12 +72,12 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={segment}
             />
-                {/*<EditorBlock {...props} />*/}
             {segment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
                         key={`word-alignment-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                        getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         segmentIndex={segmentIndex}
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}

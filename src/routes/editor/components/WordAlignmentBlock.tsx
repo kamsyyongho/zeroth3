@@ -24,7 +24,8 @@ export interface WordAlignmentProp {
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
-    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => void;
+    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any;
+    getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     classes: any,
     start: number,
     length: number,
@@ -104,19 +105,33 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         }
         return;
     };
+
     handleArrowLeft = () => {
-        const selectCaretLocation = window.getSelection();
+        const selectCaretLocation = document.getSelection();
+        const lastWordPrevSegment = this.props.getLastAlignmentIndexInSegment(this.props.segmentIndex - 1);
         const prevWordAlignmentBlock = document.getElementById
         (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`);
         const lastBlockPreviousSegment = document.getElementById
-        (`word-alignment-${this.props.segmentIndex - 1}-0`);
+        (`word-alignment-${this.props.segmentIndex - 1}-${lastWordPrevSegment.index}`);
 
-        if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode?.length) {
-            selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
+        console.log('lastWordPrevSegment : ', lastWordPrevSegment);
+        console.log('selectCaretLocation : ', selectCaretLocation);
 
-            if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
-                selectCaretLocation?.setPosition(lastBlockPreviousSegment, 0);
+        if(selectCaretLocation?.anchorOffset === 0) {
+            const range = document.createRange();
+            this.state.element.current.blur();
+            if(this.props.wordAlignmentIndex === 0) {
+                console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
+                // range.setEnd(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
+                // range.setStart(lastBlockPreviousSegment, 0);
+                // selectCaretLocation?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
+                selectCaretLocation?.collapse(lastBlockPreviousSegment, 0);
+                console.log('selectCaretLocation after collapse : ', selectCaretLocation);
+                // selectCaretLocation?.collapseToEnd();
+                return;
             }
+            selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
+            selectCaretLocation?.collapseToEnd();
         }
         return;
     };
