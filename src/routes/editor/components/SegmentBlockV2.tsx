@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             marginLeft: theme.spacing(1),
             // display: 'flex',
             minWidth: 0,
-            // flexDirection: 'row',
+            maxWidth: '100%',
             // alignContent: 'flex-wrap',
             // flexWrap: 'wrap',
         },
@@ -28,8 +28,8 @@ interface SegmentBlockProps  {
     segment: Segment;
     segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
-    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => void;
-    getLastAlignmentIndexInSegment: (segmentIndex: number) => void,
+    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
+    getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
@@ -47,7 +47,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
 
     const setLengthBeforeEachBlockArray = () => {
-        const result = [0,];
+        const result = [0];
         let count = 0;
         for(let i = 1; i < segment.wordAlignments.length; i ++) {
             const alignment = segment.wordAlignments[i];
