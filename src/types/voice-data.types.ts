@@ -29,7 +29,7 @@ export interface VoiceData {
   transcriptionRating: number | null;
   webSocketCloseReason: string;
   webSocketCloseStatus: number;
-  transferedBytes: number;
+  transferredBytes: number;
   highRiskSegments: number;
 }
 
