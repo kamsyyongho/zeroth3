@@ -25,7 +25,6 @@ import { buildStyleMap, cloneEditorState, customKeyBindingFunction, editorChange
 import './styles/editor.css';
 import { SegmentBlockV2 } from './components/SegmentBlockV2';
 
-
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     draggable: {
@@ -57,35 +56,6 @@ interface SegmentPickerOptions {
 interface SegmentSplitOptions {
   segmentIndex: number;
   cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
-}
-
-interface EditorProps {
-  height?: number;
-  readOnly?: boolean;
-  /** payload from the parent to handle */
-  responseFromParent?: ParentMethodResponse;
-  /** let the parent know that we've handled the request */
-  onParentResponseHandled: () => void;
-  editorCommand?: EDITOR_CONTROLS;
-  /** let the parent know that we've handled the request */
-  onCommandHandled: () => void;
-  onReady: (ready: boolean) => void;
-  onWordTimeCreationClose: () => void;
-  onSpeakersUpdate: (speakers: string[]) => void;
-  onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
-  loading?: boolean;
-  segments: Segment[];
-  playingLocation?: SegmentAndWordIndex;
-  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
-  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
-  assignSpeaker: (segmentIndex: number) => void;
-  removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
-  onWordClick: (wordLocation: number[]) => void;
-  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
-  splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
-  mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
-  timePickerRootProps: TimePickerRootProps;
-  splitTimePickerRootProps: SplitTimePickerRootProps;
 }
 
 export function Editor(props: EditorProps) {
