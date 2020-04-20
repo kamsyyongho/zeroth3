@@ -31,7 +31,6 @@ export interface WordAlignmentProp {
     length: number,
     word: string,
     confidence: number,
-    totalLength: number,
     lengthBeforeBlock: number,
 }
 

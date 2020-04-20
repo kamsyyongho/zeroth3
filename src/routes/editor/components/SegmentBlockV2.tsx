@@ -45,9 +45,6 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment } = props;
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
-    const sumReducer = (accumulator: number, currentValue: number) => accumulator + currentValue;
-    const wordLengthArray = segment.wordAlignments.map(word => word.word.length);
-    const totalLength = wordLengthArray.reduce(sumReducer, 0);
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0,];
@@ -85,8 +82,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         start={word.start}
                         length={word.length}
                         word={word.word}
-                        confidence={word.confidence}
-                        totalLength={totalLength} />
+                        confidence={word.confidence} />
                 )
             })}
         </div>
