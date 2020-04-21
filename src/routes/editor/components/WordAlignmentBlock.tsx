@@ -47,7 +47,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.state = {
             element: React.createRef(),
             text: props.word,
-            wordAlignmentId: `word-alignment-${props.segmentIndex}-${props.wordAlignmentIndex}`
+            wordAlignmentId: `word-${props.segmentIndex}-${props.wordAlignmentIndex}`
         };
     }
 

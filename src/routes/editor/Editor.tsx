@@ -11,7 +11,17 @@ import { SPLITTABLE_CHARACTERS, SPLIT_CHARACTER, SPLIT_CHARACTER_REGEX } from '.
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
-import { BLOCK_TYPE, EntityMap, ENTITY_TYPE, HANDLE_VALUES, KEY_COMMANDS, MUTABILITY_TYPE, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment } from '../../types';
+import {
+  BLOCK_TYPE,
+  EntityMap,
+  ENTITY_TYPE,
+  HANDLE_VALUES,
+  KEY_COMMANDS,
+  MUTABILITY_TYPE,
+  Segment,
+  SegmentAndWordIndex,
+  SNACKBAR_VARIANTS,
+  WordAlignment } from '../../types';
 import { BlockInfo, BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, EntityRangeByEntityKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, Time, Word, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { getRandomColor } from '../../util/misc';
@@ -206,7 +216,6 @@ export function Editor(props: EditorProps) {
 
       // to account for the previous blocks and keys changing after success
       setPreviousSelectionState(allowUndoEditorState.getSelection());
-      setPreviousSelectedCursorContent(cursorContent);
     };
     return onMergeSegmentResponse;
   };
@@ -219,9 +228,6 @@ export function Editor(props: EditorProps) {
   };
 
   const handleSegmentMergeCommand = () => {
-  };
-
-  const createWordTime = () => {
   };
 
   const prepareSegmentTimePicker = () => {
@@ -244,10 +250,15 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
+    const selectedBlock: any = window.getSelection();
+    const selectedBlockId: string = selectedBlock.focusNode.parentElement?.id;
 
-    // const segmentAndWordIndex = [segmentIndex, wordAlignmentIndex];
-    //
-    // onWordClick(segmentAndWordIndex);
+    if(!selectedBlockId) return;
+    const segmentAndWordIndex = selectedBlockId.split('-');
+    segmentAndWordIndex.shift();
+    console.log('selectedBlock inside Editor.tsx : ', selectedBlock);
+
+    onWordClick(segmentAndWordIndex.map(index => Number(index)));
   };
 
   const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
@@ -305,7 +316,6 @@ export function Editor(props: EditorProps) {
   };
 
   const handleSegmentTimeUpdate = () => {
-    }
   };
 
   const handleWordTimeCreation = () => {
@@ -354,95 +364,15 @@ export function Editor(props: EditorProps) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
       const segment = payload?.segment;
-      const currentContentState = editorState.getCurrentContent();
-      let blockKey: string | undefined;
-      let updatedContentState: ContentState | undefined;
       switch (type) {
         case PARENT_METHOD_TYPES.speaker:
         case PARENT_METHOD_TYPES.highRisk:
-          if (!segment) break;
-          blockKey = getBlockKeyFromSegmentId(segment.id);
-          if (blockKey) {
-            updatedContentState = updateBlockSegmentData(currentContentState, blockKey, segment);
-          }
           break;
         case PARENT_METHOD_TYPES.speakerCancel:
-          // refocus editor on speaker assign cancel
-          if (previousSelectionState) {
-            const updatedEditorState = EditorState.forceSelection(
-              editorState,
-              previousSelectionState,
-            );
-            setPreviousSelectionState(undefined);
-            setEditorState(updatedEditorState);
-            focusEditor();
-          }
           break;
-      }
-
-      // set our updated state
-      if (updatedContentState) {
-        const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
-        const updatedContentEditorState = EditorState.push(noUndoEditorState,
-            updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
-        const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
-        let editorStateToUse = allowUndoEditorState;
-        if (previousSelectionState) {
-          editorStateToUse = EditorState.forceSelection(
-            allowUndoEditorState,
-            previousSelectionState,
-          );
-        }
-        setPreviousSelectionState(undefined);
-        setEditorState(editorStateToUse);
       }
     }
   }, [responseFromParent]);
-
-  // used to call commands from the control bar's button presses
-  React.useEffect(() => {
-    if (editorCommand) {
-      onCommandHandled();
-      if (readOnlyEditorState || readOnly) {
-        return;
-      }
-      let updatedEditorState: EditorState | null = null;
-      switch (editorCommand) {
-        case EDITOR_CONTROLS.save:
-          updateSegmentOnChange(editorState, undefined, true);
-          break;
-        case EDITOR_CONTROLS.toggleMore:
-          togglePopups();
-          break;
-        case EDITOR_CONTROLS.split:
-          handleSegmentSplitCommand(editorState);
-          break;
-        case EDITOR_CONTROLS.merge:
-          handleSegmentMergeCommand(editorState);
-          break;
-        case EDITOR_CONTROLS.createWord:
-          createWordTime(editorState);
-          break;
-        case EDITOR_CONTROLS.editSegmentTime:
-          prepareSegmentTimePicker(editorState);
-          break;
-        case EDITOR_CONTROLS.undo: ;
-          updatedEditorState = EditorState.undo(editorState);
-          break;
-        case EDITOR_CONTROLS.redo:
-          updatedEditorState = EditorState.redo(editorState);
-          break;
-        case EDITOR_CONTROLS.speaker:
-          assignSpeakerFromShortcut(editorState);
-          break;
-        default:
-          break;
-      }
-      if (updatedEditorState) {
-        handleChange(updatedEditorState);
-      }
-    }
-  }, [editorCommand]);
 
   // used to calculate the exact dimensions of the root div
   // so we can make the overlay the exact same size
@@ -464,19 +394,6 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     focusEditor();
-    // reset everything on dismount;
-    return () => {
-      wordKeyBank = new WordKeyStore();
-      entityMap = {};
-      entityKeyToWordKeyMap = {};
-      wordKeyToEntityKeyMap = {};
-      blockKeyToSegmentIdMap = {};
-      segmentIdToBlockKeyMap = {};
-      segmentOrderById = [];
-      newWordWasCreated = false;
-      onReady(false);
-      setEditorFocussed(false);
-    };
   }, []);
 
   // keep track of focus to prevent the keypress listeners
@@ -484,11 +401,6 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setEditorFocussed(focussed);
   }, [focussed]);
-
-  // handle editor state changes
-  React.useEffect(() => {
-    onEditorStateUpdate(editorState);
-  }, [editorState]);
 
   return (
     <div
