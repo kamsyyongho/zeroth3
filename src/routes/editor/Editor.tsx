@@ -230,9 +230,6 @@ export function Editor(props: EditorProps) {
   const handleSegmentMergeCommand = () => {
   };
 
-  const prepareSegmentTimePicker = () => {
-  };
-
   const prepareSegmentForSplit = () => {
   };
 
@@ -247,6 +244,7 @@ export function Editor(props: EditorProps) {
   };
 
   const togglePopups = () => {
+    setShowEditorPopups(!showEditorPopups);
   };
 
   const handleClickInsideEditor = () => {
