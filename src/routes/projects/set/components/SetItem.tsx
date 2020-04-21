@@ -4,6 +4,9 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -46,6 +49,7 @@ export function SetItem(props: SetItemProps) {
   const { translate } = React.useContext(I18nContext);
   const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
   const [downloadLink, setDownloadLink] = React.useState('');
+  const [expanded, setExpanded] = React.useState(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -157,6 +161,27 @@ export function SetItem(props: SetItemProps) {
             color={theme.palette.primary.main}
             loading={true}
           /> : <CloudDownloadIcon />}
+        </IconButton>
+      </TableCell>
+      <TableCell>
+        <IconButton
+            color='primary'
+            onClick={getDownloadLink}
+        >
+          {downloadLinkPending ? <MoonLoader
+              sizeUnit={"px"}
+              size={15}
+              color={theme.palette.primary.main}
+              loading={true}
+          /> : <AddCircleIcon />}
+        </IconButton>
+        <IconButton
+            color='primary'
+            size='medium'
+            aria-label="open"
+            onClick={() => {setExpanded(!expanded)}}
+        >
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>
       </TableCell>
     </TableRow>
