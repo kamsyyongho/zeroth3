@@ -38,6 +38,7 @@ import {
   Word,
   WordAlignmentEntityData,
   WordKeyToEntityKey } from '../../types/editor.types';
+import { SEGMENTS_STORE_KEY } from "../../common/constants";
 import log from '../../util/log/logger';
 import { getRandomColor } from '../../util/misc';
 import { EDITOR_CONTROLS } from './components/EditorControls';
@@ -283,36 +284,33 @@ export function Editor(props: EditorProps) {
     if (readOnlyEditorState) {
       return HANDLE_VALUES.handled;
     }
-    let cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined;
+    const cursorContent = getSegmentAndWordIndex() || [];
     switch (command) {
       case KEY_COMMANDS['toggle-popups']:
         break;
       case KEY_COMMANDS.delete:
       case KEY_COMMANDS['delete-word']:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
         // don't allow if at end
-        if (cursorContent?.isEndOfBlock) {
+        if (cursorContent[1] === segments[cursorContent[0]].length - 1) {
           return HANDLE_VALUES.handled;
         }
         break;
       case KEY_COMMANDS.backspace:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-        if (cursorContent?.isStartOfBlock && cursorContent?.isNoSelection) {
+        if (cursorContent[1] === 0) {
           return HANDLE_VALUES.handled;
         }
         break;
       case KEY_COMMANDS['backspace-word']:
       case KEY_COMMANDS['backspace-to-start-of-line']:
-        cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-        if (cursorContent?.isStartOfBlock) {
+        if (cursorContent[1] === 0) {
           return HANDLE_VALUES.handled;
         }
         break;
       case KEY_COMMANDS['merge-segments-back']:
-        handleSegmentMergeCommand(incomingEditorState);
+        handleSegmentMergeCommand();
         return HANDLE_VALUES.handled;
       case KEY_COMMANDS['edit-segment-time']:
-        prepareSegmentTimePicker(incomingEditorState);
+        prepareSegmentTimePicker();
         return HANDLE_VALUES.handled;
       default:
         break;

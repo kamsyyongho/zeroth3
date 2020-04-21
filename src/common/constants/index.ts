@@ -1,1 +1,1 @@
-export const SEGMENTS_STORE = 'segments';
+export const SEGMENTS_STORE_KEY = 'segments';
