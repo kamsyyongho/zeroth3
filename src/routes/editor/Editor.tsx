@@ -2,12 +2,11 @@ import { Backdrop } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { ContentBlock, ContentState, convertFromRaw, convertToRaw, DraftHandleValue, Editor as DraftEditor, EditorState, Modifier, RawDraftEntity, RawDraftEntityRange, RichUtils, SelectionState } from 'draft-js';
+import { DraftHandleValue, Editor as DraftEditor, EditorState,RichUtils, SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { useSnackbar, VariantType } from 'notistack';
 import Draggable from 'react-draggable';
 import React, { useGlobal } from 'reactn';
-import { SPLITTABLE_CHARACTERS, SPLIT_CHARACTER, SPLIT_CHARACTER_REGEX } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { useWindowSize } from '../../hooks/window/useWindowSize';
 import { CustomTheme } from '../../theme/index';
@@ -22,7 +21,23 @@ import {
   SegmentAndWordIndex,
   SNACKBAR_VARIANTS,
   WordAlignment } from '../../types';
-import { BlockInfo, BlockKeyToSegmentId, BlockObject, CharacterDetails, CharacterProperties, CursorContent, EDITOR_CHANGE_TYPE, EntityKeyToWordKey, EntityRangeByEntityKey, REMOVAL_DIRECTION, SegmentBlockData, SegmentIdToBlockKey, Time, Word, WordAlignmentEntityData, WordKeyToEntityKey } from '../../types/editor.types';
+import {
+  BlockInfo,
+  BlockKeyToSegmentId,
+  BlockObject,
+  CharacterDetails,
+  CharacterProperties,
+  CursorContent,
+  EDITOR_CHANGE_TYPE,
+  EntityKeyToWordKey,
+  EntityRangeByEntityKey,
+  REMOVAL_DIRECTION,
+  SegmentBlockData,
+  SegmentIdToBlockKey,
+  Time,
+  Word,
+  WordAlignmentEntityData,
+  WordKeyToEntityKey } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { getRandomColor } from '../../util/misc';
 import { EDITOR_CONTROLS } from './components/EditorControls';
@@ -31,9 +46,18 @@ import { SegmentSplitPicker } from './components/SegmentSplitPicker';
 import { SegmentTimePicker } from './components/SegmentTimePicker';
 import { WordTimePicker } from './components/WordTimePicker';
 import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
-import { buildStyleMap, cloneEditorState, customKeyBindingFunction, editorChangeNoop, generateDecorators, getWithinSegmentTimes, updateBlockSegmentData, WordKeyStore } from './helpers/editor.helper';
+import {
+  buildStyleMap,
+  cloneEditorState,
+  customKeyBindingFunction,
+  editorChangeNoop,
+  generateDecorators,
+  getWithinSegmentTimes,
+  updateBlockSegmentData,
+  WordKeyStore } from './helpers/editor.helper';
 import './styles/editor.css';
 import { SegmentBlockV2 } from './components/SegmentBlockV2';
+import localForage from 'localforage'
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -121,6 +145,17 @@ export function Editor(props: EditorProps) {
   const editorRef = React.useRef<DraftEditor | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
+  const getSegmentAndWordIndex = () => {
+    const selectedBlock: any = window.getSelection();
+    const selectedBlockId: string = selectedBlock.focusNode.parentElement?.id;
+
+    if(!selectedBlockId) return;
+    const segmentAndWordIndex = selectedBlockId.split('-');
+    segmentAndWordIndex.shift();
+
+    return segmentAndWordIndex.map(index => Number(index));
+  };
+
   const focusEditor = () => {
     editorRef !== null && editorRef.current && editorRef.current.focus();
   };
@@ -167,13 +202,6 @@ export function Editor(props: EditorProps) {
 
   /** updates the undo/redo button status and rebuilds the entity map */
   const onEditorStateUpdate = () => {
-  };
-
-  /**
-   * creates an entity and applies it to the current selection
-   * @returns the newly created entity key
-   */
-  const setEntityAtSelection = () => {
   };
 
   const removeEntitiesAtSelection = () => {
@@ -248,15 +276,7 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
-    const selectedBlock: any = window.getSelection();
-    const selectedBlockId: string = selectedBlock.focusNode.parentElement?.id;
-
-    if(!selectedBlockId) return;
-    const segmentAndWordIndex = selectedBlockId.split('-');
-    segmentAndWordIndex.shift();
-    console.log('selectedBlock inside Editor.tsx : ', selectedBlock);
-
-    onWordClick(segmentAndWordIndex.map(index => Number(index)));
+    onWordClick(getSegmentAndWordIndex());
   };
 
   const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
