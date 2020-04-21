@@ -1,0 +1,1 @@
+export const SEGMENTS_STORE = 'segments';
