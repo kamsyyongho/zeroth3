@@ -150,11 +150,18 @@ export function Editor(props: EditorProps) {
     const selectedBlock: any = window.getSelection();
     const selectedBlockId: string = selectedBlock.focusNode.parentElement?.id;
 
+
     if(!selectedBlockId) return;
     const segmentAndWordIndex = selectedBlockId.split('-');
     segmentAndWordIndex.shift();
 
     return segmentAndWordIndex.map(index => Number(index));
+  };
+
+  const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
+    console.log('updateCaretLocation in editor after caret change : ',segmentIndex, wordIndex);
+
+    onWordClick([segmentIndex, wordIndex]);
   };
 
   const saveSegmentStateBeforeChange = (segmentIndex: number, wordIndex: number) => {
@@ -173,9 +180,9 @@ export function Editor(props: EditorProps) {
    * used in the custom block to open the speaker dialog
    */
   const assignSpeakerForSegment = (segmentId: string) => {
-    const segmentIndex = getIndexOfSegmentId(segmentId);
-    if (typeof segmentIndex === 'number') {
-      assignSpeaker(segmentIndex);
+    const segmentAndWordIndex = getSegmentAndWordIndex();
+    if (segmentAndWordIndex) {
+      assignSpeaker(segmentAndWordIndex[0]);
     }
   };
 
@@ -371,10 +378,28 @@ export function Editor(props: EditorProps) {
   const handleReturnPress = () => {
   };
 
-  const findWordAlignmentIndexToPrevSegment = () => {
+  const findWordAlignmentIndexToPrevSegment = (segmentIndex: number, currentLocation: number) => {
+    const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
+    let wordCount = 0;
+
+    for(let i = 0; i < prevSegmentWordAlignments.length + 1; i++) {
+      if (wordCount < currentLocation) {
+        if (i === prevSegmentWordAlignments.length) return prevSegmentWordAlignments.length - 1;
+
+        const word = prevSegmentWordAlignments[i].word;
+        wordCount += word.length;
+      } else if (wordCount > currentLocation) {
+        return i - 1;
+      } else {
+        return i;
+      }
+    }
   };
 
-  const getLastAlignmentIndexInSegment = () => {
+  const getLastAlignmentIndexInSegment = (segmentIndex: number) => {
+    const lastWordAlignment = segments[segmentIndex]['wordAlignments'];
+
+    return { index: lastWordAlignment.length - 1, word: lastWordAlignment[lastWordAlignment.length - 1].word };
   };
 
   // handle any api requests made by the parent
@@ -487,6 +512,7 @@ export function Editor(props: EditorProps) {
                                  assignSpeakerForSegment={assignSpeakerForSegment}
                                  // onChange={handleChange}
                                  readOnly={readOnly}
+                                 updateCaretLocation={updateCaretLocation}
                                  findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />

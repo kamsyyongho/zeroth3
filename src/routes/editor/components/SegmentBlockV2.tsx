@@ -28,6 +28,7 @@ interface SegmentBlockProps  {
     segment: Segment;
     segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
+    updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
@@ -40,6 +41,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         segment,
         segmentIndex,
         assignSpeakerForSegment,
+        updateCaretLocation,
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
@@ -75,6 +77,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         key={`word-alignment-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                        updateCaretLocation={updateCaretLocation}
                         segmentIndex={segmentIndex}
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}

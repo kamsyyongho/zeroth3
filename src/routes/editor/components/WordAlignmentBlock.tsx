@@ -24,8 +24,9 @@ export interface WordAlignmentProp {
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
-    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any;
+    findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any,
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
+    updateCaretLocation: (segmentIndex: number, wordIndex: number) => void,
     classes: any,
     start: number,
     length: number,
@@ -71,7 +72,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const currentNode = this.state.element;
 
         currentNode.current.blur();
-        selection?.setPosition(previousSegmentNode, 0)
+        selection?.setPosition(previousSegmentNode, 0);
+        this.props.updateCaretLocation(this.props.segmentIndex - 1, wordAlignmentIndex);
     };
 
     handleArrowDown = () => {
@@ -85,6 +87,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
         currentNode.current.blur();
         selection?.setPosition(nextSegmentNode, 0);
+        console.log('wordAlignmentIndex in wordblock : ', wordAlignmentIndex);
+        this.props.updateCaretLocation(this.props.segmentIndex + 1, wordAlignmentIndex);
     };
 
 
