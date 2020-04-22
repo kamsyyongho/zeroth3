@@ -50,6 +50,24 @@ export class ModelConfig extends ParentApi {
     }
   }
 
+  async importOrganizationModelConfigs(projectId: string, modelConfigId: string) {
+    const response: ApiResponse<undefined, ServerError> =
+        await this.apisauce.post(
+            this.getPathWithOrganization(`/projects/${projectId}/model-config/import`), { modelConfigId }
+        );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' }
+  }
+
   /**
    * Gets a list of associated model configs
    * @param projectId

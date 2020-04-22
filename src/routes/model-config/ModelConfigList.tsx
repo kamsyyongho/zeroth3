@@ -26,6 +26,7 @@ import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
 import { ModelConfigListItem } from './ModelConfigListItem';
 import { ImportConfigDialog } from './ImportConfigDialog';
+import {SelectFormField, SelectFormFieldOptions} from "../shared/form-fields/SelectFormField";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -78,6 +79,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [isImportOpen, setIsImportOpen] = React.useState(false);
+  const [organizationConfigSelectOptions, setOrganizationConfigSelectOptions] = React.useState<SelectFormFieldOptions>([]);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -94,9 +96,21 @@ export function ModelConfigList(props: ModelConfigListProps) {
     openDialog();
   };
 
-  const openImportDialog = () => {
-    setIsImportOpen(true);
+  const openImportDialog = async () => {
 
+    if(api?.modelConfig) {
+      const response = await api.modelConfig?.getOrganizationModelConfigs();
+      if(response.kind === 'ok') {
+         setOrganizationConfigSelectOptions(response.modelConfigs.map(model => ({ label: model.name, value: model.id })));
+      } else {
+        log({
+          file: 'ImportConfigDialog.tsx',
+          caller: 'initOrganizationModelConfig - failed to get organization model config',
+          value: response,
+        });
+      }
+    }
+    setIsImportOpen(true);
   };
 
   const closeConfirmation = () => {
@@ -227,7 +241,12 @@ export function ModelConfigList(props: ModelConfigListProps) {
         onSubmit={handleDelete}
         onCancel={closeConfirmation}
       />
-      <ImportConfigDialog open={isImportOpen}/>
+      <ImportConfigDialog
+          open={isImportOpen}
+          projectId={project.id}
+          onClose={() => setIsImportOpen(false)}
+          onSuccess={() => window.location.reload()}
+          selectOptions={organizationConfigSelectOptions} />
     </Container>
   );
 }

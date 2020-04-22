@@ -258,6 +258,8 @@ export const ko: ResourceLanguage = {
       },
     },
     modelConfig: {
+      import_header: '모델 설정 불러오기',
+      import_guide: '모델 설정을 선택해주세요',
       header: '모델 설정',
       header_plural: '모델 설정',
       import: '불러오기',

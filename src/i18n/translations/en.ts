@@ -258,6 +258,8 @@ export const en: ResourceLanguage = {
       },
     },
     modelConfig: {
+      import_header: 'Import Model Configuration',
+      import_guide: 'Please select model configuration',
       header: 'Model Configuration',
       header_plural: 'Model Configurations',
       create: 'Create configuration',
