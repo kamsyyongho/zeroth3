@@ -198,7 +198,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                     <>
                         <DialogContent>
                             <Form>
-                                <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                                 <Field
                                     name='selectedAcousticModelId'
                                     component={SelectFormField}
@@ -207,33 +206,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                                     errorOverride={isError || noAvailableAcousticModelText}
                                     helperText={noAvailableAcousticModelText}
                                 />
-                                <Field name='selectedLanguageModelId' component={SelectFormField}
-                                       options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
-                                <Button
-                                    fullWidth
-                                    color="primary"
-                                    onClick={openLanguageDialog}
-                                    startIcon={<AddIcon />}
-                                >
-                                    {translate('models.tabs.languageModel.create')}
-                                </Button>
-                                <Field
-                                    name='thresholdLr'
-                                    component={TextFormField}
-                                    label={thresholdLrText}
-                                    type='number'
-                                    margin="normal"
-                                    errorOverride={isError}
-                                />
-                                <Field
-                                    name='thresholdHr'
-                                    component={TextFormField}
-                                    label={thresholdHrText}
-                                    type='number'
-                                    margin="normal"
-                                    errorOverride={isError}
-                                />
-                                <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
                             </Form>
                         </DialogContent>
                         <DialogActions>
@@ -251,9 +223,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                                         size={15}
                                         color={theme.palette.primary.main}
                                         loading={true}
-                                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                                    /> : <AddIcon />}
                             >
-                                {translate(isEdit ? "modelConfig.edit" : "modelConfig.create")}
+                                {translate("modelConfig.import")}
                             </Button>
                         </DialogActions>
                     </>

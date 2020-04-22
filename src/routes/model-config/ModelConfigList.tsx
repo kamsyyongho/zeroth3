@@ -25,6 +25,7 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
 import { ModelConfigListItem } from './ModelConfigListItem';
+import { ImportConfigDialog } from './ImportConfigDialog';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -226,6 +227,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
         onSubmit={handleDelete}
         onCancel={closeConfirmation}
       />
+      <ImportConfigDialog open={isImportOpen}/>
     </Container>
   );
 }

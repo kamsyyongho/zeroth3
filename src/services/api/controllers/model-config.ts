@@ -1,6 +1,6 @@
-import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { ModelConfig as ModelConfigType } from '../../../types';
-import { getGeneralApiProblem } from '../api-problem';
+import {ApiResponse, ApisauceInstance} from 'apisauce';
+import {ModelConfig as ModelConfigType} from '../../../types';
+import {getGeneralApiProblem} from '../api-problem';
 import {
   deleteModelConfigResult,
   getModelConfigsResult,
@@ -9,12 +9,8 @@ import {
   ProblemKind,
   ServerError,
 } from '../types';
-import {
-  ThresholdRequest,
-  updateModelConfigResult,
-  updateThresholdResult,
-} from '../types/model-config.types';
-import { ParentApi } from './parent-api';
+import {ThresholdRequest, updateModelConfigResult, updateThresholdResult,} from '../types/model-config.types';
+import {ParentApi} from './parent-api';
 
 /**
  * Manages all model config requests to the API.
@@ -27,6 +23,31 @@ export class ModelConfig extends ParentApi {
    */
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
+  }
+
+  async getOrganizationModelConfigs(): Promise<getModelConfigsResult> {
+    const response: ApiResponse<
+        ModelConfigType[],
+        ServerError> =  await this.apisauce.get(
+            this.getPathWithOrganization('/model-config'),
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try{
+      const modelConfigs = response.data as ModelConfigType[];
+      return { kind: 'ok', modelConfigs };
+    } catch {
+      return {kind: ProblemKind['bad-data']}
+    }
   }
 
   /**
