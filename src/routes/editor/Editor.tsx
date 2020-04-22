@@ -58,7 +58,7 @@ import {
   WordKeyStore } from './helpers/editor.helper';
 import './styles/editor.css';
 import { SegmentBlockV2 } from './components/SegmentBlockV2';
-import localForage from 'localforage'
+import localForage from 'localforage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -155,6 +155,10 @@ export function Editor(props: EditorProps) {
     segmentAndWordIndex.shift();
 
     return segmentAndWordIndex.map(index => Number(index));
+  };
+
+  const saveSegmentStateBeforeChange = (segmentIndex: number, wordIndex: number) => {
+    const savedSegmentsState = localForage.getItem(SEGMENTS_STORE_KEY);
   };
 
   const focusEditor = () => {
