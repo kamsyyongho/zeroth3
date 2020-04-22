@@ -50,6 +50,7 @@ export function SetItem(props: SetItemProps) {
   const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
   const [downloadLink, setDownloadLink] = React.useState('');
   const [expanded, setExpanded] = React.useState(false);
+  const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -57,6 +58,33 @@ export function SetItem(props: SetItemProps) {
   const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
 
   const startDownload = (url: string) => window.open(url);
+
+  const createTrainingSet = async () => {
+    setIsCreateTrainingSetLoading(true);
+    if(api?.dataSet) {
+      let serverError: ServerError | undefined;
+      const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
+
+      if(response.kind === 'ok') {
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+      } else {
+        log({
+          file: 'SetItem.tsx',
+          caller: 'createTrainingSet - failed to send post request',
+          value: response,
+          important: true,
+        });
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error');
+        if(serverError?.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
+      }
+    }
+    setIsCreateTrainingSetLoading(false);
+
+  };
 
   const getDownloadLink = async () => {
     if (downloadLink) {
@@ -162,13 +190,11 @@ export function SetItem(props: SetItemProps) {
             loading={true}
           /> : <CloudDownloadIcon />}
         </IconButton>
-      </TableCell>
-      <TableCell>
         <IconButton
             color='primary'
-            onClick={getDownloadLink}
+            onClick={createTrainingSet}
         >
-          {downloadLinkPending ? <MoonLoader
+          {isCreateTrainingSetLoading ? <MoonLoader
               sizeUnit={"px"}
               size={15}
               color={theme.palette.primary.main}

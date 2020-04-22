@@ -9,7 +9,7 @@ import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
 import { SetItem } from './SetItem';
 
-const FULL_ROW_COL_SPAN = 5;
+const FULL_ROW_COL_SPAN = 4;
 
 interface SetTableProps {
   dataSets: DataSet[];
@@ -65,7 +65,6 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
-      <TableCell />
       <TableCell />
     </TableRow>
   </TableHead>);
