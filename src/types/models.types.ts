@@ -36,7 +36,6 @@ export enum AUDIO_UPLOAD_TYPE {
   FILE = 'FILE',
   PATH = 'PATH',
   URL = 'URL',
-  DATASET = 'DATASET',
 }
 
 export enum AUDIO_UPLOAD_TYPE_TRANS_LEARNING {
