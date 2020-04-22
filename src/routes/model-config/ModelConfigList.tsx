@@ -76,6 +76,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [modelConfigToEdit, setModelConfigToEdit] = React.useState<ModelConfig | undefined>(undefined);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [isImportOpen, setIsImportOpen] = React.useState(false);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -90,6 +91,11 @@ export function ModelConfigList(props: ModelConfigListProps) {
     // to ensure that the there is nothing passed to the dialog
     setModelConfigToEdit(undefined);
     openDialog();
+  };
+
+  const openImportDialog = () => {
+    setIsImportOpen(true);
+
   };
 
   const closeConfirmation = () => {
@@ -184,7 +190,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
                 color="primary"
                 style={{ marginLeft: '10px' }}
                 variant='outlined'
-                onClick={openCreateDialog}
+                onClick={openImportDialog}
                 startIcon={<AddIcon />}
             >
               {translate('modelConfig.import')}
