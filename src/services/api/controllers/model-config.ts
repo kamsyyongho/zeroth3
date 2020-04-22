@@ -3,7 +3,7 @@ import {ModelConfig as ModelConfigType} from '../../../types';
 import {getGeneralApiProblem} from '../api-problem';
 import {
   deleteModelConfigResult,
-  getModelConfigsResult,
+  getModelConfigsResult, importModelConfig,
   ModelConfigRequest,
   postModelConfigResult,
   ProblemKind,
@@ -50,9 +50,8 @@ export class ModelConfig extends ParentApi {
     }
   }
 
-  async importOrganizationModelConfigs(projectId: string, modelConfigId: string) {
-    const response: ApiResponse<undefined, ServerError> =
-        await this.apisauce.post(
+  async importOrganizationModelConfigs(projectId: string, modelConfigId: string): Promise<importModelConfig> {
+    const response: ApiResponse <undefined,  ServerError> = await this.apisauce.post(
             this.getPathWithOrganization(`/projects/${projectId}/model-config/import`), { modelConfigId }
         );
 
