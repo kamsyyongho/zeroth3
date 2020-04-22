@@ -11,7 +11,13 @@ import React from 'reactn';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
+import {
+  AcousticModel,
+  LanguageModel,
+  ModelConfig,
+  Project,
+  SubGraph,
+  TopGraph } from '../../types';
 import { SnackbarError, SNACKBAR_VARIANTS } from '../../types/';
 import { PATHS } from '../../types/path.types';
 import log from '../../util/log/logger';
@@ -164,14 +170,27 @@ export function ModelConfigList(props: ModelConfigListProps) {
       <Card elevation={0} className={classes.card} >
         <CardHeader
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
-          action={canModify && <Button
-            color="primary"
-            variant='outlined'
-            onClick={openCreateDialog}
-            startIcon={<AddIcon />}
-          >
-            {translate('modelConfig.create')}
-          </Button>}
+          action={canModify &&
+          <>
+            <Button
+                color="primary"
+                variant='outlined'
+                onClick={openCreateDialog}
+                startIcon={<AddIcon />}
+            >
+              {translate('modelConfig.create')}
+            </Button>
+            <Button
+                color="primary"
+                style={{ marginLeft: '10px' }}
+                variant='outlined'
+                onClick={openCreateDialog}
+                startIcon={<AddIcon />}
+            >
+              {translate('modelConfig.import')}
+            </Button>
+          </>
+          }
         />
         {modelConfigsLoading ? <BulletList /> : (
           <CardContent className={classes.cardContent} >

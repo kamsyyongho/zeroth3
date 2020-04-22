@@ -260,6 +260,7 @@ export const ko: ResourceLanguage = {
     modelConfig: {
       header: '모델 설정',
       header_plural: '모델 설정',
+      import: '불러오기',
       create: '설정 만들기',
       edit: '설정 수정',
       delete: '설정 삭제',
