@@ -206,4 +206,22 @@ export class DataSet extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async getTrainingSet(projectId: string, dataSetId: string) {
+    const response = await this.apisauce.get<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
+        )
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
 }
