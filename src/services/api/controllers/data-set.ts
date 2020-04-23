@@ -1,11 +1,13 @@
 import { ApisauceInstance } from 'apisauce';
-import { DataSet as IDataSet, FilterParams, Transcriber } from '../../../types';
+import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   AssignTranscribersToDataSetRequest,
   assignTranscribersToDataSetResult,
   getAllResult,
   getDownloadLinkResult,
+  getTrainingSet,
+  createTrainingSet,
   PostDataSetRequest,
   postDataSetResult,
   ProblemKind,
@@ -189,7 +191,7 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async createTrainingSet(projectId: string, dataSetId: string) {
+  async createTrainingSet(projectId: string, dataSetId: string): Promise<createTrainingSet> {
     const response = await this.apisauce.post<undefined, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
@@ -207,8 +209,8 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async getTrainingSet(projectId: string, dataSetId: string) {
-    const response = await this.apisauce.get<undefined, ServerError>(
+  async getTrainingSet(projectId: string, dataSetId: string): Promise<getTrainingSet> {
+    const response = await this.apisauce.get<SubSet, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
         )
@@ -222,6 +224,13 @@ export class DataSet extends ParentApi {
         return problem;
       }
     }
-    return { kind: 'ok' };
+
+    try {
+      const subSets = response.data as SubSet;
+      return { kind: 'ok', subSets };
+    } catch {
+      return {kind: ProblemKind['bad-data']};
+    }
+
   }
 }

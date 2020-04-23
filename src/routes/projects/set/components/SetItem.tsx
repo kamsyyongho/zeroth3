@@ -15,10 +15,11 @@ import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../../theme';
-import { DataSet } from '../../../../types';
+import {DataSet, VoiceData} from '../../../../types';
 import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
+import {SetDetail} from "./SetDetail";
 
 interface SetItemProps {
   projectId: string;
@@ -51,6 +52,8 @@ export function SetItem(props: SetItemProps) {
   const [downloadLink, setDownloadLink] = React.useState('');
   const [expanded, setExpanded] = React.useState(false);
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
+  const [setDetailLoading, setSetDetailLoading] = React.useState(false);
+  const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -116,6 +119,21 @@ export function SetItem(props: SetItemProps) {
     }
   };
 
+  const openSetDetail = async () => {
+
+    if(api?.dataSet) {
+      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id);
+      if(response.kind === "ok") {
+        const subSets = response.subSets.content;
+        setExpanded(!expanded);
+        setSubSets(subSets);
+        console.log('response from getTrainingSet : ', response);
+      }
+    }
+
+
+  };
+
   // must be a number from 0 to 100
   const progress = processed / total * 100;
 
@@ -165,51 +183,61 @@ export function SetItem(props: SetItemProps) {
   };
 
   return (
-    <TableRow
-      className={classes.tableRow}
-    >
-      <TableCell>
-        <Typography>{name}</Typography>
-      </TableCell>
-      <TableCell>
-        {processedText}
-        <ProgressBar value={progress} maxWidth={200} />
-      </TableCell>
-      <TableCell>
-        {renderTranscriberEdit()}
-      </TableCell>
-      <TableCell>
-        <IconButton
-          color='primary'
-          onClick={getDownloadLink}
+      <React.Fragment>
+        <TableRow
+            className={classes.tableRow}
         >
-          {downloadLinkPending ? <MoonLoader
-            sizeUnit={"px"}
-            size={15}
-            color={theme.palette.primary.main}
-            loading={true}
-          /> : <CloudDownloadIcon />}
-        </IconButton>
-        <IconButton
-            color='primary'
-            onClick={createTrainingSet}
-        >
-          {isCreateTrainingSetLoading ? <MoonLoader
-              sizeUnit={"px"}
-              size={15}
-              color={theme.palette.primary.main}
-              loading={true}
-          /> : <AddCircleIcon />}
-        </IconButton>
-        <IconButton
-            color='primary'
-            size='medium'
-            aria-label="open"
-            onClick={() => {setExpanded(!expanded)}}
-        >
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
-      </TableCell>
-    </TableRow>
+          <TableCell>
+            <Typography>{name}</Typography>
+          </TableCell>
+          <TableCell>
+            {processedText}
+            <ProgressBar value={progress} maxWidth={200} />
+          </TableCell>
+          <TableCell>
+            {renderTranscriberEdit()}
+          </TableCell>
+          <TableCell>
+            <IconButton
+                color='primary'
+                onClick={getDownloadLink}
+            >
+              {downloadLinkPending ? <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.primary.main}
+                  loading={true}
+              /> : <CloudDownloadIcon />}
+            </IconButton>
+            <IconButton
+                color='primary'
+                onClick={createTrainingSet}
+            >
+              {isCreateTrainingSetLoading ? <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.primary.main}
+                  loading={true}
+              /> : <AddCircleIcon />}
+            </IconButton>
+            <IconButton
+                color='primary'
+                size='medium'
+                aria-label="open"
+                onClick={openSetDetail}
+            >
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          </TableCell>
+        </TableRow>
+        {expanded &&
+        subSets.map((voiceData: VoiceData) =>
+            <SetDetail key={`setDetail-${voiceData.id}`}
+                       row={voiceData}
+                       setDetailLoading={setDetailLoading}
+                       projectId={projectId} />
+          )
+        }
+      </React.Fragment>
   );
 }
