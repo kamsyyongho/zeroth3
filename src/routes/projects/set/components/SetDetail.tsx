@@ -3,15 +3,12 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import { Row } from 'react-table';
+import BorderColorIcon from '@material-ui/icons/BorderColor';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { CONTENT_STATUS, VoiceData } from '../../../../types';
-import CardContent from "@material-ui/core/CardContent";
-import {BulletList} from "react-content-loader";
-import {TranscribersList} from "./TranscribersList";
-import Card from "@material-ui/core/Card";
+
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -89,16 +86,7 @@ export function SetDetail(props: SetDetailProps) {
     const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
     const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
 
-    // return (
-    //     <TableRow className={classes.row}>
-    //         <TableCell className={classes.cell}>
-    //             <Typography>{translate('forms.email')}</Typography>
-    //         </TableCell>
-    //         <TableCell className={classes.cell}>
-    //             <Typography align='center'>{translate('transcribers.count')}</Typography>
-    //         </TableCell>
-    //     </TableRow>
-    // );
+    const handleEvaluateClick = () => {};
 
     return (<TableRow
         className={classes.row}
@@ -316,25 +304,25 @@ export function SetDetail(props: SetDetailProps) {
                         </Typography>
                         <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
                     </Grid>
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    {!confirmed && <Button*/}
-                    {/*        color='secondary'*/}
-                    {/*        variant='contained'*/}
-                    {/*        size='small'*/}
-                    {/*        onClick={handleDeleteClick}*/}
-                    {/*        startIcon={<DeleteIcon />}*/}
-                    {/*    >*/}
-                    {/*        {translate('common.delete')}*/}
-                    {/*    </Button>}*/}
-                    {/*</Grid>*/}
+                    <Grid
+                        container
+                        item
+                        wrap='nowrap'
+                        direction='row'
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                    >
+                        <Button
+                            color='secondary'
+                            variant='contained'
+                            size='small'
+                            onClick={handleEvaluateClick}
+                            startIcon={<BorderColorIcon />}
+                        >
+                            {translate('SET.requestEvaluation')}
+                        </Button>
+                    </Grid>
                 </Grid>
             </Grid>
         </TableCell>
