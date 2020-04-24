@@ -131,7 +131,6 @@ export function SetItem(props: SetItemProps) {
         const subSets = response.subSets.content;
         setExpanded(!expanded);
         setSubSets(subSets);
-        console.log('response from getTrainingSet : ', response);
       }
     }
 
