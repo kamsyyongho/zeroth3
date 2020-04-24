@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build:dev": "NODE_ENV=development react-scripts build",
+    "build:production": "NODE_ENV=production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -85,6 +86,7 @@
     "eslint-config-prettier": "^6.3.0",
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^2.0.1",
+    "nodemon": "^2.0.3",
     "prettier": "^1.18.2"
   }
 }
