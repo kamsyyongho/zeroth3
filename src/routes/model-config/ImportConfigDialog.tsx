@@ -134,6 +134,7 @@ export function ImportConfigDialog(props: ImportConfigDialogProps) {
                                 <Field
                                     name='selectedModelConfigId'
                                     component={SelectFormField}
+                                    props={{ whiteSpace: 'normal' }}
                                     options={selectOptions}
                                     label={translate("modelConfig.header_plural")}
                                     helperText={translate('modelConfig.import_guide')}

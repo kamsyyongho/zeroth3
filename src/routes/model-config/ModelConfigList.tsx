@@ -99,9 +99,13 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const openImportDialog = async () => {
 
     if(api?.modelConfig) {
-      const response = await api.modelConfig?.getOrganizationModelConfigs();
+      const response = await api.modelConfig?.getOrganizationModelConfigs(project.id);
       if(response.kind === 'ok') {
-         setOrganizationConfigSelectOptions(response.modelConfigs.map(model => ({ label: model.name, value: model.id })));
+         setOrganizationConfigSelectOptions(response.modelConfigs.map(model => ({
+           label: `${translate('forms.name')} : ${model.name}`,
+           label2: `${translate('forms.description')} : ${model.description || '-'}`,
+           value: model.id
+         })));
       } else {
         log({
           file: 'ImportConfigDialog.tsx',

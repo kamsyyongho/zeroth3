@@ -3,7 +3,8 @@ import {ModelConfig as ModelConfigType} from '../../../types';
 import {getGeneralApiProblem} from '../api-problem';
 import {
   deleteModelConfigResult,
-  getModelConfigsResult, importModelConfig,
+  getModelConfigsResult,
+  importModelConfig,
   ModelConfigRequest,
   postModelConfigResult,
   ProblemKind,
@@ -25,11 +26,11 @@ export class ModelConfig extends ParentApi {
     super(apisauce, logout);
   }
 
-  async getOrganizationModelConfigs(): Promise<getModelConfigsResult> {
+  async getOrganizationModelConfigs(projectId: string): Promise<getModelConfigsResult> {
     const response: ApiResponse<
         ModelConfigType[],
         ServerError> =  await this.apisauce.get(
-            this.getPathWithOrganization('/model-config'),
+            this.getPathWithOrganization(`/projects/${projectId}/model-config`),
     );
 
     if(!response.ok) {
@@ -49,6 +50,7 @@ export class ModelConfig extends ParentApi {
       return {kind: ProblemKind['bad-data']}
     }
   }
+
 
   async importOrganizationModelConfigs(projectId: string, modelConfigId: string): Promise<importModelConfig> {
     const response: ApiResponse <undefined,  ServerError> = await this.apisauce.post(
