@@ -120,6 +120,10 @@ export function SetItem(props: SetItemProps) {
   };
 
   const openSetDetail = async () => {
+    if(subSets.length) {
+      setExpanded(!expanded);
+      return;
+    }
 
     if(api?.dataSet) {
       const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id);
