@@ -4,7 +4,9 @@
 /node_modules
 /.pnp
 .pnp.js
-.xml
+
+#webstorm ide file
+.idea/workspace.xml
 
 # testing
 /coverage
