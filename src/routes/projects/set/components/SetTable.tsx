@@ -1,4 +1,4 @@
-import { TableBody, TableCell, Typography } from '@material-ui/core';
+import {Button, TableBody, TableCell, Typography} from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
@@ -8,6 +8,7 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
 import { SetItem } from './SetItem';
+import BorderColorIcon from "@material-ui/icons/BorderColor";
 
 const FULL_ROW_COL_SPAN = 4;
 
@@ -54,6 +55,9 @@ export function SetTable(props: SetTableProps) {
     />
   </React.Fragment>));
 
+  const handleEvaluateClick = () => {};
+
+
   const renderHeader = () => (<TableHead className={classes.tableHeader}>
     <TableRow>
       <TableCell>
@@ -65,7 +69,17 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
-      <TableCell />
+      <TableCell>
+          <Button
+              color='secondary'
+              variant='contained'
+              size='small'
+              onClick={handleEvaluateClick}
+              startIcon={<BorderColorIcon />}
+          >
+            {translate('SET.requestEvaluation')}
+          </Button>
+      </TableCell>
     </TableRow>
   </TableHead>);
 

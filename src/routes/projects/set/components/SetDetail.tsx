@@ -3,7 +3,6 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import BorderColorIcon from '@material-ui/icons/BorderColor';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
@@ -50,10 +49,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface SetDetailProps {
     setDetailLoading: boolean;
     row: VoiceData;
-    // detailsRowColSpan: number;
     projectId: string;
-    // onDelete: (voiceDataId: string, dataIndex: number) => void;
-    // onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
 }
 
 export function SetDetail(props: SetDetailProps) {
@@ -61,10 +57,7 @@ export function SetDetail(props: SetDetailProps) {
     const { translate, formatDate } = React.useContext(I18nContext);
     const {
         row,
-        // detailsRowColSpan,
         projectId,
-        // onDelete,
-        // onSuccess,
         setDetailLoading,
     } = props;
     const {
@@ -85,8 +78,6 @@ export function SetDetail(props: SetDetailProps) {
     const endDate = new Date(endAt);
     const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
     const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
-
-    const handleEvaluateClick = () => {};
 
     return (<TableRow
         className={classes.row}
@@ -303,25 +294,6 @@ export function SetDetail(props: SetDetailProps) {
                             {`${translate('forms.transcriber')}:`}
                         </Typography>
                         <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Button
-                            color='secondary'
-                            variant='contained'
-                            size='small'
-                            onClick={handleEvaluateClick}
-                            startIcon={<BorderColorIcon />}
-                        >
-                            {translate('SET.requestEvaluation')}
-                        </Button>
                     </Grid>
                 </Grid>
             </Grid>
