@@ -53,7 +53,7 @@ export class ModelConfig extends ParentApi {
 
 
   async importOrganizationModelConfigs(projectId: string, modelConfigId: string): Promise<importModelConfig> {
-    const response: ApiResponse <undefined,  ServerError> = await this.apisauce.post(
+    const response: ApiResponse <ModelConfig,  ServerError> = await this.apisauce.post(
             this.getPathWithOrganization(`/projects/${projectId}/model-config/import`), { modelConfigId }
         );
 
@@ -66,7 +66,13 @@ export class ModelConfig extends ParentApi {
         return problem;
       }
     }
-    return { kind: 'ok' }
+
+    try {
+      const modelConfig = response.data as ModelConfigType;
+      return { kind: 'ok', modelConfig };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 
   /**

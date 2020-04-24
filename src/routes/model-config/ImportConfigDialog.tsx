@@ -34,7 +34,7 @@ interface ImportConfigDialogProps {
     hideBackdrop?: boolean;
     selectOptions: SelectFormFieldOptions;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (modelConfig: ModelConfig) => void;
 }
 
 export function ImportConfigDialog(props: ImportConfigDialogProps) {
@@ -89,9 +89,9 @@ export function ImportConfigDialog(props: ImportConfigDialogProps) {
             let snackbarError: SnackbarError | undefined = {} as SnackbarError;
             if(response.kind === 'ok') {
                 snackbarError = undefined;
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success })
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                onSuccess(response.modelConfig);
                 handleClose();
-                onSuccess();
             } else {
                 log({
                     file: 'ImportConfigDialog.tsx',
@@ -134,7 +134,6 @@ export function ImportConfigDialog(props: ImportConfigDialogProps) {
                                 <Field
                                     name='selectedModelConfigId'
                                     component={SelectFormField}
-                                    props={{ whiteSpace: 'normal' }}
                                     options={selectOptions}
                                     label={translate("modelConfig.header_plural")}
                                     helperText={translate('modelConfig.import_guide')}

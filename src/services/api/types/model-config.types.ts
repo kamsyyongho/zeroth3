@@ -33,5 +33,5 @@ export type updateModelConfigResult =
   | { kind: 'ok'; modelConfig: ModelConfig }
   | GeneralApiProblem;
 export type updateThresholdResult = { kind: 'ok' } | GeneralApiProblem;
-export type importModelConfig = { kind: 'ok' } | GeneralApiProblem;
+export type importModelConfig = { kind: 'ok'; modelConfig: ModelConfig } | GeneralApiProblem;
 export type deleteModelConfigResult = { kind: 'ok' } | GeneralApiProblem;

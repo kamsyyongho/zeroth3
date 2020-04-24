@@ -48,6 +48,7 @@ export interface ModelConfigListProps {
   subGraphs: SubGraph[];
   acousticModels: AcousticModel[];
   languageModels: LanguageModel[];
+  handleImportSuccess: (modelConfig: ModelConfig) => void;
   handleModelConfigUpdate: (modelConfig: ModelConfig, isEdit?: boolean) => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
@@ -61,6 +62,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     canModify,
     modelConfigsLoading,
     modelConfigs,
+    handleImportSuccess,
     handleModelConfigUpdate,
     handleSubGraphListUpdate,
     handleLanguageModelCreate,
@@ -97,7 +99,6 @@ export function ModelConfigList(props: ModelConfigListProps) {
   };
 
   const openImportDialog = async () => {
-
     if(api?.modelConfig) {
       const response = await api.modelConfig?.getOrganizationModelConfigs(project.id);
       if(response.kind === 'ok') {
@@ -249,7 +250,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           open={isImportOpen}
           projectId={project.id}
           onClose={() => setIsImportOpen(false)}
-          onSuccess={() => window.location.reload()}
+          onSuccess={handleImportSuccess}
           selectOptions={organizationConfigSelectOptions} />
     </Container>
   );

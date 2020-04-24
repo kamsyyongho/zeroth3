@@ -120,6 +120,10 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     setModelConfigs(modelConfigsCopy);
   };
 
+  const handleImportSuccess = (modelConfig: ModelConfig) => {
+    setModelConfigs([...modelConfigs, modelConfig]);
+  };
+
   React.useEffect(() => {
     const getProject = async () => {
       if (api?.projects) {
@@ -293,6 +297,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         subGraphs={subGraphs}
         languageModels={languageModels}
         acousticModels={acousticModels}
+        handleImportSuccess={handleImportSuccess}
         handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
