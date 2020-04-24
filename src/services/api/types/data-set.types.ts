@@ -1,4 +1,4 @@
-import { FilterParams, Transcriber } from '../../../types';
+import {FilterParams, SubSet, Transcriber, VoiceData} from '../../../types';
 import { DataSet } from '../../../types/';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -34,5 +34,13 @@ export type assignTranscribersToDataSetResult =
   | GeneralApiProblem;
 
 export type removeTranscriberFromDataSetResult =
+  | { kind: 'ok' }
+  | GeneralApiProblem;
+
+export type getTrainingSet =
+  | { kind: 'ok', subSets: SubSet }
+  | GeneralApiProblem;
+
+export type createTrainingSet =
   | { kind: 'ok' }
   | GeneralApiProblem;
