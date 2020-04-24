@@ -148,15 +148,16 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setModelConfigsLoading(false);
       }
     };
-    const getDataSetsToFetchFrom = async () => {
-      if (api?.user) {
-        const response = await api.user.getDataSetsToFetchFrom();
+    const getAllDataSets = async () => {
+      if (api?.dataSet && projectId) {
+        console.log('enter apicall');
+        const response = await api.dataSet.getAll(projectId);
         if (response.kind === 'ok') {
           setDataSets(response.dataSets);
         } else {
           log({
             file: `ProjectDetails.tsx`,
-            caller: `getDataSetsToFetchFrom - failed to get data sets`,
+            caller: `getAllDataSets - failed to get data sets`,
             value: response,
             important: true,
           });
@@ -249,7 +250,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getAcousticModels();
     }
     if (hasTdpPermissions) {
-      getDataSetsToFetchFrom();
+      getAllDataSets();
     }
   }, [api, projectId]);
 
