@@ -206,6 +206,7 @@ export const en: ResourceLanguage = {
       numberTranscribers: '{{count}} transcriber',
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
+      requestEvaluation: ' Request Evaluation',
       addTranscriber: 'Add transcriber',
     },
     modelTraining: {
@@ -258,9 +259,12 @@ export const en: ResourceLanguage = {
       },
     },
     modelConfig: {
+      import_header: 'Import Model Configuration',
+      import_guide: 'Please select model configuration',
       header: 'Model Configuration',
       header_plural: 'Model Configurations',
       create: 'Create configuration',
+      import: 'Import',
       edit: 'Edit configuration',
       delete: 'Delete model configuration',
       thresholdLr: 'Low risk threshold',

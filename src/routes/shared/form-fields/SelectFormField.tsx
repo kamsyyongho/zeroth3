@@ -5,6 +5,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 
 export interface SelectFormFieldOption {
   label: string;
+  label2?: string;
   value: string | number;
   disabled?: boolean;
 }
@@ -33,14 +34,18 @@ export const SelectFormField = ({ field, helperText, form, label, options, error
       {label && <InputLabel>{label}</InputLabel>}
       <Select fullWidth={fullWidth} {...field} {...props}>
         {options.length ? (options.map((op: SelectFormFieldOption) => {
-          // account for blank options
+          // account for blank options`
           if (op.value === '') {
             return (<MenuItem key={'empty'} value={op.value} >
               <em>{op.label}</em>
             </MenuItem>);
           }
           return (<MenuItem disabled={op.disabled || (disabledValues).includes(op.value)} key={op.value} value={op.value}>
-            {op.label}
+            {
+              op.label2
+                ? <>{op.label}<br />{op.label2}</>
+                : <>{op.label}</>
+            }
           </MenuItem>);
         })) : (
             <MenuItem key={'empty'} value={''} disabled >

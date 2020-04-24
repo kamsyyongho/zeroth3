@@ -9,7 +9,7 @@ import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
 import { SetItem } from './SetItem';
 
-const FULL_ROW_COL_SPAN = 3;
+const FULL_ROW_COL_SPAN = 4;
 
 interface SetTableProps {
   dataSets: DataSet[];
