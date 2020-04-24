@@ -30,7 +30,7 @@ export class ModelConfig extends ParentApi {
     const response: ApiResponse<
         ModelConfigType[],
         ServerError> =  await this.apisauce.get(
-            this.getPathWithOrganization(`/projects/${projectId}/model-config`),
+            this.getPathWithOrganization(`/projects/${projectId}/model-config/import`),
     );
 
     if(!response.ok) {
