@@ -1,4 +1,4 @@
-import {Button, Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
+import {Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -8,6 +8,7 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
+import RateReviewIcon from '@material-ui/icons/RateReview'
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
@@ -20,7 +21,6 @@ import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
-import BorderColorIcon from "@material-ui/icons/BorderColor";
 
 interface SetItemProps {
   projectId: string;
@@ -206,35 +206,47 @@ export function SetItem(props: SetItemProps) {
             {renderTranscriberEdit()}
           </TableCell>
           <TableCell>
-            <IconButton
-                color='primary'
-                onClick={getDownloadLink}
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.downloadSet')}</Typography>}
+                arrow={true}
             >
-              {downloadLinkPending ? <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.primary.main}
-                  loading={true}
-              /> : <CloudDownloadIcon />}
-            </IconButton>
-            <IconButton
-                color='primary'
-                onClick={createTrainingSet}
+              <IconButton
+                  color='primary'
+                  onClick={getDownloadLink}
+              >
+                {downloadLinkPending ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <CloudDownloadIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.createTrainingSet')}</Typography>}
+                arrow={true}
             >
-              {isCreateTrainingSetLoading ? <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.primary.main}
-                  loading={true}
-              /> : <AddCircleIcon />}
-            </IconButton>
+              <IconButton
+                  color='primary'
+                  onClick={createTrainingSet}
+              >
+                {isCreateTrainingSetLoading ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <AddCircleIcon />}
+              </IconButton>
+            </Tooltip>
             <Tooltip
                 placement='top'
                 title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
                 arrow={true}
             >
               <IconButton color='primary' onClick={handleEvaluateClick}>
-                <BorderColorIcon />
+                <RateReviewIcon />
               </IconButton>
             </Tooltip>
             <IconButton
