@@ -99,7 +99,9 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const firstBlockNextSegment = document.getElementById
         (`word-alignment-${this.props.segmentIndex + 1}-0`);
 
-        if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode?.length) {
+        console.log('selectCaretLocation arrow right : ', selectCaretLocation);
+
+        if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode['length']) {
             selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
 
             if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
