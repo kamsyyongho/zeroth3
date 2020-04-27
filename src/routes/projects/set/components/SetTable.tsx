@@ -8,7 +8,6 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
 import { SetItem } from './SetItem';
-import BorderColorIcon from "@material-ui/icons/BorderColor";
 
 const FULL_ROW_COL_SPAN = 4;
 

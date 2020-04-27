@@ -233,12 +233,9 @@ export function SetItem(props: SetItemProps) {
                 title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
                 arrow={true}
             >
-              <Button
-                  color='primary'
-                  variant='contained'
-                  size='small'
-                  onClick={handleEvaluateClick}
-                  startIcon={<BorderColorIcon />} />
+              <IconButton color='primary' onClick={handleEvaluateClick}>
+                <BorderColorIcon />
+              </IconButton>
             </Tooltip>
             <IconButton
                 color='primary'
