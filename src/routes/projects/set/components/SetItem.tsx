@@ -1,4 +1,4 @@
-import {Button, Grid, TableCell, Typography} from '@material-ui/core';
+import {Button, Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -228,6 +228,18 @@ export function SetItem(props: SetItemProps) {
                   loading={true}
               /> : <AddCircleIcon />}
             </IconButton>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
+                arrow={true}
+            >
+              <Button
+                  color='primary'
+                  variant='contained'
+                  size='small'
+                  onClick={handleEvaluateClick}
+                  startIcon={<BorderColorIcon />} />
+            </Tooltip>
             <IconButton
                 color='primary'
                 size='medium'
@@ -236,15 +248,6 @@ export function SetItem(props: SetItemProps) {
             >
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
-            <Button
-                color='secondary'
-                variant='contained'
-                size='small'
-                onClick={handleEvaluateClick}
-                startIcon={<BorderColorIcon />}
-            >
-              {translate('SET.requestEvaluation')}
-            </Button>
           </TableCell>
         </TableRow>
         {expanded &&
