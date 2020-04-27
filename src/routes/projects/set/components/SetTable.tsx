@@ -55,9 +55,6 @@ export function SetTable(props: SetTableProps) {
     />
   </React.Fragment>));
 
-  const handleEvaluateClick = () => {};
-
-
   const renderHeader = () => (<TableHead className={classes.tableHeader}>
     <TableRow>
       <TableCell>
@@ -69,17 +66,7 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
-      <TableCell>
-          <Button
-              color='secondary'
-              variant='contained'
-              size='small'
-              onClick={handleEvaluateClick}
-              startIcon={<BorderColorIcon />}
-          >
-            {translate('SET.requestEvaluation')}
-          </Button>
-      </TableCell>
+      <TableCell />
     </TableRow>
   </TableHead>);
 

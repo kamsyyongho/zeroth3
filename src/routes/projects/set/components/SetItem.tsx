@@ -1,4 +1,4 @@
-import { Grid, TableCell, Typography } from '@material-ui/core';
+import {Button, Grid, TableCell, Typography} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -20,6 +20,7 @@ import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
+import BorderColorIcon from "@material-ui/icons/BorderColor";
 
 interface SetItemProps {
   projectId: string;
@@ -86,6 +87,10 @@ export function SetItem(props: SetItemProps) {
       }
     }
     setIsCreateTrainingSetLoading(false);
+
+  };
+
+  const handleEvaluateClick = () => {
 
   };
 
@@ -231,6 +236,15 @@ export function SetItem(props: SetItemProps) {
             >
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
+            <Button
+                color='secondary'
+                variant='contained'
+                size='small'
+                onClick={handleEvaluateClick}
+                startIcon={<BorderColorIcon />}
+            >
+              {translate('SET.requestEvaluation')}
+            </Button>
           </TableCell>
         </TableRow>
         {expanded &&
