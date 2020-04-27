@@ -3,6 +3,10 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import Select from '@material-ui/core/Select';
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
@@ -30,13 +34,36 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       backgroundColor: theme.palette.background.default,
       borderWidth: 0,
     },
+    formControl: {
+      margin: theme.spacing(1),
+      minWidth: 150,
+    },
   }));
 
 export function SetTable(props: SetTableProps) {
   const { dataSets, projectId, openTranscriberDialog } = props;
   const { translate } = React.useContext(I18nContext);
+  const [setType, setSetType] = React.useState(["none"]);
 
   const classes = useStyles();
+
+  const handleTypeChange = (event: any) => {
+    const { value } = event.target;
+    console.log('event in handleTypeChange : ', event.target.value);
+    if(value.length === 1 && event.target.value.includes("none")) {
+      setSetType(["none"]);
+    } else if(value[value.length - 1] === "none") {
+      setSetType(["none"]);
+    } else {
+      setSetType(value.filter((value: string ) => {
+        return value !== "none"
+      }));
+    }
+  };
+
+  const handleFilterRequest = () => {
+
+  };
 
   const renderRowFiller = (<TableRow >
     <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
@@ -65,7 +92,26 @@ export function SetTable(props: SetTableProps) {
       <TableCell>
         {translate('IAM.transcribers')}
       </TableCell>
-      <TableCell />
+      <TableCell>
+        <FormControl className={classes.formControl}>
+          <InputLabel id="set-type-label">Filter By Set Type</InputLabel>
+          <Select
+              labelId="set-type-label"
+              id="demo-simple-select-autowidth"
+              label="Set Type"
+              className={classes.formControl}
+              value={setType}
+              onChange={handleTypeChange}
+              multiple={true}
+              autoWidth>
+            <MenuItem value={"none"}>None</MenuItem>
+            <MenuItem value={'10'}>Training Set</MenuItem>
+            <MenuItem value={'20'}>Validation Set</MenuItem>
+            <MenuItem value={'30'}>Test Set</MenuItem>
+          </Select>
+          <Button onClick={handleFilterRequest}>Filter</Button>
+        </FormControl>
+      </TableCell>
     </TableRow>
   </TableHead>);
 
