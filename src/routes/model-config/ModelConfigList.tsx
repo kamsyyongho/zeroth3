@@ -11,7 +11,13 @@ import React from 'reactn';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { AcousticModel, LanguageModel, ModelConfig, Project, SubGraph, TopGraph } from '../../types';
+import {
+  AcousticModel,
+  LanguageModel,
+  ModelConfig,
+  Project,
+  SubGraph,
+  TopGraph } from '../../types';
 import { SnackbarError, SNACKBAR_VARIANTS } from '../../types/';
 import { PATHS } from '../../types/path.types';
 import log from '../../util/log/logger';
@@ -19,6 +25,8 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Breadcrumb, HeaderBreadcrumbs } from '../shared/HeaderBreadcrumbs';
 import { ModelConfigDialog } from './ModelConfigDialog';
 import { ModelConfigListItem } from './ModelConfigListItem';
+import { ImportConfigDialog } from './ImportConfigDialog';
+import {SelectFormField, SelectFormFieldOptions} from "../shared/form-fields/SelectFormField";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -40,6 +48,7 @@ export interface ModelConfigListProps {
   subGraphs: SubGraph[];
   acousticModels: AcousticModel[];
   languageModels: LanguageModel[];
+  handleImportSuccess: (modelConfig: ModelConfig) => void;
   handleModelConfigUpdate: (modelConfig: ModelConfig, isEdit?: boolean) => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
@@ -53,6 +62,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     canModify,
     modelConfigsLoading,
     modelConfigs,
+    handleImportSuccess,
     handleModelConfigUpdate,
     handleSubGraphListUpdate,
     handleLanguageModelCreate,
@@ -70,6 +80,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [modelConfigToEdit, setModelConfigToEdit] = React.useState<ModelConfig | undefined>(undefined);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [isImportOpen, setIsImportOpen] = React.useState(false);
+  const [organizationConfigSelectOptions, setOrganizationConfigSelectOptions] = React.useState<SelectFormFieldOptions>([]);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -84,6 +96,26 @@ export function ModelConfigList(props: ModelConfigListProps) {
     // to ensure that the there is nothing passed to the dialog
     setModelConfigToEdit(undefined);
     openDialog();
+  };
+
+  const openImportDialog = async () => {
+    if(api?.modelConfig) {
+      const response = await api.modelConfig?.getOrganizationModelConfigs(project.id);
+      if(response.kind === 'ok') {
+         setOrganizationConfigSelectOptions(response.modelConfigs.map(model => ({
+           label: `${translate('forms.name')} : ${model.name}`,
+           label2: `${translate('forms.description')} : ${model.description || '-'}`,
+           value: model.id
+         })));
+      } else {
+        log({
+          file: 'ImportConfigDialog.tsx',
+          caller: 'initOrganizationModelConfig - failed to get organization model config',
+          value: response,
+        });
+      }
+    }
+    setIsImportOpen(true);
   };
 
   const closeConfirmation = () => {
@@ -164,14 +196,27 @@ export function ModelConfigList(props: ModelConfigListProps) {
       <Card elevation={0} className={classes.card} >
         <CardHeader
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
-          action={canModify && <Button
-            color="primary"
-            variant='outlined'
-            onClick={openCreateDialog}
-            startIcon={<AddIcon />}
-          >
-            {translate('modelConfig.create')}
-          </Button>}
+          action={canModify &&
+          <>
+            <Button
+                color="primary"
+                variant='outlined'
+                onClick={openCreateDialog}
+                startIcon={<AddIcon />}
+            >
+              {translate('modelConfig.create')}
+            </Button>
+            <Button
+                color="primary"
+                style={{ marginLeft: '10px' }}
+                variant='outlined'
+                onClick={openImportDialog}
+                startIcon={<AddIcon />}
+            >
+              {translate('modelConfig.import')}
+            </Button>
+          </>
+          }
         />
         {modelConfigsLoading ? <BulletList /> : (
           <CardContent className={classes.cardContent} >
@@ -201,6 +246,12 @@ export function ModelConfigList(props: ModelConfigListProps) {
         onSubmit={handleDelete}
         onCancel={closeConfirmation}
       />
+      <ImportConfigDialog
+          open={isImportOpen}
+          projectId={project.id}
+          onClose={() => setIsImportOpen(false)}
+          onSuccess={handleImportSuccess}
+          selectOptions={organizationConfigSelectOptions} />
     </Container>
   );
 }

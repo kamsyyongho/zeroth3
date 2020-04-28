@@ -67,7 +67,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     webSocketCloseReason,
     webSocketCloseStatus,
     transcriber,
-    transferedBytes,
+    transferredBytes,
   } = row.original;
 
   const startDate = new Date(startAt);
@@ -262,7 +262,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             >
               {`${translate('TDP.transferredBytes')}:`}
             </Typography>
-            <Typography>{transferedBytes}</Typography>
+            <Typography>{transferredBytes}</Typography>
           </Grid>
           <Grid
             container

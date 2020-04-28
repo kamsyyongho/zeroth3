@@ -1,10 +1,14 @@
-import { Grid, TableCell, Typography } from '@material-ui/core';
+import {Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
+import RateReviewIcon from '@material-ui/icons/RateReview'
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
@@ -12,15 +16,17 @@ import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../../theme';
-import { DataSet } from '../../../../types';
+import {DataSet, VoiceData} from '../../../../types';
 import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
+import {SetDetail} from "./SetDetail";
 
 interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
+  setType: string;
   openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
@@ -38,7 +44,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -46,6 +52,11 @@ export function SetItem(props: SetItemProps) {
   const { translate } = React.useContext(I18nContext);
   const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
   const [downloadLink, setDownloadLink] = React.useState('');
+  const [expanded, setExpanded] = React.useState(false);
+  const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
+  const [setDetailLoading, setSetDetailLoading] = React.useState(false);
+  const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
+  const [setTypeParam, setSetTypeParam] = React.useState(setType);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -53,6 +64,37 @@ export function SetItem(props: SetItemProps) {
   const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
 
   const startDownload = (url: string) => window.open(url);
+
+  const createTrainingSet = async () => {
+    setIsCreateTrainingSetLoading(true);
+    if(api?.dataSet) {
+      let serverError: ServerError | undefined;
+      const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
+
+      if(response.kind === 'ok') {
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+      } else {
+        log({
+          file: 'SetItem.tsx',
+          caller: 'createTrainingSet - failed to send post request',
+          value: response,
+          important: true,
+        });
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error');
+        if(serverError?.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
+      }
+    }
+    setIsCreateTrainingSetLoading(false);
+
+  };
+
+  const handleEvaluateClick = () => {
+
+  };
 
   const getDownloadLink = async () => {
     if (downloadLink) {
@@ -81,6 +123,27 @@ export function SetItem(props: SetItemProps) {
         enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       }
       setDownloadLinkPending(false);
+    }
+  };
+
+  const getSetDetail = async () => {
+    if(api?.dataSet) {
+      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
+      if(response.kind === "ok") {
+        setSubSets(response.subSets.content);
+        return true;
+      }
+    }
+  };
+
+  const openSetDetail = async () => {
+    if(subSets.length) {
+      setExpanded(!expanded);
+      return;
+    }
+    const subSetsFromRequest = await getSetDetail();
+    if(subSetsFromRequest) {
+      setExpanded(!expanded);
     }
   };
 
@@ -132,33 +195,89 @@ export function SetItem(props: SetItemProps) {
     );
   };
 
+  React.useEffect(() => {
+    if(expanded) {
+      getSetDetail();
+    }
+  },[setType]);
+
   return (
-    <TableRow
-      className={classes.tableRow}
-    >
-      <TableCell>
-        <Typography>{name}</Typography>
-      </TableCell>
-      <TableCell>
-        {processedText}
-        <ProgressBar value={progress} maxWidth={200} />
-      </TableCell>
-      <TableCell>
-        {renderTranscriberEdit()}
-      </TableCell>
-      <TableCell>
-        <IconButton
-          color='primary'
-          onClick={getDownloadLink}
+      <React.Fragment>
+        <TableRow
+            className={classes.tableRow}
         >
-          {downloadLinkPending ? <MoonLoader
-            sizeUnit={"px"}
-            size={15}
-            color={theme.palette.primary.main}
-            loading={true}
-          /> : <CloudDownloadIcon />}
-        </IconButton>
-      </TableCell>
-    </TableRow>
+          <TableCell>
+            <Typography>{name}</Typography>
+          </TableCell>
+          <TableCell>
+            {processedText}
+            <ProgressBar value={progress} maxWidth={200} />
+          </TableCell>
+          <TableCell>
+            {renderTranscriberEdit()}
+          </TableCell>
+          <TableCell>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.downloadSet')}</Typography>}
+                arrow={true}
+            >
+              <IconButton
+                  color='primary'
+                  onClick={getDownloadLink}
+              >
+                {downloadLinkPending ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <CloudDownloadIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.createTrainingSet')}</Typography>}
+                arrow={true}
+            >
+              <IconButton
+                  color='primary'
+                  onClick={createTrainingSet}
+              >
+                {isCreateTrainingSetLoading ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <AddCircleIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
+                arrow={true}
+            >
+              <IconButton color='primary' onClick={handleEvaluateClick}>
+                <RateReviewIcon />
+              </IconButton>
+            </Tooltip>
+            <IconButton
+                color='primary'
+                size='medium'
+                aria-label="open"
+                onClick={openSetDetail}
+            >
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          </TableCell>
+        </TableRow>
+        {expanded &&
+        subSets.map((voiceData: VoiceData) =>
+            <SetDetail key={`setDetail-${voiceData.id}`}
+                       row={voiceData}
+                       setDetailLoading={setDetailLoading}
+                       projectId={projectId} />
+          )
+        }
+      </React.Fragment>
   );
 }

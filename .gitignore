@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 
+#webstorm ide file
+.idea
+.idea/workspace.xml
+
 # testing
 /coverage
 
