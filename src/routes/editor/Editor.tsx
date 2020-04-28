@@ -230,34 +230,7 @@ export function Editor(props: EditorProps) {
   /**
    * builds the callback to update the manually merged block with the updated segment Id response
    */
-  const buildMergeSegmentCallback = (targetBlock: BlockObject<SegmentBlockData>, incomingEditorState: EditorState) => {
-    const onMergeSegmentResponse = (updatedSegment: Segment) => {
-      const blockKey = targetBlock.key;
-      const blockSegment = targetBlock.data.segment as Segment;
-      // get the index using the old segment id
-      if (typeof blockSegmentIndex !== 'number') {
-        log({
-          file: `Editor.tsx`,
-          caller: `onMergeSegmentResponse`,
-          value: 'Failed to get index of segment to update',
-          important: true,
-        });
-        return;
-      }
-      // update with the new segment Id
-
-      const contentState = incomingEditorState.getCurrentContent();
-      const updatedContentState = updateBlockSegmentData(contentState, blockKey, updatedSegment);
-
-      const noUndoEditorState = EditorState.set(incomingEditorState, { allowUndo: false });
-      const updatedContentEditorState = EditorState.push(noUndoEditorState, updatedContentState, EDITOR_CHANGE_TYPE['change-block-data']);
-      const allowUndoEditorState = EditorState.set(updatedContentEditorState, { allowUndo: true });
-      setEditorState(allowUndoEditorState);
-
-      // to account for the previous blocks and keys changing after success
-      setPreviousSelectionState(allowUndoEditorState.getSelection());
-    };
-    return onMergeSegmentResponse;
+  const buildMergeSegmentCallback = () => {
   };
 
   /**

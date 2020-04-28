@@ -54,7 +54,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleChange = (event: SyntheticEvent) => {
         const text: string = event?.target?.value;
-        const firstWordAlignment = document.getElementById('word-alignment-0-0');
+        const firstWordAlignment = document.getElementById('word-0-0');
         console.log('element getSelection : ', window.getSelection());
         console.log('first word alignment : ',firstWordAlignment);
         console.log('handle change by ContentEditable : ', event);
@@ -73,7 +73,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const range = document.createRange();
 
         currentNode.current.blur();
-        range.setStart(previousSegmentNode, 0);
+        range.setStart(previousSegmentNode, wordAlignmentIndex);
         range.collapse(false);
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -93,7 +93,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const range = document.createRange();
 
         currentNode.current.blur();
-        range.setStart(nextSegmentNode, 0);
+        range.setStart(nextSegmentNode, wordAlignmentIndex);
         range.collapse(false);
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -104,62 +104,71 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
 
     handleArrowRight = () => {
-        const selectCaretLocation = window.getSelection();
+        const selection = window.getSelection();
         const nextWordAlignmentBlock = document.getElementById
         (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`);
         const firstBlockNextSegment = document.getElementById
         (`word-${this.props.segmentIndex + 1}-0`);
         const range = document.createRange();
 
-        console.log('selectCaretLocation arrow right : ', selectCaretLocation);
+        console.log('selection arrow right : ', selection);
         console.log('nextWordAlignmentBlock : ', nextWordAlignmentBlock);
         console.log('firstBlockNextSegment : ', firstBlockNextSegment);
 
-        if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode['length']) {
+        if(selection?.anchorOffset === selection?.anchorNode['length']) {
             if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1 && firstBlockNextSegment) {
-                // selectCaretLocation?.setPosition(firstBlockNextSegment, 0);
+                if(!firstBlockNextSegment){return;}
+                // selection?.setPosition(firstBlockNextSegment, 0);
                 // range.setStart(firstBlockNextSegment.childNodes[1], 0);
                 range.selectNodeContents(firstBlockNextSegment);
                 range.collapse(true);
-                selectCaretLocation?.removeAllRanges();
-                selectCaretLocation?.addRange(range);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
                 this.props.updateCaretLocation(this.props.segmentIndex, 0);
-                return;
+            } else {
+                if(!nextWordAlignmentBlock){return;}
+                // range.setStart(nextWordAlignmentBlock.childNodes[1], 0);
+                range.selectNodeContents(nextWordAlignmentBlock);
+                range.collapse(true);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                this.props.updateCaretLocation(this.props.segmentIndex, this.props.wordAlignmentIndex + 1);
+                // selection?.setPosition(nextWordAlignmentBlock, 0);
             }
-            // range.setStart(nextWordAlignmentBlock.childNodes[1], 0);
-            range.selectNodeContents(nextWordAlignmentBlock);
-            range.collapse(true);
-            selectCaretLocation?.removeAllRanges();
-            selectCaretLocation?.addRange(range);
-            this.props.updateCaretLocation(this.props.segmentIndex, this.props.wordAlignmentIndex + 1);
-            // selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
         }
-        return;
     };
 
     handleArrowLeft = () => {
-        const selectCaretLocation = document.getSelection();
+        const selection = document.getSelection();
         const lastWordPrevSegment = this.props.getLastAlignmentIndexInSegment(this.props.segmentIndex - 1);
         const prevWordAlignmentBlock = document.getElementById
-        (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`);
+        (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`);
         const lastBlockPreviousSegment = document.getElementById
-        (`word-alignment-${this.props.segmentIndex - 1}-${lastWordPrevSegment.index}`);
+        (`word-${this.props.segmentIndex - 1}-${lastWordPrevSegment.index}`);
+        const range = document.createRange();
 
         console.log('lastWordPrevSegment : ', lastWordPrevSegment);
-        console.log('selectCaretLocation : ', selectCaretLocation);
+        console.log('selection : ', selection);
 
-        if(selectCaretLocation?.anchorOffset === 0) {
-            const range = document.createRange();
+        if(selection?.anchorOffset === 0) {
             this.state.element.current.blur();
             if(this.props.wordAlignmentIndex === 0) {
+                if(!lastBlockPreviousSegment) {return;}
                 console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
-                selectCaretLocation?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
-                console.log('selectCaretLocation after collapse : ', selectCaretLocation);
-                return;
+                range.selectNodeContents(lastBlockPreviousSegment);
+                range.collapse(false);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                // selection?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
+                console.log('selection after collapse : ', selection);
+            } else {
+                range.selectNodeContents(prevWordAlignmentBlock);
+                range.collapse(false);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                // selection?.setPosition(prevWordAlignmentBlock, 0);
             }
-            selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
         }
-        return;
     };
 
     handleKeyDown = (event: KeyboardEvent) => {
