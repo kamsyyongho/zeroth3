@@ -150,7 +150,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     };
     const getAllDataSets = async () => {
       if (api?.dataSet && projectId) {
-        console.log('enter apicall');
         const response = await api.dataSet.getAll(projectId);
         if (response.kind === 'ok') {
           setDataSets(response.dataSets);
