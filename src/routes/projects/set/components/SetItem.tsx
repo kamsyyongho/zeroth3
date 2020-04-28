@@ -1,4 +1,4 @@
-import { Grid, TableCell, Typography } from '@material-ui/core';
+import {Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -8,6 +8,7 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
+import RateReviewIcon from '@material-ui/icons/RateReview'
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
@@ -25,6 +26,7 @@ interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
+  setType: string;
   openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
@@ -42,7 +44,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -54,6 +56,7 @@ export function SetItem(props: SetItemProps) {
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
+  const [setTypeParam, setSetTypeParam] = React.useState(setType);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -89,6 +92,10 @@ export function SetItem(props: SetItemProps) {
 
   };
 
+  const handleEvaluateClick = () => {
+
+  };
+
   const getDownloadLink = async () => {
     if (downloadLink) {
       startDownload(downloadLink);
@@ -119,22 +126,25 @@ export function SetItem(props: SetItemProps) {
     }
   };
 
+  const getSetDetail = async () => {
+    if(api?.dataSet) {
+      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
+      if(response.kind === "ok") {
+        setSubSets(response.subSets.content);
+        return true;
+      }
+    }
+  };
+
   const openSetDetail = async () => {
     if(subSets.length) {
       setExpanded(!expanded);
       return;
     }
-
-    if(api?.dataSet) {
-      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id);
-      if(response.kind === "ok") {
-        const subSets = response.subSets.content;
-        setExpanded(!expanded);
-        setSubSets(subSets);
-      }
+    const subSetsFromRequest = await getSetDetail();
+    if(subSetsFromRequest) {
+      setExpanded(!expanded);
     }
-
-
   };
 
   // must be a number from 0 to 100
@@ -185,6 +195,12 @@ export function SetItem(props: SetItemProps) {
     );
   };
 
+  React.useEffect(() => {
+    if(expanded) {
+      getSetDetail();
+    }
+  },[setType]);
+
   return (
       <React.Fragment>
         <TableRow
@@ -201,28 +217,49 @@ export function SetItem(props: SetItemProps) {
             {renderTranscriberEdit()}
           </TableCell>
           <TableCell>
-            <IconButton
-                color='primary'
-                onClick={getDownloadLink}
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.downloadSet')}</Typography>}
+                arrow={true}
             >
-              {downloadLinkPending ? <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.primary.main}
-                  loading={true}
-              /> : <CloudDownloadIcon />}
-            </IconButton>
-            <IconButton
-                color='primary'
-                onClick={createTrainingSet}
+              <IconButton
+                  color='primary'
+                  onClick={getDownloadLink}
+              >
+                {downloadLinkPending ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <CloudDownloadIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.createTrainingSet')}</Typography>}
+                arrow={true}
             >
-              {isCreateTrainingSetLoading ? <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.primary.main}
-                  loading={true}
-              /> : <AddCircleIcon />}
-            </IconButton>
+              <IconButton
+                  color='primary'
+                  onClick={createTrainingSet}
+              >
+                {isCreateTrainingSetLoading ? <MoonLoader
+                    sizeUnit={"px"}
+                    size={15}
+                    color={theme.palette.primary.main}
+                    loading={true}
+                /> : <AddCircleIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
+                arrow={true}
+            >
+              <IconButton color='primary' onClick={handleEvaluateClick}>
+                <RateReviewIcon />
+              </IconButton>
+            </Tooltip>
             <IconButton
                 color='primary'
                 size='medium'
