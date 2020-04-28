@@ -68,11 +68,16 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
         (this.props.segmentIndex - 1, currentLocation + this.props.lengthBeforeBlock);
         const previousSegmentNode = document.getElementById
-        (`word-alignment-${this.props.segmentIndex - 1}-${wordAlignmentIndex}`);
+        (`word-${this.props.segmentIndex - 1}-${wordAlignmentIndex}`);
         const currentNode = this.state.element;
+        const range = document.createRange();
 
         currentNode.current.blur();
-        selection?.setPosition(previousSegmentNode, 0);
+        range.setStart(previousSegmentNode, 0);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        // selection?.setPosition(previousSegmentNode, 0);
         this.props.updateCaretLocation(this.props.segmentIndex - 1, wordAlignmentIndex);
     };
 
@@ -82,11 +87,17 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
         (this.props.segmentIndex + 1, currentLocation + this.props.lengthBeforeBlock);
         const nextSegmentNode = document.getElementById
-        (`word-alignment-${this.props.segmentIndex + 1}-${wordAlignmentIndex}`);
+        (`word-${this.props.segmentIndex + 1}-${wordAlignmentIndex}`);
         const currentNode = this.state.element;
+        selection?.removeAllRanges();
+        const range = document.createRange();
 
         currentNode.current.blur();
-        selection?.setPosition(nextSegmentNode, 0);
+        range.setStart(nextSegmentNode, 0);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        // selection?.setPosition(nextSegmentNode, 0);
         console.log('wordAlignmentIndex in wordblock : ', wordAlignmentIndex);
         this.props.updateCaretLocation(this.props.segmentIndex + 1, wordAlignmentIndex);
     };
@@ -95,18 +106,33 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     handleArrowRight = () => {
         const selectCaretLocation = window.getSelection();
         const nextWordAlignmentBlock = document.getElementById
-        (`word-alignment-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`);
+        (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`);
         const firstBlockNextSegment = document.getElementById
-        (`word-alignment-${this.props.segmentIndex + 1}-0`);
+        (`word-${this.props.segmentIndex + 1}-0`);
+        const range = document.createRange();
 
         console.log('selectCaretLocation arrow right : ', selectCaretLocation);
+        console.log('nextWordAlignmentBlock : ', nextWordAlignmentBlock);
+        console.log('firstBlockNextSegment : ', firstBlockNextSegment);
 
         if(selectCaretLocation?.anchorOffset === selectCaretLocation?.anchorNode['length']) {
-            selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
-
-            if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
-                selectCaretLocation?.setPosition(firstBlockNextSegment, 0);
+            if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1 && firstBlockNextSegment) {
+                // selectCaretLocation?.setPosition(firstBlockNextSegment, 0);
+                // range.setStart(firstBlockNextSegment.childNodes[1], 0);
+                range.selectNodeContents(firstBlockNextSegment);
+                range.collapse(true);
+                selectCaretLocation?.removeAllRanges();
+                selectCaretLocation?.addRange(range);
+                this.props.updateCaretLocation(this.props.segmentIndex, 0);
+                return;
             }
+            // range.setStart(nextWordAlignmentBlock.childNodes[1], 0);
+            range.selectNodeContents(nextWordAlignmentBlock);
+            range.collapse(true);
+            selectCaretLocation?.removeAllRanges();
+            selectCaretLocation?.addRange(range);
+            this.props.updateCaretLocation(this.props.segmentIndex, this.props.wordAlignmentIndex + 1);
+            // selectCaretLocation?.setPosition(nextWordAlignmentBlock, 0);
         }
         return;
     };
@@ -127,16 +153,11 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
             this.state.element.current.blur();
             if(this.props.wordAlignmentIndex === 0) {
                 console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
-                // range.setEnd(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
-                // range.setStart(lastBlockPreviousSegment, 0);
-                // selectCaretLocation?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
-                selectCaretLocation?.collapse(lastBlockPreviousSegment, 0);
+                selectCaretLocation?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
                 console.log('selectCaretLocation after collapse : ', selectCaretLocation);
-                // selectCaretLocation?.collapseToEnd();
                 return;
             }
             selectCaretLocation?.setPosition(prevWordAlignmentBlock, 0);
-            selectCaretLocation?.collapseToEnd();
         }
         return;
     };

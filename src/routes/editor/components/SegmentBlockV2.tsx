@@ -74,7 +74,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
             {segment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
-                        key={`word-alignment-${index}`}
+                        key={`word-alignment-${segmentIndex}-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         updateCaretLocation={updateCaretLocation}
