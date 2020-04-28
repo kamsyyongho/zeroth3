@@ -209,11 +209,14 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async getTrainingSet(projectId: string, dataSetId: string): Promise<getTrainingSet> {
+  async getTrainingSet(projectId: string, dataSetId: string, type: string): Promise<getTrainingSet> {
+    const param = type.length ? type : null;
+    console.log('argument type in get api : ', type);
+    console.log('param in get api : ', param);
     const response = await this.apisauce.get<SubSet, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
-        )
+        ), { type: param }
     );
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);

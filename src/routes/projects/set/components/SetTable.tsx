@@ -36,20 +36,27 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     formControl: {
       margin: theme.spacing(1),
+      float: 'right',
       minWidth: 150,
+      display: 'flex',
+      flexWrap: 'wrap',
+      flexDirection: 'row',
     },
+    filterBtn: {
+      height: 45,
+    }
   }));
 
 export function SetTable(props: SetTableProps) {
   const { dataSets, projectId, openTranscriberDialog } = props;
   const { translate } = React.useContext(I18nContext);
   const [setType, setSetType] = React.useState(["none"]);
-
+  const [setTypeString, setSetTypeString] = React.useState('');
   const classes = useStyles();
+
 
   const handleTypeChange = (event: any) => {
     const { value } = event.target;
-    console.log('event in handleTypeChange : ', event.target.value);
     if(value.length === 1 && event.target.value.includes("none")) {
       setSetType(["none"]);
     } else if(value[value.length - 1] === "none") {
@@ -62,7 +69,18 @@ export function SetTable(props: SetTableProps) {
   };
 
   const handleFilterRequest = () => {
-
+    let prepareSetTypeString = '';
+    if(setType[0] === "none") {
+      prepareSetTypeString = '';
+    } else if(setType.length === 1) {
+      prepareSetTypeString = setType[0];
+    } else {
+      prepareSetTypeString = setType[0];
+      for(let i = 1; i < setType.length; i++) {
+        prepareSetTypeString = prepareSetTypeString.concat(',', setType[i]);
+      }
+    }
+    setSetTypeString(prepareSetTypeString);
   };
 
   const renderRowFiller = (<TableRow >
@@ -78,6 +96,7 @@ export function SetTable(props: SetTableProps) {
       dataSet={dataSet}
       dataSetIndex={index}
       openTranscriberDialog={openTranscriberDialog}
+      setType={setTypeString}
     />
   </React.Fragment>));
 
@@ -103,13 +122,14 @@ export function SetTable(props: SetTableProps) {
               value={setType}
               onChange={handleTypeChange}
               multiple={true}
-              autoWidth>
+              autoWidth
+              MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
             <MenuItem value={"none"}>None</MenuItem>
-            <MenuItem value={'10'}>Training Set</MenuItem>
-            <MenuItem value={'20'}>Validation Set</MenuItem>
-            <MenuItem value={'30'}>Test Set</MenuItem>
+            <MenuItem value={'TRAINING'}>Training Set</MenuItem>
+            <MenuItem value={'VALIDATION'}>Validation Set</MenuItem>
+            <MenuItem value={'TEST'}>Test Set</MenuItem>
           </Select>
-          <Button onClick={handleFilterRequest}>Filter</Button>
+          <Button className={classes.filterBtn} color="primary" variant="outlined" onClick={handleFilterRequest}>Filter</Button>
         </FormControl>
       </TableCell>
     </TableRow>

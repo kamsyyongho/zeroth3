@@ -26,6 +26,7 @@ interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
+  setType: string;
   openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
 }
 
@@ -43,7 +44,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -55,6 +56,7 @@ export function SetItem(props: SetItemProps) {
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
+  const [setTypeParam, setSetTypeParam] = React.useState(setType);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -124,22 +126,25 @@ export function SetItem(props: SetItemProps) {
     }
   };
 
+  const getSetDetail = async () => {
+    if(api?.dataSet) {
+      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
+      if(response.kind === "ok") {
+        setSubSets(response.subSets.content);
+        return true;
+      }
+    }
+  };
+
   const openSetDetail = async () => {
     if(subSets.length) {
       setExpanded(!expanded);
       return;
     }
-
-    if(api?.dataSet) {
-      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id);
-      if(response.kind === "ok") {
-        const subSets = response.subSets.content;
-        setExpanded(!expanded);
-        setSubSets(subSets);
-      }
+    const subSetsFromRequest = await getSetDetail();
+    if(subSetsFromRequest) {
+      setExpanded(!expanded);
     }
-
-
   };
 
   // must be a number from 0 to 100
@@ -189,6 +194,12 @@ export function SetItem(props: SetItemProps) {
       </Grid>
     );
   };
+
+  React.useEffect(() => {
+    if(expanded) {
+      getSetDetail();
+    }
+  },[setType]);
 
   return (
       <React.Fragment>
