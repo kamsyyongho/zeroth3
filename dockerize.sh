@@ -4,6 +4,8 @@ image_name=zerhto-ee-bashboard
 version=$(cat VERSION)
 set -e
 
+npm run build:docker
+
 docker build -t $image_name:$version .
 
 ECS_REPO=161969600347.dkr.ecr.ap-northeast-2.amazonaws.com/zeroth/zeroth-ee-dashboard
