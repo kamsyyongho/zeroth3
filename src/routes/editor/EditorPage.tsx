@@ -494,6 +494,7 @@ export function EditorPage() {
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
+    console.log('playingLocation inside EditorPage - buildPlayingAudioPlayerSegment : ', playingLocation);
     let segmentsToUse = segments;
     if (!segmentsToUse.length) {
       segmentsToUse = [...internalSegmentsTracker];
@@ -537,6 +538,7 @@ export function EditorPage() {
       worker.addEventListener('message', message => {
         const playingLocation: SegmentAndWordIndex | undefined = message.data.playingLocation;
         const initialSegmentLoad: boolean = message.data.initialSegmentLoad;
+        console.log('playingLocation inside RemoteWorker EditorPage : ', playingLocation);
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
@@ -563,6 +565,7 @@ export function EditorPage() {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
     // prevents seeking again if we changed because of clicking a word
+    console.log('time and currentlyPlayingWordTime inside handlePlaybackTimeChange : ', time, currentlyPlayingWordTime);
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {

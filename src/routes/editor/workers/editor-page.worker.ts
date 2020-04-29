@@ -110,6 +110,7 @@ const calculatePlayingLocation = (
   segments: Segment[],
   currentlyPlayingWordTime?: Required<Time>,
 ): SegmentAndWordIndex | undefined => {
+  console.log('time, segments, curretlyPlayingWordTime in worker, calculatePlayingLocation : ', time, segments, currentlyPlayingWordTime);
   try {
     if (
       currentlyPlayingWordTime &&
@@ -153,6 +154,7 @@ addEventListener('message', message => {
     segments as Segment[],
     currentlyPlayingWordTime as Required<Time> | undefined,
   );
+  console.log('eventListener inside worker : ', playingLocation);
   // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
   //@ts-ignore
   postMessage({ playingLocation, initialSegmentLoad });

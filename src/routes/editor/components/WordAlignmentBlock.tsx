@@ -110,19 +110,17 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleArrowRight = () => {
         const selection = window.getSelection();
-        const nextWordAlignmentBlock = document.getElementById
-        (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`) || null;
-        const firstBlockNextSegment = document.getElementById
-        (`word-${this.props.segmentIndex + 1}-0`) || null;
         const range = document.createRange();
 
         console.log('selection arrow right : ', selection);
-        console.log('nextWordAlignmentBlock : ', nextWordAlignmentBlock);
-        console.log('firstBlockNextSegment : ', firstBlockNextSegment);
 
-        if(selection?.anchorOffset === selection?.anchorNode['length']) {
-            if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1 && firstBlockNextSegment) {
+        if(selection?.anchorOffset === this.state.text.length) {
+            if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
+                const firstBlockNextSegment = document.getElementById
+                (`word-${this.props.segmentIndex + 1}-0`) || null;
+
                 if(!firstBlockNextSegment){return;}
+
                 // selection?.setPosition(firstBlockNextSegment, 0);
                 // range.setStart(firstBlockNextSegment.childNodes[1], 0);
                 range.selectNodeContents(firstBlockNextSegment);
@@ -131,7 +129,11 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                 selection?.addRange(range);
                 this.props.updateCaretLocation(this.props.segmentIndex, 0);
             } else {
+                const nextWordAlignmentBlock = document.getElementById
+                (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex + 1}`) || null;
+
                 if(!nextWordAlignmentBlock){return;}
+
                 // range.setStart(nextWordAlignmentBlock.childNodes[1], 0);
                 range.selectNodeContents(nextWordAlignmentBlock);
                 range.collapse(true);
@@ -145,21 +147,18 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleArrowLeft = () => {
         const selection = document.getSelection();
-        const lastWordPrevSegment = this.props.segmentIndex > 0
-            ? this.props.getLastAlignmentIndexInSegment(this.props.segmentIndex - 1) : null;
-        const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
-        (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`) : null;
-        const lastBlockPreviousSegment = lastWordPrevSegment ? document.getElementById
-        (`word-${this.props.segmentIndex - 1}-${lastWordPrevSegment.index}`) : null;
         const range = document.createRange();
-
-        console.log('lastWordPrevSegment : ', lastWordPrevSegment);
-        console.log('selection : ', selection);
 
         if(selection?.anchorOffset === 0) {
             this.state.element.current.blur();
             if(this.props.wordAlignmentIndex === 0) {
+                const lastWordPrevSegment = this.props.segmentIndex > 0
+                    ? this.props.getLastAlignmentIndexInSegment(this.props.segmentIndex - 1) : null;
+                const lastBlockPreviousSegment = lastWordPrevSegment ? document.getElementById
+                (`word-${this.props.segmentIndex - 1}-${lastWordPrevSegment.index}`) : null;
+
                 if(!lastBlockPreviousSegment) {return;}
+
                 console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
                 range.selectNodeContents(lastBlockPreviousSegment);
                 range.collapse(false);
@@ -168,7 +167,11 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                 // selection?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
                 console.log('selection after collapse : ', selection);
             } else {
+                const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
+                (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`) : null;
+
                 if(!prevWordAlignmentBlock){return;}
+
                 range.selectNodeContents(prevWordAlignmentBlock);
                 range.collapse(false);
                 selection?.removeAllRanges();

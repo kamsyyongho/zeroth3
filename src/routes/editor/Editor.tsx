@@ -164,6 +164,14 @@ export function Editor(props: EditorProps) {
     onWordClick([segmentIndex, wordIndex]);
   };
 
+  const updatePlayingLocation = () => {
+    const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+    console.log('playingBlock in updatePlayingLocation : ',playingBlock);
+    if(playingBlock) {
+      playingBlock.focus();
+    }
+  };
+
   const saveSegmentStateBeforeChange = (segmentIndex: number, wordIndex: number) => {
     const savedSegmentsState = localForage.getItem(SEGMENTS_STORE_KEY);
   };
@@ -352,6 +360,7 @@ export function Editor(props: EditorProps) {
   };
 
   const findWordAlignmentIndexToPrevSegment = (segmentIndex: number, currentLocation: number) => {
+    if(segmentIndex >= segments.length - 1) {return;}
     const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
     let wordCount = 0;
 
@@ -419,6 +428,11 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setEditorFocussed(focussed);
   }, [focussed]);
+
+  React.useEffect(() => {
+    console.log('playingLocation : ', playingLocation);
+    updatePlayingLocation();
+  }, [playingLocation, ready]);
 
   return (
     <div
