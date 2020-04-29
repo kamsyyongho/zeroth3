@@ -14,11 +14,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         block: {
             marginLeft: theme.spacing(1),
-            // display: 'flex',
             minWidth: 0,
             maxWidth: '100%',
-            // alignContent: 'flex-wrap',
-            // flexWrap: 'wrap',
         },
 
     }),
@@ -29,6 +26,7 @@ interface SegmentBlockProps  {
     segmentIndex: number,
     assignSpeakerForSegment: (segmentIndex: string) => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
+    updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
@@ -42,6 +40,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         segmentIndex,
         assignSpeakerForSegment,
         updateCaretLocation,
+        updateChange,
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
@@ -78,6 +77,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         updateCaretLocation={updateCaretLocation}
+                        updateChange={updateChange}
                         segmentIndex={segmentIndex}
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}

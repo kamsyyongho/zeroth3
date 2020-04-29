@@ -321,7 +321,7 @@ export function Editor(props: EditorProps) {
   const handleWordTimeCreation = () => {
   };
 
-  const handleChange = (incomingEditorState: EditorState) => {
+  const updateChange = (segmentIndex: number, wordIndex: number, word: string) => {
     // if (readOnlyEditorState) {
     //   return;
     // }
@@ -486,6 +486,7 @@ export function Editor(props: EditorProps) {
                                  // onChange={handleChange}
                                  readOnly={readOnly}
                                  updateCaretLocation={updateCaretLocation}
+                                 updateChange={updateChange}
                                  findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />
