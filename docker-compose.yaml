@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  nginx-proxy:
+    container_name: zeroth-ee-dashboard
+    image: zeroth-ee-dashboard
+    environment:
+      - KEYCLOAK_URI=115.71.1.70:8888
+    ports:
+      - "8003:80"
+    volumes:
+      - ./dockerize/nginx:/etc/nginx/conf.d/
