@@ -302,7 +302,7 @@ export function Editor(props: EditorProps) {
         handleSegmentMergeCommand();
         return HANDLE_VALUES.handled;
       case KEY_COMMANDS['edit-segment-time']:
-        prepareSegmentTimePicker();
+        // prepareSegmentTimePicker();
         return HANDLE_VALUES.handled;
       default:
         break;
@@ -360,7 +360,7 @@ export function Editor(props: EditorProps) {
   };
 
   const findWordAlignmentIndexToPrevSegment = (segmentIndex: number, currentLocation: number) => {
-    if(segmentIndex >= segments.length - 1) {return;}
+    if(segmentIndex >= segments.length) {return;}
     const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
     let wordCount = 0;
 
@@ -429,10 +429,10 @@ export function Editor(props: EditorProps) {
     setEditorFocussed(focussed);
   }, [focussed]);
 
-  React.useEffect(() => {
-    console.log('playingLocation : ', playingLocation);
-    updatePlayingLocation();
-  }, [playingLocation, ready]);
+  // React.useEffect(() => {
+  //   console.log('playingLocation : ', playingLocation);
+  //   updatePlayingLocation();
+  // }, [playingLocation, ready]);
 
   return (
     <div

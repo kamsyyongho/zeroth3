@@ -95,6 +95,11 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         selection?.removeAllRanges();
         const range = document.createRange();
 
+        console.log('currentLocation : ', currentLocation);
+        console.log('segmentIndex + 1 : ', this.props.segmentIndex);
+        console.log('wordAlignmentIndex : ', wordAlignmentIndex);
+        console.log('nextSegmentNode : ', nextSegmentNode);
+
         if(!nextSegmentNode) {return;}
         currentNode.current.blur();
         // range.setStart(nextSegmentNode, wordAlignmentIndex);
