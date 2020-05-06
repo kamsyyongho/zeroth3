@@ -569,6 +569,7 @@ export function EditorPage() {
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
+      console.log("===========first call to RemoteWorker=============");
       setPlaybackTime(time);
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }

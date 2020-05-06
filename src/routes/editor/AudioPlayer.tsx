@@ -314,6 +314,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleTimeChange = (time: number) => {
+    console.log('time in audioPlayer handleTimeChange : ', time);
     if (onTimeChange && typeof onTimeChange === 'function') {
       onTimeChange(time);
     }
@@ -334,6 +335,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTimeString);
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
+      console.log('handleAudioProcess currentTime : ', currentTime);
       handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);
@@ -370,6 +372,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTime.toFixed(2));
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
+      console.log('handleSeek currentTImeFixed : ', currentTimeFixed);
       handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);

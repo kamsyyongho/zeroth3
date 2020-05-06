@@ -1683,7 +1683,7 @@ export function Editor(props: EditorProps) {
                 case EDITOR_CONTROLS.editSegmentTime:
                     prepareSegmentTimePicker(editorState);
                     break;
-                case EDITOR_CONTROLS.undo: ;
+                case EDITOR_CONTROLS.undo:
                     updatedEditorState = EditorState.undo(editorState);
                     break;
                 case EDITOR_CONTROLS.redo:

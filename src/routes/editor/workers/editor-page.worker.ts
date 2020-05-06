@@ -43,17 +43,21 @@ function binarySearch<A, B>(
 ) {
   let mid: number | undefined;
   let cmp: number | undefined;
-  if (low === undefined) low = 0;
-  else {
+  if(haystack.length === 1){return 0;}
+  if (low === undefined) {
+    low = 0
+  } else {
     low = low | 0;
     if (low < 0 || low >= haystack.length)
       throw new RangeError('invalid lower bound');
   }
-  if (high === undefined) high = haystack.length - 1;
-  else {
+  if (high === undefined) {
+    high = haystack.length - 1;
+  } else {
     high = high | 0;
-    if (high < low || high >= haystack.length)
+    if (high < low || high >= haystack.length){
       throw new RangeError('invalid upper bound');
+    }
   }
   while (low <= high) {
     // The naive `low + high >>> 1` could fail for array lengths > 2**31
@@ -122,11 +126,18 @@ const calculatePlayingLocation = (
     if (isNaN(time) || !segments.length) return;
     const segmentIndex = binarySearch(segments, time, findIndexForMatchingTime);
     const wordTime = time - segments[segmentIndex].start;
-    const wordIndex = binarySearch(
-      segments[segmentIndex].wordAlignments,
-      wordTime,
-      findIndexForMatchingTime,
-    );
+    let wordIndex;
+    if(wordTime === 0) {
+      wordIndex = 0
+    } else {
+      wordIndex = binarySearch(
+          segments[segmentIndex].wordAlignments,
+          wordTime,
+          findIndexForMatchingTime,
+      );
+    }
+
+    console.log('=================segmentIndex, wordTime, wordIndex  : ', segmentIndex, wordTime, wordIndex);
 
     const playingLocation: SegmentAndWordIndex = [segmentIndex, wordIndex];
     return playingLocation;
@@ -154,7 +165,7 @@ addEventListener('message', message => {
     segments as Segment[],
     currentlyPlayingWordTime as Required<Time> | undefined,
   );
-  console.log('eventListener inside worker : ', playingLocation);
+  console.log('time, segments, currentlyPlaying eventListener inside worker : ', time, segments, currentlyPlayingWordTime);
   // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
   //@ts-ignore
   postMessage({ playingLocation, initialSegmentLoad });

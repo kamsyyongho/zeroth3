@@ -166,10 +166,19 @@ export function Editor(props: EditorProps) {
 
   const updatePlayingLocation = () => {
     const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+    const selection = window.getSelection();
+    const range = document.createRange();
     console.log('playingBlock in updatePlayingLocation : ',playingBlock);
+
     if(playingBlock) {
-      playingBlock.focus();
+      range.selectNodeContents(playingBlock);
+      range.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
     }
+    // if(playingBlock) {
+    //   playingBlock.focus();
+    // }
   };
 
   const saveSegmentStateBeforeChange = (segmentIndex: number, wordIndex: number) => {
@@ -429,10 +438,10 @@ export function Editor(props: EditorProps) {
     setEditorFocussed(focussed);
   }, [focussed]);
 
-  // React.useEffect(() => {
-  //   console.log('playingLocation : ', playingLocation);
-  //   updatePlayingLocation();
-  // }, [playingLocation, ready]);
+  React.useEffect(() => {
+    console.log('playingLocation : ', playingLocation);
+    updatePlayingLocation();
+  }, [playingLocation, ready]);
 
   return (
     <div
