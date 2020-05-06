@@ -53,6 +53,19 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         };
     }
 
+    setRange = (node: HTMLElement, collapse: boolean) => {
+        const range = document.createRange();
+        const selection = window.getSelection();
+        const currentNode = this.state.element;
+
+        currentNode.current.blur();
+        range.selectNodeContents(node);
+        range.collapse(collapse);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        this.props.updateChange(this.props.segmentIndex, this.props.wordAlignmentIndex, this.state.text);
+    };
+
     handleChange = (event: SyntheticEvent) => {
         const text: string = event?.target?.value;
         const firstWordAlignment = document.getElementById('word-0-0');
@@ -70,17 +83,10 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         (this.props.segmentIndex - 1, currentLocation + this.props.lengthBeforeBlock) : null;
         const previousSegmentNode = document.getElementById
         (`word-${this.props.segmentIndex - 1}-${wordAlignmentIndex}`) || null;
-        const currentNode = this.state.element;
         const range = document.createRange();
 
         if(!previousSegmentNode) {return;}
-        currentNode.current.blur();
-        // range.setStart(previousSegmentNode, wordAlignmentIndex);
-        range.selectNodeContents(previousSegmentNode);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        // selection?.setPosition(previousSegmentNode, 0);
+        this.setRange(previousSegmentNode, false);
         this.props.updateCaretLocation(this.props.segmentIndex - 1, wordAlignmentIndex);
     };
 
@@ -102,12 +108,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
         if(!nextSegmentNode) {return;}
         currentNode.current.blur();
-        // range.setStart(nextSegmentNode, wordAlignmentIndex);
-        range.selectNodeContents(nextSegmentNode);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        // selection?.setPosition(nextSegmentNode, 0);
+        this.setRange(nextSegmentNode, false);
         console.log('wordAlignmentIndex in wordblock : ', wordAlignmentIndex);
         this.props.updateCaretLocation(this.props.segmentIndex + 1, wordAlignmentIndex);
     };
@@ -126,12 +127,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
                 if(!firstBlockNextSegment){return;}
 
-                // selection?.setPosition(firstBlockNextSegment, 0);
-                // range.setStart(firstBlockNextSegment.childNodes[1], 0);
-                range.selectNodeContents(firstBlockNextSegment);
-                range.collapse(true);
-                selection?.removeAllRanges();
-                selection?.addRange(range);
+                this.setRange(firstBlockNextSegment, true);
                 this.props.updateCaretLocation(this.props.segmentIndex, 0);
             } else {
                 const nextWordAlignmentBlock = document.getElementById
@@ -139,13 +135,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
                 if(!nextWordAlignmentBlock){return;}
 
-                // range.setStart(nextWordAlignmentBlock.childNodes[1], 0);
-                range.selectNodeContents(nextWordAlignmentBlock);
-                range.collapse(true);
-                selection?.removeAllRanges();
-                selection?.addRange(range);
+                this.setRange(nextWordAlignmentBlock, true);
                 this.props.updateCaretLocation(this.props.segmentIndex, this.props.wordAlignmentIndex + 1);
-                // selection?.setPosition(nextWordAlignmentBlock, 0);
             }
         }
     };
@@ -165,11 +156,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                 if(!lastBlockPreviousSegment) {return;}
 
                 console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
-                range.selectNodeContents(lastBlockPreviousSegment);
-                range.collapse(false);
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-                // selection?.setPosition(lastBlockPreviousSegment, lastWordPrevSegment.word.length - 1);
+                this.setRange(lastBlockPreviousSegment, false);
                 console.log('selection after collapse : ', selection);
             } else {
                 const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
@@ -177,11 +164,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
                 if(!prevWordAlignmentBlock){return;}
 
-                range.selectNodeContents(prevWordAlignmentBlock);
-                range.collapse(false);
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-                // selection?.setPosition(prevWordAlignmentBlock, 0);
+                this.setRange(prevWordAlignmentBlock, false);
             }
         }
     };
@@ -228,6 +211,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                              innerRef={element}
                              className={classes.wordAlignment}
                              onChange={this.handleChange}
+                             onFocus={this.handleOnFocus}
                              onBlur={this.handleOnBlur}
                              html={text}
                              disabled={false} />

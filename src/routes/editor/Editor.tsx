@@ -93,6 +93,36 @@ interface SegmentSplitOptions {
   cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
 }
 
+interface EditorProps {
+  height?: number;
+  readOnly?: boolean;
+  /** payload from the parent to handle */
+  responseFromParent?: ParentMethodResponse;
+  /** let the parent know that we've handled the request */
+  onParentResponseHandled: () => void;
+  editorCommand?: EDITOR_CONTROLS;
+  /** let the parent know that we've handled the request */
+  onCommandHandled: () => void;
+  handleSegmentUpdate: (updatedSegment: Segment, segmentIndex: number) => void,
+  onReady: (ready: boolean) => void;
+  onWordTimeCreationClose: () => void;
+  onSpeakersUpdate: (speakers: string[]) => void;
+  onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
+  loading?: boolean;
+  segments: Segment[];
+  playingLocation?: SegmentAndWordIndex;
+  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
+  assignSpeaker: (segmentIndex: number) => void;
+  removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
+  onWordClick: (wordLocation: SegmentAndWordIndex) => void;
+  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
+  splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
+  mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
+  timePickerRootProps: TimePickerRootProps;
+  splitTimePickerRootProps: SplitTimePickerRootProps;
+}
+
 export function Editor(props: EditorProps) {
   const {
     height,
@@ -108,6 +138,7 @@ export function Editor(props: EditorProps) {
     loading,
     segments,
     playingLocation,
+    handleSegmentUpdate,
     updateSegment,
     updateSegmentTime,
     assignSpeaker,
@@ -165,24 +196,40 @@ export function Editor(props: EditorProps) {
   };
 
   const updatePlayingLocation = () => {
-    const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
-    const selection = window.getSelection();
-    const range = document.createRange();
-    console.log('playingBlock in updatePlayingLocation : ',playingBlock);
+    if(playingLocation) {
+      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const selection = window.getSelection();
+      const range = document.createRange();
+      console.log('playingBlock in updatePlayingLocation : ',playingBlock);
 
-    if(playingBlock) {
-      range.selectNodeContents(playingBlock);
-      range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+      if(playingBlock) {
+        range.selectNodeContents(playingBlock);
+        range.collapse(true);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
     }
     // if(playingBlock) {
     //   playingBlock.focus();
     // }
   };
 
-  const saveSegmentStateBeforeChange = (segmentIndex: number, wordIndex: number) => {
-    const savedSegmentsState = localForage.getItem(SEGMENTS_STORE_KEY);
+  const initializeSegmentsStoredInLocal = async () => {
+    await localForage.setItem(SEGMENTS_STORE_KEY, [segments]);
+
+    const savedState = await localForage.getItem(SEGMENTS_STORE_KEY);
+    console.log('initial item set in localForage : ', savedState);
+  };
+
+  const saveSegmentStateBeforeChange = async () => {
+    try {
+      const savedSegmentsState: Segment[] = await localForage.getItem(SEGMENTS_STORE_KEY);
+      await localForage.setItem(SEGMENTS_STORE_KEY, [...savedSegmentsState, segments]);
+      const saved = localForage.getItem(SEGMENTS_STORE_KEY);
+      console.log('saved : ', saved);
+    } catch(error) {
+      console.log(error)
+    }
   };
 
   const focusEditor = () => {
@@ -338,7 +385,13 @@ export function Editor(props: EditorProps) {
   const handleWordTimeCreation = () => {
   };
 
-  const updateChange = (segmentIndex: number, wordIndex: number, word: string) => {
+  const updateChange = async (segmentIndex: number, wordIndex: number, word: string) => {
+    await saveSegmentStateBeforeChange();
+    const updatedSegment = segments[segmentIndex];
+    updatedSegment.wordAlignments[wordIndex].word = word;
+    handleSegmentUpdate(updatedSegment, segmentIndex);
+    console.log('segment at segmentIndex after update : ', segments[segmentIndex]);
+
     // if (readOnlyEditorState) {
     //   return;
     // }
@@ -430,6 +483,7 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     focusEditor();
+    initializeSegmentsStoredInLocal();
   }, []);
 
   // keep track of focus to prevent the keypress listeners

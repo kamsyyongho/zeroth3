@@ -137,8 +137,6 @@ const calculatePlayingLocation = (
       );
     }
 
-    console.log('=================segmentIndex, wordTime, wordIndex  : ', segmentIndex, wordTime, wordIndex);
-
     const playingLocation: SegmentAndWordIndex = [segmentIndex, wordIndex];
     return playingLocation;
   } catch (error) {

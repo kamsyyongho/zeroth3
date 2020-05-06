@@ -826,6 +826,7 @@ export function EditorPage() {
                 onSpeakersUpdate={handleSpeakersUpdate}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
+                handleSegmentUpdate={handleSegmentUpdate}
                 updateSegment={submitSegmentUpdate}
                 updateSegmentTime={submitSegmentTimeUpdate}
                 splitSegment={submitSegmentSplit}
