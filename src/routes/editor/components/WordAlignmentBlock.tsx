@@ -34,6 +34,7 @@ export interface WordAlignmentProp {
     word: string,
     confidence: number,
     lengthBeforeBlock: number,
+    readOnly: boolean,
 }
 
 export interface State {
@@ -191,6 +192,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleOnFocus = () => {
         console.log('what');
+        this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
 
     handleOnBlur = () => {
@@ -200,11 +202,10 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     componentDidMount = () => {
         console.log('node, inside componenDidMount : ', this.state.element);
-        this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, readOnly } = this.props;
         const { element, text, wordAlignmentId } = this.state;
         return (
             <ContentEditable id={wordAlignmentId}
@@ -214,7 +215,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                              onFocus={this.handleOnFocus}
                              onBlur={this.handleOnBlur}
                              html={text}
-                             disabled={false} />
+                             disabled={readOnly} />
         )
     }
 }

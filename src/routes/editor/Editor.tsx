@@ -179,10 +179,7 @@ export function Editor(props: EditorProps) {
 
   const getSegmentAndWordIndex = () => {
     const selectedBlock: any = window.getSelection();
-    const selectedBlockId: string = selectedBlock.focusNode.parentElement?.id;
-
-
-    if(!selectedBlockId) return;
+    const selectedBlockId: string = selectedBlock.focusNode.id;
     const segmentAndWordIndex = selectedBlockId.split('-');
     segmentAndWordIndex.shift();
 
@@ -215,7 +212,7 @@ export function Editor(props: EditorProps) {
   };
 
   const initializeSegmentsStoredInLocal = async () => {
-    await localForage.setItem(SEGMENTS_STORE_KEY, [segments]);
+    await localForage.setItem(SEGMENTS_STORE_KEY, []);
 
     const savedState = await localForage.getItem(SEGMENTS_STORE_KEY);
     console.log('initial item set in localForage : ', savedState);
@@ -225,8 +222,6 @@ export function Editor(props: EditorProps) {
     try {
       const savedSegmentsState: Segment[] = await localForage.getItem(SEGMENTS_STORE_KEY);
       await localForage.setItem(SEGMENTS_STORE_KEY, [...savedSegmentsState, segments]);
-      const saved = localForage.getItem(SEGMENTS_STORE_KEY);
-      console.log('saved : ', saved);
     } catch(error) {
       console.log(error)
     }
@@ -268,14 +263,6 @@ export function Editor(props: EditorProps) {
     return buildStyleMap(theme);
   }, []);
 
-  /**
-   * build new entity and key maps when Draft.js changes the enity key map
-   * - Draft.js will sometimes reorder and rename 
-   * the keys, so our maps will be out of sync
-   */
-  const rebuildEntityMapFromContentState = () => {
-  };
-
   /** updates the undo/redo button status and rebuilds the entity map */
   const onEditorStateUpdate = () => {
   };
@@ -284,31 +271,6 @@ export function Editor(props: EditorProps) {
   };
 
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
-
-  /**
-   * builds the callback to update the block's stored segment with the new segment
-   */
-  const buildUpdateSegmentCallback = () => {
-  };
-
-  /**
-   * builds the callback to update the manually merged block with the updated segment Id response
-   */
-  const buildMergeSegmentCallback = () => {
-  };
-
-  /**
-   * builds the callback to the manually split blocks with the updated segment Ids response
-   */
-  const buildSplitSegmentCallback = () => {
-
-  };
-
-  const handleSegmentMergeCommand = () => {
-  };
-
-  const prepareSegmentForSplit = () => {
-  };
 
   const openSegmentSplitTimePicker = () => {
   };
@@ -327,46 +289,6 @@ export function Editor(props: EditorProps) {
   const handleClickInsideEditor = () => {
     onWordClick(getSegmentAndWordIndex());
   };
-
-  const handleKeyCommand = (command: string, incomingEditorState: EditorState, eventTimeStamp: number): DraftHandleValue => {
-    if (readOnlyEditorState) {
-      return HANDLE_VALUES.handled;
-    }
-    const cursorContent = getSegmentAndWordIndex() || [];
-    switch (command) {
-      case KEY_COMMANDS['toggle-popups']:
-        break;
-      case KEY_COMMANDS.delete:
-      case KEY_COMMANDS['delete-word']:
-        // don't allow if at end
-        if (cursorContent[1] === segments[cursorContent[0]].length - 1) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS.backspace:
-        if (cursorContent[1] === 0) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS['backspace-word']:
-      case KEY_COMMANDS['backspace-to-start-of-line']:
-        if (cursorContent[1] === 0) {
-          return HANDLE_VALUES.handled;
-        }
-        break;
-      case KEY_COMMANDS['merge-segments-back']:
-        handleSegmentMergeCommand();
-        return HANDLE_VALUES.handled;
-      case KEY_COMMANDS['edit-segment-time']:
-        // prepareSegmentTimePicker();
-        return HANDLE_VALUES.handled;
-      default:
-        break;
-    }
-    RichUtils.handleKeyCommand(incomingEditorState, command);
-    return HANDLE_VALUES['not-handled'];
-  };
-
   /** updates the word alignment data once selected segment / blocks have changed 
    * @returns if we should update the editor state
    */
@@ -391,24 +313,6 @@ export function Editor(props: EditorProps) {
     updatedSegment.wordAlignments[wordIndex].word = word;
     handleSegmentUpdate(updatedSegment, segmentIndex);
     console.log('segment at segmentIndex after update : ', segments[segmentIndex]);
-
-    // if (readOnlyEditorState) {
-    //   return;
-    // }
-    // let canUpdate = true;
-    // const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-    // if (loading || !previousSelectedCursorContent || !previousSelectionState) {
-    //   setPreviousSelectedCursorContent(cursorContent);
-    //   setPreviousSelectionState(incomingEditorState.getSelection());
-    // } else if (previousSelectedCursorContent && previousSelectionState) {
-    //   canUpdate = updateSegmentOnChange(incomingEditorState, cursorContent);
-    // }
-    // if (!loading && canUpdate) {
-    //   // update location since we are still in same block
-    //   setPreviousSelectionState(incomingEditorState.getSelection());
-    //   setEditorStateBeforeBlur(cloneEditorState(incomingEditorState));
-    //   setEditorState(incomingEditorState);
-    // }
   };
 
   /**
@@ -484,6 +388,12 @@ export function Editor(props: EditorProps) {
     setReady(true);
     focusEditor();
     initializeSegmentsStoredInLocal();
+    onReady(true);
+    return () => {
+      onReady(false);
+      initializeSegmentsStoredInLocal();
+      setEditorFocussed(false);
+    };
   }, []);
 
   // keep track of focus to prevent the keypress listeners

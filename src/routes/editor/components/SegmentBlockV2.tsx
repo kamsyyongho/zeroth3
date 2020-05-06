@@ -85,6 +85,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         start={word.start}
                         length={word.length}
                         word={word.word}
+                        readOnly={readOnly}
                         confidence={word.confidence} />
                 )
             })}

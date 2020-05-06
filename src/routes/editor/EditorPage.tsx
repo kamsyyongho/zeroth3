@@ -40,6 +40,7 @@ import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
+import {EditorState} from "draft-js";
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -231,6 +232,20 @@ export function EditorPage() {
     }
   };
 
+  const getSegmentAndWordIndex = () => {
+    const selectedBlock: any = window.getSelection();
+    const selectedBlockId: string = selectedBlock.focusNode.id;
+
+    console.log('selectedBlock in getSegmentAndWordIndex() : ', selectedBlock);
+
+
+    if(!selectedBlockId) return;
+    const segmentAndWordIndex = selectedBlockId.split('-');
+    segmentAndWordIndex.shift();
+
+    return segmentAndWordIndex.map(index => Number(index));
+  };
+
   const getDataSetsToFetchFrom = async () => {
     if (api?.user) {
       const response = await api.user.getDataSetsToFetchFrom();
@@ -377,6 +392,11 @@ export function EditorPage() {
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
+  };
+
+  const handleSegmentMergeCommand = async () => {
+    const caretLocation = getSegmentAndWordIndex();
+    console.log('caretLocation handleSegmentMerge : ', caretLocation);
   };
 
   const submitSegmentSplit = async (segmentId: string,
@@ -701,6 +721,40 @@ export function EditorPage() {
     setCanRedo(canRedo);
   };
 
+  const handleEditorCommand = (command: EDITOR_CONTROLS) => {
+    switch (command) {
+      case EDITOR_CONTROLS.save:
+        // updateSegmentOnChange(editorState, undefined, true);
+        break;
+      case EDITOR_CONTROLS.toggleMore:
+        // togglePopups();
+        break;
+      case EDITOR_CONTROLS.split:
+        // handleSegmentSplitCommand(editorState);
+        break;
+      case EDITOR_CONTROLS.merge:
+        handleSegmentMergeCommand();
+        break;
+      case EDITOR_CONTROLS.createWord:
+        // createWordTime(editorState);
+        break;
+      case EDITOR_CONTROLS.editSegmentTime:
+        // prepareSegmentTimePicker(editorState);
+        break;
+      case EDITOR_CONTROLS.undo:
+        // updatedEditorState = EditorState.undo(editorState);
+        break;
+      case EDITOR_CONTROLS.redo:
+        // updatedEditorState = EditorState.redo(editorState);
+        break;
+      case EDITOR_CONTROLS.speaker:
+        // assignSpeakerFromShortcut(editorState);
+        break;
+      default:
+        break;
+    }
+  };
+
   const resetVariables = () => {
     internalSegmentsTracker = [];
     wordWasClicked = false;
@@ -794,7 +848,7 @@ export function EditorPage() {
   return (
     <>
       {!readOnly && <EditorControls
-        onCommandClick={setEditorCommand}
+        onCommandClick={handleEditorCommand}
         onConfirm={onConfirmClick}
         disabledControls={disabledControls}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
