@@ -3,7 +3,7 @@ version: '2'
 services:
   nginx-proxy:
     container_name: zeroth-ee-dashboard
-    image: 161969600347.dkr.ecr.ap-northeast-2.amazonaws.com/zeroth/zeroth-ee-dashboard:1.0.0
+    image: 161969600347.dkr.ecr.ap-northeast-2.amazonaws.com/zeroth/zeroth-ee-dashboard:1.0.1
     environment:
       - KEYCLOAK_URL=http://115.71.1.70:8888/auth
       - KEYCLOAK_REALM=zeroth
