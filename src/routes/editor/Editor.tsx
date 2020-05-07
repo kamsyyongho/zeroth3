@@ -38,7 +38,7 @@ import {
   Word,
   WordAlignmentEntityData,
   WordKeyToEntityKey } from '../../types/editor.types';
-import { SEGMENTS_STORE_KEY } from "../../common/constants";
+import { UNDO_SEGMENT_STACK } from "../../common/constants";
 import log from '../../util/log/logger';
 import { getRandomColor } from '../../util/misc';
 import { EDITOR_CONTROLS } from './components/EditorControls';
@@ -116,9 +116,7 @@ interface EditorProps {
   assignSpeaker: (segmentIndex: number) => void;
   removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
-  splitSegment: (segmentId: string, segmentIndex: number, splitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
-  mergeSegments: (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => Promise<void>;
   timePickerRootProps: TimePickerRootProps;
   splitTimePickerRootProps: SplitTimePickerRootProps;
 }
@@ -144,9 +142,7 @@ export function Editor(props: EditorProps) {
     assignSpeaker,
     removeHighRiskFromSegment,
     onWordClick,
-    splitSegment,
     splitSegmentByTime,
-    mergeSegments,
     timePickerRootProps,
     splitTimePickerRootProps,
   } = props;
@@ -212,16 +208,16 @@ export function Editor(props: EditorProps) {
   };
 
   const initializeSegmentsStoredInLocal = async () => {
-    await localForage.setItem(SEGMENTS_STORE_KEY, []);
+    await localForage.setItem(UNDO_SEGMENT_STACK, []);
 
-    const savedState = await localForage.getItem(SEGMENTS_STORE_KEY);
+    const savedState = await localForage.getItem(UNDO_SEGMENT_STACK);
     console.log('initial item set in localForage : ', savedState);
   };
 
   const saveSegmentStateBeforeChange = async () => {
     try {
-      const savedSegmentsState: Segment[] = await localForage.getItem(SEGMENTS_STORE_KEY);
-      await localForage.setItem(SEGMENTS_STORE_KEY, [...savedSegmentsState, segments]);
+      const savedSegmentsState: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
+      await localForage.setItem(UNDO_SEGMENT_STACK, [...savedSegmentsState, segments]);
     } catch(error) {
       console.log(error)
     }
@@ -287,7 +283,7 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
-    onWordClick(getSegmentAndWordIndex());
+    // onWordClick(getSegmentAndWordIndex());
   };
   /** updates the word alignment data once selected segment / blocks have changed 
    * @returns if we should update the editor state

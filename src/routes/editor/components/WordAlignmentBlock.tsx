@@ -28,7 +28,7 @@ export interface WordAlignmentProp {
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void,
     updateChange: (segmentIndex:number, wordIndex: number, word: string) => void,
-    classes: any,
+    classes: string,
     start: number,
     length: number,
     word: string,

@@ -3,7 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 /* eslint import/no-webpack-loader-syntax: off */ // this lint rule is from create-react-app
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
-import { useSnackbar } from 'notistack';
+import {useSnackbar, VariantType} from 'notistack';
 import { BulletList } from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
 import React, { useGlobal } from "reactn";
@@ -40,8 +40,7 @@ import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
-import {EditorState} from "draft-js";
-
+import localForage from 'localforage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -161,6 +160,10 @@ export function EditorPage() {
   const openConfirmDialog = () => setConfirmDialogOpen(true);
   const closeConfirmDialog = () => setConfirmDialogOpen(false);
 
+  const displayMessage = (message: string, variant: VariantType = SNACKBAR_VARIANTS.info) => {
+    enqueueSnackbar(message, { variant });
+  };
+
   const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
@@ -234,7 +237,7 @@ export function EditorPage() {
 
   const getSegmentAndWordIndex = () => {
     const selectedBlock: any = window.getSelection();
-    const selectedBlockId: string = selectedBlock.focusNode.id;
+    const selectedBlockId: string = selectedBlock.focusNode.parentNode.id || selectedBlock.anchorNode.parentNode.id;
 
     console.log('selectedBlock in getSegmentAndWordIndex() : ', selectedBlock);
 
@@ -306,7 +309,6 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
-        onSuccess(updatedSegment);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -359,11 +361,19 @@ export function EditorPage() {
     }
   };
 
-  const submitSegmentMerge = async (firstSegmentIndex: number, secondSegmentIndex: number, onSuccess: (segment: Segment) => void) => {
+  const handleSegmentMergeCommand = async () => {
+    const caretLocation = getSegmentAndWordIndex();
+    if(!caretLocation || caretLocation[0] === segments.length -1) {
+      console.log('invalid location : ', caretLocation);
+      displayMessage(translate('editor.validation.invalidMergeLocation'));
+      return;
+    }
+
+    const selectedSegmentIndex = caretLocation[0];
     if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const firstSegmentId = segments[firstSegmentIndex].id;
-      const secondSegmentId = segments[secondSegmentIndex].id;
+      const firstSegmentId = segments[selectedSegmentIndex].id;
+      const secondSegmentId = segments[selectedSegmentIndex + 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -371,9 +381,7 @@ export function EditorPage() {
         //cut out and replace the old segments
         const mergedSegments = [...segments];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(firstSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
-        // update the editor
-        onSuccess(response.segment);
+        mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
       } else {
@@ -394,18 +402,29 @@ export function EditorPage() {
     }
   };
 
-  const handleSegmentMergeCommand = async () => {
-    const caretLocation = getSegmentAndWordIndex();
-    console.log('caretLocation handleSegmentMerge : ', caretLocation);
-  };
+  // const handleSegmentMergeCommand = async () => {
+  //   const caretLocation = getSegmentAndWordIndex();
+  //   if(!caretLocation || caretLocation[0] === segments.length - 1) {
+  //     displayMessage(translate('editor.validation.invalidMergeLocation'));
+  //   } else {
+  //     // const selectedSegment =
+  //   }
+  //
+  //   console.log('caretLocation handleSegmentMerge : ', caretLocation);
+  // };
 
-  const submitSegmentSplit = async (segmentId: string,
-                                    segmentIndex: number,
-                                    splitIndex: number,
-                                    onSuccess: (updatedSegments: [Segment, Segment]) => void) => {
+  const handleSegmentSplitCommand = async () => {
+    const caretLocation = getSegmentAndWordIndex();
+    if(!caretLocation || caretLocation[1] === 0 ||
+        caretLocation[1] === segments[caretLocation[0]].wordAlignments.length) {
+      console.log('invalid location : ', caretLocation);
+      displayMessage(translate('editor.validation.invalidSplitLocation'));
+      return;
+    }
+
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segmentId, splitIndex);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segments[caretLocation[0]].id, caretLocation[1]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -413,11 +432,10 @@ export function EditorPage() {
         const splitSegments = [...segments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
-        splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
+        splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
-        onSuccess(response.segments);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -730,7 +748,7 @@ export function EditorPage() {
         // togglePopups();
         break;
       case EDITOR_CONTROLS.split:
-        // handleSegmentSplitCommand(editorState);
+        handleSegmentSplitCommand();
         break;
       case EDITOR_CONTROLS.merge:
         handleSegmentMergeCommand();
@@ -883,9 +901,7 @@ export function EditorPage() {
                 handleSegmentUpdate={handleSegmentUpdate}
                 updateSegment={submitSegmentUpdate}
                 updateSegmentTime={submitSegmentTimeUpdate}
-                splitSegment={submitSegmentSplit}
                 splitSegmentByTime={submitSegmentSplitByTime}
-                mergeSegments={submitSegmentMerge}
                 assignSpeaker={openSpeakerAssignDialog}
                 removeHighRiskFromSegment={removeHighRiskFromSegment}
                 onWordTimeCreationClose={handleWordTimeCreationClose}
