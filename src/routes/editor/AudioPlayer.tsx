@@ -134,6 +134,7 @@ interface AudioPlayerProps {
   onPlayingSegmentCreate: () => void;
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
+  setIsAudioPlaying: (isAudioPlaying: boolean) => void;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -159,6 +160,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onPlayingSegmentCreate,
     onSegmentStatusEditChange,
     onReady,
+    setIsAudioPlaying,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -184,8 +186,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const handlePause = () => setIsPlay(false);
-  const handlePlay = () => setIsPlay(true);
+  const handlePause = () => {
+    setIsPlay(false);
+    setIsAudioPlaying(false);
+  };
+  const handlePlay = () => {
+    setIsPlay(true);
+    setIsAudioPlaying(true);
+  };
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
@@ -226,6 +234,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
       setIsPlay(false);
+      setIsAudioPlaying(false);
       StreamPlayer.pause();
       PeaksPlayer.player.seek(0);
       setCurrentTimeDisplay(DEFAULT_EMPTY_TIME);

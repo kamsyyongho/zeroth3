@@ -109,6 +109,7 @@ interface EditorProps {
   onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   loading?: boolean;
+  isAudioPlaying: boolean;
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
@@ -134,6 +135,7 @@ export function Editor(props: EditorProps) {
     onSpeakersUpdate,
     onUpdateUndoRedoStack,
     loading,
+    isAudioPlaying,
     segments,
     playingLocation,
     handleSegmentUpdate,
@@ -175,7 +177,9 @@ export function Editor(props: EditorProps) {
 
   const getSegmentAndWordIndex = () => {
     const selectedBlock: any = window.getSelection();
-    const selectedBlockId: string = selectedBlock.focusNode.id;
+    const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
+    const selectedBlockId: string = selectedBlockNode.parentNode.id;
+
     const segmentAndWordIndex = selectedBlockId.split('-');
     segmentAndWordIndex.shift();
 
@@ -283,9 +287,11 @@ export function Editor(props: EditorProps) {
   };
 
   const handleClickInsideEditor = () => {
-    // onWordClick(getSegmentAndWordIndex());
+    const playingLocation: SegmentAndWordIndex = getSegmentAndWordIndex();
+    console.log('playingLocation in handleClickInsideEditor : ', playingLocation);
+    if(playingLocation) onWordClick(playingLocation);
   };
-  /** updates the word alignment data once selected segment / blocks have changed 
+  /** updates the word alignment data once selected segment / blocks have changed
    * @returns if we should update the editor state
    */
   const updateSegmentOnChange = () => {
@@ -399,8 +405,8 @@ export function Editor(props: EditorProps) {
   }, [focussed]);
 
   React.useEffect(() => {
-    console.log('playingLocation : ', playingLocation);
-    updatePlayingLocation();
+    console.log('playingLocation : ', isAudioPlaying);
+    if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
 
   return (
@@ -470,6 +476,7 @@ export function Editor(props: EditorProps) {
                                  readOnly={readOnly}
                                  updateCaretLocation={updateCaretLocation}
                                  updateChange={updateChange}
+                                 updateSegment={updateSegment}
                                  findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />

@@ -41,6 +41,7 @@ import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
 import localForage from 'localforage';
+import {UNDO_SEGMENT_STACK} from "../../common/constants";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -135,6 +136,7 @@ export function EditorPage() {
   const [segments, setSegments] = React.useState<Segment[]>([]);
   const [speakers, setSpeakers] = React.useState<string[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
+  const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -297,8 +299,7 @@ export function EditorPage() {
   const submitSegmentUpdate = async (segmentId: string,
                                      wordAlignments: WordAlignment[],
                                      transcript: string,
-                                     segmentIndex: number,
-                                     onSuccess: (segment: Segment) => void) => {
+                                     segmentIndex: number) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
@@ -432,10 +433,14 @@ export function EditorPage() {
         const splitSegments = [...segments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
+        const undoSegmentStack: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
         splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
+
+        await localForage.setItem(UNDO_SEGMENT_STACK, [...undoSegmentStack, segments]);
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
+        console.log('undoSegmentStack : ', undoSegmentStack);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -895,6 +900,7 @@ export function EditorPage() {
                 onReady={setEditorReady}
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
+                isAudioPlaying={isAudioPlaying}
                 onSpeakersUpdate={handleSpeakersUpdate}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
@@ -949,6 +955,7 @@ export function EditorPage() {
               segmentSplitTimeBoundary={segmentSplitTimeBoundary}
               segmentSplitTime={segmentSplitTime}
               onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
+              setIsAudioPlaying={setIsAudioPlaying}
             />
           </ErrorBoundary>}
         </Paper>

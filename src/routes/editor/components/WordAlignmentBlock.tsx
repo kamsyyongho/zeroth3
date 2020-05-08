@@ -2,6 +2,7 @@ import { withStyles } from '@material-ui/core/styles';
 import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import ContentEditable from "react-contenteditable";
+import {ApiContext} from "../../../hooks/api/ApiContext";
 
 const styles = (theme: CustomTheme) => ({
     root: {
@@ -28,7 +29,8 @@ export interface WordAlignmentProp {
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void,
     updateChange: (segmentIndex:number, wordIndex: number, word: string) => void,
-    classes: string,
+    updateWordAlignmentChange: (wordIndex: number, word: string, isChanged: boolean) => void,
+    classes: any,
     start: number,
     length: number,
     word: string,
@@ -41,6 +43,7 @@ export interface State {
     text: string,
     wordAlignmentId: string,
     element: any,
+    isChanged: boolean,
 }
 
 class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
@@ -49,6 +52,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         super();
         this.state = {
             element: React.createRef(),
+            isChanged: false,
             text: props.word,
             wordAlignmentId: `word-${props.segmentIndex}-${props.wordAlignmentIndex}`
         };
@@ -70,6 +74,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     handleChange = (event: SyntheticEvent) => {
         const text: string = event?.target?.value;
         const firstWordAlignment = document.getElementById('word-0-0');
+        if(!this.state.isChanged) this.setState({ isChanged: true });
         console.log('element getSelection : ', window.getSelection());
         console.log('first word alignment : ',firstWordAlignment);
         console.log('handle change by ContentEditable : ', event);
@@ -195,13 +200,14 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
 
-    handleOnBlur = () => {
-        console.log('does it get called?');
+    handleOnBlur = async () => {
+        console.log('isChanged when wordAlignment blur???', this.state.isChanged);
+        await this.props.updateWordAlignmentChange(
+            this.props.wordAlignmentIndex,
+            this.state.text,
+            this.state.isChanged);
+        this.setState({ isChanged: false });
         document.removeEventListener('keydown', this.handleKeyDown);
-    };
-
-    componentDidMount = () => {
-        console.log('node, inside componenDidMount : ', this.state.element);
     };
 
     render() {

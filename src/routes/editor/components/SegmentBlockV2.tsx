@@ -27,6 +27,7 @@ interface SegmentBlockProps  {
     assignSpeakerForSegment: (segmentIndex: string) => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
+    updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
@@ -41,11 +42,14 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         assignSpeakerForSegment,
         updateCaretLocation,
         updateChange,
+        updateSegment,
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment } = props;
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
+    const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
+    const [isChanged, setIsChanged] = React.useState(false);
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
@@ -58,12 +62,34 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         setLengthBeforeBlockArray(result);
     };
 
+    const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
+        if(isChanged) {
+            const updatedSegment = localSegment;
+            setIsChanged(isChanged);
+            updatedSegment.wordAlignments[wordIndex].word = word;
+            setLocalSegment(updatedSegment);
+        }
+    };
+
+    const handleFocus = () => {
+        console.log('focus detected in segment block');
+    };
+
+    const handleBlur = async () => {
+        console.log('isChanged on segmentBlock blur : ', isChanged);
+        if(isChanged) {
+            await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
+            setIsChanged(false);
+        }
+    };
+
     React.useEffect(() => {
         setLengthBeforeEachBlockArray();
+        console.log('localSegment in segment block : ', localSegment);
     }, []);
 
     return (
-        <div className={classes.root}>
+        <div className={classes.root} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
                 assignSpeakerForSegment={assignSpeakerForSegment}
@@ -78,6 +104,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         updateCaretLocation={updateCaretLocation}
                         updateChange={updateChange}
+                        updateWordAlignmentChange={updateWordAlignmentChange}
                         segmentIndex={segmentIndex}
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}
