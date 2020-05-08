@@ -70,19 +70,9 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.props.updateChange(this.props.segmentIndex, this.props.wordAlignmentIndex, this.state.text);
     };
 
-    handleChange = (event: SyntheticEvent) => {
-        const text: string = event?.target?.value;
-        const firstWordAlignment = document.getElementById('word-0-0');
-        if(!this.state.isChanged) this.setState({ isChanged: true });
-        console.log('element getSelection : ', window.getSelection());
-        console.log('first word alignment : ',firstWordAlignment);
-        console.log('handle change by ContentEditable : ', event);
-        this.setState({ text: text });
-        // selected?.setPosition(this.state.node, 0);
-    };
-
     handleArrowUp = () => {
         const selection = window.getSelection();
+        if(!selection) return;
         const currentLocation = selection?.anchorOffset;
         const wordAlignmentIndex = this.props.segmentIndex > 0 ? this.props.findWordAlignmentIndexToPrevSegment
         (this.props.segmentIndex - 1, currentLocation + this.props.lengthBeforeBlock) : null;
@@ -97,6 +87,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleArrowDown = () => {
         const selection = window.getSelection();
+        if(!selection) return;
         const currentLocation = selection?.anchorOffset;
         const wordAlignmentIndex = this.props.findWordAlignmentIndexToPrevSegment
         (this.props.segmentIndex + 1, currentLocation + this.props.lengthBeforeBlock);
@@ -192,6 +183,15 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
             default:
                 return;
         }
+    };
+
+
+    handleChange = (event: SyntheticEvent) => {
+        const text: string = event?.target?.value;
+        console.log('element getSelection : ', window.getSelection());
+        console.log('==============state.isChanged in handleChange ===============', this.state.isChanged);
+        this.setState({ text: text, isChanged: true });
+        // selected?.setPosition(this.state.node, 0);
     };
 
     handleOnFocus = () => {

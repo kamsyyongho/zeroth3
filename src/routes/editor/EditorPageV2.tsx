@@ -38,7 +38,7 @@ import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
 import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
-import { Editor } from './Editor';
+import { Editor } from './EditorV2';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
 
 
@@ -851,30 +851,30 @@ export function EditorPage() {
                         key={voiceData.id}
                         FallbackComponent={PageErrorFallback}
                     >
-                        <AudioPlayer
-                          key={voiceData.id}
-                          url={voiceData.audioUrl}
-                          timeToSeekTo={timeToSeekTo}
-                          disabledTimes={disabledTimes}
-                          segmentIdToDelete={segmentIdToDelete}
-                          onAutoSeekToggle={handleAutoSeekToggle}
-                          wordsClosed={wordsClosed}
-                          deleteAllWordSegments={deleteAllWordSegments}
-                          onSegmentDelete={handleSegmentDelete}
-                          onSegmentCreate={handleAudioSegmentCreate}
-                          onSegmentUpdate={handleAudioSegmentUpdate}
-                          onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
-                          onSegmentStatusEditChange={handleSegmentStatusEditChange}
-                          currentPlayingWordPlayerSegment={currentPlayingWordPlayerSegment}
-                          wordToCreateTimeFor={wordToCreateTimeFor}
-                          wordToUpdateTimeFor={wordToUpdateTimeFor}
-                          onTimeChange={handlePlaybackTimeChange}
-                          onSectionChange={handleSectionChange}
-                          onReady={handlePlayerRendered}
-                          segmentSplitTimeBoundary={segmentSplitTimeBoundary}
-                          segmentSplitTime={segmentSplitTime}
-                          onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
-                        />
+                        {/*<AudioPlayer*/}
+                        {/*  key={voiceData.id}*/}
+                        {/*  url={voiceData.audioUrl}*/}
+                        {/*  timeToSeekTo={timeToSeekTo}*/}
+                        {/*  disabledTimes={disabledTimes}*/}
+                        {/*  segmentIdToDelete={segmentIdToDelete}*/}
+                        {/*  onAutoSeekToggle={handleAutoSeekToggle}*/}
+                        {/*  wordsClosed={wordsClosed}*/}
+                        {/*  deleteAllWordSegments={deleteAllWordSegments}*/}
+                        {/*  onSegmentDelete={handleSegmentDelete}*/}
+                        {/*  onSegmentCreate={handleAudioSegmentCreate}*/}
+                        {/*  onSegmentUpdate={handleAudioSegmentUpdate}*/}
+                        {/*  onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}*/}
+                        {/*  onSegmentStatusEditChange={handleSegmentStatusEditChange}*/}
+                        {/*  currentPlayingWordPlayerSegment={currentPlayingWordPlayerSegment}*/}
+                        {/*  wordToCreateTimeFor={wordToCreateTimeFor}*/}
+                        {/*  wordToUpdateTimeFor={wordToUpdateTimeFor}*/}
+                        {/*  onTimeChange={handlePlaybackTimeChange}*/}
+                        {/*  onSectionChange={handleSectionChange}*/}
+                        {/*  onReady={handlePlayerRendered}*/}
+                        {/*  segmentSplitTimeBoundary={segmentSplitTimeBoundary}*/}
+                        {/*  segmentSplitTime={segmentSplitTime}*/}
+                        {/*  onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}*/}
+                        {/*/>*/}
                     </ErrorBoundary>}
                 </Paper>
             </Container >

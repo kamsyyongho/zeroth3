@@ -385,6 +385,7 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        console.log("==============successful merge call and state update ================================");
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -402,17 +403,6 @@ export function EditorPage() {
       setSaveSegmentsLoading(false);
     }
   };
-
-  // const handleSegmentMergeCommand = async () => {
-  //   const caretLocation = getSegmentAndWordIndex();
-  //   if(!caretLocation || caretLocation[0] === segments.length - 1) {
-  //     displayMessage(translate('editor.validation.invalidMergeLocation'));
-  //   } else {
-  //     // const selectedSegment =
-  //   }
-  //
-  //   console.log('caretLocation handleSegmentMerge : ', caretLocation);
-  // };
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
@@ -440,7 +430,7 @@ export function EditorPage() {
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
-        console.log('undoSegmentStack : ', undoSegmentStack);
+        console.log('=========================successful split api and state changes =============================');
       } else {
         log({
           file: `EditorPage.tsx`,

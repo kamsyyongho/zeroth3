@@ -317,19 +317,13 @@ export function Editor(props: EditorProps) {
     console.log('segment at segmentIndex after update : ', segments[segmentIndex]);
   };
 
-  /**
-   * determines if we are in a valid split location and calls the split methods if we are
-   */
-  const handleSegmentSplitCommand = () => {
-  };
-
   /** calls the split command if the editor is in a valid state */
   const handleReturnPress = () => {
   };
 
   const findWordAlignmentIndexToPrevSegment = (segmentIndex: number, currentLocation: number) => {
     if(segmentIndex >= segments.length) {return;}
-    const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
+     const prevSegmentWordAlignments = segments[segmentIndex].wordAlignments;
     let wordCount = 0;
 
     for(let i = 0; i < prevSegmentWordAlignments.length + 1; i++) {

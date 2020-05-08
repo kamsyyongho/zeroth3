@@ -339,7 +339,6 @@ interface EditorProps {
     editorCommand?: EDITOR_CONTROLS;
     /** let the parent know that we've handled the request */
     onCommandHandled: () => void;
-    handleSegmentUpdate: (updatedSegment: Segment, segmentIndex: number) => void,
     onReady: (ready: boolean) => void;
     onWordTimeCreationClose: () => void;
     onSpeakersUpdate: (speakers: string[]) => void;
