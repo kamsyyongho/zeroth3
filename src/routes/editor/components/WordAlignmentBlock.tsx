@@ -47,7 +47,6 @@ export interface State {
 }
 
 class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
-    // node: HTMLElement | null = null;
     constructor(props: any) {
         super();
         this.state = {

@@ -25,9 +25,6 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="PackageJsonUpdateNotifier">
-    <dismissed value="$PROJECT_DIR$/package.json" />
-  </component>
   <component name="ProjectId" id="1ZEb7EQYUhszgXUM44FGrnIUyS9" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -72,6 +69,7 @@
       <workItem from="1588430213075" duration="29667000" />
       <workItem from="1588764973502" duration="3369000" />
       <workItem from="1588813707688" duration="15826000" />
+      <workItem from="1588899035941" duration="1146000" />
     </task>
     <servers />
   </component>
@@ -82,6 +80,10 @@
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="353" y="-875" key="#Scopes" timestamp="1588900027252">
+      <screen x="-207" y="-1080" width="1920" height="1080" />
+    </state>
+    <state x="353" y="-875" key="#Scopes/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588900027252" />
     <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1584433229714">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>

@@ -112,7 +112,7 @@ interface EditorProps {
   isAudioPlaying: boolean;
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
-  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
   assignSpeaker: (segmentIndex: number) => void;
   removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
