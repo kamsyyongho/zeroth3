@@ -153,6 +153,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
                 console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
                 this.setRange(lastBlockPreviousSegment, false);
+                // this.props.updateCaretLocation(this.props.segmentIndex - 1, lastWordPrevSegment.index);
                 console.log('selection after collapse : ', selection);
             } else {
                 const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
@@ -161,6 +162,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                 if(!prevWordAlignmentBlock){return;}
 
                 this.setRange(prevWordAlignmentBlock, false);
+                this.props.updateCaretLocation(this.props.segmentIndex, this.props.wordAlignmentIndex - 1);
             }
         }
     };

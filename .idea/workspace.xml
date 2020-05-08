@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/editor.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/editor.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,7 +66,7 @@
       <workItem from="1588764973502" duration="3369000" />
       <workItem from="1588813707688" duration="15826000" />
       <workItem from="1588899035941" duration="1146000" />
-      <workItem from="1588900233932" duration="4939000" />
+      <workItem from="1588900233932" duration="10461000" />
     </task>
     <servers />
   </component>
@@ -79,6 +75,19 @@
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="WindowStateProjectService">
     <state x="353" y="-875" key="#Scopes" timestamp="1588900027252">
@@ -120,6 +129,10 @@
       <screen x="0" y="-1080" width="1920" height="1080" />
     </state>
     <state x="610" y="-805" width="700" height="530" key="recent.locations.popup/0.-1080.1920.1080/0.0.1792.1120@0.-1080.1920.1080" timestamp="1588750747602" />
+    <state x="418" y="-284" key="run.anything.popup" timestamp="1588919184262">
+      <screen x="-207" y="-1080" width="1920" height="1080" />
+    </state>
+    <state x="418" y="-284" key="run.anything.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588919184262" />
     <state x="-1213" y="239" width="766" height="679" key="search.everywhere.popup" timestamp="1586154452622">
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>

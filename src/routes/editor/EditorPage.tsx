@@ -110,7 +110,7 @@ export function EditorPage() {
   const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
   const [autoSeekLock, setAutoSeekLock] = React.useState(false);
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
-  const [currentPlayingWordPlayerSegment, setCurrentlyPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
+  const [currentPlayingWordPlayerSegment, setCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
   const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
@@ -241,9 +241,6 @@ export function EditorPage() {
     const selectedBlock: any = window.getSelection();
     const selectedBlockId: string = selectedBlock.focusNode.parentNode.id || selectedBlock.anchorNode.parentNode.id;
 
-    console.log('selectedBlock in getSegmentAndWordIndex() : ', selectedBlock);
-
-
     if(!selectedBlockId) return;
     const segmentAndWordIndex = selectedBlockId.split('-');
     segmentAndWordIndex.shift();
@@ -365,7 +362,6 @@ export function EditorPage() {
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
     if(!caretLocation || caretLocation[0] === segments.length -1) {
-      console.log('invalid location : ', caretLocation);
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
@@ -385,7 +381,6 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
-        console.log("==============successful merge call and state update ================================");
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -408,7 +403,6 @@ export function EditorPage() {
     const caretLocation = getSegmentAndWordIndex();
     if(!caretLocation || caretLocation[1] === 0 ||
         caretLocation[1] === segments[caretLocation[0]].wordAlignments.length) {
-      console.log('invalid location : ', caretLocation);
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
@@ -430,7 +424,6 @@ export function EditorPage() {
         // reset our new default baseline
         setSegments(splitSegments);
         // update the editor
-        console.log('=========================successful split api and state changes =============================');
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -528,11 +521,9 @@ export function EditorPage() {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
     console.log('playingLocation inside EditorPage - buildPlayingAudioPlayerSegment : ', playingLocation);
-    let segmentsToUse = segments;
-    if (!segmentsToUse.length) {
-      segmentsToUse = [...internalSegmentsTracker];
-    }
-    const segment = segmentsToUse[segmentIndex];
+    const label = '================ buildPlayingAudioPlayerSegment-setCurrentPlayingWordPlayerSegment timing';
+    if (!segments.length) return;
+    const segment = segments[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
     const endTime = startTime + wordAlignment.length;
@@ -540,6 +531,7 @@ export function EditorPage() {
       start: startTime,
       end: endTime,
     };
+    console.time(label);
     setCurrentlyPlayingWordTime(time);
     const text = wordAlignment.word.replace('|', '');
     const color = theme.audioPlayer.wordRange;
@@ -561,7 +553,9 @@ export function EditorPage() {
       time: segmentTime,
       text: segmentText,
     };
-    setCurrentlyPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
+    setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
+    console.timeEnd(label);
+
   };
 
   /** The worker used to calculate the current playing time */
@@ -598,11 +592,9 @@ export function EditorPage() {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
     // prevents seeking again if we changed because of clicking a word
-    console.log('time and currentlyPlayingWordTime inside handlePlaybackTimeChange : ', time, currentlyPlayingWordTime);
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
-      console.log("===========first call to RemoteWorker=============");
       setPlaybackTime(time);
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }
@@ -617,10 +609,14 @@ export function EditorPage() {
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
+      const label = '================handleWordClick==================';
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       buildPlayingAudioPlayerSegment(wordLocation);
+      console.time(label);
       setTimeToSeekTo(wordTime + SEEK_SLOP);
+      console.timeEnd(label);
+
       if (!autoSeekLock) {
         setCurrentPlayingLocation(wordLocation);
       }
@@ -702,7 +698,7 @@ export function EditorPage() {
     }
   };
 
-  const handlePlayingAudioSegmentCreate = () => setCurrentlyPlayingWordPlayerSegment(undefined);
+  const handlePlayingAudioSegmentCreate = () => setCurrentPlayingWordPlayerSegment(undefined);
 
   const handleAudioSegmentCreate = () => {
     setWordToCreateTimeFor(undefined);
@@ -780,7 +776,7 @@ export function EditorPage() {
     setCanUndo(false);
     setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
-    setCurrentlyPlayingWordPlayerSegment(undefined);
+    setCurrentPlayingWordPlayerSegment(undefined);
     setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
