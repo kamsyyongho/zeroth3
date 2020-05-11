@@ -60,6 +60,7 @@ import './styles/editor.css';
 import { SegmentBlockV2 } from './components/SegmentBlockV2';
 import localForage from 'localforage';
 
+let renderTimes = 0;
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     draggable: {
@@ -349,6 +350,8 @@ export function Editor(props: EditorProps) {
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
+    renderTimes++;
+    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
@@ -366,6 +369,8 @@ export function Editor(props: EditorProps) {
   // used to calculate the exact dimensions of the root div
   // so we can make the overlay the exact same size
   React.useEffect(() => {
+    renderTimes++;
+    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     if (containerRef.current) {
       const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
       const overlayPositionStyle: React.CSSProperties = {
@@ -381,6 +386,8 @@ export function Editor(props: EditorProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
+    renderTimes++;
+    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     setReady(true);
     focusEditor();
     initializeSegmentsStoredInLocal();
@@ -395,10 +402,14 @@ export function Editor(props: EditorProps) {
   // keep track of focus to prevent the keypress listeners
   // from firing twice in the editor controls component
   React.useEffect(() => {
+    renderTimes++;
+    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     setEditorFocussed(focussed);
   }, [focussed]);
 
   React.useEffect(() => {
+    renderTimes++;
+    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     console.log('playingLocation : ', isAudioPlaying);
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);

@@ -187,7 +187,6 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         }
     };
 
-
     handleChange = (event: SyntheticEvent) => {
         const text: string = event?.target?.value;
         console.log('element getSelection : ', window.getSelection());

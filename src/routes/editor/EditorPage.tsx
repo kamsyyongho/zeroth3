@@ -62,6 +62,7 @@ let internalSegmentsTracker: Segment[] = [];
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
+let renderCount = 0;
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -521,7 +522,8 @@ export function EditorPage() {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
     console.log('playingLocation inside EditorPage - buildPlayingAudioPlayerSegment : ', playingLocation);
-    const label = '================ buildPlayingAudioPlayerSegment-setCurrentPlayingWordPlayerSegment timing';
+    const label = '================ setCurrenlyPlayingWordTime';
+    const label2 = '====================================setCurrentlyPlayingWordPlayerSegment'
     if (!segments.length) return;
     const segment = segments[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
@@ -533,6 +535,7 @@ export function EditorPage() {
     };
     console.time(label);
     setCurrentlyPlayingWordTime(time);
+    console.timeEnd(label);
     const text = wordAlignment.word.replace('|', '');
     const color = theme.audioPlayer.wordRange;
     const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
@@ -540,21 +543,18 @@ export function EditorPage() {
       time,
       text,
     };
-    const segmentText = segment.transcript;
-    const segmentColor = theme.audioPlayer.segmentRange;
-    const segmentStartTime = segment.start;
-    const segmentEndTime = segmentStartTime + segment.length;
     const segmentTime: Required<Time> = {
-      start: segmentStartTime,
-      end: segmentEndTime,
+      start: segment.start,
+      end: segment.start + segment.length,
     };
     const currentlyPlayingSegmentToDisplay: WordToCreateTimeFor = {
-      color: segmentColor,
+      color: theme.audioPlayer.segmentRange,
       time: segmentTime,
-      text: segmentText,
+      text: segment.transcript,
     };
+    console.time(label2);
     setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
-    console.timeEnd(label);
+    console.timeEnd(label2);
 
   };
 
@@ -785,6 +785,8 @@ export function EditorPage() {
 
   React.useEffect(() => {
     internalSegmentsTracker = segments;
+    renderCount++
+    console.log(`====================renders ${renderCount} times [segments] ======================`);
   }, [segments]);
 
   //will be called on subsequent fetches when the editor is not read only
@@ -813,6 +815,8 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
+    renderCount++;
+    console.log(`====================renders ${renderCount} times [] ======================`);
     setPageTitle(translate('path.editor'));
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
