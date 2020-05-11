@@ -5,7 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build:dev": "REACT_APP_ENV=dev npm run build",
-    "build:production": "REACT_APP_ENV=staging npm run build",
+    "build:staging": "REACT_APP_ENV=staging npm run build",
     "build:docker": "REACT_APP_ENV=docker react-scripts build",
     "build": "sh -ac '. .env.${REACT_APP_ENV}; react-scripts build'",
     "test": "react-scripts test",
