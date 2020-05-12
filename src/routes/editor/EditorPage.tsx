@@ -41,7 +41,7 @@ import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
 import localForage from 'localforage';
-import {UNDO_SEGMENT_STACK} from "../../common/constants";
+import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../common/constants";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -103,6 +103,7 @@ export function EditorPage() {
   const api = React.useContext(ApiContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -308,6 +309,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        onUpdateUndoRedoStack(false, false);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -342,6 +344,8 @@ export function EditorPage() {
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
         onSuccess(updatedSegment);
+        onUpdateUndoRedoStack(false, false);
+
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -382,6 +386,7 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        onUpdateUndoRedoStack(false, false);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -421,9 +426,11 @@ export function EditorPage() {
         const undoSegmentStack: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
         splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
 
-        await localForage.setItem(UNDO_SEGMENT_STACK, [...undoSegmentStack, segments]);
+        await localForage.setItem(UNDO_SEGMENT_STACK, []);
+        await localForage.setItem(REDO_SEGMENT_STACK, []);
         // reset our new default baseline
         setSegments(splitSegments);
+        onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
         log({
@@ -441,6 +448,23 @@ export function EditorPage() {
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
     }
+  };
+
+  const handleUndoCommand = async () => {
+    const undoStack: any = await localForage.getItem(UNDO_SEGMENT_STACK);
+    const lastSegmentsState: Segment[] = undoStack.pop();
+    await localForage.setItem(REDO_SEGMENT_STACK, segments);
+    setSegments(lastSegmentsState);
+    await localForage.setItem(UNDO_SEGMENT_STACK, undoStack);
+    onUpdateUndoRedoStack(undoStack.length > 0, true);
+  };
+
+  const handleRedoCommand = async () => {
+    const redoStack: any = await localForage.getItem(REDO_SEGMENT_STACK);
+    const UndidSegmentState: Segment[] = redoStack.pop();
+    await localForage.setItem(UNDO_SEGMENT_STACK, segments);
+    await localForage.setItem(REDO_SEGMENT_STACK, redoStack);
+    onUpdateUndoRedoStack(true, redoStack.length > 0);
   };
 
   const submitSegmentSplitByTime = async (segmentId: string,
@@ -610,10 +634,10 @@ export function EditorPage() {
     const [segmentIndex, wordIndex] = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       const label = '================handleWordClick==================';
+      console.time(label);
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       buildPlayingAudioPlayerSegment(wordLocation);
-      console.time(label);
       setTimeToSeekTo(wordTime + SEEK_SLOP);
       console.timeEnd(label);
 
@@ -736,7 +760,7 @@ export function EditorPage() {
         // updateSegmentOnChange(editorState, undefined, true);
         break;
       case EDITOR_CONTROLS.toggleMore:
-        // togglePopups();
+        setShowEditorPopups(!showEditorPopups);
         break;
       case EDITOR_CONTROLS.split:
         handleSegmentSplitCommand();

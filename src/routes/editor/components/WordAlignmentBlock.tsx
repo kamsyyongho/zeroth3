@@ -172,15 +172,19 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         console.log('event in keydown event :', event);
         switch(event.code) {
             case "ArrowUp":
+                event.preventDefault();
                 this.handleArrowUp();
                 break;
             case "ArrowDown":
+                event.preventDefault();
                 this.handleArrowDown();
                 break;
             case "ArrowLeft":
+                // event.preventDefault();
                 this.handleArrowLeft();
                 break;
             case "ArrowRight":
+                // event.preventDefault();
                 this.handleArrowRight();
                 break;
             default:
@@ -188,7 +192,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         }
     };
 
-    handleChange = (event: SyntheticEvent) => {
+    handleChange = (event: any) => {
         const text: string = event?.target?.value;
         console.log('element getSelection : ', window.getSelection());
         console.log('==============state.isChanged in handleChange ===============', this.state.isChanged);

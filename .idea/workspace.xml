@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,7 +70,7 @@
       <workItem from="1589200607499" duration="325000" />
       <workItem from="1589201126885" duration="983000" />
       <workItem from="1589244559766" duration="35000" />
-      <workItem from="1589244756954" duration="1965000" />
+      <workItem from="1589244756954" duration="9438000" />
     </task>
     <servers />
   </component>
@@ -120,10 +121,11 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="-3509" y="-589" width="2145" height="1271" key="find.popup" timestamp="1589200539774">
+    <state x="-3509" y="-589" width="2145" height="1271" key="find.popup" timestamp="1589255921922">
       <screen x="-4520" y="-678" width="3440" height="1440" />
     </state>
     <state x="-3509" y="-589" width="2145" height="1271" key="find.popup/-1080.-678.1080.2560/-4520.-678.3440.1440/-7080.-678.2560.1080/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589200539774" />
+    <state x="-3509" y="-589" width="2145" height="1271" key="find.popup/-1080.-678.1080.2560/-7080.-678.2560.1080/-4520.-678.3440.1440/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589255921922" />
     <state x="564" y="-1013" width="1197" height="953" key="find.popup/0.-1080.1920.1080/0.0.1792.1120@0.-1080.1920.1080" timestamp="1588750783841" />
     <state x="-1353" y="140" width="824" height="800" key="find.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586153753313" />
     <state x="366" y="-940" width="824" height="800" key="find.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586138109425" />
@@ -146,17 +148,5 @@
     <state x="1552" y="-841" width="672" height="678" key="search.everywhere.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585272441089" />
     <state x="619" y="232" width="670" height="660" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1585903797885" />
     <state x="506" y="-841" width="766" height="679" key="search.everywhere.popup/0.23.1680.1027/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586141068067" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx</url>
-          <line>181</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
