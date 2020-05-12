@@ -477,8 +477,10 @@ export function Editor(props: EditorProps) {
                                  segment={segment}
                                  segmentIndex={index}
                                  assignSpeakerForSegment={assignSpeakerForSegment}
+                                 editorCommand={editorCommand}
                                  // onChange={handleChange}
                                  readOnly={readOnly}
+                                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                                  updateCaretLocation={updateCaretLocation}
                                  updateChange={updateChange}
                                  updateSegment={updateSegment}

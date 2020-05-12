@@ -1,9 +1,9 @@
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import React from 'reactn';
-import { CustomTheme } from '../../../theme/index';
+import {CustomTheme} from '../../../theme/index';
 import ContentEditable from "react-contenteditable";
-import {ApiContext} from "../../../hooks/api/ApiContext";
-import { SyntheticEvent } from 'react';
+import {EDITOR_CONTROLS} from './EditorControls';
+
 
 const styles = (theme: CustomTheme) => ({
     root: {
@@ -26,8 +26,10 @@ export interface WordAlignmentProp {
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
+    editorCommand?: EDITOR_CONTROLS,
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any,
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
+    onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void,
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void,
     updateChange: (segmentIndex:number, wordIndex: number, word: string) => void,
     updateWordAlignmentChange: (wordIndex: number, word: string, isChanged: boolean) => void,
@@ -44,6 +46,8 @@ export interface State {
     text: string,
     wordAlignmentId: string,
     element: any,
+    undoStack: string[],
+    redoStack: string[],
     isChanged: boolean,
 }
 
@@ -54,6 +58,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
             element: React.createRef(),
             isChanged: false,
             text: props.word,
+            undoStack: [],
+            redoStack: [],
             wordAlignmentId: `word-${props.segmentIndex}-${props.wordAlignmentIndex}`
         };
     }
@@ -196,7 +202,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const text: string = event?.target?.value;
         console.log('element getSelection : ', window.getSelection());
         console.log('==============state.isChanged in handleChange ===============', this.state.isChanged);
-        this.setState({ text: text, isChanged: true });
+        this.setState({ text: text, isChanged: true, undoStack: [ ...this.state.undoStack, text] });
+        this.props.onUpdateUndoRedoStack(true, this.state.redoStack.length > 0);
         // selected?.setPosition(this.state.node, 0);
     };
 
@@ -214,6 +221,36 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.setState({ isChanged: false });
         document.removeEventListener('keydown', this.handleKeyDown);
     };
+
+    handleUndoCommand = () => {
+        console.log('editorCommand in WordAlignmentBlock : ', this.props.editorCommand);
+        const undoStack: string[] = this.state.undoStack;
+        const previousText: string = undoStack.length ? undoStack.pop() : '';
+
+        this.setState({
+            text: previousText,
+            undoStack: undoStack,
+            redoStack: [...this.state.redoStack, this.state.text],
+        });
+        this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
+    };
+
+    handleRedoCommand = () => {
+        const redoStack = this.state.redoStack;
+        const undidState = this.state.redoStack.pop();
+        this.setState({
+            text: undidState,
+            undoStack: [...this.state.undoStack, this.state.text],
+            redoStack: redoStack,
+        });
+        this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0)
+    };
+
+    componentDidMount = () => {
+        console.log('editorCommand in componentDidMount : ', this.props.editorCommand);
+        if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
+        if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
+    }
 
     render() {
         const { classes, readOnly } = this.props;

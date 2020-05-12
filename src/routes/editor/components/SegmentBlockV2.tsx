@@ -4,6 +4,7 @@ import { CustomTheme } from '../../../theme/index';
 import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
 import {Segment, WordAlignment} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
+import { EDITOR_CONTROLS } from './EditorControls';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -23,8 +24,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface SegmentBlockProps  {
     segment: Segment;
-    segmentIndex: number,
+    segmentIndex: number;
+    editorCommand?: EDITOR_CONTROLS;
     assignSpeakerForSegment: (segmentIndex: string) => void;
+    onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
@@ -40,6 +43,8 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         segment,
         segmentIndex,
         assignSpeakerForSegment,
+        editorCommand,
+        onUpdateUndoRedoStack,
         updateCaretLocation,
         updateChange,
         updateSegment,
@@ -101,7 +106,9 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     <WordAlignmentBlock
                         key={`word-alignment-${segmentIndex}-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                        editorCommand={editorCommand}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                        onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                         updateCaretLocation={updateCaretLocation}
                         updateChange={updateChange}
                         updateWordAlignmentChange={updateWordAlignmentChange}

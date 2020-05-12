@@ -755,6 +755,7 @@ export function EditorPage() {
   };
 
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
+    console.log('command in editorpage : ', command);
     switch (command) {
       case EDITOR_CONTROLS.save:
         // updateSegmentOnChange(editorState, undefined, true);
@@ -775,9 +776,11 @@ export function EditorPage() {
         // prepareSegmentTimePicker(editorState);
         break;
       case EDITOR_CONTROLS.undo:
+        setEditorCommand(command);
         // updatedEditorState = EditorState.undo(editorState);
         break;
       case EDITOR_CONTROLS.redo:
+        setEditorCommand(command);
         // updatedEditorState = EditorState.redo(editorState);
         break;
       case EDITOR_CONTROLS.speaker:
