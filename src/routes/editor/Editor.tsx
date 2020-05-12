@@ -129,7 +129,7 @@ export function Editor(props: EditorProps) {
     readOnly,
     responseFromParent,
     onParentResponseHandled,
-    editorCommand,
+    // editorCommand,
     onCommandHandled,
     onReady,
     onWordTimeCreationClose,
@@ -153,6 +153,7 @@ export function Editor(props: EditorProps) {
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
@@ -365,6 +366,16 @@ export function Editor(props: EditorProps) {
       }
     }
   }, [responseFromParent]);
+
+  React.useEffect(() => {
+    if(editorCommand) {
+      onCommandHandled();
+      if(readOnlyEditorState || readOnly) {
+        return;
+      }
+      console.log('editorCommand in Editor.tsx : ', editorCommand);
+    }
+  }, [editorCommand]);
 
   // used to calculate the exact dimensions of the root div
   // so we can make the overlay the exact same size

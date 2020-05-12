@@ -49,6 +49,7 @@ export interface State {
     undoStack: string[],
     redoStack: string[],
     isChanged: boolean,
+    isFocused: boolean,
 }
 
 class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
@@ -57,6 +58,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.state = {
             element: React.createRef(),
             isChanged: false,
+            isFocused: false,
             text: props.word,
             undoStack: [],
             redoStack: [],
@@ -103,11 +105,6 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const currentNode = this.state.element;
         selection?.removeAllRanges();
         const range = document.createRange();
-
-        console.log('currentLocation : ', currentLocation);
-        console.log('segmentIndex + 1 : ', this.props.segmentIndex);
-        console.log('wordAlignmentIndex : ', wordAlignmentIndex);
-        console.log('nextSegmentNode : ', nextSegmentNode);
 
         if(!nextSegmentNode) {return;}
         currentNode.current.blur();
@@ -158,10 +155,8 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
                 if(!lastBlockPreviousSegment) {return;}
 
-                console.log('lastBlockPreviousSegment : ', lastBlockPreviousSegment);
                 this.setRange(lastBlockPreviousSegment, false);
                 // this.props.updateCaretLocation(this.props.segmentIndex - 1, lastWordPrevSegment.index);
-                console.log('selection after collapse : ', selection);
             } else {
                 const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
                 (`word-${this.props.segmentIndex}-${this.props.wordAlignmentIndex - 1}`) : null;
@@ -200,20 +195,20 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleChange = (event: any) => {
         const text: string = event?.target?.value;
-        console.log('element getSelection : ', window.getSelection());
-        console.log('==============state.isChanged in handleChange ===============', this.state.isChanged);
         this.setState({ text: text, isChanged: true, undoStack: [ ...this.state.undoStack, text] });
         this.props.onUpdateUndoRedoStack(true, this.state.redoStack.length > 0);
+        console.log('undoStack in wordAlignmentBlock : ', this.state.undoStack);
         // selected?.setPosition(this.state.node, 0);
     };
 
     handleOnFocus = () => {
         console.log('what');
+        this.setState({ isFocused: true });
         this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
 
     handleOnBlur = async () => {
-        console.log('isChanged when wordAlignment blur???', this.state.isChanged);
+        this.setState({ isFocused: false });
         await this.props.updateWordAlignmentChange(
             this.props.wordAlignmentIndex,
             this.state.text,
@@ -224,29 +219,42 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleUndoCommand = () => {
         console.log('editorCommand in WordAlignmentBlock : ', this.props.editorCommand);
-        const undoStack: string[] = this.state.undoStack;
-        const previousText: string = undoStack.length ? undoStack.pop() : '';
+        if(this.state.undoStack.length) {
+            const undoStack: string[] = this.state.undoStack;
+            const previousText: string = undoStack.length ? undoStack.pop() : '';
 
-        this.setState({
-            text: previousText,
-            undoStack: undoStack,
-            redoStack: [...this.state.redoStack, this.state.text],
-        });
-        this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
+            this.setState({
+                text: previousText,
+                undoStack: undoStack,
+                redoStack: [...this.state.redoStack, this.state.text],
+            });
+            this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
+        }
     };
 
     handleRedoCommand = () => {
-        const redoStack = this.state.redoStack;
-        const undidState = this.state.redoStack.pop();
-        this.setState({
-            text: undidState,
-            undoStack: [...this.state.undoStack, this.state.text],
-            redoStack: redoStack,
-        });
-        this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0)
+        if(this.state.redoStack.length) {
+            const redoStack = this.state.redoStack;
+            const undidState = this.state.redoStack.pop();
+            this.setState({
+                text: undidState,
+                undoStack: [...this.state.undoStack, this.state.text],
+                redoStack: redoStack,
+            });
+            this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0)
+        }
     };
 
+    componentWillReceiveProps = () => {
+        if (this.state.isFocused){
+            console.log('===========editorCommand in componentWillReceiveProps : ', this.props.editorCommand);
+            if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
+            if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
+        }
+    }
+
     componentDidMount = () => {
+        console.log('global.editorCommand : ',this.global.editorCommand);
         console.log('editorCommand in componentDidMount : ', this.props.editorCommand);
         if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
         if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();

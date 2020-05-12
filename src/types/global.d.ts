@@ -14,6 +14,7 @@ declare module 'reactn/default' {
     wordConfidenceThreshold?: number;
     editorDebugMode?: boolean;
     showEditorPopups?: boolean;
+    editorCommand?: any;
     editorFocussed?: boolean;
     editorContentHeight?: number;
     editorAutoScrollDisabled?: boolean;

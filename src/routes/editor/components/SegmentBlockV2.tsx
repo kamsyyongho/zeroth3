@@ -1,10 +1,10 @@
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-import React from 'reactn';
-import { CustomTheme } from '../../../theme/index';
-import { MemoizedSegmentBlockHeadV2 } from './SegmentBlockHeadV2';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
+import React, { useGlobal } from 'reactn';
+import {CustomTheme} from '../../../theme/index';
+import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
-import { EDITOR_CONTROLS } from './EditorControls';
+import {EDITOR_CONTROLS} from './EditorControls';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -37,13 +37,15 @@ interface SegmentBlockProps  {
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
 
+let isFocused = false;
+
 export const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
     const {
         segment,
         segmentIndex,
         assignSpeakerForSegment,
-        editorCommand,
+        // editorCommand,
         onUpdateUndoRedoStack,
         updateCaretLocation,
         updateChange,
@@ -52,9 +54,12 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment } = props;
+    const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
+    // const [isFocused, setIsFocused] = React.useState(false);
+    const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
@@ -78,6 +83,9 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     const handleFocus = () => {
         console.log('focus detected in segment block');
+        isFocused = true
+        console.log('isFocused : ', isFocused);
+
     };
 
     const handleBlur = async () => {
@@ -86,12 +94,22 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
+        isFocused = false;
     };
 
     React.useEffect(() => {
         setLengthBeforeEachBlockArray();
         console.log('localSegment in segment block : ', localSegment);
     }, []);
+
+    React.useEffect(() => {
+        console.log('editorCommand in wordBLock : ', editorCommand, isFocused)
+
+        if(isFocused && editorCommand == EDITOR_CONTROLS.undo || isFocused && editorCommand == EDITOR_CONTROLS.redo) {
+            console.log('=======isFocused editorCOmmand : ', editorCommand);
+            setEditorCommandForWordBlock(editorCommand);
+        }
+    },[editorCommand])
 
     return (
         <div className={classes.root} onFocus={handleFocus} onBlur={handleBlur}>
@@ -106,7 +124,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     <WordAlignmentBlock
                         key={`word-alignment-${segmentIndex}-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                        editorCommand={editorCommand}
+                        editorCommand={editorCommandForWordBlock}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                         updateCaretLocation={updateCaretLocation}

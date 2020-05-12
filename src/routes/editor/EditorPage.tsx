@@ -103,6 +103,7 @@ export function EditorPage() {
   const api = React.useContext(ApiContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
+  const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
@@ -124,7 +125,7 @@ export function EditorPage() {
   const [timeFromPlayer, setTimeFromPlayer] = React.useState<Time | undefined>();
   const [editorReady, setEditorReady] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
-  const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
+  // const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
   const [noAssignedData, setNoAssignedData] = React.useState(false);
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
@@ -910,7 +911,6 @@ export function EditorPage() {
                 readOnly={readOnly}
                 responseFromParent={responseToPassToEditor}
                 onParentResponseHandled={handleEditorResponseHandled}
-                editorCommand={editorCommand}
                 onCommandHandled={handleCommandHandled}
                 height={editorHeight}
                 segments={segments}
