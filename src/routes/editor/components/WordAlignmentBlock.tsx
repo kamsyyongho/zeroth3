@@ -3,6 +3,7 @@ import React from 'reactn';
 import { CustomTheme } from '../../../theme/index';
 import ContentEditable from "react-contenteditable";
 import {ApiContext} from "../../../hooks/api/ApiContext";
+import { SyntheticEvent } from 'react';
 
 const styles = (theme: CustomTheme) => ({
     root: {

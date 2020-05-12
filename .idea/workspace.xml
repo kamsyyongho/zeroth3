@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,7 +42,7 @@
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.editor" />
-    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -68,6 +66,10 @@
       <workItem from="1588813707688" duration="15826000" />
       <workItem from="1588899035941" duration="1146000" />
       <workItem from="1588900233932" duration="10461000" />
+      <workItem from="1589200607499" duration="325000" />
+      <workItem from="1589201126885" duration="983000" />
+      <workItem from="1589244559766" duration="35000" />
+      <workItem from="1589244756954" duration="1965000" />
     </task>
     <servers />
   </component>
@@ -95,9 +97,10 @@
       <screen x="-207" y="-1080" width="1920" height="1080" />
     </state>
     <state x="353" y="-875" key="#Scopes/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588900027252" />
-    <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1584433229714">
-      <screen x="0" y="0" width="1680" height="1050" />
+    <state x="-3328" y="-220" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1589254003235">
+      <screen x="-4520" y="-678" width="3440" height="1440" />
     </state>
+    <state x="-3328" y="-220" key="#com.intellij.fileTypes.FileTypeChooser/-7080.-678.2560.1080/-4520.-678.3440.1440/-1080.-678.1080.2560/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589254003235" />
     <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1680.1050@0.0.1680.1050" timestamp="1584433229714" />
     <state x="577" y="278" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1584432677108">
       <screen x="0" y="0" width="1680" height="1050" />
@@ -117,9 +120,10 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="357" y="-1013" width="1197" height="953" key="find.popup" timestamp="1588902918381">
-      <screen x="-207" y="-1080" width="1920" height="1080" />
+    <state x="-3509" y="-589" width="2145" height="1271" key="find.popup" timestamp="1589200539774">
+      <screen x="-4520" y="-678" width="3440" height="1440" />
     </state>
+    <state x="-3509" y="-589" width="2145" height="1271" key="find.popup/-1080.-678.1080.2560/-4520.-678.3440.1440/-7080.-678.2560.1080/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589200539774" />
     <state x="564" y="-1013" width="1197" height="953" key="find.popup/0.-1080.1920.1080/0.0.1792.1120@0.-1080.1920.1080" timestamp="1588750783841" />
     <state x="-1353" y="140" width="824" height="800" key="find.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586153753313" />
     <state x="366" y="-940" width="824" height="800" key="find.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586138109425" />
@@ -142,5 +146,17 @@
     <state x="1552" y="-841" width="672" height="678" key="search.everywhere.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585272441089" />
     <state x="619" y="232" width="670" height="660" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1585903797885" />
     <state x="506" y="-841" width="766" height="679" key="search.everywhere.popup/0.23.1680.1027/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586141068067" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx</url>
+          <line>181</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
