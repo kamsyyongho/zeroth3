@@ -57,7 +57,7 @@ import {
   updateBlockSegmentData,
   WordKeyStore } from './helpers/editor.helper';
 import './styles/editor.css';
-import { SegmentBlockV2 } from './components/SegmentBlockV2';
+import { MemoizedSegmentBlock } from './components/SegmentBlockV2';
 import localForage from 'localforage';
 
 let renderTimes = 0;
@@ -129,7 +129,7 @@ export function Editor(props: EditorProps) {
     readOnly,
     responseFromParent,
     onParentResponseHandled,
-    // editorCommand,
+    editorCommand,
     onCommandHandled,
     onReady,
     onWordTimeCreationClose,
@@ -153,7 +153,6 @@ export function Editor(props: EditorProps) {
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
-  const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
@@ -484,7 +483,7 @@ export function Editor(props: EditorProps) {
       </Backdrop>
         {ready &&
         segments.map( (segment: Segment, index: number) => {
-          return <SegmentBlockV2 key={`segment-block-${index}`}
+          return <MemoizedSegmentBlock key={`segment-block-${index}`}
                                  segment={segment}
                                  segmentIndex={index}
                                  assignSpeakerForSegment={assignSpeakerForSegment}

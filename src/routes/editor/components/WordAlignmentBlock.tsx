@@ -3,6 +3,8 @@ import React from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import ContentEditable from "react-contenteditable";
 import {EDITOR_CONTROLS} from './EditorControls';
+import localForage from 'localforage';
+import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../../common/constants";
 
 
 const styles = (theme: CustomTheme) => ({
@@ -26,7 +28,7 @@ export interface WordAlignmentProp {
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
-    editorCommand?: EDITOR_CONTROLS,
+    setUndoRedoData: any,
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any,
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void,
@@ -197,6 +199,11 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         const text: string = event?.target?.value;
         this.setState({ text: text, isChanged: true, undoStack: [ ...this.state.undoStack, text] });
         this.props.onUpdateUndoRedoStack(true, this.state.redoStack.length > 0);
+        this.props.setUndoRedoData({
+            location: [segmentIndex, wordAlignmentIndex],
+            undoStack: [ ...this.state.undoStack, text ],
+            redoStack: this.state.redoStack,
+        })
         console.log('undoStack in wordAlignmentBlock : ', this.state.undoStack);
         // selected?.setPosition(this.state.node, 0);
     };
@@ -217,48 +224,48 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         document.removeEventListener('keydown', this.handleKeyDown);
     };
 
-    handleUndoCommand = () => {
-        console.log('editorCommand in WordAlignmentBlock : ', this.props.editorCommand);
-        if(this.state.undoStack.length) {
-            const undoStack: string[] = this.state.undoStack;
-            const previousText: string = undoStack.length ? undoStack.pop() : '';
+    // handleUndoCommand = () => {
+    //     console.log('editorCommand in WordAlignmentBlock : ', this.props.editorCommand);
+    //     if(this.state.undoStack.length) {
+    //         const undoStack: string[] = this.state.undoStack;
+    //         const previousText: string = undoStack.length ? undoStack.pop() : '';
+    //
+    //         this.setState({
+    //             text: previousText,
+    //             undoStack: undoStack,
+    //             redoStack: [...this.state.redoStack, this.state.text],
+    //         });
+    //         this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
+    //     }
+    // };
+    //
+    // handleRedoCommand = () => {
+    //     if(this.state.redoStack.length) {
+    //         const redoStack = this.state.redoStack;
+    //         const undidState = this.state.redoStack.pop();
+    //         this.setState({
+    //             text: undidState,
+    //             undoStack: [...this.state.undoStack, this.state.text],
+    //             redoStack: redoStack,
+    //         });
+    //         this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0)
+    //     }
+    // };
 
-            this.setState({
-                text: previousText,
-                undoStack: undoStack,
-                redoStack: [...this.state.redoStack, this.state.text],
-            });
-            this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
-        }
-    };
-
-    handleRedoCommand = () => {
-        if(this.state.redoStack.length) {
-            const redoStack = this.state.redoStack;
-            const undidState = this.state.redoStack.pop();
-            this.setState({
-                text: undidState,
-                undoStack: [...this.state.undoStack, this.state.text],
-                redoStack: redoStack,
-            });
-            this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0)
-        }
-    };
-
-    componentWillReceiveProps = () => {
-        if (this.state.isFocused){
-            console.log('===========editorCommand in componentWillReceiveProps : ', this.props.editorCommand);
-            if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
-            if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
-        }
-    }
-
-    componentDidMount = () => {
-        console.log('global.editorCommand : ',this.global.editorCommand);
-        console.log('editorCommand in componentDidMount : ', this.props.editorCommand);
-        if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
-        if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
-    }
+    // componentWillReceiveProps = () => {
+    //     if (this.state.isFocused){
+    //         console.log('===========editorCommand in componentWillReceiveProps : ', this.props.editorCommand);
+    //         if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
+    //         if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
+    //     }
+    // }
+    //
+    // componentDidMount = () => {
+    //     console.log('global.editorCommand : ',this.global.editorCommand);
+    //     console.log('editorCommand in componentDidMount : ', this.props.editorCommand);
+    //     if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
+    //     if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
+    // }
 
     render() {
         const { classes, readOnly } = this.props;

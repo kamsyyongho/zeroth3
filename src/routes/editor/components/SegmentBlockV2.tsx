@@ -39,13 +39,13 @@ interface SegmentBlockProps  {
 
 let isFocused = false;
 
-export const SegmentBlockV2 = (props: SegmentBlockProps) => {
+const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const classes = useStyles();
     const {
         segment,
         segmentIndex,
         assignSpeakerForSegment,
-        // editorCommand,
+        editorCommand,
         onUpdateUndoRedoStack,
         updateCaretLocation,
         updateChange,
@@ -54,7 +54,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment } = props;
-    const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
+    const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
@@ -124,7 +124,7 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     <WordAlignmentBlock
                         key={`word-alignment-${segmentIndex}-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                        editorCommand={editorCommandForWordBlock}
+                        setUndoRedoData={setUndoRedoData}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                         onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                         updateCaretLocation={updateCaretLocation}
@@ -144,3 +144,5 @@ export const SegmentBlockV2 = (props: SegmentBlockProps) => {
         </div>
     );
 };
+
+export const MemoizedSegmentBlock = React.memo(SegmentBlockV2);

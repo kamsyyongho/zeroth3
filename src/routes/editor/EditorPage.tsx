@@ -103,7 +103,7 @@ export function EditorPage() {
   const api = React.useContext(ApiContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [editorCommand, setEditorCommand] = useGlobal('editorCommand');
+  const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);

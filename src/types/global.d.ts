@@ -1,6 +1,14 @@
 import 'reactn';
 import { Organization, Project } from './index';
 
+interface undoRedoData {
+  undoRedoData: {
+    undoStack: string[],
+    redoStack: string[],
+    location: number[],
+  }
+}
+
 declare module 'reactn/default' {
   export interface State {
     organizations?: Organization[];
@@ -14,7 +22,7 @@ declare module 'reactn/default' {
     wordConfidenceThreshold?: number;
     editorDebugMode?: boolean;
     showEditorPopups?: boolean;
-    editorCommand?: any;
+    undoRedoData?: undoRedoData;
     editorFocussed?: boolean;
     editorContentHeight?: number;
     editorAutoScrollDisabled?: boolean;
