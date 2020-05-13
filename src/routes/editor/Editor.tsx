@@ -351,7 +351,6 @@ export function Editor(props: EditorProps) {
   // used for updating after the speaker has been set
   React.useEffect(() => {
     renderTimes++;
-    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
@@ -372,7 +371,6 @@ export function Editor(props: EditorProps) {
       if(readOnlyEditorState || readOnly) {
         return;
       }
-      console.log('editorCommand in Editor.tsx : ', editorCommand);
     }
   }, [editorCommand]);
 
@@ -380,7 +378,6 @@ export function Editor(props: EditorProps) {
   // so we can make the overlay the exact same size
   React.useEffect(() => {
     renderTimes++;
-    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     if (containerRef.current) {
       const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
       const overlayPositionStyle: React.CSSProperties = {
@@ -397,7 +394,6 @@ export function Editor(props: EditorProps) {
   // initial mount and unmount logic
   React.useEffect(() => {
     renderTimes++;
-    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     setReady(true);
     focusEditor();
     initializeSegmentsStoredInLocal();
@@ -413,14 +409,11 @@ export function Editor(props: EditorProps) {
   // from firing twice in the editor controls component
   React.useEffect(() => {
     renderTimes++;
-    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
     setEditorFocussed(focussed);
   }, [focussed]);
 
   React.useEffect(() => {
     renderTimes++;
-    console.log(`=======================Editor renders ${renderTimes} many times =====================`);
-    console.log('playingLocation : ', isAudioPlaying);
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
 
@@ -494,6 +487,7 @@ export function Editor(props: EditorProps) {
                                  updateCaretLocation={updateCaretLocation}
                                  updateChange={updateChange}
                                  updateSegment={updateSegment}
+                                 onCommandHandled={onCommandHandled}
                                  findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                                  removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />

@@ -29,6 +29,7 @@ export interface WordAlignmentProp {
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
     setUndoRedoData: any,
+    editorCommand: EDITOR_CONTROLS,
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any,
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo:boolean) => void,
@@ -223,18 +224,16 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         this.setState({ isChanged: false });
         document.removeEventListener('keydown', this.handleKeyDown);
     };
-
-    // componentWillReceiveProps = () => {
-    //     if (this.state.isFocused){
-    //         console.log('===========editorCommand in componentWillReceiveProps : ', this.props.editorCommand);
-    //         if(this.props.editorCommand === EDITOR_CONTROLS.undo) this.handleUndoCommand();
-    //         if(this.props.editorCommand === EDITOR_CONTROLS.redo) this.handleRedoCommand();
-    //     }
-    // }
     //
-    componentDidMount = () => {
-        console.log('word in wordALignmentBlock props : ', this.props.word);
+    componentWillReceiveProps = () => {
+        if(this.props.editorCommand && this.props.word !== this.state.text) {
+            console.log('word in wordALignmentBlock props : ', this.props.word);
+            this.setState({ text: this.props.word });
+        }
     }
+    //
+    // componentDidMount = () => {
+    // }
 
     render() {
         const { classes, readOnly } = this.props;

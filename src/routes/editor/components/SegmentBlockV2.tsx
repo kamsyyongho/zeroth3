@@ -28,6 +28,7 @@ interface SegmentBlockProps  {
     editorCommand?: EDITOR_CONTROLS;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
+    onCommandHandled: () => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
@@ -47,6 +48,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         assignSpeakerForSegment,
         editorCommand,
         onUpdateUndoRedoStack,
+        onCommandHandled,
         updateCaretLocation,
         updateChange,
         updateSegment,
@@ -95,6 +97,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 undoStack: undoStack,
                 redoStack: [...undoRedoData.redoStack, previousText],
             });
+            onCommandHandled();
             console.log('editorCommand in WordAlignmentBlock : ', undoRedoData);
         }
     };
@@ -103,11 +106,16 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         if(undoRedoData.redoStack.length) {
             const redoStack = undoRedoData.redoStack;
             const undidState = undoRedoData.redoStack.pop();
+            const updateWordAlignment = localSegment;
+            const [segmentIndex, wordIndex] = undoRedoData.location
+            updateWordAlignment.wordAlignments[wordIndex].word = undidState;
+            setLocalSegment(updateWordAlignment);
             setUndoRedoData({
                 location: undoRedoData.location,
                 undoStack: [...undoRedoData.undoStack, undidState],
                 redoStack: redoStack,
             });
+            onCommandHandled();
         }
     };
 
@@ -127,10 +135,18 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         isFocused = false;
     };
 
+    const resetState = () => {
+      setUndoRedoData({location: [], undoStack: [], redoStack: []});
+    };
+
     React.useEffect(() => {
+        setLocalSegment(segment);
         setLengthBeforeEachBlockArray();
         console.log('localSegment in segment block : ', localSegment);
-    }, []);
+        return () => {
+            resetState();
+        }
+    }, [segment]);
 
     React.useEffect(() => {
         if(undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
@@ -164,6 +180,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}
                         lengthBeforeBlock={lengthBeforeBlockArray[index]}
+                        editorCommand={editorCommand}
                         start={word.start}
                         length={word.length}
                         word={word.word}
