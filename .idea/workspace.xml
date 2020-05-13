@@ -3,12 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/common/constants/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/common/constants/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/global.d.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +71,7 @@
       <workItem from="1589200607499" duration="325000" />
       <workItem from="1589201126885" duration="983000" />
       <workItem from="1589244559766" duration="35000" />
-      <workItem from="1589244756954" duration="26167000" />
+      <workItem from="1589244756954" duration="32728000" />
     </task>
     <servers />
   </component>

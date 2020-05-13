@@ -1,5 +1,5 @@
 import {createStyles, makeStyles} from '@material-ui/core/styles';
-import React, { useGlobal } from 'reactn';
+import React from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment} from "../../../types";
@@ -54,12 +54,13 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment } = props;
-    const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
+    // const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
     // const [isFocused, setIsFocused] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
+    const [undoRedoData, setUndoRedoData] = React.useState({location: [], undoStack: [], redoStack: []});
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
@@ -78,6 +79,35 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);
+        }
+    };
+
+    const handleUndoCommand = () => {
+        if(undoRedoData.undoStack.length) {
+            const undoStack: string[] = undoRedoData.undoStack;
+            const previousText: any = undoStack.pop();
+            const updateWordAlignment = localSegment;
+            const [segmentIndex, wordIndex] = undoRedoData.location
+            updateWordAlignment.wordAlignments[wordIndex].word = previousText;
+            setLocalSegment(updateWordAlignment);
+            setUndoRedoData({
+                location: undoRedoData.location,
+                undoStack: undoStack,
+                redoStack: [...undoRedoData.redoStack, previousText],
+            });
+            console.log('editorCommand in WordAlignmentBlock : ', undoRedoData);
+        }
+    };
+
+    const handleRedoCommand = () => {
+        if(undoRedoData.redoStack.length) {
+            const redoStack = undoRedoData.redoStack;
+            const undidState = undoRedoData.redoStack.pop();
+            setUndoRedoData({
+                location: undoRedoData.location,
+                undoStack: [...undoRedoData.undoStack, undidState],
+                redoStack: redoStack,
+            });
         }
     };
 
@@ -103,10 +133,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }, []);
 
     React.useEffect(() => {
-        console.log('editorCommand in wordBLock : ', editorCommand, isFocused)
-
-        if(isFocused && editorCommand == EDITOR_CONTROLS.undo || isFocused && editorCommand == EDITOR_CONTROLS.redo) {
-            console.log('=======isFocused editorCOmmand : ', editorCommand);
+        if(undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
+            console.log('=======isFocused editorCOmmand : ', editorCommand, undoRedoData);
+            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
+            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
             setEditorCommandForWordBlock(editorCommand);
         }
     },[editorCommand])
@@ -119,7 +149,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={segment}
             />
-            {segment.wordAlignments.map((word: WordAlignment, index: number) => {
+            {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
                         key={`word-alignment-${segmentIndex}-${index}`}

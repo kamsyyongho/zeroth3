@@ -125,7 +125,7 @@ export function EditorPage() {
   const [timeFromPlayer, setTimeFromPlayer] = React.useState<Time | undefined>();
   const [editorReady, setEditorReady] = React.useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
-  // const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
+  const [editorCommand, setEditorCommand] = React.useState<EDITOR_CONTROLS | undefined>();
   const [voiceDataLoading, setVoiceDataLoading] = React.useState(false);
   const [noAssignedData, setNoAssignedData] = React.useState(false);
   const [noRemainingContent, setNoRemainingContent] = React.useState(false);
@@ -451,21 +451,8 @@ export function EditorPage() {
     }
   };
 
-  const handleUndoCommand = async () => {
-    const undoStack: any = await localForage.getItem(UNDO_SEGMENT_STACK);
-    const lastSegmentsState: Segment[] = undoStack.pop();
-    await localForage.setItem(REDO_SEGMENT_STACK, segments);
-    setSegments(lastSegmentsState);
-    await localForage.setItem(UNDO_SEGMENT_STACK, undoStack);
-    onUpdateUndoRedoStack(undoStack.length > 0, true);
-  };
-
-  const handleRedoCommand = async () => {
-    const redoStack: any = await localForage.getItem(REDO_SEGMENT_STACK);
-    const UndidSegmentState: Segment[] = redoStack.pop();
-    await localForage.setItem(UNDO_SEGMENT_STACK, segments);
-    await localForage.setItem(REDO_SEGMENT_STACK, redoStack);
-    onUpdateUndoRedoStack(true, redoStack.length > 0);
+  const handleUndoCommand = () => {
+    console.log('undoRedoData in handleUNdoCommand : ', undoRedoData);
   };
 
   const submitSegmentSplitByTime = async (segmentId: string,
@@ -918,6 +905,7 @@ export function EditorPage() {
                 playingLocation={currentPlayingLocation}
                 loading={saveSegmentsLoading}
                 isAudioPlaying={isAudioPlaying}
+                editorCommand={editorCommand}
                 onSpeakersUpdate={handleSpeakersUpdate}
                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 onWordClick={handleWordClick}
