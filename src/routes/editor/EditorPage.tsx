@@ -525,8 +525,6 @@ export function EditorPage() {
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
-    console.log('playingLocation inside EditorPage - buildPlayingAudioPlayerSegment : ', playingLocation);
-    const label2 = '====================================setCurrentlyPlayingWordPlayerSegment'
     if (!segments.length) return;
     const segment = segments[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
@@ -558,11 +556,9 @@ export function EditorPage() {
       currentPlayingWordPlayerSegment: [currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay],
       timeToSeekTo: 0,
     }
-    console.time(label2);
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
     // setPlayingTimeData(timeData);
     return timeData
-    console.timeEnd(label2);
   };
 
   /** The worker used to calculate the current playing time */
@@ -572,7 +568,6 @@ export function EditorPage() {
       worker.addEventListener('message', message => {
         const playingLocation: SegmentAndWordIndex | undefined = message.data.playingLocation;
         const initialSegmentLoad: boolean = message.data.initialSegmentLoad;
-        console.log('playingLocation inside RemoteWorker EditorPage : ', playingLocation);
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
@@ -605,13 +600,10 @@ export function EditorPage() {
     const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime
     const currentlyPlayingWordPlayerSegment = playingTimeData?.currentlyPlayingWordPlayerSegment
 
-    const label = '===============calculatePlayingLocation local : '
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
-      console.time(label)
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
-      console.timeEnd(label);
     }
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
@@ -632,15 +624,12 @@ export function EditorPage() {
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
-      const label = '================handleWordClick==================';
-      console.time(label);
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData) timeData.timeToSeekTo = wordTime + SEEK_SLOP
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
       setPlayingTimeData(timeData)
-      console.timeEnd(label);
 
       if (!autoSeekLock) {
         setCurrentPlayingLocation(wordLocation);
@@ -766,7 +755,6 @@ export function EditorPage() {
   };
 
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
-    console.log('command in editorpage : ', command);
     switch (command) {
       case EDITOR_CONTROLS.save:
         // updateSegmentOnChange(editorState, undefined, true);

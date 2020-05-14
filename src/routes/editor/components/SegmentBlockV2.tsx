@@ -145,12 +145,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     // };
 
     const handleFocus = () => {
-        console.log('===========focused segment : ', segment);
         isFocused = true
     };
 
     const handleBlur = async () => {
-        console.log('isChanged on segmentBlock blur : ', isChanged);
         if(isChanged) {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
@@ -173,7 +171,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     React.useEffect(() => {
         setLocalSegment(segment);
         setLengthBeforeEachBlockArray();
-        console.log('localSegment in segment block : ', localSegment);
         return () => {
             resetState();
         }
@@ -202,7 +199,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
-                        styleMap={styleMap}
                         key={`word-alignment-${segmentIndex}-${index}`}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         setUndoRedoData={setUndoRedoData}
@@ -215,7 +211,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         wordAlignmentIndex={index}
                         wordAlignmentsLength={segment.wordAlignments.length}
                         lengthBeforeBlock={lengthBeforeBlockArray[index]}
-                        editorCommand={editorCommand}
                         start={word.start}
                         length={word.length}
                         word={word.word}

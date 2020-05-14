@@ -340,7 +340,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const formattedCurrentTime = formatSecondsDuration(currentTime);
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
-  
+
   const handleAudioProcess = (currentTime?: number) => {
     if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
     try {
@@ -384,7 +384,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTime.toFixed(2));
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      console.log('handleSeek currentTImeFixed : ', currentTimeFixed);
       handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);

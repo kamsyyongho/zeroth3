@@ -2,7 +2,6 @@ import {withStyles} from '@material-ui/core/styles';
 import React from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import ContentEditable from "react-contenteditable";
-import {EDITOR_CONTROLS} from './EditorControls';
 import localForage from 'localforage';
 import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../../common/constants";
 import { INLINE_STYLE_TYPE } from '../../../types';
@@ -33,13 +32,10 @@ const styles = (theme: CustomTheme) => ({
 });
 
 export interface WordAlignmentProp {
-    classNameForPlaying: string,
-    styleMap: any,
     segmentIndex: number,
     wordAlignmentIndex: number,
     wordAlignmentsLength:number,
     setUndoRedoData: any,
-    editorCommand: EDITOR_CONTROLS,
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currenLocation: number) => any,
     getLastAlignmentIndexInSegment: (segmentIndex: number) => any,
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo:boolean) => void,
@@ -52,7 +48,7 @@ export interface WordAlignmentProp {
     word: string,
     confidence: number,
     lengthBeforeBlock: number,
-    readOnly: boolean,
+    readOnly?: boolean,
 }
 
 export interface State {
@@ -103,9 +99,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
         if(!previousSegmentNode) {return;}
         this.setRange(previousSegmentNode, false);
-        console.time(label);
         this.props.updateCaretLocation(this.props.segmentIndex - 1, wordAlignmentIndex);
-        console.timeEnd(label)
     };
 
     handleArrowDown = () => {
@@ -120,12 +114,10 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         selection?.removeAllRanges();
         const range = document.createRange();
 
-        console.log('selection at handleArrowDown : ', selection);
 
         if(!nextSegmentNode) {return;}
         // currentNode.current.blur();
         this.setRange(nextSegmentNode, false);
-        console.log('wordAlignmentIndex in wordblock : ', wordAlignmentIndex);
         this.props.updateCaretLocation(this.props.segmentIndex + 1, wordAlignmentIndex);
     };
 
@@ -133,8 +125,6 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     handleArrowRight = () => {
         const selection = window.getSelection();
         const range = document.createRange();
-
-        console.log('selection arrow right : ', selection);
 
         if(selection?.anchorOffset === this.state.text.length) {
             if(this.props.wordAlignmentIndex === this.props.wordAlignmentsLength - 1) {
@@ -219,12 +209,10 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
             redoStack: this.state.redoStack,
         });
         this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
-        console.log('undoStack in wordAlignmentBlock : ', this.state.undoStack);
         // selected?.setPosition(this.state.node, 0);
     };
 
     handleOnFocus = () => {
-        console.log('word in wordALignmentBlock props : ', this.props.word);
         this.setState({ isFocused: true });
         this.state.element.current.addEventListener('keydown', this.handleKeyDown);
     };
@@ -240,19 +228,17 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     };
 
     componentDidMount = () => {
-                console.log('word in wordALignmentBlock props : ', this.props.word);
-
         this.setState({ text: this.props.word.replace('|', ' ') });
     }
 
     render() {
-        const { classes, readOnly, classNameForPlaying, styleMap } = this.props;
+        const { classes, readOnly } = this.props;
         const { element, text, wordAlignmentId } = this.state;
         
         return (
             <ContentEditable id={wordAlignmentId}
                              innerRef={element}
-                             className={[classes.wordAlignment, classNameForPlaying, 'jss578'].join(' ')}
+                             className={[classes.wordAlignment, 'jss578'].join(' ')}
                              onChange={this.handleChange}
                              onFocus={this.handleOnFocus}
                              onBlur={this.handleOnBlur}
@@ -262,4 +248,19 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     }
 }
 
-export default withStyles(styles)(WordAlignmentBlock);
+export default withStyles({
+    wordAlignment: {
+        minWidth: 0,
+        display: 'inline',
+        width: 'fit-content',
+        margin: 0,
+        padding: 0,
+        fontSize: '14px',
+        caretStyle: 'block',
+        caretColor: 'red',
+    },
+    PLAYING: {
+        color: 'rgb(7, 125, 181)',
+        boxShadow: `0px 0px 0px 1px rgb(7, 125, 181)`,
+    },
+})(WordAlignmentBlock);

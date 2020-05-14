@@ -58,7 +58,7 @@ export interface WordToCreateTimeFor extends Word {
  */
 export type PlayingWordAndSegment = [WordToCreateTimeFor, WordToCreateTimeFor];
 
-export type SegmentAndWordIndex = number[];
+export type SegmentAndWordIndex =  any;
 
 export interface WordAlignmentEntityData {
   wordKey: number;

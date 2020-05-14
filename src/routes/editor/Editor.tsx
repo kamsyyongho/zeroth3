@@ -10,7 +10,7 @@ import React, {useGlobal} from 'reactn';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {useWindowSize} from '../../hooks/window/useWindowSize';
 import {CustomTheme} from '../../theme/index';
-import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment} from '../../types';
+import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time} from '../../types';
 import {CursorContent, SegmentBlockData, Word, WordAlignmentEntityData} from '../../types/editor.types';
 import {UNDO_SEGMENT_STACK} from "../../common/constants";
 import {EDITOR_CONTROLS} from './components/EditorControls';
@@ -156,10 +156,8 @@ export function Editor(props: EditorProps) {
       if(segment.id === segmentId) {
         return index
       }
-    }) || null;
-    if (!indexLocation || indexLocation[0] < 0) {
-      return null;
-    }
+    });
+    if (!indexLocation || indexLocation[0] === undefined || indexLocation[0] < 0) {return null;}
     return indexLocation[0];
   };
 
@@ -175,7 +173,6 @@ export function Editor(props: EditorProps) {
       const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
       const selection = window.getSelection();
       const range = document.createRange();
-      console.log('playingBlock in updatePlayingLocation : ',playingBlock);
 
       if(playingBlock) {
         range.selectNodeContents(playingBlock);
@@ -193,7 +190,6 @@ export function Editor(props: EditorProps) {
     await localForage.setItem(UNDO_SEGMENT_STACK, []);
 
     const savedState = await localForage.getItem(UNDO_SEGMENT_STACK);
-    console.log('initial item set in localForage : ', savedState);
   };
 
   const saveSegmentStateBeforeChange = async () => {
@@ -272,7 +268,6 @@ export function Editor(props: EditorProps) {
 
   const handleClickInsideEditor = () => {
     const playingLocation: SegmentAndWordIndex = getSegmentAndWordIndex();
-    console.log(playingLocation);
     if(playingLocation) onWordClick(playingLocation);
   };
   /** updates the word alignment data once selected segment / blocks have changed
@@ -317,7 +312,6 @@ export function Editor(props: EditorProps) {
     const updatedSegment = segments[segmentIndex];
     updatedSegment.wordAlignments[wordIndex].word = word;
     handleSegmentUpdate(updatedSegment, segmentIndex);
-    console.log('segment at segmentIndex after update : ', segments[segmentIndex]);
   };
 
   /** calls the split command if the editor is in a valid state */
@@ -355,7 +349,6 @@ export function Editor(props: EditorProps) {
     // }
     // const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
 
-    console.log('segmentIndex in prepareSegmentTimePicker : ', segmentIndex);
     if(segmentIndex === undefined) return;
     const segment = segments[segmentIndex];
     if (segment) {
@@ -401,7 +394,6 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     if(editorCommand) {
       if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
-        console.log('editorCommand :  ', editorCommand);
         prepareSegmentTimePicker(playingLocation[0]);
       }
       onCommandHandled();
