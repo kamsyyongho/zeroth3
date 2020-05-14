@@ -1,11 +1,15 @@
-import {createStyles, makeStyles} from '@material-ui/core/styles';
-import React from 'reactn';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
+import { green, grey, pink, red } from '@material-ui/core/colors';
+import React, { useGlobal } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
 import { INLINE_STYLE_TYPE } from '../../../types';
+import { buildStyleMap } from '../helpers/editor.helper';
+import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
+import { useWindowSize } from '../../../hooks/window/useWindowSize';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -19,7 +23,16 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             minWidth: 0,
             maxWidth: '100%',
         },
-
+        editor: {
+            playing: '#077db5',
+            playingShadow: `0px 0px 0px 1px #077db5`,
+            highlight: pink.A200,
+            LowConfidence: '#ffe190',
+            LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2.5%)`,
+            entity: grey[200],
+            entityGradient: `linear-gradient(to right, #000 0%, ${grey[200]} 2.5%)`,
+            changes: green[400],
+        },
     }),
 );
 
@@ -61,11 +74,22 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         playingLocation } = props;
     // const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
+    const theme: CustomTheme = useTheme();
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
     // const [isFocused, setIsFocused] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
     const [undoRedoData, setUndoRedoData] = React.useState({location: [], undoStack: [], redoStack: []});
+    const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
+    const segmentRef = React.useRef<HTMLButtonElement | null>(null);
+    const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
+    const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+    const windowSize = useWindowSize();
+    const windowHeight = windowSize.height;
+
+    const styleMap = React.useMemo(() => {
+        return buildStyleMap(theme);
+    }, []);
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
@@ -79,12 +103,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
-        if(isChanged) {
             const updatedSegment = localSegment;
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);
-        }
     };
 
     const handleUndoCommand = () => {
@@ -123,10 +145,8 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
     const handleFocus = () => {
-        console.log('focus detected in segment block');
+        console.log('===========focused segment : ', segment);
         isFocused = true
-        console.log('isFocused : ', isFocused);
-
     };
 
     const handleBlur = async () => {
@@ -140,11 +160,15 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     const resetState = () => {
       setUndoRedoData({location: [], undoStack: [], redoStack: []});
+        setIsChanged(false);
     };
 
-    const getClassNameForPlaying = (wordIndex: number) => {
-        return playingLocation[0] === segmentIndex && playingLocation[1] === wordIndex ? INLINE_STYLE_TYPE.PLAYING : '';
-    }
+
+    React.useEffect(() => {
+        return () => {
+            resetState();
+        }
+    }, []);
 
     React.useEffect(() => {
         setLocalSegment(segment);
@@ -155,9 +179,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         }
     }, [segment]);
 
+    // React.useEffect(() => {
+    //     checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
+    // }, playingLocation)
+
     React.useEffect(() => {
         if(undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-            console.log('=======isFocused editorCOmmand : ', editorCommand, undoRedoData);
             if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
             if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
             setEditorCommandForWordBlock(editorCommand);
@@ -175,8 +202,8 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (
                     <WordAlignmentBlock
+                        styleMap={styleMap}
                         key={`word-alignment-${segmentIndex}-${index}`}
-                        classNameForPlaying={playingLocation[0] === segmentIndex && playingLocation[1] === index ? INLINE_STYLE_TYPE.PLAYING : ''}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         setUndoRedoData={setUndoRedoData}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}

@@ -32,6 +32,9 @@ import {
   getWithinSegmentTimes,
   updateBlockSegmentData,
   WordKeyStore } from './helpers/editor.helper';
+import { green, grey, pink, red } from '@material-ui/core/colors';
+import {EditorDecorator} from './components/EditorDecorator';
+
 
 let renderTimes = 0;
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -47,6 +50,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderTopLeftRadius: 4,
       borderTopRightRadius: 4,
     },
+    editor: theme.editor,
   }),
 );
 
@@ -446,7 +450,9 @@ export function Editor(props: EditorProps) {
   }, [focussed]);
 
   React.useEffect(() => {
-    renderTimes++;
+    if(playingLocation && ready) {
+      setPlayingWordKey(playingLocation[1])
+    }
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
 
@@ -507,26 +513,28 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
+      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
         {ready &&
         segments.map( (segment: Segment, index: number) => {
           return <MemoizedSegmentBlock key={`segment-block-${index}`}
-                                 segment={segment}
-                                 segmentIndex={index}
-                                 assignSpeakerForSegment={assignSpeakerForSegment}
-                                 editorCommand={editorCommand}
-                                 // onChange={handleChange}
-                                 readOnly={readOnly}
-                                 onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                                 updateCaretLocation={updateCaretLocation}
-                                 updateChange={updateChange}
-                                 updateSegment={updateSegment}
-                                 onCommandHandled={onCommandHandled}
-                                 findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                                 getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
-                                 playingLocation={playingLocation} />
+                                       segment={segment}
+                                       segmentIndex={index}
+                                       assignSpeakerForSegment={assignSpeakerForSegment}
+                                       editorCommand={editorCommand}
+              // onChange={handleChange}
+                                       readOnly={readOnly}
+                                       onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                                       updateCaretLocation={updateCaretLocation}
+                                       updateChange={updateChange}
+                                       updateSegment={updateSegment}
+                                       onCommandHandled={onCommandHandled}
+                                       findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                                       getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                                       removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+                                       playingLocation={playingLocation} />
         })
         }
+
     </div>
   );
 };

@@ -74,8 +74,8 @@ export const getSegmentAndWordIndex = () => {
   const selectedBlock: any = window.getSelection();
   const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
   const selectedBlockId: string = selectedBlockNode.id || selectedBlockNode.parentNode.id;
+  if(!selectedBlockNode || !selectedBlockId) return;
 
-  console.log('================selectedBlock in getSegmentAndWordIndex : ', selectedBlockId);
   const segmentAndWordIndex = selectedBlockId.split('-');
   segmentAndWordIndex.shift();
 
@@ -132,6 +132,25 @@ export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
   });
 
   return selection;
+};
+
+export const updatePlayingLocation = (playingLocation: any) => {
+  if(playingLocation) {
+    const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+    const selection = window.getSelection();
+    const range = document.createRange();
+    console.log('playingBlock in updatePlayingLocation : ',playingBlock);
+
+    if(playingBlock) {
+      range.selectNodeContents(playingBlock);
+      range.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }
+  // if(playingBlock) {
+  //   playingBlock.focus();
+  // }
 };
 
 const removeStyleFromSelection = (

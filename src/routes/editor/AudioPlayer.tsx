@@ -27,7 +27,7 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
+import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, isMacOs } from '../../util/misc';
@@ -70,7 +70,7 @@ const STARTING_WORD_LOOP_LENGTH = 0.5;
  * for adding a bit of slop because `Peaks.js` does
  * not like creating segments at exactly `0`
  */
-const ZERO_TIME_SLOP = 0.00001;
+const ZERO_TIME_SLOP = 0.00500;
 /** the zoom levels for the peaks */
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
@@ -328,7 +328,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleTimeChange = (time: number) => {
-    console.log('time in audioPlayer handleTimeChange : ', time);
     if (onTimeChange && typeof onTimeChange === 'function') {
       onTimeChange(time);
     }
@@ -341,7 +340,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const formattedCurrentTime = formatSecondsDuration(currentTime);
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
-
+  
   const handleAudioProcess = (currentTime?: number) => {
     if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
     try {
@@ -349,7 +348,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const currentTimeFixed = Number(currentTimeString);
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      console.log('handleAudioProcess currentTime : ', currentTime);
       handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);

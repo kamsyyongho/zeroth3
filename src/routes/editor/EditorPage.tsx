@@ -42,6 +42,7 @@ import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
+import { getSegmentAndWordIndex, updatePlayingLocation } from './helpers/editor.helper';
 import localForage from 'localforage';
 import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../common/constants";
 
@@ -243,17 +244,6 @@ export function EditorPage() {
     }
   };
 
-  const getSegmentAndWordIndex = () => {
-    const selectedBlock: any = window.getSelection();
-    const selectedBlockId: string = selectedBlock.focusNode.parentNode.id || selectedBlock.anchorNode.parentNode.id;
-
-    if(!selectedBlockId) return;
-    const segmentAndWordIndex = selectedBlockId.split('-');
-    segmentAndWordIndex.shift();
-
-    return segmentAndWordIndex.map(index => Number(index));
-  };
-
   const getDataSetsToFetchFrom = async () => {
     if (api?.user) {
       const response = await api.user.getDataSetsToFetchFrom();
@@ -305,6 +295,7 @@ export function EditorPage() {
                                      segmentIndex: number) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
+      wordAlignments.forEach(word => word.word = word.word.replace(' ', '|'));
       const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -585,6 +576,7 @@ export function EditorPage() {
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
+          updatePlayingLocation(playingLocation);
           setCurrentPlayingLocation(playingLocation);
         }
         if (playingLocation && (initialSegmentLoad ||
@@ -600,6 +592,8 @@ export function EditorPage() {
     openConfirmDialog();
   };
 
+  
+
   /**
    * keeps track of where the timer is
    * - used to keep track of which word is currently playing
@@ -611,11 +605,13 @@ export function EditorPage() {
     const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime
     const currentlyPlayingWordPlayerSegment = playingTimeData?.currentlyPlayingWordPlayerSegment
 
+    const label = '===============calculatePlayingLocation local : '
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
-      setPlaybackTime(time);
+      console.time(label)
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
+      console.timeEnd(label);
     }
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
