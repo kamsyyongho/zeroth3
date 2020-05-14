@@ -109,40 +109,40 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             setLocalSegment(updatedSegment);
     };
 
-    const handleUndoCommand = () => {
-        if(undoRedoData.undoStack.length) {
-            const undoStack: string[] = undoRedoData.undoStack;
-            const previousText: any = undoStack.pop();
-            const updateWordAlignment = localSegment;
-            const [segmentIndex, wordIndex] = undoRedoData.location
-            updateWordAlignment.wordAlignments[wordIndex].word = previousText;
-            setLocalSegment(updateWordAlignment);
-            setUndoRedoData({
-                location: undoRedoData.location,
-                undoStack: undoStack,
-                redoStack: [...undoRedoData.redoStack, previousText],
-            });
-            onCommandHandled();
-            console.log('editorCommand in WordAlignmentBlock : ', undoRedoData);
-        }
-    };
-
-    const handleRedoCommand = () => {
-        if(undoRedoData.redoStack.length) {
-            const redoStack = undoRedoData.redoStack;
-            const undidState = undoRedoData.redoStack.pop();
-            const updateWordAlignment = localSegment;
-            const [segmentIndex, wordIndex] = undoRedoData.location
-            updateWordAlignment.wordAlignments[wordIndex].word = undidState;
-            setLocalSegment(updateWordAlignment);
-            setUndoRedoData({
-                location: undoRedoData.location,
-                undoStack: [...undoRedoData.undoStack, undidState],
-                redoStack: redoStack,
-            });
-            onCommandHandled();
-        }
-    };
+    // const handleUndoCommand = () => {
+    //     if(undoRedoData.undoStack.length) {
+    //         const undoStack: string[] = undoRedoData.undoStack;
+    //         const previousText: any = undoStack.pop();
+    //         const updateWordAlignment = localSegment;
+    //         const [segmentIndex, wordIndex] = undoRedoData.location
+    //         updateWordAlignment.wordAlignments[wordIndex].word = previousText;
+    //         setLocalSegment(updateWordAlignment);
+    //         setUndoRedoData({
+    //             location: undoRedoData.location,
+    //             undoStack: undoStack,
+    //             redoStack: [...undoRedoData.redoStack, previousText],
+    //         });
+    //         onCommandHandled();
+    //         console.log('editorCommand in WordAlignmentBlock : ', undoRedoData);
+    //     }
+    // };
+    //
+    // const handleRedoCommand = () => {
+    //     if(undoRedoData.redoStack.length) {
+    //         const redoStack = undoRedoData.redoStack;
+    //         const undidState = undoRedoData.redoStack.pop();
+    //         const updateWordAlignment = localSegment;
+    //         const [segmentIndex, wordIndex] = undoRedoData.location
+    //         updateWordAlignment.wordAlignments[wordIndex].word = undidState;
+    //         setLocalSegment(updateWordAlignment);
+    //         setUndoRedoData({
+    //             location: undoRedoData.location,
+    //             undoStack: [...undoRedoData.undoStack, undidState],
+    //             redoStack: redoStack,
+    //         });
+    //         onCommandHandled();
+    //     }
+    // };
 
     const handleFocus = () => {
         console.log('===========focused segment : ', segment);
@@ -185,8 +185,8 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     React.useEffect(() => {
         if(undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
-            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
+            // if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
+            // if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
             setEditorCommandForWordBlock(editorCommand);
         }
     },[editorCommand])

@@ -790,6 +790,7 @@ export function EditorPage() {
     return (
         <>
             {!readOnly && <EditorControls
+                playingLocation={currentPlayingLocation}
                 onCommandClick={setEditorCommand}
                 onConfirm={onConfirmClick}
                 disabledControls={disabledControls}
