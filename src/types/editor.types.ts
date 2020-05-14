@@ -19,6 +19,12 @@ export interface WordKeyStoreContent {
   wordKeyLocations: WordKeyLocation3DArray;
 }
 
+export interface PlayingTimeData {
+  currentlyPlayingWordPlayerSegment?: PlayingWordAndSegment;
+  currentlyPlayingWordTime?: Time;
+  timeToSeekTo?: number
+} 
+
 export interface Range {
   start: number;
   end: number; // this value used as rangeIndex

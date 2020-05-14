@@ -100,6 +100,7 @@ interface EditorControlsProps {
   disabledControls?: EDITOR_CONTROLS[];
   loading?: boolean;
   editorReady?: boolean;
+  playingLocation: number[];
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -109,6 +110,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     disabledControls = [],
     loading,
     editorReady,
+    playingLocation,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -126,6 +128,22 @@ export const EditorControls = (props: EditorControlsProps) => {
       setAnchorEl(null);
     }
   };
+
+  const handleClick = (command: EDITOR_CONTROLS) => {
+    onCommandClick(command);
+    if(playingLocation) {
+      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      if(playingBlock) {
+        range.selectNodeContents(playingBlock);
+        range.collapse(true);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }
+  }
 
   const open = Boolean(anchorEl);
 
@@ -178,7 +196,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Save />;
           tooltipText = osText('save');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.save),
+            onClick: () => handleClick(EDITOR_CONTROLS.save),
             disabled: disabledControls.includes(EDITOR_CONTROLS.save),
           };
           break;
@@ -195,7 +213,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Undo />;
           tooltipText = osText('undo');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.undo),
+            onClick: () => handleClick(EDITOR_CONTROLS.undo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
           };
           break;
@@ -204,7 +222,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Redo />;
           tooltipText = osText('redo');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.redo),
+            onClick: () => handleClick(EDITOR_CONTROLS.redo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
           };
           break;
@@ -213,7 +231,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Merge />;
           tooltipText = osText('merge');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.merge),
+            onClick: () => handleClick(EDITOR_CONTROLS.merge),
             disabled: disabledControls.includes(EDITOR_CONTROLS.merge),
           };
           break;
@@ -222,7 +240,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <ICONS.Split />;
           tooltipText = osText('split');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.split),
+            onClick: () => handleClick(EDITOR_CONTROLS.split),
             disabled: disabledControls.includes(EDITOR_CONTROLS.split),
           };
           break;
@@ -236,7 +254,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           tooltipText = osText('toggleMore');
           selected = !!showEditorPopups;
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.toggleMore),
+            onClick: () => handleClick(EDITOR_CONTROLS.toggleMore),
             disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
           };
           break;
@@ -244,16 +262,16 @@ export const EditorControls = (props: EditorControlsProps) => {
           label = translate('editor.createWord');
           icon = <AddIcon />;
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.createWord),
+            onClick: () => handleClick(EDITOR_CONTROLS.createWord),
             disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
           };
           break;
         case EDITOR_CONTROLS.editSegmentTime:
           label = translate('editor.editSegmentTime');
-          icon = <SvgIcon ><AiOutlineColumnWidth /></SvgIcon>;
+          icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;
           tooltipText = osText('editSegmentTime');
           props = {
-            onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
+            // onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
             disabled: disabledControls.includes(EDITOR_CONTROLS.editSegmentTime),
           };
           break;
@@ -264,7 +282,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           props = {
             onClick: (event: React.MouseEvent<HTMLElement>) => {
               handleThresholdClick(event);
-              onCommandClick(EDITOR_CONTROLS.setThreshold);
+              handleClick(EDITOR_CONTROLS.setThreshold);
             },
             disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold),
           };
@@ -276,7 +294,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           props = {
             onClick: () => {
               setEditorDebugMode(!editorDebugMode);
-              onCommandClick(EDITOR_CONTROLS.debug);
+              handleClick(EDITOR_CONTROLS.debug);
             },
             disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
           };

@@ -17,7 +17,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
 import ToggleIcon from 'material-ui-toggle-icon';
 import { useSnackbar } from 'notistack';
-import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, Segment, SegmentAddOptions } from 'peaks.js';
+import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, SegmentAddOptions, Segment } from 'peaks.js';
 import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
 import PropagateLoader from 'react-spinners/PropagateLoader';
 import ScaleLoader from 'react-spinners/ScaleLoader';
@@ -27,11 +27,12 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
+import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, isMacOs } from '../../util/misc';
-
+import { getSegmentAndWordIndex } from './helpers/editor.helper'
+import { calculateWordTime } from './helpers/editor-page.helper';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -61,7 +62,7 @@ let validTimeBondaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
-
+const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
@@ -113,6 +114,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 interface AudioPlayerProps {
+  audioPlayerTimeIndex?: number[];
+  segments: SegmentEditor[];
   url: string;
   timeToSeekTo?: number;
   disabledTimes?: Time[];
@@ -139,6 +142,8 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const {
+    audioPlayerTimeIndex,
+    segments,
     url,
     onTimeChange,
     onAutoSeekToggle,
@@ -719,7 +724,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // like creating segments at exactly `0`
       let startTime = wordInfo.time.start;
       if (startTime === 0) {
-        startTime = startTime + ZERO_TIME_SLOP;
+        startTime = startTime - ZERO_TIME_SLOP;
       }
       let endTime = wordInfo.time.end;
       if (endTime > duration && duration > 0) {
@@ -727,7 +732,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       let segmentStartTime = segmentInfo.time.start;
       if (segmentStartTime === 0) {
-        segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
+        segmentStartTime = segmentStartTime - ZERO_TIME_SLOP;
       }
       let segmentEndTime = segmentInfo.time.end;
       if (segmentEndTime > duration && duration > 0) {

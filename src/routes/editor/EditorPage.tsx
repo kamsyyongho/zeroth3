@@ -24,8 +24,10 @@ import {
   VoiceData,
   Word,
   WordAlignment,
-  WordToCreateTimeFor } from '../../types';
-import { PlayingWordAndSegment } from '../../types/editor.types';
+  WordToCreateTimeFor,
+  PlayingWordAndSegment,
+  PlayingTimeData } from '../../types';
+import {  } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
@@ -113,8 +115,8 @@ export function EditorPage() {
   const [disabledTimes, setDisabledTimes] = React.useState<Time[] | undefined>();
   const [autoSeekLock, setAutoSeekLock] = React.useState(false);
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
-  const [currentPlayingWordPlayerSegment, setCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
-  const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
+  // const [currentPlayingWordPlayerSegment, setCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
+  // const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [segmentSplitTimeBoundary, setSegmentSplitTimeBoundary] = React.useState<Required<Time> | undefined>();
@@ -140,6 +142,7 @@ export function EditorPage() {
   const [speakers, setSpeakers] = React.useState<string[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
+  const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>();
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -332,8 +335,7 @@ export function EditorPage() {
   const submitSegmentTimeUpdate = async (segmentId: string,
                                          segmentIndex: number,
                                          start: number,
-                                         length: number,
-                                         onSuccess: (segment: Segment) => void) => {
+                                         length: number) => {
     if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegmentTime(projectId, voiceData.id, segmentId, start, length);
@@ -344,7 +346,6 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
-        onSuccess(updatedSegment);
         onUpdateUndoRedoStack(false, false);
 
       } else {
@@ -534,7 +535,6 @@ export function EditorPage() {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const [segmentIndex, wordIndex] = playingLocation;
     console.log('playingLocation inside EditorPage - buildPlayingAudioPlayerSegment : ', playingLocation);
-    const label = '================ setCurrenlyPlayingWordTime';
     const label2 = '====================================setCurrentlyPlayingWordPlayerSegment'
     if (!segments.length) return;
     const segment = segments[segmentIndex];
@@ -545,9 +545,7 @@ export function EditorPage() {
       start: startTime,
       end: endTime,
     };
-    console.time(label);
-    setCurrentlyPlayingWordTime(time);
-    console.timeEnd(label);
+    // setCurrentlyPlayingWordTime(time);
     const text = wordAlignment.word.replace('|', '');
     const color = theme.audioPlayer.wordRange;
     const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
@@ -564,10 +562,16 @@ export function EditorPage() {
       time: segmentTime,
       text: segment.transcript,
     };
+    const timeData = {
+      currentlyPlayingWordTime: time,
+      currentPlayingWordPlayerSegment: [currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay],
+      timeToSeekTo: 0,
+    }
     console.time(label2);
-    setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
+    // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
+    // setPlayingTimeData(timeData);
+    return timeData
     console.timeEnd(label2);
-
   };
 
   /** The worker used to calculate the current playing time */
@@ -604,6 +608,9 @@ export function EditorPage() {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
     // prevents seeking again if we changed because of clicking a word
+    const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime
+    const currentlyPlayingWordPlayerSegment = playingTimeData?.currentlyPlayingWordPlayerSegment
+
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
@@ -611,8 +618,16 @@ export function EditorPage() {
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }
     // to allow us to continue to force seeking the same word during playback
-    setTimeToSeekTo(undefined);
+    // setTimeToSeekTo(undefined);
+    if(currentlyPlayingWordTime && currentlyPlayingWordPlayerSegment) {
+      setPlayingTimeData({
+        currentlyPlayingWordTime,
+        currentlyPlayingWordPlayerSegment,
+        timeToSeekTo: undefined,
+      })
+    }
   };
+
 
   /**
    * - sets the seek time in the audio player
@@ -625,8 +640,10 @@ export function EditorPage() {
       console.time(label);
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
-      buildPlayingAudioPlayerSegment(wordLocation);
-      setTimeToSeekTo(wordTime + SEEK_SLOP);
+      let timeData = buildPlayingAudioPlayerSegment(wordLocation);
+      if(timeData) timeData.timeToSeekTo = wordTime + SEEK_SLOP
+      // setTimeToSeekTo(wordTime + SEEK_SLOP);
+      setPlayingTimeData(timeData)
       console.timeEnd(label);
 
       if (!autoSeekLock) {
@@ -710,7 +727,17 @@ export function EditorPage() {
     }
   };
 
-  const handlePlayingAudioSegmentCreate = () => setCurrentPlayingWordPlayerSegment(undefined);
+  const handlePlayingAudioSegmentCreate = () => {
+    const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime;
+    const timeToSeekTo = playingTimeData?.timeToSeekTo;
+    if(currentlyPlayingWordTime && timeToSeekTo) {
+      setPlayingTimeData({
+        currentlyPlayingWordTime,
+        currentlyPlayingWordPlayerSegment: undefined,
+        timeToSeekTo,
+      })
+    }
+  };
 
   const handleAudioSegmentCreate = () => {
     setWordToCreateTimeFor(undefined);
@@ -761,6 +788,7 @@ export function EditorPage() {
         // createWordTime(editorState);
         break;
       case EDITOR_CONTROLS.editSegmentTime:
+        setEditorCommand(command);
         // prepareSegmentTimePicker(editorState);
         break;
       case EDITOR_CONTROLS.undo:
@@ -791,8 +819,7 @@ export function EditorPage() {
     setCanUndo(false);
     setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
-    setCurrentPlayingWordPlayerSegment(undefined);
-    setCurrentlyPlayingWordTime(undefined);
+    setPlayingTimeData(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
     setNavigationProps({});
@@ -800,8 +827,6 @@ export function EditorPage() {
 
   React.useEffect(() => {
     internalSegmentsTracker = segments;
-    renderCount++
-    console.log(`====================renders ${renderCount} times [segments] ======================`);
   }, [segments]);
 
   //will be called on subsequent fetches when the editor is not read only
@@ -830,8 +855,6 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
-    renderCount++;
-    console.log(`====================renders ${renderCount} times [] ======================`);
     setPageTitle(translate('path.editor'));
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
@@ -881,6 +904,7 @@ export function EditorPage() {
         disabledControls={disabledControls}
         loading={saveSegmentsLoading || confirmSegmentsLoading}
         editorReady={editorReady}
+        playingLocation={currentPlayingLocation}
       />}
       <Container >
         {readOnly && <StarRating
@@ -938,9 +962,10 @@ export function EditorPage() {
             FallbackComponent={PageErrorFallback}
           >
             <AudioPlayer
+              segments={segments}
               key={voiceData.id}
               url={voiceData.audioUrl}
-              timeToSeekTo={timeToSeekTo}
+              timeToSeekTo={playingTimeData?.timeToSeekTo}
               disabledTimes={disabledTimes}
               segmentIdToDelete={segmentIdToDelete}
               onAutoSeekToggle={handleAutoSeekToggle}
@@ -951,7 +976,7 @@ export function EditorPage() {
               onSegmentUpdate={handleAudioSegmentUpdate}
               onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
               onSegmentStatusEditChange={handleSegmentStatusEditChange}
-              currentPlayingWordPlayerSegment={currentPlayingWordPlayerSegment}
+              currentPlayingWordPlayerSegment={playingTimeData?.currentlyPlayingWordPlayerSegment}
               wordToCreateTimeFor={wordToCreateTimeFor}
               wordToUpdateTimeFor={wordToUpdateTimeFor}
               onTimeChange={handlePlaybackTimeChange}

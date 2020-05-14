@@ -5,6 +5,7 @@ import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
+import { INLINE_STYLE_TYPE } from '../../../types';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -36,6 +37,7 @@ interface SegmentBlockProps  {
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
+    playingLocation: any;
 }
 
 let isFocused = false;
@@ -55,7 +57,8 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
-        getLastAlignmentIndexInSegment } = props;
+        getLastAlignmentIndexInSegment,
+        playingLocation } = props;
     // const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
@@ -139,6 +142,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
       setUndoRedoData({location: [], undoStack: [], redoStack: []});
     };
 
+    const getClassNameForPlaying = (wordIndex: number) => {
+        return playingLocation[0] === segmentIndex && playingLocation[1] === wordIndex ? INLINE_STYLE_TYPE.PLAYING : '';
+    }
+
     React.useEffect(() => {
         setLocalSegment(segment);
         setLengthBeforeEachBlockArray();
@@ -169,6 +176,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 return (
                     <WordAlignmentBlock
                         key={`word-alignment-${segmentIndex}-${index}`}
+                        classNameForPlaying={playingLocation[0] === segmentIndex && playingLocation[1] === index ? INLINE_STYLE_TYPE.PLAYING : ''}
                         findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                         setUndoRedoData={setUndoRedoData}
                         getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}

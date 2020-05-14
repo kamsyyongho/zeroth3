@@ -70,6 +70,18 @@ function getEntityStrategy(mutability: DraftEntityMutability) {
   };
 }
 
+export const getSegmentAndWordIndex = () => {
+  const selectedBlock: any = window.getSelection();
+  const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
+  const selectedBlockId: string = selectedBlockNode.id || selectedBlockNode.parentNode.id;
+
+  console.log('================selectedBlock in getSegmentAndWordIndex : ', selectedBlockId);
+  const segmentAndWordIndex = selectedBlockId.split('-');
+  segmentAndWordIndex.shift();
+
+  return segmentAndWordIndex.map(index => Number(index));
+};
+
 /** generates the custom entity components */
 export const generateDecorators = () =>
   new CompositeDecorator([

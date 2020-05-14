@@ -105,7 +105,6 @@ export function SegmentSplitPicker(props: SegmentSplitPickerProps) {
     };
   }, []);
 
-
   React.useEffect(() => {
     if (segmentSplitTime !== undefined) {
       setTime(segmentSplitTime);

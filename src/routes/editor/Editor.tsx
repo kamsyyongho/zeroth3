@@ -1,54 +1,30 @@
-import { Backdrop } from '@material-ui/core';
+import {Backdrop} from '@material-ui/core';
 import Card from '@material-ui/core/Card';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { DraftHandleValue, Editor as DraftEditor, EditorState,RichUtils, SelectionState } from 'draft-js';
+import {Editor as DraftEditor, EditorState, SelectionState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import { useSnackbar, VariantType } from 'notistack';
+import {useSnackbar, VariantType} from 'notistack';
 import Draggable from 'react-draggable';
-import React, { useGlobal } from 'reactn';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { CustomTheme } from '../../theme/index';
-import {
-  BLOCK_TYPE,
-  EntityMap,
-  ENTITY_TYPE,
-  HANDLE_VALUES,
-  KEY_COMMANDS,
-  MUTABILITY_TYPE,
-  Segment,
-  SegmentAndWordIndex,
-  SNACKBAR_VARIANTS,
-  WordAlignment } from '../../types';
-import {
-  BlockInfo,
-  BlockKeyToSegmentId,
-  BlockObject,
-  CharacterDetails,
-  CharacterProperties,
-  CursorContent,
-  EDITOR_CHANGE_TYPE,
-  EntityKeyToWordKey,
-  EntityRangeByEntityKey,
-  REMOVAL_DIRECTION,
-  SegmentBlockData,
-  SegmentIdToBlockKey,
-  Time,
-  Word,
-  WordAlignmentEntityData,
-  WordKeyToEntityKey } from '../../types/editor.types';
-import { UNDO_SEGMENT_STACK } from "../../common/constants";
-import log from '../../util/log/logger';
+import React, {useGlobal} from 'reactn';
+import {I18nContext} from '../../hooks/i18n/I18nContext';
+import {useWindowSize} from '../../hooks/window/useWindowSize';
+import {CustomTheme} from '../../theme/index';
+import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment} from '../../types';
+import {CursorContent, SegmentBlockData, Word, WordAlignmentEntityData} from '../../types/editor.types';
+import {UNDO_SEGMENT_STACK} from "../../common/constants";
+import {EDITOR_CONTROLS} from './components/EditorControls';
+import {SegmentSplitPicker} from './components/SegmentSplitPicker';
+import {SegmentTimePicker} from './components/SegmentTimePicker';
+import {WordTimePicker} from './components/WordTimePicker';
+import {PARENT_METHOD_TYPES, ParentMethodResponse, SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
+import './styles/editor.css';
+import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
+import localForage from 'localforage';
 import { getRandomColor } from '../../util/misc';
-import { EDITOR_CONTROLS } from './components/EditorControls';
-import { SegmentBlock, SegmentBlockSubProps } from './components/SegmentBlock';
-import { SegmentSplitPicker } from './components/SegmentSplitPicker';
-import { SegmentTimePicker } from './components/SegmentTimePicker';
-import { WordTimePicker } from './components/WordTimePicker';
-import { ParentMethodResponse, PARENT_METHOD_TYPES, SplitTimePickerRootProps, TimePickerRootProps } from './EditorPage';
 import {
   buildStyleMap,
+  getSegmentAndWordIndex,
   cloneEditorState,
   customKeyBindingFunction,
   editorChangeNoop,
@@ -56,9 +32,6 @@ import {
   getWithinSegmentTimes,
   updateBlockSegmentData,
   WordKeyStore } from './helpers/editor.helper';
-import './styles/editor.css';
-import { MemoizedSegmentBlock } from './components/SegmentBlockV2';
-import localForage from 'localforage';
 
 let renderTimes = 0;
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -86,12 +59,10 @@ interface WordPickerOptions {
 interface SegmentPickerOptions {
   segmentWord: Word;
   segment: Segment;
-  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
 }
 
 interface SegmentSplitOptions {
   segmentIndex: number;
-  cursorContent: CursorContent<WordAlignmentEntityData, SegmentBlockData>;
 }
 
 interface EditorProps {
@@ -114,7 +85,7 @@ interface EditorProps {
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
-  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number, onSuccess: (segment: Segment) => void) => void;
+  updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number) => void;
   assignSpeaker: (segmentIndex: number) => void;
   removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
   onWordClick: (wordLocation: SegmentAndWordIndex) => void;
@@ -169,28 +140,30 @@ export function Editor(props: EditorProps) {
   const [wordTimePickerOptions, setWordTimePickerOptions] = React.useState<WordPickerOptions | undefined>();
   const [segmentPickerOptions, setSegmentPickerOptions] = React.useState<SegmentPickerOptions | undefined>();
   const [segmentSplitOptions, setSegmentSplitOptions] = React.useState<SegmentSplitOptions | undefined>();
-  const [readOnlyEditorState, setReadOnlyEditorState] = React.useState<EditorState | undefined>();
+  const [readOnlyEditorState, setReadOnlyEditorState] = React.useState(false);
   const [previousSelectedCursorContent, setPreviousSelectedCursorContent] = React.useState<CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined>();
   const [previousSelectionState, setPreviousSelectionState] = React.useState<SelectionState | undefined>();
 
   const editorRef = React.useRef<DraftEditor | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
-  const getSegmentAndWordIndex = () => {
-    const selectedBlock: any = window.getSelection();
-    const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
-    const selectedBlockId: string = selectedBlockNode.parentNode.id;
-
-    const segmentAndWordIndex = selectedBlockId.split('-');
-    segmentAndWordIndex.shift();
-
-    return segmentAndWordIndex.map(index => Number(index));
+  const getIndexOfSegmentId = (segmentId: string): number | null => {
+    const indexLocation = segments.map((segment: Segment, index: number) => {
+      if(segment.id === segmentId) {
+        return index
+      }
+    }) || null;
+    if (!indexLocation || indexLocation[0] < 0) {
+      return null;
+    }
+    return indexLocation[0];
   };
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
-    console.log('updateCaretLocation in editor after caret change : ',segmentIndex, wordIndex);
-
-    onWordClick([segmentIndex, wordIndex]);
+    // console.log('updateCaretLocation in editor after caret change : ',segmentIndex, wordIndex);
+    //
+    // onWordClick([segmentIndex, wordIndex]);
+    handleClickInsideEditor();
   };
 
   const updatePlayingLocation = () => {
@@ -274,6 +247,12 @@ export function Editor(props: EditorProps) {
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 
   const openSegmentSplitTimePicker = () => {
+      if (playingLocation) {
+        const cursorContent = segments[playingLocation[0]].wordAlignments[playingLocation[1]].word;
+        const segmentSplitOptions: SegmentSplitOptions = {
+          segmentIndex: playingLocation[0],
+        }
+      }
   };
 
   const closeSegmentSplitTimePicker = () => {
@@ -289,7 +268,7 @@ export function Editor(props: EditorProps) {
 
   const handleClickInsideEditor = () => {
     const playingLocation: SegmentAndWordIndex = getSegmentAndWordIndex();
-    console.log('playingLocation in handleClickInsideEditor : ', playingLocation);
+    console.log(playingLocation);
     if(playingLocation) onWordClick(playingLocation);
   };
   /** updates the word alignment data once selected segment / blocks have changed
@@ -299,12 +278,31 @@ export function Editor(props: EditorProps) {
   };
 
   const closeWordTimePicker = () => {
+    setWordTimePickerOptions(undefined);
+    onWordTimeCreationClose();
   };
 
   const closeSegmentTimePicker = () => {
+    setSegmentPickerOptions(undefined);
+    setReadOnlyEditorState(false);
+    onWordTimeCreationClose();
   };
 
-  const handleSegmentTimeUpdate = () => {
+  const handleSegmentTimeUpdate = (segmentWord: Word, segment: Segment) => {
+    const segmentIndex = getIndexOfSegmentId(segment.id);
+    const { time } = segmentWord;
+    if (segmentPickerOptions &&
+        typeof segmentIndex === 'number' &&
+        typeof time?.start === 'number' &&
+        typeof time?.end === 'number') {
+      let { start, end } = time;
+      // set to 2 sig figs
+      start = Number(start.toFixed(2));
+      end = Number(end.toFixed(2));
+      const length = end - start;
+      updateSegmentTime(segment.id, segmentIndex, start, length);
+      closeSegmentTimePicker();
+    }
   };
 
   const handleWordTimeCreation = () => {
@@ -347,6 +345,37 @@ export function Editor(props: EditorProps) {
     return { index: lastWordAlignment.length - 1, word: lastWordAlignment[lastWordAlignment.length - 1].word };
   };
 
+  const prepareSegmentTimePicker = (segmentIndex: number) => {
+    // if (!focussed && editorStateBeforeBlur) {
+    //   incomingEditorState = editorStateBeforeBlur;
+    // }
+    // const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
+
+    console.log('segmentIndex in prepareSegmentTimePicker : ', segmentIndex);
+    if(segmentIndex === undefined) return;
+    const segment = segments[segmentIndex];
+    if (segment) {
+      const start = segment.start;
+      const end = start + segment.length;
+      const color = getRandomColor();
+      const time: Time = {
+        start,
+        end,
+      };
+      const segmentWord: Word = {
+        color,
+        time,
+        text: '',
+      };
+      const segmentPickerOptions: SegmentPickerOptions = {
+        segmentWord,
+        segment,
+      };
+      setSegmentPickerOptions(segmentPickerOptions);
+      setReadOnlyEditorState(true);
+    }
+  };
+
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
@@ -367,6 +396,10 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(editorCommand) {
+      if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
+        console.log('editorCommand :  ', editorCommand);
+        prepareSegmentTimePicker(playingLocation[0]);
+      }
       onCommandHandled();
       if(readOnlyEditorState || readOnly) {
         return;
@@ -490,7 +523,8 @@ export function Editor(props: EditorProps) {
                                  onCommandHandled={onCommandHandled}
                                  findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                                  getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment} />
+                                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+                                 playingLocation={playingLocation} />
         })
         }
     </div>
