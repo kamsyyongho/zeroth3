@@ -530,7 +530,7 @@ export function EditorPage() {
     // setCurrentlyPlayingWordTime(time);
     const text = wordAlignment.word.replace('|', '');
     const color = theme.audioPlayer.wordRange;
-    const currentlyPlayingWordToDisplay: WordToCreateTimeFor = {
+    const currentPlayingWordToDisplay: WordToCreateTimeFor = {
       color,
       time,
       text,
@@ -539,14 +539,14 @@ export function EditorPage() {
       start: segment.start,
       end: segment.start + segment.length,
     };
-    const currentlyPlayingSegmentToDisplay: WordToCreateTimeFor = {
+    const currentPlayingSegmentToDisplay: WordToCreateTimeFor = {
       color: theme.audioPlayer.segmentRange,
       time: segmentTime,
       text: segment.transcript,
     };
     const timeData = {
       currentPlayingWordTime: time,
-      currentPlayingWordPlayerSegment: [currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay],
+      currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
       timeToSeekTo: 0,
     }
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
@@ -590,20 +590,20 @@ export function EditorPage() {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
     // prevents seeking again if we changed because of clicking a word
-    const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime
-    const currentlyPlayingWordPlayerSegment = playingTimeData?.currentlyPlayingWordPlayerSegment
+    const currentPlayingWordTime = playingTimeData?.currentPlayingWordTime
+    const currentPlayingWordPlayerSegment = playingTimeData?.currentPlayingWordPlayerSegment
 
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
-      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
+      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentPlayingWordTime });
     }
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
-    if(currentlyPlayingWordTime && currentlyPlayingWordPlayerSegment) {
+    if(currentPlayingWordTime && currentPlayingWordPlayerSegment) {
       setPlayingTimeData({
-        currentlyPlayingWordTime,
-        currentlyPlayingWordPlayerSegment,
+        currentPlayingWordTime,
+        currentPlayingWordPlayerSegment,
         timeToSeekTo: undefined,
       })
     }
