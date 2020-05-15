@@ -162,7 +162,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
                 if(!lastBlockPreviousSegment) {return;}
 
                 this.setRange(lastBlockPreviousSegment, false);
-                this.props.updateCaretLocation(this.props.segmentIndex - 1, lastWordPrevSegment);
+                this.props.updateCaretLocation(this.props.segmentIndex - 1, lastWordPrevSegment.index);
                 // this.props.updateCaretLocation(this.props.segmentIndex - 1, lastWordPrevSegment.index);
             } else {
                 const prevWordAlignmentBlock = this.props.wordAlignmentIndex > 0 ? document.getElementById
@@ -201,15 +201,16 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
 
     handleChange = (event: any) => {
         const text: string = event?.target?.value;
-        this.setState({ text: text, isChanged: true, undoStack: [ ...this.state.undoStack, text] });
-        this.props.updateWordAlignmentChange(this.props.wordAlignmentIndex, text, true);
-        this.props.setUndoRedoData({
-            location: [this.props.segmentIndex, this.props.wordAlignmentIndex],
-            undoStack: [ ...this.state.undoStack, text ],
-            redoStack: this.state.redoStack,
-        });
-        this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
-        // selected?.setPosition(this.state.node, 0);
+        if(text.length !== this.state.text.length) {
+            this.setState({ text: text, isChanged: true, undoStack: [ ...this.state.undoStack, this.state.text] });
+            this.props.updateWordAlignmentChange(this.props.wordAlignmentIndex, text, true);
+            this.props.setUndoRedoData({
+                location: [this.props.segmentIndex, this.props.wordAlignmentIndex],
+                undoStack: [ ...this.state.undoStack ],
+                redoStack: this.state.redoStack,
+            });
+            this.props.onUpdateUndoRedoStack(this.state.undoStack.length > 0, this.state.redoStack.length > 0);
+        }
     };
 
     handleOnFocus = () => {
@@ -218,7 +219,7 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
     };
 
     handleOnBlur = async () => {
-        this.setState({ isFocused: false });
+        this.setState({ isFocused: false, undoStack: [], redoStack: [] });
         // await this.props.updateWordAlignmentChange(
         //     this.props.wordAlignmentIndex,
         //     this.state.text.replace(' ', '|'),
@@ -227,9 +228,16 @@ class WordAlignmentBlock extends React.Component <WordAlignmentProp, State>{
         document.removeEventListener('keydown', this.handleKeyDown);
     };
 
+    componentWillReceiveProp = () => {
+        const replaceSpace = this.props.word.replace('|', ' ');
+        if(this.props.word !== replaceSpace) {
+            this.setState({ text: replaceSpace });
+        }
+    };
+
     componentDidMount = () => {
         this.setState({ text: this.props.word.replace('|', ' ') });
-    }
+    };
 
     render() {
         const { classes, readOnly } = this.props;

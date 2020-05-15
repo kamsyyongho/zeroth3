@@ -24,16 +24,7 @@ import localForage from 'localforage';
 import { getRandomColor } from '../../util/misc';
 import {
   buildStyleMap,
-  getSegmentAndWordIndex,
-  cloneEditorState,
-  customKeyBindingFunction,
-  editorChangeNoop,
-  generateDecorators,
-  getWithinSegmentTimes,
-  updateBlockSegmentData,
-  WordKeyStore } from './helpers/editor.helper';
-import { green, grey, pink, red } from '@material-ui/core/colors';
-import {EditorDecorator} from './components/EditorDecorator';
+  getSegmentAndWordIndex } from './helpers/editor.helper';
 
 
 let renderTimes = 0;
@@ -181,9 +172,6 @@ export function Editor(props: EditorProps) {
         selection?.addRange(range);
       }
     }
-    // if(playingBlock) {
-    //   playingBlock.focus();
-    // }
   };
 
   const initializeSegmentsStoredInLocal = async () => {
@@ -422,7 +410,6 @@ export function Editor(props: EditorProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
-    renderTimes++;
     setReady(true);
     focusEditor();
     initializeSegmentsStoredInLocal();
@@ -437,13 +424,14 @@ export function Editor(props: EditorProps) {
   // keep track of focus to prevent the keypress listeners
   // from firing twice in the editor controls component
   React.useEffect(() => {
-    renderTimes++;
     setEditorFocussed(focussed);
   }, [focussed]);
 
   React.useEffect(() => {
     if(playingLocation && ready) {
-      setPlayingWordKey(playingLocation[1])
+      if(playingLocation[0] === 0 && playingLocation[1] === 0) {
+
+      }
     }
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);

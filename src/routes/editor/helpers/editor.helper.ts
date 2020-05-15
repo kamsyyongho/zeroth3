@@ -139,7 +139,6 @@ export const updatePlayingLocation = (playingLocation: any) => {
     const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
     const selection = window.getSelection();
     const range = document.createRange();
-    console.log('playingBlock in updatePlayingLocation : ',playingBlock);
 
     if(playingBlock) {
       range.selectNodeContents(playingBlock);

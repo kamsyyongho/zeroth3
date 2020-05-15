@@ -3,7 +3,7 @@ import { green, grey, pink, red } from '@material-ui/core/colors';
 import React, { useGlobal } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
-import {Segment, WordAlignment} from "../../../types";
+import {Segment, WordAlignment, UndoRedoData} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
 import { INLINE_STYLE_TYPE } from '../../../types';
@@ -72,16 +72,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment,
         playingLocation } = props;
-    // const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const theme: CustomTheme = useTheme();
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
-    // const [isFocused, setIsFocused] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
-    const [undoRedoData, setUndoRedoData] = React.useState({location: [], undoStack: [], redoStack: []});
+    const [undoRedoData, setUndoRedoData] = React.useState<UndoRedoData | undefined>();
     const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
-    const segmentRef = React.useRef<HTMLButtonElement | null>(null);
+    const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
     const windowSize = useWindowSize();
@@ -109,40 +107,64 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             setLocalSegment(updatedSegment);
     };
 
-    // const handleUndoCommand = () => {
-    //     if(undoRedoData.undoStack.length) {
-    //         const undoStack: string[] = undoRedoData.undoStack;
-    //         const previousText: any = undoStack.pop();
-    //         const updateWordAlignment = localSegment;
-    //         const [segmentIndex, wordIndex] = undoRedoData.location
-    //         updateWordAlignment.wordAlignments[wordIndex].word = previousText;
-    //         setLocalSegment(updateWordAlignment);
-    //         setUndoRedoData({
-    //             location: undoRedoData.location,
-    //             undoStack: undoStack,
-    //             redoStack: [...undoRedoData.redoStack, previousText],
-    //         });
-    //         onCommandHandled();
-    //         console.log('editorCommand in WordAlignmentBlock : ', undoRedoData);
-    //     }
-    // };
-    //
-    // const handleRedoCommand = () => {
-    //     if(undoRedoData.redoStack.length) {
-    //         const redoStack = undoRedoData.redoStack;
-    //         const undidState = undoRedoData.redoStack.pop();
-    //         const updateWordAlignment = localSegment;
-    //         const [segmentIndex, wordIndex] = undoRedoData.location
-    //         updateWordAlignment.wordAlignments[wordIndex].word = undidState;
-    //         setLocalSegment(updateWordAlignment);
-    //         setUndoRedoData({
-    //             location: undoRedoData.location,
-    //             undoStack: [...undoRedoData.undoStack, undidState],
-    //             redoStack: redoStack,
-    //         });
-    //         onCommandHandled();
-    //     }
-    // };
+    const getUndoStack = () => {
+        if(!undoRedoData || !undoRedoData.undoStack || !undoRedoData.undoStack.length) {
+            return [];
+        } else {
+            return undoRedoData.undoStack;
+        }
+    };
+
+    const getRedoStack = () => {
+        if(!undoRedoData || !undoRedoData.redoStack || !undoRedoData.redoStack.length) {
+            return [];
+        } else {
+            return undoRedoData.redoStack;
+        }
+    }
+    
+    const handleUndoCommand = () => {
+        const undoStack = getUndoStack();
+        const redoStack = getRedoStack();
+        if(undoStack.length) {
+            const previousText: any = undoStack.pop();
+            const updateWordAlignment = localSegment;
+            if(undoRedoData?.location){
+                const [segmentIndex, wordIndex] = undoRedoData?.location;
+                updateWordAlignment.wordAlignments[wordIndex].word = previousText;
+                setLocalSegment(updateWordAlignment);
+                setUndoRedoData({
+                    location: undoRedoData.location,
+                    undoStack: undoStack,
+                    redoStack: [...redoStack, previousText],
+                });
+                onCommandHandled();
+            }
+        }
+    };
+    
+    
+
+    const handleRedoCommand = () => {
+        const undoStack = getUndoStack();
+        const redoStack = getRedoStack();
+        if(redoStack.length){
+            const undidState: any = redoStack.pop();
+            const updateWordAlignment = localSegment;
+            if(undoRedoData?.location) {
+                const [segmentIndex, wordIndex] = undoRedoData?.location
+                updateWordAlignment.wordAlignments[wordIndex].word = undidState;
+                setLocalSegment(updateWordAlignment);
+                setUndoRedoData({
+                    location: undoRedoData.location,
+                    undoStack: [...undoStack, undidState],
+                    redoStack: redoStack,
+                });
+                onCommandHandled();
+            }
+
+        }
+    };
 
     const handleFocus = () => {
         isFocused = true
@@ -153,11 +175,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
+        checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
         isFocused = false;
     };
 
     const resetState = () => {
-      setUndoRedoData({location: [], undoStack: [], redoStack: []});
+      setUndoRedoData(undefined);
         setIsChanged(false);
     };
 
@@ -181,15 +204,16 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     // }, playingLocation)
 
     React.useEffect(() => {
-        if(undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-            // if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
-            // if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
+        if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
+            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
+            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
+            onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
             setEditorCommandForWordBlock(editorCommand);
         }
     },[editorCommand])
 
     return (
-        <div className={classes.root} onFocus={handleFocus} onBlur={handleBlur}>
+        <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
                 assignSpeakerForSegment={assignSpeakerForSegment}

@@ -295,7 +295,7 @@ export function EditorPage() {
                                      segmentIndex: number) => {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      wordAlignments.forEach(word => word.word = word.word.replace(' ', '|'));
+      wordAlignments.forEach(word => word.word = word.word.replace(/(&nbsp;)*/g,"").replace(' ', '|'));
       const response = await api.voiceData.updateSegment(projectId, voiceData.id, segmentId, wordAlignments);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -416,11 +416,8 @@ export function EditorPage() {
         const splitSegments = [...segments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
-        const undoSegmentStack: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
         splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
 
-        await localForage.setItem(UNDO_SEGMENT_STACK, []);
-        await localForage.setItem(REDO_SEGMENT_STACK, []);
         // reset our new default baseline
         setSegments(splitSegments);
         onUpdateUndoRedoStack(false, false);
@@ -442,11 +439,7 @@ export function EditorPage() {
       setSaveSegmentsLoading(false);
     }
   };
-
-  const handleUndoCommand = () => {
-    console.log('undoRedoData in handleUNdoCommand : ', undoRedoData);
-  };
-
+  
   const submitSegmentSplitByTime = async (segmentId: string,
                                           segmentIndex: number,
                                           time: number,

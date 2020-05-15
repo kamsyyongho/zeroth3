@@ -1,6 +1,6 @@
 /** finds the location of the playing word on the screen and scrolls to keep it visible */
 export const checkLocationOnScreenAndScroll = (
-  referenceElement: HTMLButtonElement | null,
+  referenceElement: HTMLDivElement | HTMLButtonElement | null,
   editorElement: Element | null,
   editorContentHeight = 0,
   windowHeight = 0,
