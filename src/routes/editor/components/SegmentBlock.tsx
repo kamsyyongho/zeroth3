@@ -33,11 +33,6 @@ export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
   const { blockProps, block } = props;
 
-  React.useEffect(() => {
-    console.log(`blockProps number ${blockCount} in SegmentBlock : `, blockProps);
-    console.log(`block number ${blockCount} SegmentBlock : `, block);
-    blockCount++;
-  });
 
   return (<div
     className={classes.root}

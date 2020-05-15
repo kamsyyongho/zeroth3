@@ -153,7 +153,6 @@ export function Editor(props: EditorProps) {
   };
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
-    // console.log('updateCaretLocation in editor after caret change : ',segmentIndex, wordIndex);
     //
     // onWordClick([segmentIndex, wordIndex]);
     handleClickInsideEditor();

@@ -1830,8 +1830,7 @@ export function Editor(props: EditorProps) {
                 onBlur={handleBlur}
                 handleReturn={readOnly ? editorChangeNoop : handleReturnPress}
                 handleKeyCommand={readOnly ? editorChangeNoop : handleKeyCommand}
-                handlePastedText={editorChangeNoop}
-            />
+                handlePastedText={editorChangeNoop} />
             }
         </div>
     );

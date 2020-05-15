@@ -21,7 +21,6 @@ export interface WordKeyStoreContent {
 
 export interface PlayingTimeData {
   currentPlayingWordPlayerSegment?: any;
-  currentPlayingWordTime?: Time;
   timeToSeekTo?: number
 } 
 

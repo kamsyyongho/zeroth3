@@ -117,7 +117,7 @@ export function EditorPage() {
   const [autoSeekLock, setAutoSeekLock] = React.useState(false);
   const [wordsClosed, setWordsClosed] = React.useState<boolean | undefined>();
   // const [currentPlayingWordPlayerSegment, setCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
-  // const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
+  const [currentlyPlayingWordTime, setCurrentlyPlayingWordTime] = React.useState<Required<Time> | undefined>();
   const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
   const [segmentSplitTimeBoundary, setSegmentSplitTimeBoundary] = React.useState<Required<Time> | undefined>();
@@ -400,8 +400,11 @@ export function EditorPage() {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation || caretLocation[1] === 0 ||
-        caretLocation[1] === segments[caretLocation[0]].wordAlignments.length) {
+    console.log('caretLocation : ', segments);
+    if(!caretLocation){return;}
+    const [segmentIndex, wordIndex] = caretLocation
+    if(!segmentIndex || !wordIndex || wordIndex === 0 ||
+        wordIndex === segments[segmentIndex]['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
@@ -545,10 +548,10 @@ export function EditorPage() {
       text: segment.transcript,
     };
     const timeData = {
-      currentPlayingWordTime: time,
       currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
-      timeToSeekTo: 0,
+      timeToSeekTo: undefined,
     }
+    setCurrentlyPlayingWordTime(time);
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
     // setPlayingTimeData(timeData);
     return timeData
@@ -569,7 +572,12 @@ export function EditorPage() {
         }
         if (playingLocation && (initialSegmentLoad ||
           JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
-          buildPlayingAudioPlayerSegment(playingLocation);
+          const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
+          let timeData = buildPlayingAudioPlayerSegment(playingLocation);
+          if(timeData && wordTime) {
+            timeData.timeToSeekTo = wordTime
+            setPlayingTimeData(timeData)
+          }
         }
       });
       return worker;
@@ -590,19 +598,18 @@ export function EditorPage() {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
     // prevents seeking again if we changed because of clicking a word
-    const currentPlayingWordTime = playingTimeData?.currentPlayingWordTime
-    const currentPlayingWordPlayerSegment = playingTimeData?.currentPlayingWordPlayerSegment
+    const currentPlayingWordPlayerSegment = playingTimeData?.currentPlayingWordPlayerSegment;
 
     if (wordWasClicked) {
       wordWasClicked = false;
     } else {
-      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentPlayingWordTime });
+      setPlaybackTime(time);
+      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
-    if(currentPlayingWordTime && currentPlayingWordPlayerSegment) {
+    if(currentlyPlayingWordTime && currentPlayingWordPlayerSegment) {
       setPlayingTimeData({
-        currentPlayingWordTime,
         currentPlayingWordPlayerSegment,
         timeToSeekTo: undefined,
       })
@@ -620,7 +627,7 @@ export function EditorPage() {
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
-      if(timeData) {
+      if(timeData && wordTime) {
         timeData.timeToSeekTo = wordTime
         setPlayingTimeData(timeData)
       }
@@ -708,11 +715,9 @@ export function EditorPage() {
   };
 
   const handlePlayingAudioSegmentCreate = () => {
-    const currentPlayingWordTime = playingTimeData?.currentPlayingWordTime;
     const timeToSeekTo = playingTimeData?.timeToSeekTo;
-    if(currentPlayingWordTime && timeToSeekTo) {
+    if(timeToSeekTo) {
       setPlayingTimeData({
-        currentPlayingWordTime,
         currentPlayingWordPlayerSegment: undefined,
         timeToSeekTo,
       })
@@ -799,6 +804,7 @@ export function EditorPage() {
     setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
     setPlayingTimeData({});
+    setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
     setNavigationProps({});
