@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
   }),
 );
+let blockCount = 0;
 
 export interface SegmentBlockSubProps {
   readOnly?: boolean;
@@ -31,6 +32,8 @@ interface SegmentBlockProps extends EditorBlock {
 export const SegmentBlock = (props: SegmentBlockProps) => {
   const classes = useStyles();
   const { blockProps, block } = props;
+
+
   return (<div
     className={classes.root}
   >

@@ -17,7 +17,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
 import ToggleIcon from 'material-ui-toggle-icon';
 import { useSnackbar } from 'notistack';
-import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, Segment, SegmentAddOptions } from 'peaks.js';
+import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, SegmentAddOptions, Segment } from 'peaks.js';
 import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
 import PropagateLoader from 'react-spinners/PropagateLoader';
 import ScaleLoader from 'react-spinners/ScaleLoader';
@@ -27,11 +27,12 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor } from '../../types';
+import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex, PlayingTimeData } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, isMacOs } from '../../util/misc';
-
+import { getSegmentAndWordIndex } from './helpers/editor.helper'
+import { calculateWordTime } from './helpers/editor-page.helper';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -61,7 +62,7 @@ let validTimeBondaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
-
+const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
@@ -69,7 +70,7 @@ const STARTING_WORD_LOOP_LENGTH = 0.5;
  * for adding a bit of slop because `Peaks.js` does
  * not like creating segments at exactly `0`
  */
-const ZERO_TIME_SLOP = 0.00001;
+const ZERO_TIME_SLOP = 0.00500;
 /** the zoom levels for the peaks */
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
@@ -113,13 +114,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 interface AudioPlayerProps {
+  audioPlayerTimeIndex?: number[];
+  segments: SegmentEditor[];
   url: string;
-  timeToSeekTo?: number;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
-  currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
+  // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
   segmentSplitTimeBoundary?: Required<Time>;
@@ -134,20 +136,23 @@ interface AudioPlayerProps {
   onPlayingSegmentCreate: () => void;
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
+  setIsAudioPlaying: (isAudioPlaying: boolean) => void;
+  playingTimeData: PlayingTimeData;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const {
+    audioPlayerTimeIndex,
+    segments,
     url,
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
-    timeToSeekTo,
     disabledTimes,
     segmentIdToDelete,
     deleteAllWordSegments,
     wordsClosed,
-    currentPlayingWordPlayerSegment,
+    // currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
     segmentSplitTimeBoundary,
@@ -159,6 +164,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onPlayingSegmentCreate,
     onSegmentStatusEditChange,
     onReady,
+    setIsAudioPlaying,
+    playingTimeData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -184,8 +191,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const handlePause = () => setIsPlay(false);
-  const handlePlay = () => setIsPlay(true);
+  const handlePause = () => {
+    setIsPlay(false);
+    setIsAudioPlaying(false);
+  };
+  const handlePlay = () => {
+    setIsPlay(true);
+    setIsAudioPlaying(true);
+  };
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
@@ -226,6 +239,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
       setIsPlay(false);
+      setIsAudioPlaying(false);
       StreamPlayer.pause();
       PeaksPlayer.player.seek(0);
       setCurrentTimeDisplay(DEFAULT_EMPTY_TIME);
@@ -691,10 +705,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const parseCurrentlyPlayingWordSegment = (segmentInfoToUse?: PlayingWordAndSegment) => {
     if (!segmentInfoToUse) {
-      segmentInfoToUse = currentPlayingWordPlayerSegment;
+      segmentInfoToUse = playingTimeData.currentPlayingWordPlayerSegment;
     }
     if (segmentInfoToUse !== undefined) {
       setSavedCurrentPlayingWordPlayerSegment(segmentInfoToUse);
+
       const [wordInfo, segmentInfo] = segmentInfoToUse;
       if (typeof wordInfo.time?.start !== 'number' ||
         typeof wordInfo.time?.end !== 'number' ||
@@ -703,11 +718,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
       ) {
         return;
       }
+
       // adding a bit of slop because `Peaks.js` does not 
       // like creating segments at exactly `0`
       let startTime = wordInfo.time.start;
       if (startTime === 0) {
-        startTime = startTime + ZERO_TIME_SLOP;
+        startTime = startTime - ZERO_TIME_SLOP;
       }
       let endTime = wordInfo.time.end;
       if (endTime > duration && duration > 0) {
@@ -715,7 +731,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       let segmentStartTime = segmentInfo.time.start;
       if (segmentStartTime === 0) {
-        segmentStartTime = segmentStartTime + ZERO_TIME_SLOP;
+        segmentStartTime = segmentStartTime - ZERO_TIME_SLOP;
       }
       let segmentEndTime = segmentInfo.time.end;
       if (segmentEndTime > duration && duration > 0) {
@@ -930,11 +946,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [duration, ready]);
 
   // set the seek location based on the parent
-  React.useEffect(() => {
-    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
-      seekToTime(timeToSeekTo);
-    }
-  }, [timeToSeekTo]);
+  // React.useEffect(() => {
+  //   if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+  //     seekToTime(playingTimeData.timeToSeekTo);
+  //   }
+  // }, [playingTimeData.timeToSeekTo]);
 
   // delete a word segment based on the parent
   React.useEffect(() => {
@@ -1045,11 +1061,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
+    if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+      seekToTime(playingTimeData.timeToSeekTo);
+    }
     // don't update playing segments if the loop is active or when it should be disabled
     if (!isLoop && !disableLoop) {
       parseCurrentlyPlayingWordSegment();
     }
-  }, [currentPlayingWordPlayerSegment]);
+
+  }, [playingTimeData]);
 
   // set the update the time for a segment
   React.useEffect(() => {

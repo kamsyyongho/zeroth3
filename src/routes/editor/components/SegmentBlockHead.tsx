@@ -85,7 +85,8 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
   const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
-  const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
+  const displayTextChangedHover = (!readOnly
+      && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
   const handleSpeakerPress = () => {
     if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
@@ -99,7 +100,8 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   };
   const iconHidden = !speaker && !showEditorPopups;
   const showChip = highRisk && showEditorPopups;
-  const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined} fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
+  const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined}
+                        fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
   const speakerButton = (<Button
     size='small'
     startIcon={icon}

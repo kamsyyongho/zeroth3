@@ -15,6 +15,27 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "include": ["src"],
-  "exclude": ["node_modules/react-table"]
+  "include": [
+    "./.js",
+    "./.jsx",
+    "./.ts",
+    "./.tsx",
+    "./**/*.js",
+    "./**/*.json",
+    "./**/*.jsx",
+    "./**/*.ts",
+    "./**/*.tsx"
+  ],
+  "exclude": [
+    ".build",
+    ".cache",
+    ".ignore",
+    ".reports",
+    "3rdparty",
+    "covid19_scenarios_data",
+    "cypress",
+    "node_modules",
+    "static",
+    "tsconfig.json"
+  ]
 }
