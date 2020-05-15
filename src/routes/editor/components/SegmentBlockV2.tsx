@@ -142,8 +142,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             }
         }
     };
-    
-    
 
     const handleRedoCommand = () => {
         const undoStack = getUndoStack();

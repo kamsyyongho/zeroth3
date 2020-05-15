@@ -143,7 +143,7 @@ export function EditorPage() {
   const [speakers, setSpeakers] = React.useState<string[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
-  const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>();
+  const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>({});
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -545,7 +545,7 @@ export function EditorPage() {
       text: segment.transcript,
     };
     const timeData = {
-      currentlyPlayingWordTime: time,
+      currentPlayingWordTime: time,
       currentPlayingWordPlayerSegment: [currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay],
       timeToSeekTo: 0,
     }
@@ -620,9 +620,11 @@ export function EditorPage() {
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
-      if(timeData) timeData.timeToSeekTo = wordTime + SEEK_SLOP
+      if(timeData) {
+        timeData.timeToSeekTo = wordTime
+        setPlayingTimeData(timeData)
+      }
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
-      setPlayingTimeData(timeData)
 
       if (!autoSeekLock) {
         setCurrentPlayingLocation(wordLocation);
@@ -706,12 +708,12 @@ export function EditorPage() {
   };
 
   const handlePlayingAudioSegmentCreate = () => {
-    const currentlyPlayingWordTime = playingTimeData?.currentlyPlayingWordTime;
+    const currentPlayingWordTime = playingTimeData?.currentPlayingWordTime;
     const timeToSeekTo = playingTimeData?.timeToSeekTo;
-    if(currentlyPlayingWordTime && timeToSeekTo) {
+    if(currentPlayingWordTime && timeToSeekTo) {
       setPlayingTimeData({
-        currentlyPlayingWordTime,
-        currentlyPlayingWordPlayerSegment: undefined,
+        currentPlayingWordTime,
+        currentPlayingWordPlayerSegment: undefined,
         timeToSeekTo,
       })
     }
@@ -796,7 +798,7 @@ export function EditorPage() {
     setCanUndo(false);
     setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
-    setPlayingTimeData(undefined);
+    setPlayingTimeData({});
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
     setNavigationProps({});
@@ -942,7 +944,7 @@ export function EditorPage() {
               segments={segments}
               key={voiceData.id}
               url={voiceData.audioUrl}
-              timeToSeekTo={playingTimeData?.timeToSeekTo}
+              // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
               disabledTimes={disabledTimes}
               segmentIdToDelete={segmentIdToDelete}
               onAutoSeekToggle={handleAutoSeekToggle}
@@ -953,7 +955,7 @@ export function EditorPage() {
               onSegmentUpdate={handleAudioSegmentUpdate}
               onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
               onSegmentStatusEditChange={handleSegmentStatusEditChange}
-              currentPlayingWordPlayerSegment={playingTimeData?.currentlyPlayingWordPlayerSegment}
+              // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
               wordToCreateTimeFor={wordToCreateTimeFor}
               wordToUpdateTimeFor={wordToUpdateTimeFor}
               onTimeChange={handlePlaybackTimeChange}
@@ -963,6 +965,7 @@ export function EditorPage() {
               segmentSplitTime={segmentSplitTime}
               onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
               setIsAudioPlaying={setIsAudioPlaying}
+              playingTimeData={playingTimeData}
             />
           </ErrorBoundary>}
         </Paper>

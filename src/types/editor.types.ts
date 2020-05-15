@@ -20,8 +20,8 @@ export interface WordKeyStoreContent {
 }
 
 export interface PlayingTimeData {
-  currentlyPlayingWordPlayerSegment?: PlayingWordAndSegment;
-  currentlyPlayingWordTime?: Time;
+  currentPlayingWordPlayerSegment?: any;
+  currentPlayingWordTime?: Time;
   timeToSeekTo?: number
 } 
 
