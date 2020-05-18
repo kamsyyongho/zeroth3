@@ -11,6 +11,8 @@ export const checkLocationOnScreenAndScroll = (
   const editorBottomScrollZone = editorContentHeight * AUTO_SCROLL_AREA_RATIO;
   const heightRange = editorContentHeight - editorBottomScrollZone;
   const nonScrollArea = (windowHeight - editorContentHeight) / 2; // only use the area above the editor
+
+  console.log('================heightRange', heightRange);
   // check the location and scroll accordingly
   if (referenceElement && nonScrollArea && editorElement && heightRange) {
     const { bottom } = referenceElement.getBoundingClientRect();

@@ -7,19 +7,20 @@ export interface VoiceData {
    * @example https://domain.com/url.m3u8.json
    */
   audioUrl: string;
-  id: string;
-  startAt: Date;
-  endAt: Date;
-  fetchedAt: Date | null;
   confirmedAt: Date | null;
-  originalFilename: string | null;
-  memo: string | null;
-  ip: string;
-  sessionId: string;
-  modelConfigId: string;
-  projectId: string | null;
-  /** seconds */
+  dataSets: string[],
+  decodedAt: Date;
+  fetchedAt: Date | null;
+  id: string;
   length: number;
+  memo: string | null;
+  modelConfigId: string;
+  originalFilename: string | null
+  projectId: string | null;
+  sessionId: string;
+  ip: string;
+  stateChanges: any[];
+  /** seconds */
   status: CONTENT_STATUS;
   /**
    * name of the user assigned to transcribe
@@ -27,10 +28,7 @@ export interface VoiceData {
   transcriber: string | null;
   transcript: string;
   transcriptionRating: number | null;
-  webSocketCloseReason: string;
-  webSocketCloseStatus: number;
-  transferredBytes: number;
-  highRiskSegments: number;
+  wordCount: number;
 }
 
 export interface VoiceDataResults extends PaginatedResults {
@@ -80,7 +78,7 @@ export enum TDPTableColumns {
   'transcript' = 'transcript',
   'modelConfigId' = 'modelConfigId',
   'length' = 'length',
-  'startAt' = 'startAt',
+  'decodedAt' = 'decodedAt',
   'status' = 'status',
   'highRiskSegments' = 'highRiskSegments',
 }

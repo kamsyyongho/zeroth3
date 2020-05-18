@@ -23,8 +23,8 @@ export const en: ResourceLanguage = {
       clearAll: 'Clear all',
       startAt: 'Start time',
       endAt: 'End time',
-      fetchedAt: 'Fetched time',
-      confirmedAt: 'Confirmed time',
+      fetchedAt: 'Started time',
+      confirmedAt: 'Submitted time',
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
@@ -195,6 +195,7 @@ export const en: ResourceLanguage = {
       transferredBytes: 'Transferred bytes',
       openToRate: 'Open to rate',
       originalFilename: 'Filename',
+      wordCount: 'Word Count',
     },
     SET: {
       SET: 'SET',
@@ -230,6 +231,7 @@ export const en: ResourceLanguage = {
     },
     editor: {
       editor: 'Editor',
+      approvalRequest: 'Approval Request',
       confirm: 'Confirm',
       merge: 'Merge',
       split: 'Split',

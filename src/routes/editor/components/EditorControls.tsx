@@ -201,7 +201,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           };
           break;
         case EDITOR_CONTROLS.confirm:
-          label = translate('editor.confirm');
+          label = translate('editor.approvalRequest');
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,

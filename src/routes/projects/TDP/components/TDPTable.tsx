@@ -252,7 +252,7 @@ export function TDPTable(props: TDPTableProps) {
   };
 
   const renderDateTime = (cellData: CellProps<VoiceData>) => {
-    const dateString: VoiceData['startAt'] | VoiceData['endAt'] = cellData.cell.value;
+    const dateString: VoiceData['decodedAt'] = cellData.cell.value;
     const date = new Date(dateString);
     return formatDate(date);
   };
@@ -277,7 +277,7 @@ export function TDPTable(props: TDPTableProps) {
       },
       {
         Header: translate('common.date'),
-        accessor: TDPTableColumns['startAt'],
+        accessor: TDPTableColumns['decodedAt'],
         Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
       {

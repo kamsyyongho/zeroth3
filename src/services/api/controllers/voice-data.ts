@@ -8,6 +8,7 @@ import {
 } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
+  approveDataResult,
   confirmDataResult,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
@@ -157,6 +158,28 @@ export class VoiceData extends ParentApi {
       this.getPathWithOrganization(
         `/projects/${projectId}/data/${dataId}/confirm`,
       ),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async requestApproval(
+      projectId: string,
+      dataId: string,
+  ): Promise<approveDataResult> {
+    const response = await this.apisauce.put<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data/${dataId}/review`,
+        ),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

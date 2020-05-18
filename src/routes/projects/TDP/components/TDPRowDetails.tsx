@@ -57,20 +57,19 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     onSuccess,
   } = props;
   const {
-    startAt,
-    endAt,
+    decodedAt,
     fetchedAt,
     confirmedAt,
+    memo,
     originalFilename,
+    modelConfigId,
     sessionId,
     ip,
-    webSocketCloseReason,
-    webSocketCloseStatus,
     transcriber,
-    transferredBytes,
+    wordCount,
   } = row.original;
 
-  const startDate = new Date(startAt);
+  const startDate = new Date(decodedAt);
   const endDate = new Date(endAt);
   const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
   const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
@@ -100,6 +99,23 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
           alignItems='flex-start'
           justify='flex-start'
         >
+          <Grid
+              container
+              item
+              wrap='nowrap'
+              direction='row'
+              alignContent='center'
+              alignItems='center'
+              justify='flex-start'
+          >
+            <Typography
+                className={classes.category}
+                variant='subtitle2'
+            >
+              {`${translate('TDP.originalFilename')}:`}
+            </Typography>
+            <Typography>{originalFilename}</Typography>
+          </Grid>
           <Grid
             container
             item
@@ -226,9 +242,9 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               className={classes.category}
               variant='subtitle2'
             >
-              {`${translate('TDP.websocketCloseStatus')}:`}
+              {`${translate('TDP.wordCount')}:`}
             </Typography>
-            <Typography>{webSocketCloseStatus}</Typography>
+            <Typography>{wordCount}</Typography>
           </Grid>
           <Grid
             container
@@ -264,23 +280,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             </Typography>
             <Typography>{transferredBytes}</Typography>
           </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.originalFilename')}:`}
-            </Typography>
-            <Typography>{originalFilename}</Typography>
-          </Grid>
+
           <Grid
             container
             item

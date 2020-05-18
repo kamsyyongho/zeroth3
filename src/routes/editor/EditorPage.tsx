@@ -264,7 +264,7 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
       closeConfirmDialog();
-      const response = await api.voiceData.confirmData(projectId, voiceData.id);
+      const response = await api.voiceData.requestApproval(projectId, voiceData.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;

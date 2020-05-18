@@ -23,8 +23,8 @@ export const ko: ResourceLanguage = {
       clearAll: '초기화',
       startAt: '시작 시간',
       endAt: '종료 시간',
-      fetchedAt: '받아온 시간',
-      confirmedAt: '확인 시간',
+      fetchedAt: '전사 시작 시간',
+      confirmedAt: '전사 제출 시간',
       length: '길이',
       score: '점수',
       upload: '업로드',
@@ -196,6 +196,7 @@ export const ko: ResourceLanguage = {
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: '전송된 바이트',
       originalFilename: '파일 이름',
+      wordCount: '글자 수',
     },
     SET: {
       SET: '전사세트',
@@ -230,6 +231,7 @@ export const ko: ResourceLanguage = {
     },
     editor: {
       editor: '에디터',
+      approvalRequest: '승인요청',
       confirm: '확인',
       merge: '합치기',
       split: '나누기',

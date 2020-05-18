@@ -331,11 +331,6 @@ export function Editor(props: EditorProps) {
   };
 
   const prepareSegmentTimePicker = (segmentIndex: number) => {
-    // if (!focussed && editorStateBeforeBlur) {
-    //   incomingEditorState = editorStateBeforeBlur;
-    // }
-    // const cursorContent = getCursorContent<WordAlignmentEntityData, SegmentBlockData>(incomingEditorState);
-
     if(segmentIndex === undefined) return;
     const segment = segments[segmentIndex];
     if (segment) {

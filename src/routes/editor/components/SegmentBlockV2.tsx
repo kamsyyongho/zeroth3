@@ -173,7 +173,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
+        checkLocationOnScreenAndScroll(
+            segmentRef.current,
+            editorElement,
+            editorContentHeight,
+            windowHeight,
+            editorAutoScrollDisabled);
         isFocused = false;
     };
 
@@ -196,10 +201,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             resetState();
         }
     }, [segment]);
-
-    // React.useEffect(() => {
-    //     checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
-    // }, playingLocation)
 
     React.useEffect(() => {
         if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
