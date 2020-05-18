@@ -1,4 +1,39 @@
 import { PaginatedResults } from './pagination.types';
+
+// export interface VoiceData {
+//   /**
+//    * `m3u8` streaming file.
+//    * - the peaks data json can be accessed via a path that is based on this url
+//    * - `{{audioUrl}}.json`
+//    * @example https://domain.com/url.m3u8.json
+//    */
+//   audioUrl: string;
+//   id: string;
+//   startAt: Date;
+//   endAt: Date;
+//   fetchedAt: Date | null;
+//   confirmedAt: Date | null;
+//   originalFilename: string | null;
+//   memo: string | null;
+//   ip: string;
+//   sessionId: string;
+//   modelConfigId: string;
+//   projectId: string | null;
+//   /** seconds */
+//   length: number;
+//   status: CONTENT_STATUS;
+//   /**
+//    * name of the user assigned to transcribe
+//    */
+//   transcriber: string | null;
+//   transcript: string;
+//   transcriptionRating: number | null;
+//   webSocketCloseReason: string;
+//   webSocketCloseStatus: number;
+//   transferredBytes: number;
+//   highRiskSegments: number;
+// }
+
 export interface VoiceData {
   /**
    * `m3u8` streaming file.
@@ -11,6 +46,7 @@ export interface VoiceData {
   dataSets: string[],
   decodedAt: Date;
   fetchedAt: Date | null;
+  highRiskSegments: number;
   id: string;
   length: number;
   memo: string | null;
