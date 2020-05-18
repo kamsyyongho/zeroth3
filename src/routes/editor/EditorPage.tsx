@@ -549,7 +549,6 @@ export function EditorPage() {
     };
     const timeData = {
       currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
-      timeToSeekTo: undefined,
     }
     setCurrentlyPlayingWordTime(time);
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
@@ -575,7 +574,9 @@ export function EditorPage() {
           const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
-            timeData.timeToSeekTo = wordTime
+            const timeToSeekTo = {timeToSeekTo: wordTime}
+            Object.assign(timeData, timeToSeekTo);
+            // timeData.timeToSeekTo = wordTime;
             setPlayingTimeData(timeData)
           }
         }
@@ -628,8 +629,9 @@ export function EditorPage() {
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData && wordTime) {
-        timeData.timeToSeekTo = wordTime
-        setPlayingTimeData(timeData)
+        const timeToSeekTo = {timeToSeekTo: wordTime}
+        Object.assign(timeData, timeToSeekTo);
+        setPlayingTimeData(timeData);
       }
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
 

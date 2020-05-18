@@ -81,10 +81,6 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     onDelete(voiceDataId, rowIndex);
   };
 
-  React.useEffect(() => {
-    console.log(row);
-  }, [row]);
-
   return (<TableRow
     className={classes.row}
   >

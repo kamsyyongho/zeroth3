@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/helpers/entity-content.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/helpers/entity-content.helper.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/voice-data.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +71,7 @@
       <workItem from="1589200607499" duration="325000" />
       <workItem from="1589201126885" duration="983000" />
       <workItem from="1589244559766" duration="35000" />
-      <workItem from="1589244756954" duration="119400000" />
+      <workItem from="1589244756954" duration="121069000" />
     </task>
     <servers />
   </component>
@@ -153,8 +153,8 @@
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-4/0.0.0.0/0.23.1792.1097/0.23.1792.1097@0.0.0.0" timestamp="1589762543416" />
     <state x="1840" y="-1080" width="1920" height="1080" key="dock-window-4/1840.-1057.1920.1057/0.23.1792.1097/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589762656172" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589766789372" />
-    <state x="1011" y="89" width="2145" height="1271" key="find.popup" timestamp="1589474214534">
-      <screen x="0" y="0" width="3440" height="1440" />
+    <state x="484" y="-1013" width="1198" height="954" key="find.popup" timestamp="1589773937097">
+      <screen x="-80" y="-1080" width="1920" height="1080" />
     </state>
     <state x="-3509" y="-589" width="2145" height="1271" key="find.popup/-1080.-678.1080.2560/-4520.-678.3440.1440/-7080.-678.2560.1080/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589200539774" />
     <state x="-3509" y="-589" width="2145" height="1271" key="find.popup/-1080.-678.1080.2560/-7080.-678.2560.1080/-4520.-678.3440.1440/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589255921922" />
@@ -165,7 +165,7 @@
     <state x="1365" y="-940" width="1047" height="800" key="find.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585823228110" />
     <state x="496" y="136" width="687" height="777" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1584432448996" />
     <state x="357" y="-1013" width="1197" height="953" key="find.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588902918381" />
-    <state x="484" y="-1013" width="1198" height="954" key="find.popup/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589454174227" />
+    <state x="484" y="-1013" width="1198" height="954" key="find.popup/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589773937097" />
     <state x="1011" y="89" width="2145" height="1271" key="find.popup/880.-1080.2560.1080/0.0.3440.1440/3440.-1080.1080.2560@0.0.3440.1440" timestamp="1589474214534" />
     <state x="1093" y="367" width="1255" height="707" key="recent.locations.popup" timestamp="1589474086823">
       <screen x="0" y="0" width="3440" height="1440" />
