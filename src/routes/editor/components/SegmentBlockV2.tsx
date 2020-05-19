@@ -102,6 +102,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
             const updatedSegment = localSegment;
+            updatedSegment.highRisk = false;
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);
@@ -217,7 +218,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 readOnly={readOnly}
                 assignSpeakerForSegment={assignSpeakerForSegment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
-                segment={segment}
+                segment={localSegment}
             />
             {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (

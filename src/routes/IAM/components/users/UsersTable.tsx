@@ -110,6 +110,11 @@ export function UsersTable(props: UsersTableProps) {
         Cell: (data: CellProps<User>) => UsersCellCheckbox({ cellData: data, onUserCheck: handleUserCheck, allChecked }),
       },
       {
+        Header: `${translate("forms.name")}`,
+        accessor: 'roles',
+        Cell: (data: CellProps<User>) => UsersCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
+      },
+      {
         Header: `${translate("IAM.roles")}`,
         accessor: 'roles',
         Cell: (data: CellProps<User>) => UsersCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
