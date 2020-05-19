@@ -313,6 +313,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     * handle shortcut key presses
     */
     const handleKeyPress = (event: KeyboardEvent) => {
+      console.log('============editorInFocus : ', editorInFocus);
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {

@@ -400,23 +400,27 @@ export function EditorPage() {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    console.log('caretLocation : ', segments);
-    if(!caretLocation){return;}
-    const [segmentIndex, wordIndex] = caretLocation
-    if(!segmentIndex || !wordIndex || wordIndex === 0 ||
-        wordIndex === segments[segmentIndex]['wordAlignments'].length - 1) {
+    const segmentIndex = caretLocation?.[0];
+    const wordIndex = caretLocation?.[1];
+    console.log('caretLocation : ', caretLocation);
+    if(typeof segmentIndex !== 'number' || typeof wordIndex !== 'number' || !caretLocation || !caretLocation[0] || !caretLocation[1]) {return;}
+    if(segmentIndex === 0 ||
+        wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
 
+    const trackSegments = segments || internalSegmentsTracker;
+    console.log('==================trackSegments: ', trackSegments);
+
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segments[caretLocation[0]].id, caretLocation[1]);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segment
-        const splitSegments = [...segments];
+        const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
@@ -813,6 +817,7 @@ export function EditorPage() {
   };
 
   React.useEffect(() => {
+    console.log('=========segments in state', segments);
     internalSegmentsTracker = segments;
   }, [segments]);
 
