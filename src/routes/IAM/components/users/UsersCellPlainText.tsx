@@ -9,10 +9,12 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 
 interface UsersCellCheckboxProps {
     cellData: CellProps<User>;
+    onChange?: (value: string, index: number) => void;
+    noteOrPhoneValue?: any;
 }
 
 export function UsersCellPlainText(props: UsersCellCheckboxProps) {
-    const { cellData } = props;
+    const { cellData, onChange, noteOrPhoneValue } = props;
     const { user } = React.useContext(KeycloakContext);
     const [isDisabled, setIsDisabled] = React.useState(true);
     const [value, setValue] = React.useState();
@@ -22,39 +24,42 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
     const cellValue = cellData.cell.value;
     const index = cellData.cell.row.index;
     const id = cellData.column.id;
-    const key = `${index}-email:${cellValue}`;
+    const header = cellData.column.Header;
+    const key = `${index}-${header}:${cellValue}`;
 
     const handleChange = (event: SyntheticEvent) => {
         const value = event.target.value;
+        setValue(value);
 
+    }
+
+    const handleBlur = () => {
+        if(onChange) {
+            onChange(value, index);
+        }
+        setIsDisabled(true);
     }
 
     React.useEffect(() => {
         if(id === 'firstName') {
             setValue(translate('profile.fullName', { family: cellData.data[index].lastName || '', given: cellData.data[index].firstName || '' }));
         } else {
-            setValue(cellData.cell.value);
+            setValue(noteOrPhoneValue[index] || '')
         }
-    },[cellData]);
+    },[]);
 
     if(id === 'firstName') return (<Typography key={key}>{value?.trim().length ? value : '-'}</Typography>);
 
-    return <FormControlLabel
-        key={key}
-        control={
-            <Textfield
+    return <Textfield
                 inputRef={editableTextRef}
                 inputProps={{ style: {textAlign: 'center'} }}
-                value={value ? value : '-'}
+                placeholder={value ? value : '-'}
+                value={value ? value : ''}
                 color="secondary"
                 onClick={() => setIsDisabled(false)}
-                onBlur={() => setIsDisabled(true)}
+                onBlur={handleBlur}
                 disabled={isDisabled}
-                // onChange={(event) => handleCheck(cellUser.id, event.target.checked)}
+                onChange={handleChange}
             />
-        }
-        label={value}
-    />;
-
 }
 

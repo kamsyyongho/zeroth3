@@ -20,6 +20,8 @@ interface UsersCellSubmitButtonProps {
   transcriberRoleId: string;
   onTranscriberAssign: () => void;
   onUpdateRoleSuccess: (updatedUser: User, userIndex: number) => void;
+  noteLog?: any;
+  phoneLog?: any;
 }
 
 export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
@@ -29,6 +31,8 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     onUpdateRoleSuccess,
     transcriberRoleId,
     onTranscriberAssign,
+    noteLog,
+    phoneLog,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -62,8 +66,23 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     return !isEqualSet<string>(initialSet, currentSet);
   };
 
+  const checkForPhoneOrMemoChange = () => {
+    const changedNoteIndex = Object.keys(noteLog);
+    const changedPhoneIndex = Object.keys(phoneLog);
+    const stringIndex = index.toString();
+    if((!noteLog && !phoneLog)
+        || (!changedNoteIndex.includes(stringIndex) && !changedPhoneIndex.includes(stringIndex))) return false;
+    if(user.note !== noteLog[stringIndex] || user.phone !== phoneLog[stringIndex]) {
+      console.log('user phone user note : ', user.note, user.phone);
+      console.log('==========noteLog phoneLog', noteLog[stringIndex]!== user.note);
+      return true
+    };
+  };
+
   const theme = useTheme();
   const rolesChanged = checkForRoleChange();
+  const noteOrPhoneChanged = checkForPhoneOrMemoChange();
+  const canSubmit = rolesChanged ? rolesChanged : noteOrPhoneChanged;
 
   const [isAddLoading, setIsAddLoading] = React.useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
@@ -183,12 +202,13 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (rolesToAdd.length) addRoles(rolesToAdd);
   };
 
-  if (!currentSet.size) {
+  //codition check for currentSet.size and noteOrPhoneChange for eliminating the column needed for button all together
+  if (!currentSet.size && !noteOrPhoneChanged) {
     return null;
   }
 
   return (
-    <Grow in={rolesChanged}>
+    <Grow in={canSubmit}>
       <Button
         onClick={submitRolesChange}
         key={key}

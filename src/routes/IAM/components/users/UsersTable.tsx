@@ -82,6 +82,8 @@ export function UsersTable(props: UsersTableProps) {
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
+  const [noteLog, setNoteLog] = React.useState({});
+  const [phoneLog, setPhoneLog] = React.useState({});
 
   const handleUserCheck = (userId: string, value: boolean): void => {
     setCheckedUsers((prevCheckedUsers) => {
@@ -103,6 +105,18 @@ export function UsersTable(props: UsersTableProps) {
     });
   };
 
+  const onChangeNote = (value: string, index: number) => {
+    const currentNoteLog = noteLog;
+    const checkValueNull = value.length ? value : null;
+    setNoteLog({...currentNoteLog, [index]: checkValueNull});
+  };
+  
+  const onChangePhone = (value: string, index: number) => {
+    const currentPhoneLog = phoneLog;
+    const checkValueNull = value.length ? value : null;
+    setPhoneLog({...currentPhoneLog, [index]: checkValueNull});
+  };
+
   // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [
@@ -119,12 +133,12 @@ export function UsersTable(props: UsersTableProps) {
       {
         Header: `${translate("forms.phone")}`,
         accessor: 'phone',
-        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
+        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data, onChange: onChangePhone, noteOrPhoneValue: phoneLog } ),
       },
       {
         Header: `${translate("TDP.memo")}`,
         accessor: 'note',
-        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
+        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data, onChange: onChangeNote, noteOrPhoneValue: noteLog }),
       },
       {
         Header: `${translate("IAM.roles")}`,
@@ -135,7 +149,14 @@ export function UsersTable(props: UsersTableProps) {
         id: 'submit',
         Header: null,
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ cellData: data, selectedRoles, onUpdateRoleSuccess, transcriberRoleId, onTranscriberAssign }),
+        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ 
+          cellData: data,
+          selectedRoles,
+          onUpdateRoleSuccess,
+          transcriberRoleId,
+          onTranscriberAssign,
+          noteLog,
+          phoneLog }),
       },
       {
         id: HEADER_ACTIONS,
@@ -144,7 +165,7 @@ export function UsersTable(props: UsersTableProps) {
         Cell: (data: CellProps<User>) => UsersCellResetPasswordButton({ cellData: data }),
       },
     ],
-    [users, roles, language, allChecked, selectedRoles]
+    [users, roles, language, allChecked, selectedRoles, noteLog, phoneLog]
   );
 
   // Use the state and functions returned from useTable to build your UI
