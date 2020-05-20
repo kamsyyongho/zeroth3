@@ -120,6 +120,7 @@ export const ko: ResourceLanguage = {
       },
       numberFiles: '업로드할 파일 개수: {{count}}',
       email: '이메일',
+      phone: '전화번호',
       speaker: '발화자',
       name: '이름',
       text: '텍스트 입력',

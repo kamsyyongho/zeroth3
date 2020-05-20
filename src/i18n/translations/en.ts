@@ -120,6 +120,7 @@ export const en: ResourceLanguage = {
       email: 'Email',
       speaker: 'Speaker',
       name: 'Name',
+      phone: 'Phone Number',
       text: 'Text',
       file: 'File',
       thresholdLr: 'Low risk threshold',

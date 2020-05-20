@@ -5,6 +5,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { CellProps, useTable } from 'react-table';
+import { Typography } from '@material-ui/core';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { Role, ROLES, User } from '../../../../types';
@@ -15,6 +16,7 @@ import { UsersCellResetPasswordButton } from './UsersCellResetPasswordButton';
 import { UsersCellSubmitButton } from './UsersCellSubmitButton';
 import { UsersHeaderCheckbox } from './UsersHeaderCheckbox';
 import UsersTableHeaderActions from './UsersTableHeaderActions';
+import { UsersCellPlainText } from './UsersCellPlainText';
 
 const HEADER_ACTIONS = 'actions';
 
@@ -111,8 +113,18 @@ export function UsersTable(props: UsersTableProps) {
       },
       {
         Header: `${translate("forms.name")}`,
-        accessor: 'roles',
-        Cell: (data: CellProps<User>) => UsersCellMultiSelect({ cellData: data, availableRoles: roles, parsedRolesById, onRoleCheck: handleRoleCheck, selectedRoles }),
+        accessor: 'firstName',
+        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
+      },
+      {
+        Header: `${translate("forms.phone")}`,
+        accessor: 'phone',
+        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
+      },
+      {
+        Header: `${translate("TDP.memo")}`,
+        accessor: 'note',
+        Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
       },
       {
         Header: `${translate("IAM.roles")}`,

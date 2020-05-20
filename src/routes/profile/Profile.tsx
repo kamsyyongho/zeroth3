@@ -158,7 +158,6 @@ export function Profile() {
   React.useEffect(() => {
     setPageTitle(translate('menu.profile'));
     if (currentOrganizationId && !organizations) {
-      console.log('user : ', user);
       getOrganizations();
     }
   }, []);
