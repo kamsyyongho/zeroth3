@@ -24,11 +24,9 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
     const id = cellData.column.id;
     const key = `${index}-email:${cellValue}`;
 
-    const handleClick = (event: SyntheticEvent) => {
-        if(editableTextRef.contains(event.target)) {
-            setIsDisabled(false);
-            return;
-        }
+    const handleChange = (event: SyntheticEvent) => {
+        const value = event.target.value;
+
     }
 
     React.useEffect(() => {
@@ -39,17 +37,17 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
         }
     },[cellData]);
 
-    if(id === 'firstName') return (<Typography key={key}>{value ? value : '-'}</Typography>);
+    if(id === 'firstName') return (<Typography key={key}>{value?.trim().length ? value : '-'}</Typography>);
 
     return <FormControlLabel
         key={key}
         control={
             <Textfield
                 inputRef={editableTextRef}
+                inputProps={{ style: {textAlign: 'center'} }}
                 value={value ? value : '-'}
-                style={{ textAlign: "center" }}
                 color="secondary"
-                onClick={() => setIsDisabled(!isDisabled)}
+                onClick={() => setIsDisabled(false)}
                 onBlur={() => setIsDisabled(true)}
                 disabled={isDisabled}
                 // onChange={(event) => handleCheck(cellUser.id, event.target.checked)}
