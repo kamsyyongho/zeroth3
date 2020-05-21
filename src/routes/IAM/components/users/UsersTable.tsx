@@ -84,8 +84,8 @@ export function UsersTable(props: UsersTableProps) {
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
-  const [noteLog, setNoteLog] = React.useState<PhoneAndNoteLog>({});
-  const [phoneLog, setPhoneLog] = React.useState<PhoneAndNoteLog>({});
+  const [noteLog, setNoteLog] = React.useState({});
+  const [phoneLog, setPhoneLog] = React.useState({});
 
   const handleUserCheck = (userId: string, value: boolean): void => {
     setCheckedUsers((prevCheckedUsers) => {
@@ -113,8 +113,6 @@ export function UsersTable(props: UsersTableProps) {
     const currentPhoneLog = phoneLog;
     const note = updatedUser.note;
     const phone = updatedUser.phone;
-    if(currentNoteLog) delete currentNoteLog[userIndex];
-    if(currentPhoneLog)  delete currentPhoneLog[userIndex];
     setNoteLog({...currentNoteLog, [userIndex]: note })
     setPhoneLog({ ...currentPhoneLog, [userIndex]: phone })
   };
@@ -141,7 +139,7 @@ export function UsersTable(props: UsersTableProps) {
     })
     setNoteLog(note);
     setPhoneLog(phone);
-  }, users)
+  }, [])
   // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [

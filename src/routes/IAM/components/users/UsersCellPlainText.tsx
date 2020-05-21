@@ -17,7 +17,7 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
     const { cellData, onChange, noteOrPhoneValue } = props;
     const { user } = React.useContext(KeycloakContext);
     const [isDisabled, setIsDisabled] = React.useState(true);
-    const [value, setValue] = React.useState();
+    const [value, setValue] = React.useState('');
     const { translate, language } = React.useContext(I18nContext);
     const editableTextRef = React.useRef();
 
@@ -27,7 +27,7 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
     const header = cellData.column.Header;
     const key = `${index}-${header}:${cellValue}`;
 
-    const handleChange = (event: SyntheticEvent) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setValue(value);
 

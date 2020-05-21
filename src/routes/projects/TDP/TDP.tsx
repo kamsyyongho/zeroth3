@@ -17,6 +17,7 @@ import {
   LOCAL_STORAGE_KEYS,
   ModelConfig,
   Project,
+  Transcriber,
   VoiceData,
   VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
@@ -229,10 +230,22 @@ export function TDP(props: TDPProps) {
     () => {
       const dataSetsByIdTemp: { [x: string]: DataSet; } = {};
       dataSets.forEach(dataSet => dataSetsByIdTemp[dataSet.id] = dataSet);
+      console.log(dataSetsByIdTemp)
       return dataSetsByIdTemp;
     },
     [dataSets]
   );
+
+  const transcribersById = React.useMemo(() => {
+    const transcribersById: Transcriber[] = [];
+    const checkIdForDuplicate = (id: string) => {
+      const exisitingIds = transcribersById.map((transcriber: any) => transcriber.id);
+      return exisitingIds.includes(id);
+    }
+    dataSets.forEach(dataSet => dataSet.transcribers.forEach(transcriber => {
+      if(!checkIdForDuplicate(transcriber.id)){transcribersById.push(transcriber)}}));
+    return transcribersById;
+  },[dataSets])
 
   const openUploadDialog = () => setIsUploadOpen(true);
   const closeUploadDialog = () => setIsUploadOpen(false);
@@ -288,6 +301,7 @@ export function TDP(props: TDPProps) {
             projectId={projectId}
             modelConfigsById={modelConfigsById}
             dataSetsById={dataSetsById}
+            transcribersById={transcribersById}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}

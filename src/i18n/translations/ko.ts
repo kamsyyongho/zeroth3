@@ -46,6 +46,8 @@ export const ko: ResourceLanguage = {
       url: 'URL',
       path: '경로',
       confirmDelete: '선택한 데이터를 삭제하시겠습니까?',
+      userId: '유저 아이디',
+      search: '검색',
     },
     table: {
       page: '페이지',

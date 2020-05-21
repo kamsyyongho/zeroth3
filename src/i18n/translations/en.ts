@@ -46,6 +46,8 @@ export const en: ResourceLanguage = {
       url: 'URL',
       path: 'Path',
       confirmDelete: 'Do you want to delete the selected data?',
+      userId: 'User ID',
+      search: 'Search',
     },
     table: {
       page: 'Page',
