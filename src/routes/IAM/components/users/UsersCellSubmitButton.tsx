@@ -20,6 +20,7 @@ interface UsersCellSubmitButtonProps {
   transcriberRoleId: string;
   onTranscriberAssign: () => void;
   onUpdateRoleSuccess: (updatedUser: User, userIndex: number) => void;
+  onUpdateNoteAndPhone: (updatedUser: User, userIndex: string) => void;
   noteLog?: any;
   phoneLog?: any;
 }
@@ -31,6 +32,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     onUpdateRoleSuccess,
     transcriberRoleId,
     onTranscriberAssign,
+    onUpdateNoteAndPhone,
     noteLog,
     phoneLog,
   } = props;
@@ -73,8 +75,6 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if((!noteLog && !phoneLog)
         || (!changedNoteIndex.includes(stringIndex) && !changedPhoneIndex.includes(stringIndex))) return false;
     if(user.note !== noteLog[stringIndex] || user.phone !== phoneLog[stringIndex]) {
-      console.log('user phone user note : ', user.note, user.phone);
-      console.log('==========noteLog phoneLog', noteLog[stringIndex]!== user.note);
       return true
     };
   };
@@ -202,6 +202,40 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (rolesToAdd.length) addRoles(rolesToAdd);
   };
 
+  const updatePhoneAndNote = async () => {
+    const stringIndex = index.toString();
+    if (api?.IAM) {
+      setIsAddLoading(true);
+      const response = await api.IAM.updatePhoneAndNote(user.id, noteLog[stringIndex], phoneLog[stringIndex]);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === "ok") {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        // to refresh the transcriber list
+        onUpdateNoteAndPhone(response.user, index.toString());
+      } else {
+        log({
+          file: `UsersCellSubmitButton.tsx`,
+          caller: `addRoles - failed to add roles`,
+          value: response,
+          error: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setIsAddLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if(noteOrPhoneChanged) await updatePhoneAndNote();
+    if(rolesChanged) await submitRolesChange();
+  };
+
   //codition check for currentSet.size and noteOrPhoneChange for eliminating the column needed for button all together
   if (!currentSet.size && !noteOrPhoneChanged) {
     return null;
@@ -210,7 +244,7 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
   return (
     <Grow in={canSubmit}>
       <Button
-        onClick={submitRolesChange}
+        onClick={handleSubmit}
         key={key}
         variant="contained"
         color="primary"

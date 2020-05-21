@@ -45,6 +45,7 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
             setValue(translate('profile.fullName', { family: cellData.data[index].lastName || '', given: cellData.data[index].firstName || '' }));
         } else {
             setValue(noteOrPhoneValue[index] || '')
+            // setValue(cellValue);
         }
     },[]);
 

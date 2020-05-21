@@ -47,7 +47,9 @@ export interface SelectedRoleIdsByIndex {
   [index: number]: string[];
 }
 
-
+export interface PhoneAndNoteLog {
+  [index: number]: string;
+}
 export function UsersTable(props: UsersTableProps) {
   const {
     users,
@@ -82,8 +84,8 @@ export function UsersTable(props: UsersTableProps) {
   const { translate, language } = React.useContext(I18nContext);
   const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
-  const [noteLog, setNoteLog] = React.useState({});
-  const [phoneLog, setPhoneLog] = React.useState({});
+  const [noteLog, setNoteLog] = React.useState<PhoneAndNoteLog>({});
+  const [phoneLog, setPhoneLog] = React.useState<PhoneAndNoteLog>({});
 
   const handleUserCheck = (userId: string, value: boolean): void => {
     setCheckedUsers((prevCheckedUsers) => {
@@ -105,6 +107,18 @@ export function UsersTable(props: UsersTableProps) {
     });
   };
 
+  const onUpdatePhoneAndNoteSuccess = (updatedUser: User, userIndex: string): void => {
+   handleUpdateSuccess(updatedUser);
+    const currentNoteLog = noteLog;
+    const currentPhoneLog = phoneLog;
+    const note = updatedUser.note;
+    const phone = updatedUser.phone;
+    if(currentNoteLog) delete currentNoteLog[userIndex];
+    if(currentPhoneLog)  delete currentPhoneLog[userIndex];
+    setNoteLog({...currentNoteLog, [userIndex]: note })
+    setPhoneLog({ ...currentPhoneLog, [userIndex]: phone })
+  };
+
   const onChangeNote = (value: string, index: number) => {
     const currentNoteLog = noteLog;
     const checkValueNull = value.length ? value : null;
@@ -117,6 +131,17 @@ export function UsersTable(props: UsersTableProps) {
     setPhoneLog({...currentPhoneLog, [index]: checkValueNull});
   };
 
+
+  React.useEffect(() => {
+    let note = {}
+    let phone = {}
+    users.forEach((user: User, index: number) => {
+      Object.assign(note, {[index]: user.note});
+      Object.assign(phone, {[index]: user.phone});
+    })
+    setNoteLog(note);
+    setPhoneLog(phone);
+  }, users)
   // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [
@@ -156,7 +181,9 @@ export function UsersTable(props: UsersTableProps) {
           transcriberRoleId,
           onTranscriberAssign,
           noteLog,
-          phoneLog }),
+          phoneLog,
+          onUpdateNoteAndPhone: onUpdatePhoneAndNoteSuccess,
+        }),
       },
       {
         id: HEADER_ACTIONS,

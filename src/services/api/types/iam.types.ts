@@ -16,6 +16,7 @@ export interface InviteUserRequest {
 
 export type getUserResult = { kind: 'ok'; users: User[] } | GeneralApiProblem;
 export type getRolesResult = { kind: 'ok'; roles: Role[] } | GeneralApiProblem;
+export type updatePhoneAndNote = { kind: 'ok'; user: User }| GeneralApiProblem;
 export type deleteUserResult = { kind: 'ok' } | GeneralApiProblem;
 export type assignRolesToUserResult =
   | { kind: 'ok'; user: User }
