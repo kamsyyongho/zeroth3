@@ -105,6 +105,7 @@ export const ko: ResourceLanguage = {
         between_characters:
           '{{target}}은(는) {{first}} 자에서 {{second}} 글자만 가능합니다',
         maxFileSize: '최대 파일 개수를 초과했습니다. ({{value}})',
+        TDPFilterEndDate: '시작시간은 종료시간보다 전이여야 합니다.',
       },
       dropZone: {
         main: '업로드할 파일을 끌어다 놓거나 클릭해주세요',
@@ -149,8 +150,8 @@ export const ko: ResourceLanguage = {
       status: '상태',
       startDate: '시작시간',
       endDate: '종료시간',
-      lengthMin: '최소 길이',
-      lengthMax: '최대 길이',
+      lengthMin: '최소 길이 (초)',
+      lengthMax: '최대 길이 (초)',
       scoreMin: '최소 Score',
       scoreMax: '최대 Score',
       transcript: '전사 결과',

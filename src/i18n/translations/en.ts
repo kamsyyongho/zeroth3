@@ -103,6 +103,7 @@ export const en: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
+        TDPFilterEndDate: 'Start Time must be before End Time.',
       },
       dropZone: {
         main: 'Drag and drop a file or click',
@@ -147,8 +148,8 @@ export const en: ResourceLanguage = {
       status: 'Status',
       startDate: 'Start Date',
       endDate: 'End Date',
-      lengthMin: 'Min Length',
-      lengthMax: 'Max Length',
+      lengthMin: 'Min Length (seconds)',
+      lengthMax: 'Max Length (seconds)',
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',

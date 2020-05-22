@@ -7,7 +7,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { Field, Formik } from 'formik';
+import { Field, Formik, ErrorMessage } from 'formik';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import * as yup from 'yup';
@@ -89,10 +89,14 @@ export function TDPFilters(props: TDPFiltersProps) {
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
   const lengthMinText = translate("forms.validation.greaterEqualTo", { target: translate('forms.lengthMin'), value: VALIDATION.TDP.length.min });
+  const minEndDateText = translate('forms.validation.TDPFilterEndDate');
 
   const formSchema = yup.object({
     startDate: yup.date().nullable().notRequired(),
-    endDate: yup.date().nullable().notRequired(),
+    endDate: yup.date()
+        .min(yup.ref('startDate'), minEndDateText)
+        .nullable()
+        .notRequired(),
     maxLength: yup.number().typeError(numberText).integer(integerText).notRequired(),
     minLength: yup.number().typeError(numberText).integer(integerText).min(VALIDATION.TDP.length.min, lengthMinText).notRequired(),
     transcript: yup.string().notRequired(),
