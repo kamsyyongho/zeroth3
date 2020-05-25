@@ -44,6 +44,7 @@ export function IAM() {
   const transcribersAccess = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
 
   React.useEffect(() => {
+      console.log('============= roles :',roles)
     setPageTitle(translate('path.IAM'));
   }, []);
 
