@@ -146,6 +146,7 @@ export const useKeycloak = () => {
   }
 
   const parsedKeycloak: ParsedKeycloak = { keycloak, logout, user, roles, hasPermission, initializeUserRoles };
+  console.log('===========parsedKeyCloak : ', parsedKeycloak);
 
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
 };

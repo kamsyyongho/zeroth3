@@ -6,7 +6,16 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import PulseLoader from 'react-spinners/PulseLoader';
-import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
+import {
+  CellProps,
+  ColumnInterface,
+  ColumnInstance,
+  HeaderGroup,
+  Row,
+  useFilters,
+  usePagination,
+  useTable } from 'react-table';
+// import { CellProps } from '@types/react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { LOCAL_STORAGE_KEYS, PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
@@ -56,13 +65,32 @@ export function TranscribersTable(props: TranscribersTableProps) {
       {
         Header: translate('transcribers.rating'),
         accessor: 'rating',
-        Cell: (data: CellProps<TranscriberStats>) => RatingDisplay({ rating: data.cell.value }),
+        Cell: ({ value }: { value: number }) => RatingDisplay({ rating: value }),
       },
     ],
     [transcribersStats]
   );
 
   // Use the state and functions returned from useTable to build your UI
+  const instance = useTable<TranscriberStats>(
+    {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      //@ts-ignore
+      columns,
+      data: transcribersStats,
+      initialState: { pageIndex: 0, pageSize: pagination.size }, // Pass our hoisted table state
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      //@ts-ignore
+      manualPagination: true, // Tell the usePagination
+      // hook that we'll handle our own data fetching
+      // This means we'll also have to provide our own
+      // pageCount.
+      pageCount: pagination.totalPages,
+    },
+    useFilters,
+    usePagination,
+  );
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -80,26 +108,12 @@ export function TranscribersTable(props: TranscribersTableProps) {
     rows,
     // Get the state from the instance
     state: { pageIndex, pageSize }
-  } = useTable<TranscriberStats>(
-    {
-      columns,
-      data: transcribersStats,
-      initialState: { pageIndex: 0, pageSize: pagination.size }, // Pass our hoisted table state
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      //@ts-ignore
-      manualPagination: true, // Tell the usePagination
-      // hook that we'll handle our own data fetching
-      // This means we'll also have to provide our own
-      // pageCount.
-      pageCount: pagination.totalPages,
-    },
-    useFilters,
-    usePagination,
-  );
+  } = instance;
 
 
   // Listen for changes in pagination and use the state to fetch our new data
   React.useEffect(() => {
+
     // to prevent reloading the initial data from the parent
     if (initialLoad) {
       setInitialLoad(false);
@@ -110,12 +124,12 @@ export function TranscribersTable(props: TranscribersTableProps) {
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
-    <TableCell key={`column-${idx}`} align={column.id !== EMAIL_COLUMN_ID ? 'center' : undefined} {...column.getHeaderProps()}>
+    <TableCell align={column.id !== EMAIL_COLUMN_ID ? 'center' : undefined} {...column.getHeaderProps()}>
       {column.render('Header')}
     </TableCell>);
 
   const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
-    <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
+    <TableRow {...headerGroup.getHeaderGroupProps()}>
       {headerGroup.headers.map((column, idx) => (
         renderHeaderCell(column, idx)
       ))}
