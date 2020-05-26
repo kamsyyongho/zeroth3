@@ -5,6 +5,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/models.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/models.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/models.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1,5 +1,6 @@
 import { Box, CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
+import Checkbox from '@material-ui/core/Checkbox';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -47,7 +48,7 @@ interface AcousticModelGridItemProps {
   handleEditOpen: (modelId: string) => void;
   handleEditClose: (modelId: string) => void;
   handleEditSuccess: (updatedModel: AcousticModel, isEdit?: boolean) => void;
-  handleModelCheck: (updatedModel: AcousticModel, value: boolean) => void;
+  handleModelCheck: (modelId: string, value: boolean) => void;
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
@@ -59,12 +60,16 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
     handleEditOpen,
     handleEditClose,
     handleEditSuccess,
+    handleModelCheck,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
   const isOpen = !!editOpen[model.id];
-
+  let isChecked = false;
+  if (checkedModels && typeof checkedModels[model.id] === 'boolean') {
+    isChecked = checkedModels[model.id];
+  };
 
   return (<Box key={model.id} border={1} borderColor={theme.table.border} className={classes.root}>
     <Grid item xs component={Card} elevation={0} >

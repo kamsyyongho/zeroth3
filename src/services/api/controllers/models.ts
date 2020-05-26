@@ -356,6 +356,34 @@ export class Models extends ParentApi {
   }
 
   /**
+   * Delete an existing Acoustic model
+   * @param modelId
+   * @returns a `conflict` kind if the model cannot be deleted
+   */
+  async deleteAcousticModel(
+      modelId: string,
+  ): Promise<deleteLanguageModelResult> {
+    // make the api call
+    const response: ApiResponse<
+        undefined,
+        ServerError
+        > = await this.apisauce.delete(
+        this.getPathWithOrganization(`/models/acoustic/${modelId}`),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  /**
    * Gets a list of sub graphs
    */
   async getSubGraphs(): Promise<getSubGraphsResult> {
