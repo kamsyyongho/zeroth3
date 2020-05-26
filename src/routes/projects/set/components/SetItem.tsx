@@ -5,6 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import LaunchIcon from '@material-ui/icons/Launch';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
@@ -57,6 +58,7 @@ export function SetItem(props: SetItemProps) {
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
   const [setTypeParam, setSetTypeParam] = React.useState(setType);
+  const [isShowEvaluationDetail, setIsShowEvaluationDetail] = React.useState(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -263,16 +265,16 @@ export function SetItem(props: SetItemProps) {
             {
               dataSet.evaluationProgress === null
                   ?
-                  <IconButton color='primary' onClick={handleEvaluateClick} disabled={true}>
-                    <RateReviewIcon />
+                  <IconButton color='primary' disabled={true}>
+                    <LaunchIcon />
                   </IconButton>
                   :
                   <Tooltip
                       placement='top'
                       title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
                       arrow={true}>
-                    <IconButton color='primary' onClick={handleEvaluateClick}>
-                      <RateReviewIcon />
+                    <IconButton color='primary' onClick={() => setIsShowEvaluationDetail(true)}>
+                      <LaunchIcon />
                     </IconButton>
                   </Tooltip>
             }
@@ -280,8 +282,7 @@ export function SetItem(props: SetItemProps) {
                 color='primary'
                 size='medium'
                 aria-label="open"
-                onClick={openSetDetail}
-            >
+                onClick={openSetDetail}>
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </TableCell>
