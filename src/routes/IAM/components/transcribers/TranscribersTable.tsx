@@ -72,7 +72,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
   );
 
   // Use the state and functions returned from useTable to build your UI
-  const instance = useTable<TranscriberStats>(
+  const instance = useTable(
     {
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       //@ts-ignore
@@ -123,12 +123,12 @@ export function TranscribersTable(props: TranscribersTableProps) {
   }, [pageIndex, pageSize]);
 
   // Render the UI for your table
-  const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => (
+  const renderHeaderCell = (column: ColumnInstance<TranscriberStats>, idx: number) => (
     <TableCell align={column.id !== EMAIL_COLUMN_ID ? 'center' : undefined} {...column.getHeaderProps()}>
       {column.render('Header')}
     </TableCell>);
 
-  const renderHeaderRow = (headerGroup: HeaderGroup<VoiceData>, index: number) => (
+  const renderHeaderRow = (headerGroup: HeaderGroup<TranscriberStats>, index: number) => (
     <TableRow {...headerGroup.getHeaderGroupProps()}>
       {headerGroup.headers.map((column, idx) => (
         renderHeaderCell(column, idx)
@@ -137,12 +137,12 @@ export function TranscribersTable(props: TranscribersTableProps) {
 
   const renderHeader = () => (
     <TableHead>
-      {headerGroups.map((headerGroup: HeaderGroup<VoiceData>, index: number) => (
+      {headerGroups.map((headerGroup: HeaderGroup<TranscriberStats>, index: number) => (
         renderHeaderRow(headerGroup, index)))}
     </TableHead>);
 
   const renderRows = () => rows.map(
-    (row: Row<VoiceData>, rowIndex: number) => {
+    (row: Row<TranscriberStats>, rowIndex: number) => {
       prepareRow(row);
       return (
         <TableRow

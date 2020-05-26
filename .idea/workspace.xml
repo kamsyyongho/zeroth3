@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,11 +142,12 @@
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/-80.-1080.1920.1080/1840.-1057.1920.1057/0.23.1792.1040@-80.-1080.1920.1080" timestamp="1589503773132" />
     <state x="0" y="23" width="960" height="1046" key="dock-window-3/0.23.1792.1046@0.23.1792.1046" timestamp="1589529619997" />
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/1840.-1057.1920.1057/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589533331096" />
-    <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4" timestamp="1590481327694">
-      <screen x="1840" y="-1057" width="1920" height="1057" />
+    <state x="0" y="0" width="3440" height="1440" key="dock-window-4" timestamp="1590491669590">
+      <screen x="0" y="0" width="3440" height="1440" />
     </state>
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1057.1920.1057/0.23.1792.1048/-80.-1057.1920.1057@-80.-1057.1920.1057" timestamp="1590463911183" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1057.1920.1057/0.23.1792.1048/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590481327694" />
+    <state x="0" y="0" width="3440" height="1440" key="dock-window-4/3440.-1080.1080.2560/880.-1080.2560.1080/0.0.3440.1440@0.0.3440.1440" timestamp="1590491669590" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-4/880.-1057.2560.1057/0.0.3440.1383/3440.-1057.1080.2537@0.0.3440.1383" timestamp="1589854401982" />
     <state x="484" y="-1013" width="1198" height="954" key="find.popup" timestamp="1590484978821">
       <screen x="-80" y="-1080" width="1920" height="1080" />
