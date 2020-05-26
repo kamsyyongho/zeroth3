@@ -263,4 +263,4 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
       />
     </Card>
   );
-}
+};

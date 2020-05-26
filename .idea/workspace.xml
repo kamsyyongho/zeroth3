@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
