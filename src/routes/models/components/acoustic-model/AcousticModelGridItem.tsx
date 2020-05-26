@@ -89,6 +89,7 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
             <>
               <Checkbox
                   checked={isChecked}
+                  disabled={model.progress > -1 && model.progress < 100}
                   value="checkedB"
                   color="secondary"
                   onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
