@@ -10,7 +10,7 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { AcousticModel } from '../../../../types';
 import { TrainingChip } from '../../../shared/TrainingChip';
-import { EditOpenByModelId } from '../language-model/LanguageModelGridList';
+import { EditOpenByModelId, CheckedModelById } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 
 const MIN_CARD_WIDTH = 300;
@@ -42,16 +42,19 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface AcousticModelGridItemProps {
   model: AcousticModel;
   canModify: boolean;
+  checkedModels: CheckedModelById;
   editOpen: EditOpenByModelId;
   handleEditOpen: (modelId: string) => void;
   handleEditClose: (modelId: string) => void;
   handleEditSuccess: (updatedModel: AcousticModel, isEdit?: boolean) => void;
+  handleModelCheck: (updatedModel: AcousticModel, value: boolean) => void;
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
   const {
     model,
     canModify,
+    checkedModels,
     editOpen,
     handleEditOpen,
     handleEditClose,
@@ -77,9 +80,17 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
         titleTypographyProps={{ noWrap: true, style: { maxWidth: MAX_TITLE_WIDTH } }}
         subheader={model.description}
         subheaderTypographyProps={{ noWrap: true, style: { maxWidth: MAX_TITLE_WIDTH } }}
-        action={canModify && (<IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
-          <EditIcon />
-        </IconButton>)} />
+        action={canModify && (
+            <>
+              <Checkbox
+                  checked={isChecked}
+                  value="checkedB"
+                  color="secondary"
+                  onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
+              <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
+                <EditIcon />
+              </IconButton>
+            </>)} />
       <CardContent>
         <Grid
           container

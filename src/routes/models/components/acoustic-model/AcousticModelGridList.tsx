@@ -7,9 +7,9 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { AcousticModel } from '../../../../types';
+import { AcousticModel, BooleanById } from '../../../../types';
 import log from '../../../../util/log/logger';
-import { EditOpenByModelId } from '../language-model/LanguageModelGridList';
+import { EditOpenByModelId, CheckedModelById } from '../language-model/LanguageModelGridList';
 import { AcousticModelGridItem } from './AcousticModelGridItem';
 
 const useStyles = makeStyles((theme) =>
@@ -24,6 +24,7 @@ interface AcousticModelGridListProps {
   canModify: boolean;
 }
 
+
 export function AcousticModelGridList(props: AcousticModelGridListProps) {
   const { canModify } = props;
   const api = React.useContext(ApiContext);
@@ -31,6 +32,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
   const [models, setModels] = React.useState<AcousticModel[]>([]);
   const [modelsLoading, setModelsLoading] = React.useState(true);
   const [editOpen, setEditOpen] = React.useState<EditOpenByModelId>({});
+  const [checkModels, setCheckedModels] = React.useState<CheckedModelById>({});
 
   const theme = useTheme();
   const classes = useStyles();
@@ -105,6 +107,12 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     handleEditClose(updatedModel.id);
   };
 
+  
+  const handleModelCheck = (modelId: string, value: boolean) : void => {
+    setCheckedModels((prevCheckedModels) => {
+      return { ...prevCheckedModels, [modelId]: value };
+    })
+  }
 
 
   const renderModels = () => {
@@ -116,10 +124,12 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
         key={index}
         model={model}
         canModify={canModify}
+        checkedModels={checkModels}
         editOpen={editOpen}
         handleEditOpen={handleEditOpen}
         handleEditClose={handleEditClose}
         handleEditSuccess={handleEditSuccess}
+        handleModelCheck={handleModelCheck}
       />
     ));
   };
