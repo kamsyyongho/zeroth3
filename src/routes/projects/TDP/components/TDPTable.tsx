@@ -28,7 +28,7 @@ import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
-import { DeleteConfirmationDialog } from "./DeleteConfirmation";
+import { ConfirmationDialog } from "./Confirmation";
 
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
@@ -508,8 +508,9 @@ export function TDPTable(props: TDPTableProps) {
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
     />}
-    {isDeleteSetOpen && <DeleteConfirmationDialog
-        deleteMsg={'common.confirmDelete'}
+    {isDeleteSetOpen && <ConfirmationDialog
+        contentMsg={translate('common.confirmDelete')}
+        buttonMsg={translate('common.delete')}
         open={isDeleteSetOpen}
         onClose={() => setIsDeleteSetOpen(false)}
         onSuccess={handleDelete}

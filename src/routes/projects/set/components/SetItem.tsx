@@ -30,7 +30,8 @@ interface SetItemProps {
   dataSetIndex: number;
   setType: string;
   openTranscriberDialog: (dataSetIndex: number) => void;
-  openEvaluationDetail: (dataSetIndex: number) => void;
+  openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
+  // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -47,7 +48,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, openEvaluationDetail, setType } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, openRequestEvaluationDialog, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -92,15 +93,14 @@ export function SetItem(props: SetItemProps) {
       }
     }
     setIsCreateTrainingSetLoading(false);
-
   };
 
   const handleEvaluateClick = () => {
-
-  };
-
-  const handleOpenEvaluationDetail = () => {
-
+    if(dataSet?.evaluationUrl) {
+      openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
+    } else {
+      openRequestEvaluationDialog(translate('SET.requestEvaluationMsg'), dataSetIndex);
+    }
   };
 
   const getDownloadLink = async () => {
@@ -268,7 +268,7 @@ export function SetItem(props: SetItemProps) {
               </IconButton>
             </Tooltip>
             {
-              dataSet.evaluationProgress === null
+              dataSet.evaluationProgress === null || !dataSet?.evaluationUrl
                   ?
                   <IconButton color='primary' disabled={true}>
                     <LaunchIcon />
@@ -278,7 +278,8 @@ export function SetItem(props: SetItemProps) {
                       placement='top'
                       title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
                       arrow={true}>
-                    <IconButton color='primary' onClick={() => openEvaluationDetail(dataSetIndex)}>
+                    <IconButton color='primary'
+                                onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
                       <LaunchIcon />
                     </IconButton>
                   </Tooltip>

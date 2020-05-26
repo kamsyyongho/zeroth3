@@ -41,6 +41,10 @@ export type getTrainingSet =
   | { kind: 'ok', subSets: SubSet }
   | GeneralApiProblem;
 
+export type requestEvaluation =
+    | { kind: 'ok' }
+    | GeneralApiProblem;
+
 export type createTrainingSet =
   | { kind: 'ok' }
   | GeneralApiProblem;

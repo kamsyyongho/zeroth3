@@ -100,6 +100,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
           <SET
             refreshCounter={refreshCounterForSet}
             projectId={projectId}
+            modelConfigs={modelConfigs}
           />}
       </TabPanel>}
     </Paper>

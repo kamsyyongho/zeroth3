@@ -24,7 +24,7 @@ import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
 import { TDPTable } from './components/TDPTable';
-import { DeleteConfirmationDialog } from "./components/DeleteConfirmation";
+import { ConfirmationDialog } from "./components/Confirmation";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 interface TDPProps {
@@ -335,8 +335,9 @@ export function TDP(props: TDPProps) {
         projectId={projectId}
         filterParams={filterParams as FilterParams}
       />
-      <DeleteConfirmationDialog
-          deleteMsg={'SET.deleteAllMsg'}
+      <ConfirmationDialog
+          contentMsg={translate('SET.deleteAllMsg')}
+          buttonMsg={translate("common.delete")}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll}/>

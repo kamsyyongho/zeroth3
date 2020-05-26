@@ -213,8 +213,11 @@ export const en: ResourceLanguage = {
       numberTranscribers: '{{count}} transcriber',
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
-      requestEvaluation: ' Request Evaluation',
+      requestEvaluation: 'Request Evaluation',
+      requestEvaluationMsg: 'Do you wish to request evaluation?',
+      requestEvaluationWarning: 'Existing evaluation will be deleted. Do you wish to proceed?',
       showEvaluationDetail: 'Show Evaluation Detail',
+      evaluationDetail: 'Evaluation Detail',
       addTranscriber: 'Add transcriber',
     },
     modelTraining: {

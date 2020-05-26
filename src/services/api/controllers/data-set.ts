@@ -13,6 +13,7 @@ import {
   ProblemKind,
   removeTranscriberFromDataSetResult,
   ServerError,
+  requestEvaluation,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -229,6 +230,32 @@ export class DataSet extends ParentApi {
     try {
       const subSets = response.data as SubSet;
       return { kind: 'ok', subSets };
+    } catch {
+      return {kind: ProblemKind['bad-data']};
+    }
+
+  }
+
+  async requestEvaluation(projectId: string, dataSetId: string, modelConfigId: string): Promise<requestEvaluation> {
+    const param = { modelConfigId };
+    const response = await this.apisauce.post<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data-sets/${dataSetId}/evaluate`,
+        ),
+        param,
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      return { kind: 'ok' };
     } catch {
       return {kind: ProblemKind['bad-data']};
     }

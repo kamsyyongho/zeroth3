@@ -44,13 +44,13 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-interface AddTranscriberDialogProps {
-    dataSet: DataSet;
+interface EvaluationDetailProps {
+    dataSet?: DataSet;
     open: boolean;
     closeEvaluationDetail: () => void;
 }
 
-export function EvaluationDetailModal(props: AddTranscriberDialogProps) {
+export function EvaluationDetailModal(props: EvaluationDetailProps) {
     const {
         open,
         dataSet,
@@ -60,14 +60,10 @@ export function EvaluationDetailModal(props: AddTranscriberDialogProps) {
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
     const [filteredTranscribers, setfilteredTranscribers] = React.useState<TranscriberStats[]>([]);
-
-
-
     const classes = useStyles();
     const theme = useTheme();
 
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
-
     const handleClose = () => {
         closeEvaluationDetail();
     };
@@ -85,7 +81,7 @@ export function EvaluationDetailModal(props: AddTranscriberDialogProps) {
                 <DialogTitle>
                     <Grid container direction='row' justify='space-between' wrap='nowrap' >
                         <Typography variant='h5' >
-                            {translate("transcribers.header")}
+                            {translate("SET.evaluationDetail")}
                         </Typography>
                         <Button
                             variant="contained"
@@ -100,6 +96,7 @@ export function EvaluationDetailModal(props: AddTranscriberDialogProps) {
                     <Card elevation={0} className={classes.card}>
                         <CardHeader/>
                         <CardContent className={classes.cardContent} >
+                            {dataSet?.evaluationUrl &&  <iframe src={dataSet.evaluationUrl} />}
                         </CardContent>
                     </Card>
                 </DialogContent>
