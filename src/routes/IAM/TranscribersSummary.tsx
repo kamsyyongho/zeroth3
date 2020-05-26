@@ -50,11 +50,10 @@ export function TranscribersSummary(props: TranscribersSummaryProps) {
   }, []);
 
   const getTranscribersWithStats = async (page?: number, size?: number) => {
-    if (api?.transcriber) {
+    if (api ?.transcriber) {
       setTranscriberStatDataLoading(true);
       const response = await api.transcriber.getTranscribersWithStats(page, size);
       if (response.kind === 'ok') {
-        console.log('=======response.transcriberStats', response.transcribersStats);
         setTranscribersStats(response.transcribersStats);
         setPagination(response.pagination);
       } else {
