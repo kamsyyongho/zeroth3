@@ -18,7 +18,8 @@ const FULL_ROW_COL_SPAN = 4;
 interface SetTableProps {
   dataSets: DataSet[];
   projectId: string;
-  openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
+  openTranscriberDialog: (dataSetIndex: number) => void;
+  openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetTable(props: SetTableProps) {
-  const { dataSets, projectId, openTranscriberDialog } = props;
+  const { dataSets, projectId, openTranscriberDialog, openEvaluationDetail } = props;
   const { translate } = React.useContext(I18nContext);
   const [setType, setSetType] = React.useState(["none"]);
   const [setTypeString, setSetTypeString] = React.useState('');
@@ -96,6 +97,7 @@ export function SetTable(props: SetTableProps) {
       dataSet={dataSet}
       dataSetIndex={index}
       openTranscriberDialog={openTranscriberDialog}
+      openEvaluationDetail={openEvaluationDetail}
       setType={setTypeString}
     />
   </React.Fragment>));

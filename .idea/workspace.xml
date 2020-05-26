@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/routes/projects/set/components/EvaluationDetailModal.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/EvaluationDetailModal.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +47,11 @@
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.editor" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/routes/projects/set/components" />
+    </key>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -165,15 +174,15 @@
       <screen x="-207" y="-1080" width="1920" height="1080" />
     </state>
     <state x="418" y="-284" key="run.anything.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588919184262" />
-    <state x="1267" y="319" width="1373" height="906" key="search.everywhere.popup" timestamp="1589460240040">
-      <screen x="0" y="0" width="3440" height="1440" />
+    <state x="627" y="-841" width="766" height="679" key="search.everywhere.popup" timestamp="1590469221805">
+      <screen x="-80" y="-1080" width="1920" height="1080" />
     </state>
     <state x="-1213" y="239" width="766" height="679" key="search.everywhere.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586154452622" />
     <state x="506" y="-841" width="670" height="678" key="search.everywhere.popup/0.0.1680.1050/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1585888582618" />
     <state x="1552" y="-841" width="672" height="678" key="search.everywhere.popup/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585272441089" />
     <state x="619" y="232" width="670" height="660" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1585903797885" />
     <state x="506" y="-841" width="766" height="679" key="search.everywhere.popup/0.23.1680.1027/-201.-1080.1920.1080@-201.-1080.1920.1080" timestamp="1586141068067" />
-    <state x="627" y="-841" width="766" height="679" key="search.everywhere.popup/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589433324079" />
+    <state x="627" y="-841" width="766" height="679" key="search.everywhere.popup/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590469221805" />
     <state x="1267" y="319" width="1373" height="906" key="search.everywhere.popup/3440.-1080.1080.2560/0.0.3440.1440/880.-1080.2560.1080@0.0.3440.1440" timestamp="1589460240040" />
   </component>
 </project>

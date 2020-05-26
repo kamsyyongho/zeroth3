@@ -22,13 +22,15 @@ import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
+import { EvaluationDetailModal } from './EvaluationDetailModal';
 
 interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
   setType: string;
-  openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
+  openTranscriberDialog: (dataSetIndex: number) => void;
+  openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -45,7 +47,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, setType } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, openEvaluationDetail, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -58,12 +60,11 @@ export function SetItem(props: SetItemProps) {
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
   const [setTypeParam, setSetTypeParam] = React.useState(setType);
-  const [isShowEvaluationDetail, setIsShowEvaluationDetail] = React.useState(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
+  const onClickAssignTranscriber = () => openTranscriberDialog(dataSetIndex);
 
   const startDownload = (url: string) => window.open(url);
 
@@ -95,6 +96,10 @@ export function SetItem(props: SetItemProps) {
   };
 
   const handleEvaluateClick = () => {
+
+  };
+
+  const handleOpenEvaluationDetail = () => {
 
   };
 
@@ -189,7 +194,7 @@ export function SetItem(props: SetItemProps) {
           size='small'
           edge='end'
           aria-label="submit"
-          onClick={onClick}
+          onClick={onClickAssignTranscriber}
         >
           {numberOfTranscribers ? <EditIcon /> : <AddIcon />}
         </IconButton>
@@ -273,7 +278,7 @@ export function SetItem(props: SetItemProps) {
                       placement='top'
                       title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
                       arrow={true}>
-                    <IconButton color='primary' onClick={() => setIsShowEvaluationDetail(true)}>
+                    <IconButton color='primary' onClick={() => openEvaluationDetail(dataSetIndex)}>
                       <LaunchIcon />
                     </IconButton>
                   </Tooltip>

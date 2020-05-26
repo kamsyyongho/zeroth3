@@ -7,6 +7,7 @@ import log from '../../../util/log/logger';
 import { Forbidden } from '../../shared/Forbidden';
 import { AddTranscriberDialog } from './components/AddTranscriberDialog';
 import { SetTable } from './components/SetTable';
+import { EvaluationDetailModal } from './components/EvaluationDetailModal';
 
 interface SETProps {
   projectId: string;
@@ -20,11 +21,14 @@ export default function SET(props: SETProps) {
   const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
   const [setsLoading, setSetsLoading] = React.useState(true);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
-  const [seletectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
-  const [seletectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
+  const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
+  const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
+  const [isShowEvaluationDetail, setIsShowEvaluationDetail] = React.useState(false);
+
+  const closeEvaluationDetail = () => setIsShowEvaluationDetail(false);
 
   const getDataSets = React.useCallback(async () => {
     if (api?.dataSet && projectId) {
@@ -94,10 +98,16 @@ export default function SET(props: SETProps) {
     setSelectedDataSetIndex(undefined);
   };
 
-  const handleTranscriberEditClick = (dataSetToEdit: DataSet, dataSetIndex: number) => {
-    setSelectedDataSet(dataSetToEdit);
+  const handleTranscriberEditClick = (dataSetIndex: number) => {
+    setSelectedDataSet(dataSets[dataSetIndex]);
     setSelectedDataSetIndex(dataSetIndex);
     openTranscriberDialog();
+  };
+  
+  const handleEvaluationDetailClick = (dataSetIndex: number) => {
+    setSelectedDataSet(dataSets[dataSetIndex]);
+    setSelectedDataSetIndex(dataSetIndex);
+    setIsShowEvaluationDetail(true);
   };
 
   const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
@@ -120,15 +130,20 @@ export default function SET(props: SETProps) {
         open={transcribersDialogOpen}
         onClose={closeTranscriberDialog}
         projectId={projectId}
-        dataSet={seletectedDataSet}
-        dataSetIndex={seletectedDataSetIndex}
+        dataSet={selectedDataSet}
+        dataSetIndex={selectedDataSetIndex}
         onUpdateDataSetSuccess={onUpdateDataSetSuccess}
       />
+      <EvaluationDetailModal
+          dataSet={selectedDataSet}
+          closeEvaluationDetail={closeEvaluationDetail}
+          open={isShowEvaluationDetail}/>
       {setsLoading ? <BulletList /> :
         <SetTable
           projectId={projectId}
           dataSets={dataSets}
           openTranscriberDialog={handleTranscriberEditClick}
+          openEvaluationDetail={handleEvaluationDetailClick}
         />
       }
     </>
