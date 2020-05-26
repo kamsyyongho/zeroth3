@@ -3,10 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPFilters.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPFilters.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/DateTimePickerFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/DateTimePickerFormField.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,8 +86,34 @@
         <entry key="MAIN">
           <value>
             <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature/editor-performance-contenteditable" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
               <option name="COLUMN_ORDER" />
             </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="feature/editor-performance-contenteditable" />
+                </option>
+              </RecentGroup>
+            </list>
           </value>
         </entry>
       </map>
@@ -147,8 +171,8 @@
     <state x="880" y="-1080" width="2560" height="1080" key="dock-window-3/3440.-1057.1080.2537/880.-1057.2560.1057/0.23.3440.1360@0.23.3440.1360" timestamp="1589617197382" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-3/3440.-1080.1080.2560/0.0.3440.1440/880.-1057.2560.1057@0.0.3440.1440" timestamp="1589687060013" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-3/880.-1057.2560.1057/0.0.3440.1389/3440.-1057.1080.2537@0.0.3440.1389" timestamp="1589615133259" />
-    <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4" timestamp="1590131441836">
-      <screen x="1840" y="-1057" width="1920" height="1057" />
+    <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4" timestamp="1590454146451">
+      <screen x="1840" y="-1080" width="1920" height="1080" />
     </state>
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/-80.-1080.1920.1080/1840.-1057.1920.1057/0.23.1792.1046@-80.-1080.1920.1080" timestamp="1590118201618" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/-80.-1080.1920.1080/1840.-1080.1920.1080/0.0.1792.1120@-80.-1080.1920.1080" timestamp="1589933622674" />
@@ -168,6 +192,7 @@
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590030193322" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1080.1920.1080/0.23.1792.1040/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589932918851" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1080.1920.1080/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589949988244" />
+    <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1080.1920.1080/0.23.1792.1048/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590454146451" />
     <state x="0" y="0" width="2560" height="1080" key="dock-window-4/2560.23.1080.2480/0.0.2560.1023@0.0.2560.1023" timestamp="1589859790530" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-4/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589876846838" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-4/3440.-1080.1080.2560/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589867054513" />
