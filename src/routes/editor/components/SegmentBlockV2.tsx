@@ -102,6 +102,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
             const updatedSegment = localSegment;
+            updatedSegment.highRisk = false;
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);
@@ -173,7 +174,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
+        checkLocationOnScreenAndScroll(
+            segmentRef.current,
+            editorElement,
+            editorContentHeight,
+            windowHeight,
+            editorAutoScrollDisabled);
         isFocused = false;
     };
 
@@ -197,10 +203,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         }
     }, [segment]);
 
-    // React.useEffect(() => {
-    //     checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
-    // }, playingLocation)
-
     React.useEffect(() => {
         if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
             if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
@@ -216,7 +218,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 readOnly={readOnly}
                 assignSpeakerForSegment={assignSpeakerForSegment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
-                segment={segment}
+                segment={localSegment}
             />
             {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                 return (

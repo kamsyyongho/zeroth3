@@ -23,8 +23,8 @@ export const en: ResourceLanguage = {
       clearAll: 'Clear all',
       startAt: 'Start time',
       endAt: 'End time',
-      fetchedAt: 'Fetched time',
-      confirmedAt: 'Confirmed time',
+      fetchedAt: 'Started time',
+      confirmedAt: 'Submitted time',
       length: 'Length',
       score: 'Score',
       upload: 'Upload',
@@ -46,6 +46,8 @@ export const en: ResourceLanguage = {
       url: 'URL',
       path: 'Path',
       confirmDelete: 'Do you want to delete the selected data?',
+      userId: 'User ID',
+      search: 'Search',
     },
     table: {
       page: 'Page',
@@ -101,6 +103,7 @@ export const en: ResourceLanguage = {
         between_characters:
           '{{target}} must between {{first}} and {{second}} characters long',
         maxFileSize: 'Max total file size exceeded. ({{value}})',
+        TDPFilterEndDate: 'Start Time must be before End Time.',
       },
       dropZone: {
         main: 'Drag and drop a file or click',
@@ -120,6 +123,7 @@ export const en: ResourceLanguage = {
       email: 'Email',
       speaker: 'Speaker',
       name: 'Name',
+      phone: 'Phone Number',
       text: 'Text',
       file: 'File',
       thresholdLr: 'Low risk threshold',
@@ -144,8 +148,8 @@ export const en: ResourceLanguage = {
       status: 'Status',
       startDate: 'Start Date',
       endDate: 'End Date',
-      lengthMin: 'Min Length',
-      lengthMax: 'Max Length',
+      lengthMin: 'Min Length (seconds)',
+      lengthMax: 'Max Length (seconds)',
       scoreMin: 'Min Score',
       scoreMax: 'Max Score',
       transcript: 'Transcript',
@@ -195,6 +199,7 @@ export const en: ResourceLanguage = {
       transferredBytes: 'Transferred bytes',
       openToRate: 'Open to rate',
       originalFilename: 'Filename',
+      wordCount: 'Word Count',
     },
     SET: {
       SET: 'SET',
@@ -230,6 +235,7 @@ export const en: ResourceLanguage = {
     },
     editor: {
       editor: 'Editor',
+      approvalRequest: 'Approval Request',
       confirm: 'Confirm',
       merge: 'Merge',
       split: 'Split',
