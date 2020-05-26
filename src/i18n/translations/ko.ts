@@ -216,6 +216,7 @@ export const ko: ResourceLanguage = {
       transcribersToAssign: '할당된 전사자 수: {{count}}',
       addTranscriber: '전사자 추가',
       requestEvaluation: '평가 요청하기',
+      showEvaluationDetail: '평가 상세보기',
       openToRate: '전사상태 평가',
     },
     modelTraining: {

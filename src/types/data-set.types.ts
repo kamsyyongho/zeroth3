@@ -3,6 +3,8 @@ import {CONTENT_STATUS, VoiceData} from './voice-data.types';
 
 export interface DataSet {
   createdAt: Date;
+  evaluationProgress?: number;
+  evaluationUrl?: string;
   id: string;
   name: string;
   /** the number of completed transcriptions */

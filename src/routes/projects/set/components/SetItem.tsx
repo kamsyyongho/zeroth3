@@ -260,6 +260,22 @@ export function SetItem(props: SetItemProps) {
                 <RateReviewIcon />
               </IconButton>
             </Tooltip>
+            {
+              dataSet.evaluationProgress === null
+                  ?
+                  <IconButton color='primary' onClick={handleEvaluateClick} disabled={true}>
+                    <RateReviewIcon />
+                  </IconButton>
+                  :
+                  <Tooltip
+                      placement='top'
+                      title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
+                      arrow={true}>
+                    <IconButton color='primary' onClick={handleEvaluateClick}>
+                      <RateReviewIcon />
+                    </IconButton>
+                  </Tooltip>
+            }
             <IconButton
                 color='primary'
                 size='medium'

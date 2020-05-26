@@ -214,6 +214,7 @@ export const en: ResourceLanguage = {
       numberTranscribers_plural: '{{count}} transcribers',
       transcribersToAssign: 'Transcribers to assign: {{count}}',
       requestEvaluation: ' Request Evaluation',
+      showEvaluationDetail: 'Show Evaluation Detail',
       addTranscriber: 'Add transcriber',
     },
     modelTraining: {
