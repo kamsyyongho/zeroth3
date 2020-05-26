@@ -230,7 +230,6 @@ export function TDP(props: TDPProps) {
     () => {
       const dataSetsByIdTemp: { [x: string]: DataSet; } = {};
       dataSets.forEach(dataSet => dataSetsByIdTemp[dataSet.id] = dataSet);
-      console.log(dataSetsByIdTemp)
       return dataSetsByIdTemp;
     },
     [dataSets]
