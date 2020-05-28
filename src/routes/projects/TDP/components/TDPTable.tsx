@@ -430,8 +430,7 @@ export function TDPTable(props: TDPTableProps) {
                   {...cell.getCellProps()}
                   rowSpan={isExpandedTranscript ? DOUBLE_HEIGHT_ROW : undefined}
                   className={className}
-                  style={style}
-                >
+                  style={style}>
                   {cell.render('Cell')}
                 </TableCell>
               );
@@ -463,7 +462,7 @@ export function TDPTable(props: TDPTableProps) {
     </div>
     <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody >
+      <TableBody>
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={fullRowColSpan} >

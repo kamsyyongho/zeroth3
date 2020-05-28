@@ -97,12 +97,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
+    thresholdLr: yup.number().nullable().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
       return thresholdLr < thresholdHr;
     }),
-    thresholdHr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
+    thresholdHr: yup.number().nullable().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
       const { thresholdLr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
@@ -173,6 +173,10 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    console.log('=============configToEdit : ', configToEdit);
+  })
 
   const openLanguageDialog = () => setLanguageOpen(true);
   const closeLanguageDialog = () => setLanguageOpen(false);

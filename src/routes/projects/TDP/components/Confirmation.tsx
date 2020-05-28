@@ -167,8 +167,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                                 size={15}
                                 color={theme.palette.primary.main}
                                 loading={true}
-                            /> : renderButton}
-                    >
+                            /> : renderButton}>
                         {buttonMsg}
                     </Button>
                 </DialogActions>

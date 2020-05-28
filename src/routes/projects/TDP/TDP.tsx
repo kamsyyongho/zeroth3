@@ -255,8 +255,7 @@ export function TDP(props: TDPProps) {
               color="primary"
               disabled={!filterParams || voiceDataResults.empty || !voiceDataResults.content?.length}
               onClick={openCreateSetDialog}
-              startIcon={<AddIcon />}
-            >
+              startIcon={<AddIcon />}>
               {translate('SET.createSetFromFilter')}
             </Button>
           </Grid>}
@@ -267,8 +266,7 @@ export function TDP(props: TDPProps) {
                 size='small'
                 // disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
                 onClick={() => setIsDeleteSetOpen(true)}
-                startIcon={<DeleteIcon />}
-            >
+                startIcon={<DeleteIcon />}>
               {translate('SET.deleteAll')}
             </Button>
           </Grid>}
@@ -278,8 +276,7 @@ export function TDP(props: TDPProps) {
               color="secondary"
               size='small'
               onClick={openUploadDialog}
-              startIcon={<BackupIcon />}
-            >
+              startIcon={<BackupIcon />}>
               {translate('TDP.decodeData')}
             </Button>
           </Grid>}
@@ -326,7 +323,8 @@ export function TDP(props: TDPProps) {
         filterParams={filterParams as FilterParams}
       />
       <ConfirmationDialog
-          deleteMsg={translate('SET.deleteAllMsg')}
+          contentMsg={translate('SET.deleteAllMsg')}
+          buttonMsg={translate('common.delete')}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll}/>
