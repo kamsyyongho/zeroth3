@@ -220,6 +220,7 @@ export const en: ResourceLanguage = {
       evaluationDetail: 'Evaluation Detail',
       addTranscriber: 'Add transcriber',
       selectModel: 'Select Model',
+      rejected: 'Rejected',
     },
     modelTraining: {
       header: 'Model Training',

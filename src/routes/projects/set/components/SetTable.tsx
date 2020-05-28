@@ -116,6 +116,9 @@ export function SetTable(props: SetTableProps) {
         {translate('IAM.transcribers')}
       </TableCell>
       <TableCell>
+        {translate('SET.rejected')}
+      </TableCell>
+      <TableCell>
         <FormControl className={classes.formControl}>
           <InputLabel id="set-type-label">Filter By Set Type</InputLabel>
           <Select

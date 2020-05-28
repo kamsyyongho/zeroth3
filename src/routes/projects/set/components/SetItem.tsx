@@ -224,6 +224,9 @@ export function SetItem(props: SetItemProps) {
             {renderTranscriberEdit()}
           </TableCell>
           <TableCell>
+            <Typography>{dataSet.rejected}</Typography>
+          </TableCell>
+          <TableCell>
             <Tooltip
                 placement='top'
                 title={<Typography>{translate('SET.downloadSet')}</Typography>}
@@ -248,8 +251,7 @@ export function SetItem(props: SetItemProps) {
             >
               <IconButton
                   color='primary'
-                  onClick={createTrainingSet}
-              >
+                  onClick={createTrainingSet}>
                 {isCreateTrainingSetLoading ? <MoonLoader
                     sizeUnit={"px"}
                     size={15}

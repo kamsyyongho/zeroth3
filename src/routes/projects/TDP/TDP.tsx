@@ -19,7 +19,8 @@ import {
   Project,
   Transcriber,
   VoiceData,
-  VoiceDataResults } from '../../../types';
+  VoiceDataResults,
+  TranscriberStats } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
@@ -35,6 +36,7 @@ interface TDPProps {
   onSetCreate: () => void;
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
+  transcriberStats: TranscriberStats[];
 }
 
 
@@ -65,7 +67,7 @@ export function TDP(props: TDPProps) {
     onSetCreate,
     modelConfigDialogOpen,
     openModelConfigDialog,
-
+    transcriberStats,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
@@ -235,17 +237,6 @@ export function TDP(props: TDPProps) {
     [dataSets]
   );
 
-  const transcribersById = React.useMemo(() => {
-    const transcribersById: Transcriber[] = [];
-    const checkIdForDuplicate = (id: string) => {
-      const exisitingIds = transcribersById.map((transcriber: any) => transcriber.id);
-      return exisitingIds.includes(id);
-    }
-    dataSets.forEach(dataSet => dataSet.transcribers.forEach(transcriber => {
-      if(!checkIdForDuplicate(transcriber.id)){transcribersById.push(transcriber)}}));
-    return transcribersById;
-  },[dataSets])
-
   const openUploadDialog = () => setIsUploadOpen(true);
   const closeUploadDialog = () => setIsUploadOpen(false);
 
@@ -300,7 +291,7 @@ export function TDP(props: TDPProps) {
             projectId={projectId}
             modelConfigsById={modelConfigsById}
             dataSetsById={dataSetsById}
-            transcribersById={transcribersById}
+            transcriberStats={transcriberStats}
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
@@ -335,7 +326,7 @@ export function TDP(props: TDPProps) {
         filterParams={filterParams as FilterParams}
       />
       <ConfirmationDialog
-          deleteMsg={'SET.deleteAllMsg'}
+          deleteMsg={translate('SET.deleteAllMsg')}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll}/>

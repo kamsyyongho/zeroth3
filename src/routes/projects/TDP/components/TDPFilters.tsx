@@ -15,7 +15,7 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, Transcriber } from '../../../../types';
+import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, TranscriberStats, Transcriber } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
@@ -24,7 +24,7 @@ interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
   modelConfigsById: GenericById<ModelConfig>;
   dataSetsById: any;
-  transcribersById: Transcriber[];
+  transcriberStats: Transcriber[];
   loading?: boolean;
 }
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPFilters(props: TDPFiltersProps) {
-  const { updateVoiceData, modelConfigsById, dataSetsById, transcribersById, loading } = props;
+  const { updateVoiceData, modelConfigsById, dataSetsById, transcriberStats, loading } = props;
   const { translate } = React.useContext(I18nContext);
   const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
@@ -77,15 +77,14 @@ export function TDPFilters(props: TDPFiltersProps) {
   }, [modelConfigsById, translate]);
 
     const transcriberFormSelectOptions = React.useMemo(() => {
-      const tempFormSelectOptions: SelectFormFieldOptions = transcribersById.map((transcriber) => ({
+      const tempFormSelectOptions: SelectFormFieldOptions = transcriberStats.map((transcriber) => ({
         label: transcriber.email,
         value: transcriber.id,
       }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
-    console.log('=============transcriberById : ', transcribersById);
     return tempFormSelectOptions;
-  }, [transcribersById, translate]);
+  }, [transcriberStats, translate]);
 
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");

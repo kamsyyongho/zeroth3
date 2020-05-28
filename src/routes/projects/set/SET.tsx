@@ -19,10 +19,13 @@ interface SETProps {
   projectId: string;
   refreshCounter?: number;
   modelConfigs: ModelConfig[];
+  getTranscribersWithStats: (page?:number, size?: number) => void;
+  transcribersStats: TranscriberStats[];
+  pagination?: PaginatedResults;
 }
 
 export default function SET(props: SETProps) {
-  const { projectId, refreshCounter, modelConfigs } = props;
+  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, transcribersStats, pagination } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -33,8 +36,6 @@ export default function SET(props: SETProps) {
   const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
   const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
-  const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
-  const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
   const [isEvaluationRequested, setIsEvaluationRequested] = React.useState(false);
   const [contentMsg, setContentMsg] = React.useState('');
   const [selectedModelConfigId, setSelectedModelConfigId] = React.useState('');
@@ -68,32 +69,6 @@ export default function SET(props: SETProps) {
       },
       [modelConfigs]
   );
-
-  const getTranscribersWithStats = async (page?: number, size = 10000) => {
-    if (api?.transcriber) {
-      setTranscriberStatDataLoading(true);
-      const response = await api.transcriber.getTranscribersWithStats(page, size);
-      if (response.kind === 'ok') {
-        setTranscribersStats(response.transcribersStats);
-        setPagination(response.pagination);
-      } else {
-        if (response.kind === ProblemKind['forbidden']) {
-          setIsForbidden(true);
-        }
-        log({
-          file: `SET.tsx`,
-          caller: `getTranscribersWithStats - failed to get transcribers stat data`,
-          value: response,
-          important: true,
-        });
-      }
-      setTranscriberStatDataLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    getTranscribersWithStats();
-  }, []);
 
   /**
    * should fetch data on initial load and every time the counter changes

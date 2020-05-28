@@ -109,7 +109,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
 
             </DialogTitle>
             <DialogContent className={classes.dialogContent}>
-                {modelConfigsById && selectedDataSet?.evaluationProgress &&
+                {modelConfigsById && selectedDataSet &&
                     <Table>
                         <TableBody>
                             <TableRow className={classes.tableRow}>
@@ -118,12 +118,12 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                                 </TableCell>
                                 <TableCell>
                                     <Typography className={classes.processedText} >
-                                        {selectedDataSet.evaluationProgress}
+                                        {selectedDataSet.evaluationProgress ? selectedDataSet.evaluationProgress : 0}
                                         <Typography component='span' color='textPrimary' >
                                             {` / 100`}
                                         </Typography>
                                     </Typography>
-                                    <ProgressBar value={selectedDataSet.evaluationProgress} maxWidth={200} />
+                                    <ProgressBar value={selectedDataSet?.evaluationProgress || 0} maxWidth={200} />
                                 </TableCell>
                             </TableRow>
                             <TableRow className={classes.tableRow}>

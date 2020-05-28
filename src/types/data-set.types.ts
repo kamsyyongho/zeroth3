@@ -10,6 +10,7 @@ export interface DataSet {
   /** the number of completed transcriptions */
   processed: number;
   total: number;
+  rejected: number;
   transcribers: Transcriber[];
 }
 

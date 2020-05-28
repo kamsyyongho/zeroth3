@@ -222,6 +222,7 @@ export const ko: ResourceLanguage = {
       evaluationDetail: '평가 상세 정보',
       openToRate: '전사상태 평가',
       selectModel: '모델 선택',
+      rejected: '반려',
     },
     modelTraining: {
       header: '모델 학습',
