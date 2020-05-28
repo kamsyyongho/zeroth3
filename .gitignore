@@ -6,6 +6,10 @@
 .pnp.js
 
 #webstorm ide file
+.idea
+.idea/workspace.xml
+
+#webstorm ide file
 npm run
 
 # testing
