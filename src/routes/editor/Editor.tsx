@@ -184,7 +184,6 @@ export function Editor(props: EditorProps) {
       const savedSegmentsState: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
       await localForage.setItem(UNDO_SEGMENT_STACK, [...savedSegmentsState, segments]);
     } catch(error) {
-      console.log(error)
     }
   };
 

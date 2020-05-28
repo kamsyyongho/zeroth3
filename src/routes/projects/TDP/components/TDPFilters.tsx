@@ -83,6 +83,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
+    console.log('=============transcriberById : ', transcribersById);
     return tempFormSelectOptions;
   }, [transcribersById, translate]);
 

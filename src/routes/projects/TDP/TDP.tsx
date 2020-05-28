@@ -335,8 +335,7 @@ export function TDP(props: TDPProps) {
         filterParams={filterParams as FilterParams}
       />
       <ConfirmationDialog
-          contentMsg={translate('SET.deleteAllMsg')}
-          buttonMsg={translate("common.delete")}
+          deleteMsg={'SET.deleteAllMsg'}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll}/>

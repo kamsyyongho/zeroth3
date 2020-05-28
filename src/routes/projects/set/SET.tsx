@@ -207,6 +207,7 @@ export default function SET(props: SETProps) {
           onClose={handleCloseEvaluationRequest}
           onSuccess={handleEvaluationRequested}
           modelConfigsById={modelConfigsById}
+          selectedDataSet={selectedDataSet}
           setSelectedModelConfigId={(modelConfigId: string) => setSelectedModelConfigId(modelConfigId)}/>
       {/*Evulation Detail modal is commented out for potential future use*/}
       {/*<EvaluationDetailModal*/}

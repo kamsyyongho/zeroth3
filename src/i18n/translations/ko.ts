@@ -221,6 +221,7 @@ export const ko: ResourceLanguage = {
       showEvaluationDetail: '평가 상세보기',
       evaluationDetail: '평가 상세 정보',
       openToRate: '전사상태 평가',
+      selectModel: '모델 선택',
     },
     modelTraining: {
       header: '모델 학습',

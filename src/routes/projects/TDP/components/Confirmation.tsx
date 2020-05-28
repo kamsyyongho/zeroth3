@@ -10,7 +10,7 @@ import DoneIcon from '@material-ui/icons/Done';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { ModelConfig, GenericById } from '../../../../types';
+import { ModelConfig, GenericById, DataSet } from '../../../../types';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { Field } from 'formik';
 import Select from '@material-ui/core/Select';
@@ -19,6 +19,10 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { CustomTheme } from '../../../../theme';
+import Table from '@material-ui/core/Table';
+import TableRow from '@material-ui/core/TableRow';
+import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
+import { ProgressBar } from '../../../shared/ProgressBar';
 
 interface CreateSetFormDialogProps {
     open: boolean;
@@ -27,6 +31,7 @@ interface CreateSetFormDialogProps {
     onClose: () => void;
     onSuccess: () => void;
     setSelectedModelConfigId?: (modelConfigId: string) => void;
+    selectedDataSet?: DataSet;
     modelConfigsById?: GenericById<ModelConfig>;
 }
 
@@ -37,10 +42,24 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             margin: 'auto',
             minWidth: 200,
         },
+        dialogContent: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        processedText: {
+            color: theme.palette.primary.main,
+        },
+        tableRow: {
+            borderWidth: 1,
+            borderColor: theme.table.border,
+            border: 'solid',
+            borderCollapse: undefined,
+        }
     }));
 
 export function ConfirmationDialog(props: CreateSetFormDialogProps) {
-    const { contentMsg , buttonMsg, open, onClose, onSuccess, modelConfigsById, setSelectedModelConfigId } = props;
+    const { contentMsg , buttonMsg, open, onClose, onSuccess, modelConfigsById, selectedDataSet, setSelectedModelConfigId } = props;
     const { translate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);
     const [setType, setSetType] = React.useState("none");
@@ -89,22 +108,48 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                 {contentMsg}
 
             </DialogTitle>
-            <DialogContent>
-                {modelConfigsById &&
-                <FormControl className={classes.formControl}>
-                    <Select
-                        id="demo-simple-select-autowidth"
-                        label="Set Type"
-                        value={setType}
-                        onChange={handleModelConfigId}
-                        autoWidth
-                        MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
-                        <MenuItem value={"none"}>None</MenuItem>
-                        {Object.keys(modelConfigsById).map((id) => {
-                            return <MenuItem value={modelConfigsById[id].id}>{modelConfigsById[id].name}</MenuItem>
-                        })}
-                    </Select>
-                </FormControl>
+            <DialogContent className={classes.dialogContent}>
+                {modelConfigsById && selectedDataSet?.evaluationProgress &&
+                    <Table>
+                        <TableBody>
+                            <TableRow className={classes.tableRow}>
+                                <TableCell>
+                                    <Typography>{translate('common.progress')}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography className={classes.processedText} >
+                                        {selectedDataSet.evaluationProgress}
+                                        <Typography component='span' color='textPrimary' >
+                                            {` / 100`}
+                                        </Typography>
+                                    </Typography>
+                                    <ProgressBar value={selectedDataSet.evaluationProgress} maxWidth={200} />
+                                </TableCell>
+                            </TableRow>
+                            <TableRow className={classes.tableRow}>
+                                <TableCell>
+                                    <Typography>{translate('SET.selectModel')}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <FormControl className={classes.formControl}>
+                                        <Select
+                                            id="demo-simple-select-autowidth"
+                                            label="Set Type"
+                                            value={setType}
+                                            onChange={handleModelConfigId}
+                                            autoWidth
+                                            MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
+                                            <MenuItem value={"none"}>None</MenuItem>
+                                            {Object.keys(modelConfigsById).map((id: string, index: number) => {
+                                                return <MenuItem key={`modelConfigId-${index}`}
+                                                                 value={modelConfigsById[id].id}>{modelConfigsById[id].name}</MenuItem>
+                                            })}
+                                        </Select>
+                                    </FormControl>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 }
             </DialogContent>
                 <DialogActions>

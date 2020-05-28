@@ -219,6 +219,7 @@ export const en: ResourceLanguage = {
       showEvaluationDetail: 'Show Evaluation Detail',
       evaluationDetail: 'Evaluation Detail',
       addTranscriber: 'Add transcriber',
+      selectModel: 'Select Model',
     },
     modelTraining: {
       header: 'Model Training',

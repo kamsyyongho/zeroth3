@@ -27,7 +27,7 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex, PlayingTimeData } from '../../types';
+import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, isMacOs } from '../../util/misc';
@@ -117,11 +117,12 @@ interface AudioPlayerProps {
   audioPlayerTimeIndex?: number[];
   segments: SegmentEditor[];
   url: string;
+  timeToSeekTo?: number;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
-  // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
+  currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
   segmentSplitTimeBoundary?: Required<Time>;
@@ -137,7 +138,6 @@ interface AudioPlayerProps {
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
-  playingTimeData: PlayingTimeData;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -148,11 +148,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
+    timeToSeekTo,
     disabledTimes,
     segmentIdToDelete,
     deleteAllWordSegments,
     wordsClosed,
-    // currentPlayingWordPlayerSegment,
+    currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
     segmentSplitTimeBoundary,
@@ -165,7 +166,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentStatusEditChange,
     onReady,
     setIsAudioPlaying,
-    playingTimeData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -340,7 +340,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const formattedCurrentTime = formatSecondsDuration(currentTime);
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
-
+  
   const handleAudioProcess = (currentTime?: number) => {
     if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
     try {
@@ -705,11 +705,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const parseCurrentlyPlayingWordSegment = (segmentInfoToUse?: PlayingWordAndSegment) => {
     if (!segmentInfoToUse) {
-      segmentInfoToUse = playingTimeData.currentPlayingWordPlayerSegment;
+      segmentInfoToUse = currentPlayingWordPlayerSegment;
     }
     if (segmentInfoToUse !== undefined) {
       setSavedCurrentPlayingWordPlayerSegment(segmentInfoToUse);
-
       const [wordInfo, segmentInfo] = segmentInfoToUse;
       if (typeof wordInfo.time?.start !== 'number' ||
         typeof wordInfo.time?.end !== 'number' ||
@@ -718,7 +717,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       ) {
         return;
       }
-
       // adding a bit of slop because `Peaks.js` does not 
       // like creating segments at exactly `0`
       let startTime = wordInfo.time.start;
@@ -946,11 +944,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [duration, ready]);
 
   // set the seek location based on the parent
-  // React.useEffect(() => {
-  //   if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
-  //     seekToTime(playingTimeData.timeToSeekTo);
-  //   }
-  // }, [playingTimeData.timeToSeekTo]);
+  React.useEffect(() => {
+    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
+      seekToTime(timeToSeekTo);
+    }
+  }, [timeToSeekTo]);
 
   // delete a word segment based on the parent
   React.useEffect(() => {
@@ -1061,15 +1059,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
-      seekToTime(playingTimeData.timeToSeekTo);
-    }
     // don't update playing segments if the loop is active or when it should be disabled
     if (!isLoop && !disableLoop) {
       parseCurrentlyPlayingWordSegment();
     }
-
-  }, [playingTimeData]);
+  }, [currentPlayingWordPlayerSegment]);
 
   // set the update the time for a segment
   React.useEffect(() => {
