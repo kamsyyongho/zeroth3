@@ -174,10 +174,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     }
   };
 
-  React.useEffect(() => {
-    console.log('=============configToEdit : ', configToEdit);
-  })
-
   const openLanguageDialog = () => setLanguageOpen(true);
   const closeLanguageDialog = () => setLanguageOpen(false);
 

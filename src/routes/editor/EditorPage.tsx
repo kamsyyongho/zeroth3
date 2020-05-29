@@ -574,7 +574,8 @@ export function EditorPage() {
           const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
-            timeData.timeToSeekTo = wordTime
+            const setTimeToSeekTo = {wordTime}
+            Object.assign(timeData, wordTime);
             setPlayingTimeData(timeData)
           }
         }
@@ -627,7 +628,8 @@ export function EditorPage() {
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData && wordTime) {
-        timeData.timeToSeekTo = wordTime
+        const setTimeToSeekTo = {wordTime}
+        Object.assign(timeData, wordTime);
         setPlayingTimeData(timeData)
       }
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
