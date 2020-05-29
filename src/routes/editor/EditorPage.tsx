@@ -47,16 +47,16 @@ import localForage from 'localforage';
 import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../common/constants";
 
 const useStyles = makeStyles((theme: CustomTheme) =>
-  createStyles({
-    container: {
-      marginTop: 25,
-    },
-  }),
+    createStyles({
+      container: {
+        marginTop: 25,
+      },
+    }),
 );
 
 /**
  * ensures that the selected word will be correctly
- * highlighted when setting the audio player seek 
+ * highlighted when setting the audio player seek
  * from a text input focus
  */
 const SEEK_SLOP = 0.00001;
@@ -264,7 +264,7 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setConfirmSegmentsLoading(true);
       closeConfirmDialog();
-      const response = await api.voiceData.confirmData(projectId, voiceData.id);
+      const response = await api.voiceData.requestApproval(projectId, voiceData.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -400,22 +400,27 @@ export function EditorPage() {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation){return;}
-    const [segmentIndex, wordIndex] = caretLocation
-    if(!segmentIndex || !wordIndex || wordIndex === 0 ||
-        wordIndex === segments[segmentIndex]['wordAlignments'].length - 1) {
+    const segmentIndex = caretLocation?.[0];
+    const wordIndex = caretLocation?.[1];
+    console.log('caretLocation : ', caretLocation);
+    if(typeof segmentIndex !== 'number' || typeof wordIndex !== 'number' || !caretLocation || !caretLocation[0] || !caretLocation[1]) {return;}
+    if(segmentIndex === 0 ||
+        wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
 
+    const trackSegments = segments || internalSegmentsTracker;
+    console.log('==================trackSegments: ', trackSegments);
+
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, segments[caretLocation[0]].id, caretLocation[1]);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segment
-        const splitSegments = [...segments];
+        const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
@@ -441,7 +446,7 @@ export function EditorPage() {
       setSaveSegmentsLoading(false);
     }
   };
-  
+
   const submitSegmentSplitByTime = async (segmentId: string,
                                           segmentIndex: number,
                                           time: number,
@@ -548,7 +553,6 @@ export function EditorPage() {
     };
     const timeData = {
       currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
-      timeToSeekTo: undefined,
     }
     setCurrentlyPlayingWordTime(time);
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
@@ -570,12 +574,13 @@ export function EditorPage() {
           setCurrentPlayingLocation(playingLocation);
         }
         if (playingLocation && (initialSegmentLoad ||
-          JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
+            JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
           const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
-            const setTimeToSeekTo = {wordTime}
-            Object.assign(timeData, wordTime);
+            const timeToSeekTo = {timeToSeekTo: wordTime}
+            Object.assign(timeData, timeToSeekTo);
+            // timeData.timeToSeekTo = wordTime;
             setPlayingTimeData(timeData)
           }
         }
@@ -588,7 +593,7 @@ export function EditorPage() {
     openConfirmDialog();
   };
 
-  
+
 
   /**
    * keeps track of where the timer is
@@ -628,9 +633,9 @@ export function EditorPage() {
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData && wordTime) {
-        const setTimeToSeekTo = {wordTime}
-        Object.assign(timeData, wordTime);
-        setPlayingTimeData(timeData)
+        const timeToSeekTo = {timeToSeekTo: wordTime}
+        Object.assign(timeData, timeToSeekTo);
+        setPlayingTimeData(timeData);
       }
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
 
@@ -646,7 +651,7 @@ export function EditorPage() {
     setDisabledTimes(disabledTimes);
   };
 
-  /** 
+  /**
    * will be called in the editor to get the updated info
    * - used to update the attached segment data for the block
    */
@@ -858,7 +863,7 @@ export function EditorPage() {
 
   // if we don't have the correct permissions
   if ((readOnly && !canSeeReadOnlyEditor) ||
-    (!readOnly && !canUseEditor)) {
+      (!readOnly && !canUseEditor)) {
     return <Forbidden />;
   }
 
@@ -883,118 +888,119 @@ export function EditorPage() {
   };
 
   return (
-    <>
-      {!readOnly && <EditorControls
-        onCommandClick={handleEditorCommand}
-        onConfirm={onConfirmClick}
-        disabledControls={disabledControls}
-        loading={saveSegmentsLoading || confirmSegmentsLoading}
-        editorReady={editorReady}
-        playingLocation={currentPlayingLocation}
-      />}
-      <Container >
-        {readOnly && <StarRating
-          voiceData={voiceData}
-          projectId={projectId}
+      <>
+        {!readOnly && <EditorControls
+            onCommandClick={handleEditorCommand}
+            onConfirm={onConfirmClick}
+            disabledControls={disabledControls}
+            loading={saveSegmentsLoading || confirmSegmentsLoading}
+            editorReady={editorReady}
+            playingLocation={currentPlayingLocation}
         />}
-        <Paper
-          className={classes.container}
-          elevation={5}
-        >
-          <div style={editorContainerStyle}>
-            {segmentsLoading ? <BulletList /> :
-              !!segments.length && (<Editor
-                key={voiceData.id}
-                readOnly={readOnly}
-                responseFromParent={responseToPassToEditor}
-                onParentResponseHandled={handleEditorResponseHandled}
-                onCommandHandled={handleCommandHandled}
-                height={editorHeight}
-                segments={segments}
-                onReady={setEditorReady}
-                playingLocation={currentPlayingLocation}
-                loading={saveSegmentsLoading}
-                isAudioPlaying={isAudioPlaying}
-                editorCommand={editorCommand}
-                onSpeakersUpdate={handleSpeakersUpdate}
-                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                onWordClick={handleWordClick}
-                handleSegmentUpdate={handleSegmentUpdate}
-                updateSegment={submitSegmentUpdate}
-                updateSegmentTime={submitSegmentTimeUpdate}
-                splitSegmentByTime={submitSegmentSplitByTime}
-                assignSpeaker={openSpeakerAssignDialog}
-                removeHighRiskFromSegment={removeHighRiskFromSegment}
-                onWordTimeCreationClose={handleWordTimeCreationClose}
-                timePickerRootProps={{
-                  setDisabledTimes: handleDisabledTimesSet,
-                  createTimeSection: createTimeSection,
-                  updateTimeSection: updateTimeSection,
-                  deleteTimeSection: deleteTimeSection,
-                  timeFromPlayer: timeFromPlayer,
-                }}
-                splitTimePickerRootProps={{
-                  segmentSplitTime,
-                  onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
-                  onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
-                  onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
-                  onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
-                }}
-              />)
-            }
-          </div>
-          {!!voiceData.length && <ErrorBoundary
-            key={voiceData.id}
-            FallbackComponent={PageErrorFallback}
+        <Container >
+          {readOnly && <StarRating
+              voiceData={voiceData}
+              projectId={projectId}
+          />}
+          <Paper
+              className={classes.container}
+              elevation={5}
           >
-            <AudioPlayer
-              segments={segments}
-              key={voiceData.id}
-              url={voiceData.audioUrl}
-              // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
-              disabledTimes={disabledTimes}
-              segmentIdToDelete={segmentIdToDelete}
-              onAutoSeekToggle={handleAutoSeekToggle}
-              wordsClosed={wordsClosed}
-              deleteAllWordSegments={deleteAllWordSegments}
-              onSegmentDelete={handleSegmentDelete}
-              onSegmentCreate={handleAudioSegmentCreate}
-              onSegmentUpdate={handleAudioSegmentUpdate}
-              onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
-              onSegmentStatusEditChange={handleSegmentStatusEditChange}
-              // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
-              wordToCreateTimeFor={wordToCreateTimeFor}
-              wordToUpdateTimeFor={wordToUpdateTimeFor}
-              onTimeChange={handlePlaybackTimeChange}
-              onSectionChange={handleSectionChange}
-              onReady={handlePlayerRendered}
-              segmentSplitTimeBoundary={segmentSplitTimeBoundary}
-              segmentSplitTime={segmentSplitTime}
-              onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
-              setIsAudioPlaying={setIsAudioPlaying}
-            />
-          </ErrorBoundary>}
-        </Paper>
-      </Container >
-      <ConfirmationDialog
-        titleText={`${translate('editor.confirmTranscript')}?`}
-        submitText={translate('common.submit')}
-        contentText={translate('editor.confirmWarning')}
-        open={confirmDialogOpen}
-        onSubmit={confirmData}
-        onCancel={closeConfirmDialog}
-      />
-      <AssignSpeakerDialog
-        projectId={projectId}
-        dataId={voiceData.id}
-        speakers={speakers}
-        onSpeakersUpdate={handleSpeakersUpdate}
-        segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
-        segmentIndex={segmentIndexToAssignSpeakerTo}
-        open={segmentIndexToAssignSpeakerTo !== undefined}
-        onClose={closeSpeakerAssignDialog}
-        onSuccess={handleSpeakerAssignSuccess}
-      />
-    </>
+            <div style={editorContainerStyle}>
+              {segmentsLoading ? <BulletList /> :
+                  !!segments.length && (<Editor
+                      key={voiceData.id}
+                      readOnly={readOnly}
+                      responseFromParent={responseToPassToEditor}
+                      onParentResponseHandled={handleEditorResponseHandled}
+                      onCommandHandled={handleCommandHandled}
+                      height={editorHeight}
+                      segments={segments}
+                      onReady={setEditorReady}
+                      playingLocation={currentPlayingLocation}
+                      loading={saveSegmentsLoading}
+                      isAudioPlaying={isAudioPlaying}
+                      editorCommand={editorCommand}
+                      onSpeakersUpdate={handleSpeakersUpdate}
+                      onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                      onWordClick={handleWordClick}
+                      handleSegmentUpdate={handleSegmentUpdate}
+                      updateSegment={submitSegmentUpdate}
+                      updateSegmentTime={submitSegmentTimeUpdate}
+                      splitSegmentByTime={submitSegmentSplitByTime}
+                      assignSpeaker={openSpeakerAssignDialog}
+                      removeHighRiskFromSegment={removeHighRiskFromSegment}
+                      onWordTimeCreationClose={handleWordTimeCreationClose}
+                      timePickerRootProps={{
+                        setDisabledTimes: handleDisabledTimesSet,
+                        createTimeSection: createTimeSection,
+                        updateTimeSection: updateTimeSection,
+                        deleteTimeSection: deleteTimeSection,
+                        timeFromPlayer: timeFromPlayer,
+                      }}
+                      splitTimePickerRootProps={{
+                        segmentSplitTime,
+                        onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
+                        onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
+                        onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
+                        onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
+                      }}
+                  />)
+              }
+            </div>
+            {!!voiceData.length && <ErrorBoundary
+                key={voiceData.id}
+                FallbackComponent={PageErrorFallback}
+            >
+              <AudioPlayer
+                  segments={segments}
+                  key={voiceData.id}
+                  url={voiceData.audioUrl}
+                  // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
+                  disabledTimes={disabledTimes}
+                  segmentIdToDelete={segmentIdToDelete}
+                  onAutoSeekToggle={handleAutoSeekToggle}
+                  wordsClosed={wordsClosed}
+                  deleteAllWordSegments={deleteAllWordSegments}
+                  onSegmentDelete={handleSegmentDelete}
+                  onSegmentCreate={handleAudioSegmentCreate}
+                  onSegmentUpdate={handleAudioSegmentUpdate}
+                  onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
+                  onSegmentStatusEditChange={handleSegmentStatusEditChange}
+                  // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
+                  wordToCreateTimeFor={wordToCreateTimeFor}
+                  wordToUpdateTimeFor={wordToUpdateTimeFor}
+                  onTimeChange={handlePlaybackTimeChange}
+                  onSectionChange={handleSectionChange}
+                  onReady={handlePlayerRendered}
+                  segmentSplitTimeBoundary={segmentSplitTimeBoundary}
+                  segmentSplitTime={segmentSplitTime}
+                  onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
+                  setIsAudioPlaying={setIsAudioPlaying}
+                  playingTimeData={playingTimeData}
+              />
+            </ErrorBoundary>}
+          </Paper>
+        </Container >
+        <ConfirmationDialog
+            titleText={`${translate('editor.confirmTranscript')}?`}
+            submitText={translate('common.submit')}
+            contentText={translate('editor.confirmWarning')}
+            open={confirmDialogOpen}
+            onSubmit={confirmData}
+            onCancel={closeConfirmDialog}
+        />
+        <AssignSpeakerDialog
+            projectId={projectId}
+            dataId={voiceData.id}
+            speakers={speakers}
+            onSpeakersUpdate={handleSpeakersUpdate}
+            segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
+            segmentIndex={segmentIndexToAssignSpeakerTo}
+            open={segmentIndexToAssignSpeakerTo !== undefined}
+            onClose={closeSpeakerAssignDialog}
+            onSuccess={handleSpeakerAssignSuccess}
+        />
+      </>
   );
 }

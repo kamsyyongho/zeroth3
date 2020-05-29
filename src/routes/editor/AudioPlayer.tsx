@@ -27,7 +27,7 @@ import 'video.js/dist/video-js.css';
 import { DEFAULT_EMPTY_TIME } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../theme';
-import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex } from '../../types';
+import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex, PlayingTimeData } from '../../types';
 import { PlayingWordAndSegment } from '../../types/editor.types';
 import log from '../../util/log/logger';
 import { formatSecondsDuration, isMacOs } from '../../util/misc';
@@ -44,8 +44,8 @@ let isReady = false;
 let waitingTimeoutId: NodeJS.Timeout | undefined;
 /** the interval used to get the current time */
 let getTimeIntervalId: NodeJS.Timeout | undefined;
-/** 
- * if there was an error in the component 
+/**
+ * if there was an error in the component
  * - lives outside the component, so it doesn't wait on state changes
  * - used for the media listeners
  */
@@ -77,52 +77,51 @@ const DEFAULT_CONTAINER_HEIGHT = 64;
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
-  createStyles({
-    content: {
-      padding: 0,
-    },
-    hidden: {
-      visibility: 'hidden',
-      height: 0,
-    },
-    root: {
-      backgroundColor: theme.palette.background.default,
-      padding: 10,
-    },
-    peaksContainer: {
-      height: 128,
-    },
-    controls: {
-      marginLeft: 10,
-    },
-    error: {
-      color: theme.error,
-      marginTop: 5,
-    },
-    zoomView: {
-      "&:hover": {
-        cursor: 'pointer',
-      }
-    },
-    playbackButton: {
-      width: 70,
-    },
-    buttonSelected: {
-      backgroundColor: theme.palette.grey[300],
-    },
-  }),
+    createStyles({
+      content: {
+        padding: 0,
+      },
+      hidden: {
+        visibility: 'hidden',
+        height: 0,
+      },
+      root: {
+        backgroundColor: theme.palette.background.default,
+        padding: 10,
+      },
+      peaksContainer: {
+        height: 128,
+      },
+      controls: {
+        marginLeft: 10,
+      },
+      error: {
+        color: theme.error,
+        marginTop: 5,
+      },
+      zoomView: {
+        "&:hover": {
+          cursor: 'pointer',
+        }
+      },
+      playbackButton: {
+        width: 70,
+      },
+      buttonSelected: {
+        backgroundColor: theme.palette.grey[300],
+      },
+    }),
 );
 
 interface AudioPlayerProps {
   audioPlayerTimeIndex?: number[];
   segments: SegmentEditor[];
   url: string;
-  timeToSeekTo?: number;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
-  currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
+  // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
   segmentSplitTimeBoundary?: Required<Time>;
@@ -138,6 +137,7 @@ interface AudioPlayerProps {
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
+  playingTimeData: PlayingTimeData;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -148,12 +148,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
-    timeToSeekTo,
     disabledTimes,
     segmentIdToDelete,
     deleteAllWordSegments,
     wordsClosed,
-    currentPlayingWordPlayerSegment,
+    // currentPlayingWordPlayerSegment,
     wordToCreateTimeFor,
     wordToUpdateTimeFor,
     segmentSplitTimeBoundary,
@@ -166,6 +165,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentStatusEditChange,
     onReady,
     setIsAudioPlaying,
+    playingTimeData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -340,7 +340,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const formattedCurrentTime = formatSecondsDuration(currentTime);
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
-  
+
   const handleAudioProcess = (currentTime?: number) => {
     if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
     try {
@@ -410,7 +410,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   /**
-   * saves our current valid options to be used if  
+   * saves our current valid options to be used if
    * we try dragging into an invalid area later on
    */
   const handleSegmentDragStart = (segment: Segment) => {
@@ -478,11 +478,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
           // to handle resetting the segment to the last valid
           // options if we are trying to put it in an invalid area
         } else if (id &&
-          !isValidSection &&
-          tempDragStartSegmentResetOptions &&
-          PeaksPlayer?.segments &&
-          typeof validTimeBondaries?.start === 'number' &&
-          typeof validTimeBondaries?.end === 'number') {
+            !isValidSection &&
+            tempDragStartSegmentResetOptions &&
+            PeaksPlayer?.segments &&
+            typeof validTimeBondaries?.start === 'number' &&
+            typeof validTimeBondaries?.end === 'number') {
           // to reset to the valid limits if dragged outside the valid range
           if (startTime < validTimeBondaries.start) {
             tempDragStartSegmentResetOptions.startTime = validTimeBondaries.start;
@@ -545,7 +545,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   /**
    * display a loading indicator when the player is waiting
    * - using a timeout to prevent flicker by displaying the indicator for a minimum of 400ms
-   * - attempts to prevent stuck buffering state by triggering 
+   * - attempts to prevent stuck buffering state by triggering
    * pause and play after the initial timeout is cleared
    */
   function handleWaiting() {
@@ -668,7 +668,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (isSegmentMatch) {
           segmentPlaybackSegmentExists = true;
           if (segment.startTime === currentPlayingSegmentSegment.startTime &&
-            segment.endTime === currentPlayingSegmentSegment.endTime) {
+              segment.endTime === currentPlayingSegmentSegment.endTime) {
             segmentPlaybackNotChanged = true;
           } else {
             return currentPlayingSegmentSegment;
@@ -705,19 +705,21 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const parseCurrentlyPlayingWordSegment = (segmentInfoToUse?: PlayingWordAndSegment) => {
     if (!segmentInfoToUse) {
-      segmentInfoToUse = currentPlayingWordPlayerSegment;
+      segmentInfoToUse = playingTimeData.currentPlayingWordPlayerSegment;
     }
     if (segmentInfoToUse !== undefined) {
       setSavedCurrentPlayingWordPlayerSegment(segmentInfoToUse);
+
       const [wordInfo, segmentInfo] = segmentInfoToUse;
       if (typeof wordInfo.time?.start !== 'number' ||
-        typeof wordInfo.time?.end !== 'number' ||
-        typeof segmentInfo.time?.start !== 'number' ||
-        typeof segmentInfo.time?.end !== 'number'
+          typeof wordInfo.time?.end !== 'number' ||
+          typeof segmentInfo.time?.start !== 'number' ||
+          typeof segmentInfo.time?.end !== 'number'
       ) {
         return;
       }
-      // adding a bit of slop because `Peaks.js` does not 
+
+      // adding a bit of slop because `Peaks.js` does not
       // like creating segments at exactly `0`
       let startTime = wordInfo.time.start;
       if (startTime === 0) {
@@ -764,12 +766,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
    */
   function handleLoopClick() {
     if (disableLoop ||
-      !PeaksPlayer?.segments ||
-      !peaksReady ||
-      !duration ||
-      !mediaElement ||
-      !StreamPlayer ||
-      (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
+        !PeaksPlayer?.segments ||
+        !peaksReady ||
+        !duration ||
+        !mediaElement ||
+        !StreamPlayer ||
+        (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
     ) return;
     try {
       const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
@@ -944,11 +946,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [duration, ready]);
 
   // set the seek location based on the parent
-  React.useEffect(() => {
-    if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
-      seekToTime(timeToSeekTo);
-    }
-  }, [timeToSeekTo]);
+  // React.useEffect(() => {
+  //   if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+  //     seekToTime(playingTimeData.timeToSeekTo);
+  //   }
+  // }, [playingTimeData.timeToSeekTo]);
 
   // delete a word segment based on the parent
   React.useEffect(() => {
@@ -989,8 +991,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         };
         // to ensure that the end time is always gerater than the start time
         if (validTimeBondaries.start &&
-          validTimeBondaries.end &&
-          validTimeBondaries.start > validTimeBondaries.end) {
+            validTimeBondaries.end &&
+            validTimeBondaries.start > validTimeBondaries.end) {
           validTimeBondaries.end = validTimeBondaries.start + 0.5;
         }
         // the valid segment is the first one
@@ -1029,7 +1031,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof time?.start !== 'number') {
         return;
       }
-      // adding a bit of slop because `Peaks.js` does not 
+      // adding a bit of slop because `Peaks.js` does not
       // like creating segments at exactly `0`
       let startTime = time.start;
       if (startTime === 0) {
@@ -1059,11 +1061,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
+    if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+      seekToTime(playingTimeData.timeToSeekTo);
+    }
     // don't update playing segments if the loop is active or when it should be disabled
     if (!isLoop && !disableLoop) {
       parseCurrentlyPlayingWordSegment();
     }
-  }, [currentPlayingWordPlayerSegment]);
+
+  }, [playingTimeData]);
 
   // set the update the time for a segment
   React.useEffect(() => {
@@ -1080,7 +1086,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         }
         updateSegmentTime(wordKey as string, start, end);
       } else if (typeof validTimeBondaries?.start === 'number' &&
-        typeof validTimeBondaries?.end === 'number') {
+          typeof validTimeBondaries?.end === 'number') {
         // to reset to the valid limits if outside the valid range
         if (start < validTimeBondaries.start) {
           start = validTimeBondaries.start;
@@ -1313,9 +1319,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
       return button;
     }
     return <Tooltip
-      placement='top'
-      title={<Typography variant={'h6'} >{text}</Typography>}
-      arrow={true}
+        placement='top'
+        title={<Typography variant={'h6'} >{text}</Typography>}
+        arrow={true}
     >
       {button}
     </Tooltip >;
@@ -1323,192 +1329,192 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
     {renderControlWithTooltip(osText('rewind'),
-      <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
-        <Replay5Icon />
-      </Button>
+        <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
+          <Replay5Icon />
+        </Button>
     )}
     <Button aria-label="stop" onClick={handleStop} >
       <StopIcon />
     </Button>
     {renderControlWithTooltip(osText('playPause'),
-      <Button aria-label="play/pause" onClick={handlePlayPause} >
-        {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
-      </Button>
+        <Button aria-label="play/pause" onClick={handlePlayPause} >
+          {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
+        </Button>
     )}
     {renderControlWithTooltip(osText('forward'),
-      <Button aria-label="forward-5s" onClick={() => handleSkip()} >
-        <Forward5Icon />
-      </Button>
+        <Button aria-label="forward-5s" onClick={() => handleSkip()} >
+          <Forward5Icon />
+        </Button>
     )}
   </ButtonGroup>);
 
   const secondaryControls = (<ButtonGroup size='large' variant='outlined' aria-label="secondary controls">
     {renderControlWithTooltip(translate('audioPlayer.zoomIn'),
-      <Button
-        aria-label="zoom-in"
-        onClick={() => handleZoom(true)}
-        disabled={zoomLevel === 0}
-      >
-        <ZoomInIcon />
-      </Button>
+        <Button
+            aria-label="zoom-in"
+            onClick={() => handleZoom(true)}
+            disabled={zoomLevel === 0}
+        >
+          <ZoomInIcon />
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.zoomOut'),
-      <Button
-        aria-label="zoom-out"
-        onClick={() => handleZoom()}
-        disabled={zoomLevel === DEFAULT_ZOOM_LEVELS.length - 1}
-      >
-        <ZoomOutIcon />
-      </Button>
+        <Button
+            aria-label="zoom-out"
+            onClick={() => handleZoom()}
+            disabled={zoomLevel === DEFAULT_ZOOM_LEVELS.length - 1}
+        >
+          <ZoomOutIcon />
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.loop'),
-      <Button
-        aria-label="create-loop"
-        disabled={!!internaDisabledTimesTracker}
-        onClick={handleLoopClick}
-        classes={{
-          root: loop ? classes.buttonSelected : undefined,
-        }}
-      >
-        <SvgIcon component={TiArrowLoop} />
-      </Button>
+        <Button
+            aria-label="create-loop"
+            disabled={!!internaDisabledTimesTracker}
+            onClick={handleLoopClick}
+            classes={{
+              root: loop ? classes.buttonSelected : undefined,
+            }}
+        >
+          <SvgIcon component={TiArrowLoop} />
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.playbackSpeed'),
-      <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} className={classes.playbackButton} >
-        {playbackSpeed < 1 ?
-          '0.5⨉'
-          :
-          '1.0⨉'
-        }
-      </Button>
+        <Button aria-label="playback-speed" onClick={togglePlaybackSpeed} className={classes.playbackButton} >
+          {playbackSpeed < 1 ?
+              '0.5⨉'
+              :
+              '1.0⨉'
+          }
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.mute'),
-      <Button
-        aria-label="mute"
-        onClick={toggleMute}
-        classes={{
-          root: isMute ? classes.buttonSelected : undefined,
-        }}
-      >
-        <ToggleIcon
-          on={!isMute}
-          onIcon={<VolumeUpIcon />}
-          offIcon={<VolumeOffIcon />}
-        />
-      </Button>
+        <Button
+            aria-label="mute"
+            onClick={toggleMute}
+            classes={{
+              root: isMute ? classes.buttonSelected : undefined,
+            }}
+        >
+          <ToggleIcon
+              on={!isMute}
+              onIcon={<VolumeUpIcon />}
+              offIcon={<VolumeOffIcon />}
+          />
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.lockNavigateOnClick'),
-      <Button
-        aria-label="seek-lock"
-        onClick={toggleLockSeek}
-        classes={{
-          root: autoSeekDisabled ? classes.buttonSelected : undefined,
-        }}
-      >
-        <ToggleIcon
-          on={!autoSeekDisabled}
-          onIcon={<SvgIcon component={TiLockOpenOutline} />}
-          offIcon={<SvgIcon component={TiLockClosedOutline} />}
-        />
-      </Button>
+        <Button
+            aria-label="seek-lock"
+            onClick={toggleLockSeek}
+            classes={{
+              root: autoSeekDisabled ? classes.buttonSelected : undefined,
+            }}
+        >
+          <ToggleIcon
+              on={!autoSeekDisabled}
+              onIcon={<SvgIcon component={TiLockOpenOutline} />}
+              offIcon={<SvgIcon component={TiLockClosedOutline} />}
+          />
+        </Button>
     )}
     {renderControlWithTooltip(translate('audioPlayer.disableAutoScroll'),
-      <Button
-        aria-label="scroll-lock"
-        onClick={toggleLockScroll}
-        classes={{
-          root: editorAutoScrollDisabled ? classes.buttonSelected : undefined,
-        }}
-      >
-        {editorAutoScrollDisabled ?
-          <CenterFocusWeakIcon /> :
-          <CenterFocusStrongIcon />
-        }
-      </Button>
+        <Button
+            aria-label="scroll-lock"
+            onClick={toggleLockScroll}
+            classes={{
+              root: editorAutoScrollDisabled ? classes.buttonSelected : undefined,
+            }}
+        >
+          {editorAutoScrollDisabled ?
+              <CenterFocusWeakIcon /> :
+              <CenterFocusStrongIcon />
+          }
+        </Button>
     )}
   </ButtonGroup>);
 
   return (
-    <Paper
-      id='audioPlayer-root-wrapper'
-      elevation={5}
-      className={classes.root}
-    >
-      {(!url || !!errorText) && (<Grid
-        container
-        direction='row'
-        spacing={1}
-        justify='center'
-        alignItems='center'
-        alignContent='center'
+      <Paper
+          id='audioPlayer-root-wrapper'
+          elevation={5}
+          className={classes.root}
       >
-        <Grid item>
-          <WarningIcon className={classes.error} />
-        </Grid>
-        <Grid item>
-          <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
-        </Grid>
-      </Grid>)}
-      {(ready && !errorText) && (
-        <Grid
-          container
-          direction='row'
-          justify='space-between'
-        >
-          <Grid
+        {(!url || !!errorText) && (<Grid
             container
-            item
             direction='row'
-            spacing={3}
-            xs={6}
-            wrap='nowrap'
-            justify='flex-start'
+            spacing={1}
+            justify='center'
             alignItems='center'
             alignContent='center'
-            className={classes.controls}
-          >
-            <Grid item>
-              {playerControls}
-            </Grid>
-            <Grid item>
-              <Typography noWrap >{`${currentTimeDisplay} / ${durationDisplay}`}</Typography>
-            </Grid>
+        >
+          <Grid item>
+            <WarningIcon className={classes.error} />
+          </Grid>
+          <Grid item>
+            <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
+          </Grid>
+        </Grid>)}
+        {(ready && !errorText) && (
             <Grid
-              item
-              className={!duration || (isPlay && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+                container
+                direction='row'
+                justify='space-between'
             >
-              <ScaleLoader
-                height={15}
-                color={theme.palette.primary.main}
-                loading={true}
+              <Grid
+                  container
+                  item
+                  direction='row'
+                  spacing={3}
+                  xs={6}
+                  wrap='nowrap'
+                  justify='flex-start'
+                  alignItems='center'
+                  alignContent='center'
+                  className={classes.controls}
+              >
+                <Grid item>
+                  {playerControls}
+                </Grid>
+                <Grid item>
+                  <Typography noWrap >{`${currentTimeDisplay} / ${durationDisplay}`}</Typography>
+                </Grid>
+                <Grid
+                    item
+                    className={!duration || (isPlay && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+                >
+                  <ScaleLoader
+                      height={15}
+                      color={theme.palette.primary.main}
+                      loading={true}
+                  />
+                </Grid>
+              </Grid>
+              <Grid item xs={6} >
+                {secondaryControls}
+              </Grid>
+            </Grid>
+        )}
+        {(!errorText && !peaksReady) && (
+            <Grid
+                container
+                justify='center'
+                alignItems='center'
+                alignContent='center'
+                className={classes.peaksContainer}
+            >
+              <PropagateLoader
+                  color={theme.palette.primary.main}
               />
             </Grid>
-          </Grid>
-          <Grid item xs={6} >
-            {secondaryControls}
-          </Grid>
-        </Grid>
-      )}
-      {(!errorText && !peaksReady) && (
-        <Grid
-          container
-          justify='center'
-          alignItems='center'
-          alignContent='center'
-          className={classes.peaksContainer}
-        >
-          <PropagateLoader
-            color={theme.palette.primary.main}
-          />
-        </Grid>
-      )}
-      <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
-        <div id={WAVEFORM_DOM_IDS['zoomview-container']} className={classes.zoomView} />
-        <div id={WAVEFORM_DOM_IDS['overview-container']} />
-      </div>
-      <div data-vjs-player className={classes.hidden}>
-        <audio id={WAVEFORM_DOM_IDS['audio-container']} className="video-js vjs-hidden"></audio>
-      </div>
-    </Paper>
+        )}
+        <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
+          <div id={WAVEFORM_DOM_IDS['zoomview-container']} className={classes.zoomView} />
+          <div id={WAVEFORM_DOM_IDS['overview-container']} />
+        </div>
+        <div data-vjs-player className={classes.hidden}>
+          <audio id={WAVEFORM_DOM_IDS['audio-container']} className="video-js vjs-hidden"></audio>
+        </div>
+      </Paper>
   );
 };
