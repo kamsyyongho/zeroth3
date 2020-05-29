@@ -71,6 +71,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface SegmentBlockHeadPropsV2 {
     segment: Segment;
     assignSpeakerForSegment: (segmentIndex: string) => void;
+    isChanged: boolean;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
@@ -80,9 +81,10 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     const classes = useStyles();
     const { translate, osText } = React.useContext(I18nContext);
     const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-    const { readOnly, assignSpeakerForSegment, removeHighRiskValueFromSegment, segment } = props;
+    const { readOnly, assignSpeakerForSegment, isChanged, removeHighRiskValueFromSegment, segment } = props;
     const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
-    const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
+    const displayTextChangedHover = (!readOnly && isChanged && !!decoderTranscript?.trim());
+    // const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
     const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
     const handleSpeakerPress = () => {
         if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
@@ -104,8 +106,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
         color={showEditorPopups ? 'primary' : undefined}
         variant={'outlined'}
         disabled={!showEditorPopups}
-        className={clsx(classes.button, !showEditorPopups && classes.outlineHidden)}
-    >
+        className={clsx(classes.button, !showEditorPopups && classes.outlineHidden)}>
         {speaker ? (<span
                 contentEditable={false} // prevents the editor from placing the cursor within the content
             >

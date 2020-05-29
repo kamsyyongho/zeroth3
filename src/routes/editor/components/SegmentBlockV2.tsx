@@ -216,6 +216,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
+                isChanged={isChanged}
                 assignSpeakerForSegment={assignSpeakerForSegment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}

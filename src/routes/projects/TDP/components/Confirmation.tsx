@@ -112,20 +112,23 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                 {modelConfigsById && selectedDataSet &&
                     <Table>
                         <TableBody>
-                            <TableRow className={classes.tableRow}>
-                                <TableCell>
-                                    <Typography>{translate('common.progress')}</Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography className={classes.processedText} >
-                                        {selectedDataSet.evaluationProgress ? selectedDataSet.evaluationProgress : 0}
-                                        <Typography component='span' color='textPrimary' >
-                                            {` / 100`}
+                            {
+                                selectedDataSet.evaluationProgress && selectedDataSet.evaluationProgress !== 100 &&
+                                <TableRow className={classes.tableRow}>
+                                    <TableCell>
+                                        <Typography>{translate('common.progress')}</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography className={classes.processedText} >
+                                            {selectedDataSet.evaluationProgress}
+                                            <Typography component='span' color='textPrimary' >
+                                                {` / 100`}
+                                            </Typography>
                                         </Typography>
-                                    </Typography>
-                                    <ProgressBar value={selectedDataSet?.evaluationProgress || 0} maxWidth={200} />
-                                </TableCell>
-                            </TableRow>
+                                        <ProgressBar value={selectedDataSet?.evaluationProgress || 0} maxWidth={200} />
+                                    </TableCell>
+                                </TableRow>
+                            }
                             <TableRow className={classes.tableRow}>
                                 <TableCell>
                                     <Typography>{translate('SET.selectModel')}</Typography>
