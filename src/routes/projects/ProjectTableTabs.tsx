@@ -139,6 +139,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             getTranscribersWithStats={getTranscribersWithStats}
             transcribersStats={transcribersStats}
             pagination={pagination}
+            transcriberStatDataLoading={transcriberStatDataLoading}
           />}
       </TabPanel>}
     </Paper>

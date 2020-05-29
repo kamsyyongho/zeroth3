@@ -972,7 +972,6 @@ export function EditorPage() {
               segmentSplitTime={segmentSplitTime}
               onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
               setIsAudioPlaying={setIsAudioPlaying}
-              playingTimeData={playingTimeData}
             />
           </ErrorBoundary>}
         </Paper>

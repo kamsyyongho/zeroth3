@@ -186,6 +186,27 @@ export function TDPTable(props: TDPTableProps) {
     </Tooltip>);
   };
 
+  const renderSessionId = (cellData: CellProps<VoiceData>) => {
+    const TWENTY_FIVE_PERCENT = 0.25;
+    // to keep a dynamic width of 25% based on the window
+    const dynamicWidth = width && width * TWENTY_FIVE_PERCENT;
+    // to prevent the width from expanding greater than 25% of the container
+    const containerWidth = theme.breakpoints.width('lg');
+    const maxWidth = containerWidth * TWENTY_FIVE_PERCENT;
+    const sessionIdStyle = dynamicWidth ? { width: dynamicWidth, maxWidth } : { minWidth: 250, maxWidth: 350 };
+
+    return <Grid
+        container
+        wrap='nowrap'
+        direction='row'
+        alignContent='center'
+        alignItems='center'
+        justify='flex-start'>
+      {renderLaunchIconButton(cellData)}
+        <Typography style={sessionIdStyle}>{cellData.cell.value}</Typography>
+    </Grid>;
+  };
+
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
     const transcript: VoiceData['transcript'] = cellData.cell.value;
     const expanded = !!expandedRowsByIndex[cellData.cell.row.index];
@@ -263,9 +284,9 @@ export function TDPTable(props: TDPTableProps) {
   const columns = React.useMemo(
     () => [
       {
-        Header: translate('forms.transcript'),
-        accessor: TDPTableColumns['transcript'],
-        Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
+        Header: translate('TDP.sessionId'),
+        accessor: TDPTableColumns['sessionId'],
+        Cell: (cellData: CellProps<VoiceData>) => renderSessionId(cellData),
       },
       {
         Header: translate('modelConfig.header'),
@@ -370,7 +391,6 @@ export function TDPTable(props: TDPTableProps) {
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {
     return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
       <TableSortLabel
-        disabled={column.id as TDPTableColumns === TDPTableColumns.transcript}
         active={orderBy === column.id as TDPTableColumns}
         direction={orderDirection}
         onClick={() => changeSort(column.id as TDPTableColumns)}
@@ -414,21 +434,15 @@ export function TDPTable(props: TDPTableProps) {
             className={classes.tableRow}
           >
             {row.cells.map((cell, cellIndex) => {
-              const isTranscript = cell.column.id === TDPTableColumns['transcript'];
-              const isExpandedTranscript = expanded && isTranscript;
               let className = classes.tableBorder;
               let style: React.CSSProperties = {};
-              if (isTranscript) {
-                style = { borderRightWidth: 2, borderRightColor: theme.table.highlight };
-              }
-              if (!isTranscript && expanded) {
+              if (expanded) {
                 className = classes.tableNoBorder;
               }
               return (
                 <TableCell
                   key={`cell-${cellIndex}`}
                   {...cell.getCellProps()}
-                  rowSpan={isExpandedTranscript ? DOUBLE_HEIGHT_ROW : undefined}
                   className={className}
                   style={style}>
                   {cell.render('Cell')}

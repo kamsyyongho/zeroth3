@@ -21,11 +21,12 @@ interface SETProps {
   modelConfigs: ModelConfig[];
   getTranscribersWithStats: (page?:number, size?: number) => void;
   transcribersStats: TranscriberStats[];
+  transcriberStatDataLoading: boolean;
   pagination?: PaginatedResults;
 }
 
 export default function SET(props: SETProps) {
-  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, transcribersStats, pagination } = props;
+  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, transcribersStats, transcriberStatDataLoading, pagination } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -35,7 +36,6 @@ export default function SET(props: SETProps) {
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
   const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
-  const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
   const [isEvaluationRequested, setIsEvaluationRequested] = React.useState(false);
   const [contentMsg, setContentMsg] = React.useState('');
   const [selectedModelConfigId, setSelectedModelConfigId] = React.useState('');

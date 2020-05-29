@@ -133,57 +133,6 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             </Typography>
             <Typography>{startDate ? formatDate(startDate) : '-'}</Typography>
           </Grid>
-          {/*<Grid*/}
-          {/*  container*/}
-          {/*  item*/}
-          {/*  wrap='nowrap'*/}
-          {/*  direction='row'*/}
-          {/*  alignContent='center'*/}
-          {/*  alignItems='center'*/}
-          {/*  justify='flex-start'*/}
-          {/*>*/}
-          {/*  <Typography*/}
-          {/*    className={classes.category}*/}
-          {/*    variant='subtitle2'*/}
-          {/*  >*/}
-          {/*    {`${translate('common.endAt')}:`}*/}
-          {/*  </Typography>*/}
-          {/*  <Typography>{formatDate(endDate)}</Typography>*/}
-          {/*</Grid>*/}
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.sessionId')}:`}
-            </Typography>
-            <Typography>{sessionId ? sessionId : '-'}</Typography>
-          </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.ip')}:`}
-            </Typography>
-            <Typography>{ip ? ip : '-'}</Typography>
-          </Grid>
           <Grid
             container
             item
