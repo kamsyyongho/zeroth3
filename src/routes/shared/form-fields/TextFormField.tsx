@@ -24,6 +24,7 @@ export const TextFormField = ({
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
     getIn(form.touched, field.name) && getIn(form.errors, field.name);
+  
   return (
     <TextField
       style={{ display: hidden ? 'none' : undefined }}

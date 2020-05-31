@@ -97,12 +97,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLr: yup.number().nullable().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
+    thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'screw you', function (thresholdLr) {
+      return true;
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
       return thresholdLr < thresholdHr;
     }),
-    thresholdHr: yup.number().nullable().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
+    thresholdHr: yup.number().nullable(true).default(null).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', 'fuck you', function (thresholdHr) {
+      return true;
       const { thresholdLr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
@@ -140,7 +142,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
-    if (api ?.modelConfig && !loading) {
+    if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
       let response: postModelConfigResult;

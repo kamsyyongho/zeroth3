@@ -79,6 +79,10 @@ export function Profile() {
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
 
+  React.useEffect(() => {
+    console.log('=============user : ', user);
+  }, [])
+
   const showDialog = () => {
     setIsOpen(true);
   };
