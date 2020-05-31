@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigListItemExpand.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigListItemExpand.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/TextFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/TextFormField.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -85,7 +79,7 @@
       <workItem from="1590545409375" duration="459000" />
       <workItem from="1590546321490" duration="5940000" />
       <workItem from="1590634637364" duration="23924000" />
-      <workItem from="1590892494063" duration="9359000" />
+      <workItem from="1590892494063" duration="9638000" />
     </task>
     <servers />
   </component>
