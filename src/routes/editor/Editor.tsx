@@ -26,7 +26,6 @@ import {
   buildStyleMap,
   getSegmentAndWordIndex } from './helpers/editor.helper';
 
-
 let renderTimes = 0;
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -353,7 +352,6 @@ export function Editor(props: EditorProps) {
       setReadOnlyEditorState(true);
     }
   };
-
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {

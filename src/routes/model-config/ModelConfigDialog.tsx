@@ -140,7 +140,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
-    if (api?.modelConfig && !loading) {
+    if (api ?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
       let response: postModelConfigResult;
@@ -169,7 +169,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      snackbarError ?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setLoading(false);
     }
   };

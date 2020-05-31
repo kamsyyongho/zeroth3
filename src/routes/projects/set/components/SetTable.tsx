@@ -119,6 +119,9 @@ export function SetTable(props: SetTableProps) {
         {translate('SET.rejected')}
       </TableCell>
       <TableCell>
+        {translate('SET.evaluationStatus')}
+      </TableCell>
+      <TableCell>
         <FormControl className={classes.formControl}>
           <InputLabel id="set-type-label">Filter By Set Type</InputLabel>
           <Select

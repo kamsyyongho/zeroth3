@@ -23,6 +23,7 @@ import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
 import { EvaluationDetailModal } from './EvaluationDetailModal';
+import { TrainingChip } from '../../../shared/TrainingChip';
 
 interface SetItemProps {
   projectId: string;
@@ -44,6 +45,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
+    },
+    btnCell: {
+      width: '500px'
     }
   }));
 
@@ -225,6 +229,24 @@ export function SetItem(props: SetItemProps) {
           </TableCell>
           <TableCell>
             <Typography>{dataSet.rejected}</Typography>
+          </TableCell>
+          <TableCell>
+            {
+               !dataSet.evaluationProgress
+                  ?
+                  <TrainingChip progress={-1} />
+                  :
+                   dataSet?.evaluationProgress < 100
+                   ?
+                  <>
+                    <Typography className={classes.processedText} >
+                      {`${dataSet.evaluationProgress} %`}
+                    </Typography>
+                    <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
+                  </>
+                   :
+                   null
+            }
           </TableCell>
           <TableCell>
             <Tooltip

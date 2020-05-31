@@ -10,6 +10,8 @@ import { INLINE_STYLE_TYPE } from '../../../types';
 import { buildStyleMap } from '../helpers/editor.helper';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
+import { ApiContext } from '../../../hooks/api/ApiContext';
+import log from '../../../util/log/logger';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -72,6 +74,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment,
         playingLocation } = props;
+    const api = React.useContext(ApiContext);
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const theme: CustomTheme = useTheme();
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
@@ -84,7 +87,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
-
+    
     const styleMap = React.useMemo(() => {
         return buildStyleMap(theme);
     }, []);
@@ -100,9 +103,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         setLengthBeforeBlockArray(result);
     };
 
+    
+
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
             const updatedSegment = localSegment;
-            updatedSegment.highRisk = false;
+            if(updatedSegment.highRisk) {
+                updatedSegment.highRisk = false;
+                removeHighRiskValueFromSegment(segment.id);
+            }
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);

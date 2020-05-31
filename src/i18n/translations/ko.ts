@@ -220,6 +220,7 @@ export const ko: ResourceLanguage = {
       requestEvaluationWarning: '이미 존재하는 평가가 삭제되고 새로운 평가가 진행됩니다. 진행하시겠습니까?',
       showEvaluationDetail: '평가 상세보기',
       evaluationDetail: '평가 상세 정보',
+      evaluationStatus: '평가상태',
       openToRate: '전사상태 평가',
       selectModel: '모델 선택',
       rejected: '반려',

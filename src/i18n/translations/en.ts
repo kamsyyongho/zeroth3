@@ -218,6 +218,7 @@ export const en: ResourceLanguage = {
       requestEvaluationWarning: 'Existing evaluation will be deleted. Do you wish to proceed?',
       showEvaluationDetail: 'Show Evaluation Detail',
       evaluationDetail: 'Evaluation Detail',
+      evaluationStatus: 'Evaluation Progress',
       addTranscriber: 'Add transcriber',
       selectModel: 'Select Model',
       rejected: 'Rejected',

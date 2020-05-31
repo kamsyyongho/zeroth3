@@ -3,8 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +87,8 @@
       <workItem from="1590544347299" duration="303000" />
       <workItem from="1590545409375" duration="459000" />
       <workItem from="1590546321490" duration="5940000" />
-      <workItem from="1590634637364" duration="18680000" />
+      <workItem from="1590634637364" duration="23924000" />
+      <workItem from="1590892494063" duration="1471000" />
     </task>
     <servers />
   </component>
@@ -150,14 +156,15 @@
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/-80.-1080.1920.1080/1840.-1057.1920.1057/0.23.1792.1040@-80.-1080.1920.1080" timestamp="1589503773132" />
     <state x="0" y="23" width="960" height="1046" key="dock-window-3/0.23.1792.1046@0.23.1792.1046" timestamp="1589529619997" />
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/1840.-1057.1920.1057/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589533331096" />
-    <state x="1840" y="-1080" width="910" height="1080" key="dock-window-4" timestamp="1590717341533">
-      <screen x="1840" y="-1080" width="1920" height="1080" />
+    <state x="0" y="23" width="849" height="1047" key="dock-window-4" timestamp="1590892509178">
+      <screen x="0" y="23" width="1792" height="1047" />
     </state>
     <state x="-80" y="-1057" width="901" height="1047" key="dock-window-4/-80.-1057.1920.1057/1840.-1057.1920.1057/0.23.1792.1047@-80.-1057.1920.1057" timestamp="1590634640316" />
     <state x="1840" y="-1080" width="993" height="1080" key="dock-window-4/-80.-1080.1920.1080/1840.-1057.1920.1057/0.23.1792.1047@-80.-1080.1920.1080" timestamp="1590714702289" />
     <state x="1840" y="-1080" width="910" height="1080" key="dock-window-4/-80.-1080.1920.1080/1840.-1080.1920.1080/0.0.1792.1120@-80.-1080.1920.1080" timestamp="1590717341533" />
     <state x="1840" y="-1080" width="1920" height="1080" key="dock-window-4/-80.-1080.1920.1080/1840.-1080.1920.1080/0.23.1792.1047@-80.-1080.1920.1080" timestamp="1590717143080" />
-    <state x="0" y="0" width="927" height="1120" key="dock-window-4/0.23.1792.1047@0.23.1792.1047" timestamp="1590651785332" />
+    <state x="0" y="0" width="849" height="1120" key="dock-window-4/0.0.1792.1120@0.0.1792.1120" timestamp="1590736636096" />
+    <state x="0" y="23" width="849" height="1047" key="dock-window-4/0.23.1792.1047@0.23.1792.1047" timestamp="1590892509178" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1057.1920.1057/0.23.1792.1048/-80.-1057.1920.1057@-80.-1057.1920.1057" timestamp="1590463911183" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-4/1840.-1057.1920.1057/0.23.1792.1048/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590481327694" />
     <state x="0" y="0" width="3440" height="1440" key="dock-window-4/3440.-1057.1080.2537/880.-1057.2560.1057/0.23.3440.1360@0.23.3440.1360" timestamp="1590544005612" />
