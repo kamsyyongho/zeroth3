@@ -604,6 +604,47 @@ export class Models extends ParentApi {
     }
   }
 
+  async uploadSubGraphPath(
+      name: string,
+      path: string,
+      topGraphId: string,
+      isPublic: boolean,
+      isImmutable: boolean,
+  ): Promise<postSubGraphResult> {
+    // compile data
+    // query params
+    const params = {
+      name,
+      'top-graph-id': topGraphId,
+      public: isPublic,
+      immutable: isImmutable,
+      path,
+    };
+    // make the api call
+    const response: ApiResponse<
+        SubGraph,
+        ServerError
+        > = await this.apisauce.post(
+        this.getPathWithOrganization(`/models/subgraphs/path`), params);
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const subGraph = response.data as SubGraph;
+      return { kind: 'ok', subGraph };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
   /**
    * Begins training a model based on the selected method
    * @param projectId
