@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
+import CheckIcon from '@material-ui/icons/Check';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
@@ -18,12 +19,14 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
-import { Organization, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { Organization, SnackbarError, SNACKBAR_VARIANTS, User } from '../../types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 import { OrganizationPickerDialog } from './components/OrganizationPickerDialog';
+import { UsersCellPlainText } from '../IAM/components/users/UsersCellPlainText'
+import Textfield from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -75,6 +78,12 @@ export function Profile() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [pickOrganizationOpen, setPickOrganizationOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
+  const [profile, setProfile] = React.useState<User>();
+  const [isNoteDisabled, setIsNoteDisabled] = React.useState(true);
+  const [isPhoneDisabled, setIsPhoneDisabled] = React.useState(true);
+  const [isChanged, setIsChanged] = React.useState(false);
+  const [note, setNote] = React.useState('');
+  const [phone, setPhone] = React.useState('');
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -114,6 +123,42 @@ export function Profile() {
       }
       setOrganizationsLoading(false);
     }
+  };
+
+  const getUserProfile = async () => {
+    if (api?.user && user?.name) {
+      setPasswordResetLoading(true);
+      const response = await api.user.getProfile(user.name);
+      if (response.kind === 'ok') {
+        setProfile(response.user);
+        setPhone(response.user.phone);
+        setNote(response.user.note);
+      } else {
+        log({
+          file: `Profile.tsx`,
+          caller: `getOrganizations - failed to get organizations`,
+          value: response,
+          important: true,
+        });
+      }
+      setPasswordResetLoading(false);
+    }
+  };
+
+  const handleBlur = (callBack: any) => {
+    const updatedProfile = profile;
+    const changedProfile = {phone, note}
+    Object.assign(updatedProfile, changedProfile);
+    setProfile(updatedProfile);
+    setIsChanged(true);
+    callBack(true);
+  };
+
+  const handleChange = (changedData: any) => {
+    const updateProfile = profile;
+    Object.assign(updateProfile, changedData);
+    setProfile(updateProfile);
+    setIsChanged(true);
   };
 
   const resetPassword = async () => {
@@ -160,6 +205,9 @@ export function Profile() {
     if (currentOrganizationId && !organizations) {
       getOrganizations();
     }
+    if(!profile) {
+      getUserProfile();
+    }
   }, []);
 
   // to get the currently selected organization's info
@@ -197,11 +245,42 @@ export function Profile() {
         </Grid>
         <Grid item >
           <Typography color="textPrimary" gutterBottom >
-            {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
+            {translate('profile.fullName', { family: profile?.lastName || '', given: profile?.firstName || '' })}
           </Typography>
-          <Typography color="textSecondary" >
-            {`${preferredUsername}  •  ${email}`}
+          <Typography color="textSecondary" style={{ marginBottom: "15px" }} >
+            {`${preferredUsername}  •  ${profile?.email}`}
           </Typography>
+          <Grid
+              xs={8}
+              container
+              direction='column'
+              justify='flex-start'
+              alignItems='center'
+              alignContent='center'
+              spacing={2}
+              style={{ marginTop: '5px;'  }}
+          >
+            <Textfield
+                inputProps={{ style: {textAlign: 'center', width: 'fitContent'} }}
+                placeholder={phone ? phone : '-'}
+                value={phone ? phone : ''}
+                color="secondary"
+                onClick={() => setIsPhoneDisabled(false)}
+                onBlur={() => handleBlur(setIsPhoneDisabled)}
+                disabled={isPhoneDisabled}
+                label={translate("forms.phone")}
+                onChange={(event) => setPhone(event.target.value)} />
+            <Textfield
+                inputProps={{ style: {textAlign: 'center', width: 'fitContent'} }}
+                placeholder={note ? note : '-'}
+                value={note ? note : ''}
+                color="secondary"
+                onClick={() => setIsNoteDisabled(false)}
+                onBlur={() => handleBlur(setIsNoteDisabled)}
+                disabled={isNoteDisabled}
+                label={translate("TDP.memo")}
+                onChange={(event) => setNote(event.target.value)} />
+          </Grid>
         </Grid>
       </Grid>
     </CardContent>
@@ -221,6 +300,22 @@ export function Profile() {
           /> : <VpnKeyIcon />}
       >
         {translate('profile.resetPassword')}
+      </Button>
+      <Button
+          variant='contained'
+          color='secondary'
+          size="small"
+          onClick={confirmReset}
+          disabled={!isChanged}
+          startIcon={passwordResetLoading ?
+              <MoonLoader
+                  sizeUnit={"px"}
+                  size={15}
+                  color={theme.palette.secondary.main}
+                  loading={true}
+              /> : <CheckIcon />}
+      >
+        {translate("common.submit")}
       </Button>
     </CardActions>
   </Grid>;

@@ -1,4 +1,4 @@
-import { DataSet } from '../../../types';
+import { DataSet, User } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 /////////////
@@ -6,6 +6,10 @@ import { GeneralApiProblem } from './api-problem.types';
 /////////////
 
 export type resetPasswordResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type getProfile = 
+    | { kind: 'ok', user: User }
+    | GeneralApiProblem;
 
 export type getDataSetsToFetchFromResult =
   | { kind: 'ok'; dataSets: DataSet[] }

@@ -1,13 +1,15 @@
 import { ApisauceInstance } from 'apisauce';
-import { DataSet } from '../../../types';
+import { DataSet, Role, User as UserType } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getDataSetsToFetchFromResult,
   ProblemKind,
   resetPasswordResult,
   ServerError,
+  getProfile,
 } from '../types';
 import { ParentApi } from './parent-api';
+
 
 /**
  * Manages all user requests to the API.
@@ -65,6 +67,30 @@ export class User extends ParentApi {
     try {
       const dataSets = response.data as DataSet[];
       return { kind: 'ok', dataSets };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async getProfile (name: string): Promise<getProfile> {
+    const params = {name};
+    const config = {params};
+    const response = await this.apisauce.get<User, ServerError>(
+        '/profile',
+        params,
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const user = response.data as UserType;
+      return { kind: 'ok', user };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
