@@ -48,7 +48,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     btnCell: {
       width: '500px'
-    }
+    },
+    inlineBlockProgressBar: {
+      display: 'inline-block',
+      borderTop: '5px',
+    },
   }));
 
 export function SetItem(props: SetItemProps) {
@@ -231,24 +235,6 @@ export function SetItem(props: SetItemProps) {
             <Typography>{dataSet.rejected}</Typography>
           </TableCell>
           <TableCell>
-            {
-               !dataSet.evaluationProgress
-                  ?
-                  <TrainingChip progress={-1} />
-                  :
-                   dataSet?.evaluationProgress < 100
-                   ?
-                  <>
-                    <Typography className={classes.processedText} >
-                      {`${dataSet.evaluationProgress} %`}
-                    </Typography>
-                    <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
-                  </>
-                   :
-                   null
-            }
-          </TableCell>
-          <TableCell>
             <Tooltip
                 placement='top'
                 title={<Typography>{translate('SET.downloadSet')}</Typography>}
@@ -292,22 +278,46 @@ export function SetItem(props: SetItemProps) {
               </IconButton>
             </Tooltip>
             {
-              dataSet.evaluationProgress === null || !dataSet?.evaluationUrl
+              !dataSet.evaluationProgress
                   ?
-                  <IconButton color='primary' disabled={true}>
-                    <LaunchIcon />
-                  </IconButton>
+                  <TrainingChip progress={-1} />
                   :
-                  <Tooltip
-                      placement='top'
-                      title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
-                      arrow={true}>
-                    <IconButton color='primary'
-                                onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
-                      <LaunchIcon />
-                    </IconButton>
-                  </Tooltip>
+                  dataSet?.evaluationProgress < 100
+                      ?
+                      <div className={classes.inlineBlockProgressBar}>
+                        <Typography className={classes.processedText} >
+                          {`${dataSet.evaluationProgress} %`}
+                        </Typography>
+                        <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
+                      </div>
+                      :
+                      <Tooltip
+                          placement='top'
+                          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
+                          arrow={true}>
+                        <IconButton color='primary'
+                                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
+                          <LaunchIcon />
+                        </IconButton>
+                      </Tooltip>
             }
+            {/*{*/}
+            {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
+            {/*      ?*/}
+            {/*      <IconButton color='primary' disabled={true}>*/}
+            {/*        <LaunchIcon />*/}
+            {/*      </IconButton>*/}
+            {/*      :*/}
+            {/*      <Tooltip*/}
+            {/*          placement='top'*/}
+            {/*          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}*/}
+            {/*          arrow={true}>*/}
+            {/*        <IconButton color='primary'*/}
+            {/*                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>*/}
+            {/*          <LaunchIcon />*/}
+            {/*        </IconButton>*/}
+            {/*      </Tooltip>*/}
+            {/*}*/}
             <IconButton
                 color='primary'
                 size='medium'

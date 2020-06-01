@@ -3,9 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/SubgraphFormDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/SubgraphFormDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/models.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/models.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/models.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +83,7 @@
       <workItem from="1590545409375" duration="459000" />
       <workItem from="1590546321490" duration="5940000" />
       <workItem from="1590634637364" duration="23924000" />
-      <workItem from="1590892494063" duration="18039000" />
+      <workItem from="1590892494063" duration="20971000" />
     </task>
     <servers />
   </component>
