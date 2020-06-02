@@ -52,7 +52,7 @@ interface SetDetailProps {
     projectId: string;
 }
 
-export function SetDetail(props: SetDetailProps) {
+export function TranscribingSetDetail(props: SetDetailProps) {
     const classes = useStyles();
     const { translate, formatDate } = React.useContext(I18nContext);
     const {
@@ -208,57 +208,6 @@ export function SetDetail(props: SetDetailProps) {
                     alignItems='flex-start'
                     justify='flex-start'
                 >
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.websocketCloseStatus')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{webSocketCloseStatus}</Typography>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.websocketCloseReason')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{webSocketCloseReason}</Typography>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.transferredBytes')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{transferredBytes}</Typography>*/}
-                    {/*</Grid>*/}
                     <Grid
                         container
                         item

@@ -7,12 +7,12 @@ import { DataSet, PaginatedResults, ModelConfig, GenericById, TranscriberStats }
 import log from '../../../util/log/logger';
 import { Forbidden } from '../../shared/Forbidden';
 import { AddTranscriberDialog } from '../set/components/AddTranscriberDialog';
-import { SetTable } from '../set/components/SetTable';
 import { EvaluationDetailModal } from '../set/components/EvaluationDetailModal';
 import { ConfirmationDialog } from "../TDP/components/Confirmation";
 import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
 import { useSnackbar } from 'notistack';
 import { ServerError } from '../../../services/api/types/api-problem.types';
+import { TranscribingSetTable } from './components/TranscribingSetTable';
 
 
 interface TranscribingSetProps {
@@ -190,7 +190,7 @@ export default function TranscribingSet(props: TranscribingSetProps) {
             {/*    closeEvaluationDetail={closeEvaluationDetail}*/}
             {/*    open={isShowEvaluationDetail}/>*/}
             {setsLoading ? <BulletList /> :
-                <SetTable
+                <TranscribingSetTable
                     projectId={projectId}
                     dataSets={dataSets}
                     openTranscriberDialog={handleTranscriberEditClick}

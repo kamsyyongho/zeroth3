@@ -203,6 +203,9 @@ export const en: ResourceLanguage = {
     },
     transcribingSet: {
       transcribingSet: 'Transcribing Set',
+      setName: 'SET Name',
+      wordCount: 'Word Count',
+      highrisk: 'High Risk',
     },
     SET: {
       SET: 'SET',

@@ -41,7 +41,7 @@
     "history": "^4.10.1",
     "i18next": "^17.1.0",
     "i18next-browser-languagedetector": "^4.0.0",
-    "keycloak-js": "9.0.2",
+    "keycloak-js": "10.0.1",
     "localforage": "^1.7.3",
     "match-sorter": "^4.0.2",
     "material-ui-dropzone": "^2.4.7",

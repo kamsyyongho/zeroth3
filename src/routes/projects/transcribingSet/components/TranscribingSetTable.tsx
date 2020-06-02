@@ -11,7 +11,7 @@ import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { DataSet } from '../../../../types';
-import { SetItem } from './SetItem';
+import { TranscribingSetItem } from './TranscribingSetItem';
 
 const FULL_ROW_COL_SPAN = 4;
 
@@ -93,7 +93,7 @@ export function TranscribingSetTable(props: SetTableProps) {
     key={dataSet.id}
   >
     {index > 0 && renderRowFiller}
-    <SetItem
+    <TranscribingSetItem
       projectId={projectId}
       dataSet={dataSet}
       dataSetIndex={index}
@@ -110,13 +110,19 @@ export function TranscribingSetTable(props: SetTableProps) {
         {translate('forms.name')}
       </TableCell>
       <TableCell>
+        {translate('transcribingSet.wordCount')}
+      </TableCell>
+      <TableCell>
+        {translate('transcribingSet.highrisk')}
+      </TableCell>
+      <TableCell>
         {translate('common.progress')}
       </TableCell>
       <TableCell>
-        {translate('IAM.transcribers')}
+        {translate('SET.rejected')}
       </TableCell>
       <TableCell>
-        {translate('SET.rejected')}
+        {translate('IAM.transcribers')}
       </TableCell>
       <TableCell>
         <FormControl className={classes.formControl}>

@@ -21,8 +21,8 @@ import {DataSet, VoiceData} from '../../../../types';
 import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
-import {SetDetail} from "./SetDetail";
-import { EvaluationDetailModal } from './EvaluationDetailModal';
+import { TranscribingSetDetail } from "./TranscribingSetDetail";
+import { EvaluationDetailModal } from '../../set/components/EvaluationDetailModal';
 import { TrainingChip } from '../../../shared/TrainingChip';
 
 interface SetItemProps {
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
   }));
 
-export function SetItem(props: SetItemProps) {
+export function TranscribingSetItem(props: SetItemProps) {
   const { projectId, dataSet, dataSetIndex, openTranscriberDialog, openRequestEvaluationDialog, setType } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
@@ -235,6 +235,12 @@ export function SetItem(props: SetItemProps) {
             <Typography>{dataSet.rejected}</Typography>
           </TableCell>
           <TableCell>
+            <Typography>{dataSet.rejected}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{dataSet.rejected}</Typography>
+          </TableCell>
+          <TableCell>
             <Tooltip
                 placement='top'
                 title={<Typography>{translate('SET.downloadSet')}</Typography>}
@@ -329,7 +335,7 @@ export function SetItem(props: SetItemProps) {
         </TableRow>
         {expanded &&
         subSets.map((voiceData: VoiceData) =>
-            <SetDetail key={`setDetail-${voiceData.id}`}
+            <TranscribingSetDetail key={`setDetail-${voiceData.id}`}
                        row={voiceData}
                        setDetailLoading={setDetailLoading}
                        projectId={projectId} />

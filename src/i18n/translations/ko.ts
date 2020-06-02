@@ -202,8 +202,11 @@ export const ko: ResourceLanguage = {
       originalFilename: '파일 이름',
       wordCount: '글자 수',
     },
-    TDPSET: {
-      TDPSET: 'TDP 세트',
+    transcribingSet: {
+      transcribingSet: 'TDP 세트',
+      setName: '세트 이름',
+      wordCount: '글자 수',
+      highrisk: 'High Risk',
     },
     SET: {
       SET: '전사세트',
