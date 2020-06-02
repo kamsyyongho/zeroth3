@@ -20,6 +20,8 @@ import { Header } from './routes/shared/header/Header';
 import { NotFound } from './routes/shared/NotFound';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
+import { Admin } from './routes/admin/Admin';
+import { Transcribers } from './routes/transcriber/Transcribers';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 
 const history = createBrowserHistory();
@@ -82,6 +84,8 @@ function App() {
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
+          <Route path={PATHS.admin.to} component={withErrorBoundary(Admin, PageErrorFallback)} />
+          <Route path={PATHS.transcribers.to} component={withErrorBoundary(Transcribers, PageErrorFallback)} />
           <Route component={NotFound} />
         </Switch>
       </Router>

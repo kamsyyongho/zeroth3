@@ -64,6 +64,8 @@ export const en: ResourceLanguage = {
       models: 'Models',
       editor: 'Editor',
       modelTraining: 'Model Training',
+      admin: 'Admmin',
+      transcribers: 'Transcribers',
     },
     menu: {
       login: 'Login',

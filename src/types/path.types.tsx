@@ -27,6 +27,8 @@ interface Paths {
   models: Path;
   modelTraining: Path;
   editor: Path;
+  admin: Path;
+  transcribers: Path;
 }
 
 export const PATHS: { [x: string]: Path; } = {
@@ -60,6 +62,16 @@ export const PATHS: { [x: string]: Path; } = {
     to: '/training',
     title: 'modelTraining',
     Icon: props => <ICONS.Training {...props} />,
+  },
+  admin: {
+    to: '/admin',
+    title: 'admin',
+    Icon: props => <ICONS.IAM {...props} />
+  },
+  transcribers: {
+    to: '/transcribers',
+    title: 'transcribers',
+    Icon: props => <ICONS.IAM {...props} />
   },
   editor: {
     to: '/editor',
