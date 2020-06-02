@@ -201,6 +201,9 @@ export const en: ResourceLanguage = {
       originalFilename: 'Filename',
       wordCount: 'Word Count',
     },
+    transcribingSet: {
+      transcribingSet: 'Transcribing Set',
+    },
     SET: {
       SET: 'SET',
       deleteAll: 'Delete All',

@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/routes/projects/transcribingSet/TranscribingSet.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/projects/transcribingSet/components/TranscribingSetTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersCellPlainText.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersCellPlainText.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/user.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/user.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +39,7 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/routes/projects/transcribingSet/components" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -51,6 +52,9 @@
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/routes/projects/transcribingSet/components" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/routes/projects/set/components" />
     </key>
@@ -85,7 +89,7 @@
       <workItem from="1590545409375" duration="459000" />
       <workItem from="1590546321490" duration="5940000" />
       <workItem from="1590634637364" duration="23924000" />
-      <workItem from="1590892494063" duration="31424000" />
+      <workItem from="1590892494063" duration="36409000" />
     </task>
     <servers />
   </component>
@@ -136,9 +140,14 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="1840" y="-1080" width="1013" height="1080" key="dock-window-1" timestamp="1590989132512">
-      <screen x="1840" y="-1080" width="1920" height="1080" />
+    <state x="-2560" y="-43" width="1294" height="1080" key="dock-window-1" timestamp="1591055099862">
+      <screen x="-2560" y="-43" width="2560" height="1080" />
     </state>
+    <state x="0" y="0" width="1351" height="1080" key="dock-window-1/-1080.23.1080.2537/0.23.2560.1000@-1080.23.1080.2537" timestamp="1591017717723" />
+    <state x="-2560" y="-43" width="1294" height="1080" key="dock-window-1/0.0.1080.2560/-2560.-43.2560.1080/-3440.1037.3440.1440@-3440.1037.3440.1440" timestamp="1591055099862" />
+    <state x="0" y="0" width="945" height="1120" key="dock-window-1/0.0.1792.1120@0.0.1792.1120" timestamp="1590998882077" />
+    <state x="-2560" y="-43" width="1351" height="1080" key="dock-window-1/0.23.1080.2488/-2560.-20.2560.1057/-3440.1037.3440.1440@-3440.1037.3440.1440" timestamp="1591011262906" />
+    <state x="-2560" y="-43" width="1351" height="1080" key="dock-window-1/0.23.1080.2488/-2560.-20.2560.1057/-3440.1060.3440.1417@-3440.1060.3440.1417" timestamp="1591003377666" />
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-1/1840.-1057.1920.1057/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589430754314" />
     <state x="1840" y="-1080" width="1920" height="1080" key="dock-window-1/1840.-1057.1920.1057/0.23.1792.1048/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590988997563" />
     <state x="1840" y="-1080" width="974" height="1080" key="dock-window-1/1840.-1057.1920.1057/0.23.1792.1064/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1590966726603" />
