@@ -48,6 +48,9 @@ export const en: ResourceLanguage = {
       confirmDelete: 'Do you want to delete the selected data?',
       userId: 'User ID',
       search: 'Search',
+      summary: 'Summary',
+      confirm: '승인하기',
+      reject: '반려하기',
     },
     table: {
       page: 'Page',
@@ -163,6 +166,13 @@ export const en: ResourceLanguage = {
       length: 'Length',
       filePath: 'File path',
       fileUrl: 'File URL',
+    },
+    admin: {
+      pageTitle: '관리자',
+
+    },
+    transcribersTab: {
+
     },
     IAM: {
       users: 'Users',

@@ -1,340 +1,115 @@
-import {Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {Button, TableBody, TableCell, Typography} from '@material-ui/core';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import AddIcon from '@material-ui/icons/Add';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import LaunchIcon from '@material-ui/icons/Launch';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import EditIcon from '@material-ui/icons/Edit';
-import RateReviewIcon from '@material-ui/icons/RateReview'
-import { useSnackbar } from 'notistack';
-import MoonLoader from 'react-spinners/MoonLoader';
+import Select from '@material-ui/core/Select';
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
-import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { ServerError } from '../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../theme';
-import {DataSet, VoiceData} from '../../../types';
-import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { ProgressBar } from '../../shared/ProgressBar';
-import {SetDetail} from "../../projects/set/components/SetDetail";
-import { EvaluationDetailModal } from '../../projects/set/components/EvaluationDetailModal';
-import { TrainingChip } from '../../shared/TrainingChip';
+import { DataSet } from '../../../types';
+import { AdminTableItem } from './AdminTableItem';
 
-interface SetItemProps {
+const FULL_ROW_COL_SPAN = 4;
+
+interface AdminTableProps {
+    dataSets: DataSet[];
     projectId: string;
-    dataSet: DataSet;
-    dataSetIndex: number;
-    setType: string;
     openTranscriberDialog: (dataSetIndex: number) => void;
-    openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
     // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
-        processedText: {
-            color: theme.palette.primary.main,
+        table: {
+            backgroundColor: theme.palette.background.paper,
         },
-        tableRow: {
-            borderWidth: 1,
-            borderColor: theme.table.border,
-            border: 'solid',
-            borderCollapse: undefined,
+        tableHeader: {
+            backgroundColor: theme.palette.background.default,
         },
-        btnCell: {
-            width: '500px'
+        tableFiller: {
+            padding: 3,
+            backgroundColor: theme.palette.background.default,
+            borderWidth: 0,
         },
-        inlineBlockProgressBar: {
-            display: 'inline-block',
-            borderTop: '5px',
+        formControl: {
+            margin: theme.spacing(1),
+            float: 'right',
+            minWidth: 150,
+            display: 'flex',
+            flexWrap: 'wrap',
+            flexDirection: 'row',
         },
+        filterBtn: {
+            height: 45,
+        }
     }));
 
-export function AdminTableItem(props: SetItemProps) {
-    const { projectId, dataSet, dataSetIndex, openTranscriberDialog, openRequestEvaluationDialog, setType } = props;
-    const { transcribers, total, processed, name } = dataSet;
-    const numberOfTranscribers = transcribers.length;
-    const api = React.useContext(ApiContext);
-    const { enqueueSnackbar } = useSnackbar();
+export function AdminTable(props: AdminTableProps) {
+    const { dataSets, projectId, openTranscriberDialog } = props;
     const { translate } = React.useContext(I18nContext);
-    const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
-    const [downloadLink, setDownloadLink] = React.useState('');
-    const [expanded, setExpanded] = React.useState(false);
-    const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
-    const [setDetailLoading, setSetDetailLoading] = React.useState(false);
-    const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
-    const [setTypeParam, setSetTypeParam] = React.useState(setType);
-
     const classes = useStyles();
-    const theme: CustomTheme = useTheme();
 
-    const onClickAssignTranscriber = () => openTranscriberDialog(dataSetIndex);
+    const renderRowFiller = (<TableRow >
+        <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
+    </TableRow>);
 
-    const startDownload = (url: string) => window.open(url);
+    const renderSets = () => dataSets.map((dataSet, index) => (<React.Fragment
+        key={dataSet.id}
+    >
+        {index > 0 && renderRowFiller}
+        <AdminTableItem
+            projectId={projectId}
+            dataSet={dataSet}
+            dataSetIndex={index}
+            openTranscriberDialog={openTranscriberDialog}
+            // openEvaluationDetail={openEvaluationDetail}
+        />
+    </React.Fragment>));
 
-    const createTrainingSet = async () => {
-        setIsCreateTrainingSetLoading(true);
-        if(api?.dataSet) {
-            let serverError: ServerError | undefined;
-            const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
+    const renderHeader = () => (<TableHead className={classes.tableHeader}>
+        <TableRow>
+            <TableCell>
+                {translate('forms.name')}
+            </TableCell>
+            <TableCell>
+                {translate('common.progress')}
+            </TableCell>
+            <TableCell>
+                {translate('IAM.transcribers')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.rejected')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.rejected')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.rejected')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.rejected')}
+            </TableCell>
+            <TableCell>
+            </TableCell>
+        </TableRow>
+    </TableHead>);
 
-            if(response.kind === 'ok') {
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-            } else {
-                log({
-                    file: 'SetItem.tsx',
-                    caller: 'createTrainingSet - failed to send post request',
-                    value: response,
-                    important: true,
-                });
-                serverError = response.serverError;
-                let errorMessageText = translate('common.error');
-                if(serverError?.message) {
-                    errorMessageText = serverError.message;
-                }
-                enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
-            }
-        }
-        setIsCreateTrainingSetLoading(false);
-    };
-
-    const handleEvaluateClick = () => {
-        if(dataSet?.evaluationUrl) {
-            openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
-        } else {
-            openRequestEvaluationDialog(translate('SET.requestEvaluationMsg'), dataSetIndex);
-        }
-    };
-
-    const getDownloadLink = async () => {
-        if (downloadLink) {
-            startDownload(downloadLink);
-            return;
-        }
-        if (api?.dataSet && !downloadLinkPending) {
-            setDownloadLinkPending(true);
-            setDownloadLink('');
-            let serverError: ServerError | undefined;
-            const response = await api.dataSet.getDownloadLink(projectId, dataSet.id);
-            if (response.kind === 'ok') {
-                startDownload(response.url);
-            } else {
-                log({
-                    file: `SetItem.tsx`,
-                    caller: `getDownloadLink - failed to get download link`,
-                    value: response,
-                    important: true,
-                });
-                serverError = response.serverError;
-                let errorMessageText = translate('common.error');
-                if (serverError?.message) {
-                    errorMessageText = serverError.message;
-                }
-                enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
-            }
-            setDownloadLinkPending(false);
-        }
-    };
-
-    const getSetDetail = async () => {
-        if(api?.dataSet) {
-            const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
-            if(response.kind === "ok") {
-                setSubSets(response.subSets.content);
-                return true;
-            }
-        }
-    };
-
-    const openSetDetail = async () => {
-        if(subSets.length) {
-            setExpanded(!expanded);
-            return;
-        }
-        const subSetsFromRequest = await getSetDetail();
-        if(subSetsFromRequest) {
-            setExpanded(!expanded);
-        }
-    };
-
-    // must be a number from 0 to 100
-    const progress = processed / total * 100;
-
-    let processedText = (
-        <Typography className={classes.processedText} >
-            {processed}
-            <Typography component='span' color='textPrimary' >
-                {` / ${total}`}
-            </Typography>
-        </Typography>
-    );
-
-    if (!total || isNaN(progress)) {
-        processedText = (<Typography color='textSecondary' >
-            {translate('common.noData')}
-        </Typography>);
-    }
-
-    const renderTranscriberEdit = () => {
-        const transcriberText = numberOfTranscribers ?
-            (translate('SET.numberTranscribers', { count: numberOfTranscribers })) :
-            (translate('SET.addTranscriber'));
-        return (
-            <Grid
-                container
-                wrap='nowrap'
-                direction='row'
-                alignContent='center'
-                alignItems='center'
-                justify='flex-start'
-                spacing={1}
-            >
-                <Typography color={numberOfTranscribers ? 'textPrimary' : 'textSecondary'}>
-                    {transcriberText}
-                </Typography>
-                <IconButton
-                    color='primary'
-                    size='small'
-                    edge='end'
-                    aria-label="submit"
-                    onClick={onClickAssignTranscriber}
-                >
-                    {numberOfTranscribers ? <EditIcon /> : <AddIcon />}
-                </IconButton>
-            </Grid>
-        );
-    };
-
-    React.useEffect(() => {
-        if(expanded) {
-            getSetDetail();
-        }
-    },[setType]);
+    const renderNoResults = () => (<TableRow >
+        <TableCell colSpan={FULL_ROW_COL_SPAN}>
+            <Typography align='center' >{translate('table.noResults')}</Typography>
+        </TableCell>
+    </TableRow>);
 
     return (
-        <React.Fragment>
-            <TableRow
-                className={classes.tableRow}
-            >
-                <TableCell>
-                    <Typography>{name}</Typography>
-                </TableCell>
-                <TableCell>
-                    {processedText}
-                    <ProgressBar value={progress} maxWidth={200} />
-                </TableCell>
-                <TableCell>
-                    {renderTranscriberEdit()}
-                </TableCell>
-                <TableCell>
-                    <Typography>{dataSet.rejected}</Typography>
-                </TableCell>
-                <TableCell>
-                    <Tooltip
-                        placement='top'
-                        title={<Typography>{translate('SET.downloadSet')}</Typography>}
-                        arrow={true}
-                    >
-                        <IconButton
-                            color='primary'
-                            onClick={getDownloadLink}
-                        >
-                            {downloadLinkPending ? <MoonLoader
-                                sizeUnit={"px"}
-                                size={15}
-                                color={theme.palette.primary.main}
-                                loading={true}
-                            /> : <CloudDownloadIcon />}
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip
-                        placement='top'
-                        title={<Typography>{translate('SET.createTrainingSet')}</Typography>}
-                        arrow={true}
-                    >
-                        <IconButton
-                            color='primary'
-                            onClick={createTrainingSet}>
-                            {isCreateTrainingSetLoading ? <MoonLoader
-                                sizeUnit={"px"}
-                                size={15}
-                                color={theme.palette.primary.main}
-                                loading={true}
-                            /> : <AddCircleIcon />}
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip
-                        placement='top'
-                        title={<Typography>{translate('SET.requestEvaluation')}</Typography>}
-                        arrow={true}
-                    >
-                        <IconButton color='primary' onClick={handleEvaluateClick}>
-                            <RateReviewIcon />
-                        </IconButton>
-                    </Tooltip>
-                    {
-                        !dataSet.evaluationProgress
-                            ?
-                            <TrainingChip progress={-1} />
-                            :
-                            dataSet?.evaluationProgress < 100
-                                ?
-                                <div className={classes.inlineBlockProgressBar}>
-                                    <Typography className={classes.processedText} >
-                                        {`${dataSet.evaluationProgress} %`}
-                                    </Typography>
-                                    <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
-                                </div>
-                                :
-                                <Tooltip
-                                    placement='top'
-                                    title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
-                                    arrow={true}>
-                                    <IconButton color='primary'
-                                                onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
-                                        <LaunchIcon />
-                                    </IconButton>
-                                </Tooltip>
-                    }
-                    {/*{*/}
-                    {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
-                    {/*      ?*/}
-                    {/*      <IconButton color='primary' disabled={true}>*/}
-                    {/*        <LaunchIcon />*/}
-                    {/*      </IconButton>*/}
-                    {/*      :*/}
-                    {/*      <Tooltip*/}
-                    {/*          placement='top'*/}
-                    {/*          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}*/}
-                    {/*          arrow={true}>*/}
-                    {/*        <IconButton color='primary'*/}
-                    {/*                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>*/}
-                    {/*          <LaunchIcon />*/}
-                    {/*        </IconButton>*/}
-                    {/*      </Tooltip>*/}
-                    {/*}*/}
-                    <IconButton
-                        color='primary'
-                        size='medium'
-                        aria-label="open"
-                        onClick={openSetDetail}>
-                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
-                </TableCell>
-            </TableRow>
-            {expanded &&
-            subSets.map((voiceData: VoiceData) =>
-                <SetDetail key={`setDetail-${voiceData.id}`}
-                           row={voiceData}
-                           setDetailLoading={setDetailLoading}
-                           projectId={projectId} />
-            )
-            }
-        </React.Fragment>
+        <Table className={classes.table}>
+            {renderHeader()}
+            <TableBody>
+                {(!dataSets.length) ? renderNoResults() : renderSets()}
+            </TableBody>
+        </Table>
     );
 }

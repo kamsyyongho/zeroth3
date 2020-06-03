@@ -1,6 +1,8 @@
 import Paper from '@material-ui/core/Paper';
-import { Card, CardContent, CardHeader, Container, Grid, Typography } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
 import Tab from '@material-ui/core/Tab';
@@ -12,18 +14,27 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { ProblemKind } from '../../services/api/types';
-import { BooleanById, DataSet, ModelConfig, PaginatedResults, Project, TranscriberStats } from '../../types';
+import {
+    AcousticModel,
+    DataSet,
+    LanguageModel,
+    ModelConfig,
+    PATHS,
+    Project,
+    SubGraph,
+    TopGraph,
+    BooleanById,
+    PaginatedResults,
+    TranscriberStats } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
+import { AdminTable } from './components/AdminTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
-
-const STARTING_TAB_INDEX = 0;
-enum TAB_INDEX {
-    TDP,
-    SET,
-}
+import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
+import { NotFound } from '../shared/NotFound';
+import { CustomTheme } from '../../theme/index';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -32,306 +43,145 @@ const useStyles = makeStyles((theme) =>
         },
         card: {
             backgroundColor: theme.palette.background.default,
+            justifyContent: 'flex-start',
         },
         cardContent: {
+            marginLeft: 10,
             padding: 0,
+        },
+        infoBox: {
+            minHeight: 180,
+        },
+        boxSpacing: {
+            marginRight: theme.spacing(1),
+        },
+        apiHeading: {
+            minWidth: 75,
+            margin: theme.spacing(1),
+        },
+        apiInfo: {
+            minWidth: 250,
+            backgroundColor: theme.palette.grey[200],
+        },
+        refreshButton: {
+            marginTop: theme.spacing(1),
+        },
+        textField: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
         },
     }),
 );
 
-export type CheckedSubGraphById = BooleanById;
-
-interface AdminProps {
-    projectId: string;
-}
-
-export function Admin({ match }: RouteComponentProps<AdminProps>) {
-    const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
-    const [refreshCounterForSet, setRefreshCounterForSet] = React.useState(0);
+export function Admin() {
+    //temporary hardcoded projectId for setting up dummy component
+    const projectId = "845ad229-580f-449f-9368-241e2ddf2d64"
     const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
     const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
-
-    const classes = useStyles();
-
-    /** used to prevent tabs from rendering before they should be displayed */
-    const tabsThatShouldRender = React.useMemo<Set<number>>(() => new Set([activeTab]), []);
-
-
-
-
-
-
-
-
-
-    const { projectId } = match.params;
+    // const { projectId } = match.params;
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const history = useHistory();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-    const [isValidId, setIsValidId] = React.useState(true);
     const [isValidProject, setIsValidProject] = React.useState(true);
     const [projectLoading, setProjectLoading] = React.useState(true);
     const [project, setProject] = React.useState<Project | undefined>();
     const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
-    const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
-    const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
-    const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
-    const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
     const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
     const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
-    const [updateSecretLoading, setUpdateSecretLoading] = React.useState(false);
-    const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
-    const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
-    const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
-    const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
-    const [dialogOpen, setDialogOpen] = React.useState(false);
-    const [hideBackdrop, setHideBackdrop] = React.useState(false);
+    const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
+    const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
+    const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
+
+    const theme: CustomTheme = useTheme();
+    const classes = useStyles();
 
 
-    const openDialog = (hideBackdrop = false) => {
-        setHideBackdrop(hideBackdrop);
-        setDialogOpen(true);
+    const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
+        setDataSets((prevDataSets) => {
+            const updatedDataSets = [...prevDataSets];
+            updatedDataSets.splice(dataSetIndex, 1, updatedDataSet);
+            return updatedDataSets;
+        });
     };
 
-    const closeDialog = () => {
-        setHideBackdrop(false);
-        setDialogOpen(false);
+    const openTranscriberDialog = () => setTranscribersDialogOpen(true);
+
+    const handleTranscriberEditClick = (dataSetIndex: number) => {
+        setSelectedDataSet(dataSets[dataSetIndex]);
+        setSelectedDataSetIndex(dataSetIndex);
+        openTranscriberDialog();
+    };
+
+    const closeTranscriberDialog = () => {
+        setTranscribersDialogOpen(false);
+        setSelectedDataSet(undefined);
+        setSelectedDataSetIndex(undefined);
     };
 
     const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
     const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
     const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
-    /**
-     * navigates to the the model config page
-     * - passes the project to prevent the need for unnecessary loads
-     */
-    const handleModelConfigClick = () => {
-        if (!project) return;
-        // to store props that will be used on the next page
-        const propsToSet = { project, modelConfigs, topGraphs, subGraphs, languageModels, acousticModels };
-        setNavigationProps(propsToSet);
-        PATHS.modelConfig.function && history.push(PATHS.modelConfig.function(project.id));
-    };
-
-    const updateSecret = async () => {
-        if (api?.projects && project) {
-            setProject({ ...project, apiSecret: '' });
-            setUpdateSecretLoading(true);
-            const response = await api.projects.updateSecret(projectId);
+    const getProject = async () => {
+        if (api?.projects) {
+            const response = await api.projects.getProject(projectId);
             if (response.kind === 'ok') {
                 setProject(response.project);
+                setIsValidProject(true);
+            } else if (response.kind === ProblemKind["not-found"]) {
+                log({
+                    file: `Admin.tsx`,
+                    caller: `getProject - project does not exist`,
+                    value: response,
+                    important: true,
+                });
+                setIsValidProject(false);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `updateSecret - failed to update secret`,
+                    caller: `getProject - failed to get project`,
                     value: response,
                     important: true,
                 });
             }
-            setUpdateSecretLoading(false);
-        }
-    };
-
-    React.useEffect(() => {
-        const getProject = async () => {
-            if (api?.projects) {
-                const response = await api.projects.getProject(projectId);
-                if (response.kind === 'ok') {
-                    setProject(response.project);
-                } else if (response.kind === ProblemKind["not-found"]) {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getProject - project does not exist`,
-                        value: response,
-                        important: true,
-                    });
-                    setIsValidProject(false);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getProject - failed to get project`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setProjectLoading(false);
-            }
-        };
-        const getModelConfigs = async () => {
-            if (api?.modelConfig) {
-                const response = await api.modelConfig.getModelConfigs(projectId);
-                if (response.kind === 'ok') {
-                    setModelConfigs(response.modelConfigs);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getModelConfigs - failed to get model configs`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setModelConfigsLoading(false);
-            }
-        };
-        const getAllDataSets = async () => {
-            if (api?.dataSet && projectId) {
-                const response = await api.dataSet.getAll(projectId);
-                if (response.kind === 'ok') {
-                    setDataSets(response.dataSets);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getAllDataSets - failed to get data sets`,
-                        value: response,
-                        important: true,
-                    });
-                }
-            }
-        };
-        const getTopGraphs = async () => {
-            if (api?.models) {
-                const response = await api.models.getTopGraphs();
-                if (response.kind === 'ok') {
-                    setTopGraphs(response.topGraphs);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getTopGraphs - failed to get topgraphs`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setTopGraphsLoading(false);
-            }
-        };
-        const getSubGraphs = async () => {
-            if (api?.models) {
-                const response = await api.models.getSubGraphs();
-                if (response.kind === 'ok') {
-                    setSubGraphs(response.subGraphs);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getSubGraphs - failed to get subgraphs`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setSubGraphsLoading(false);
-            }
-        };
-        const getLanguageModels = async () => {
-            if (api?.models) {
-                const response = await api.models.getLanguageModels();
-                if (response.kind === 'ok') {
-                    setLanguageModels(response.languageModels);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getLanguageModels - failed to get language models`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setLanguageModelsLoading(false);
-            }
-        };
-        const getAcousticModels = async () => {
-            if (api?.models) {
-                const response = await api.models.getAcousticModels();
-                if (response.kind === 'ok') {
-                    setAcousticModels(response.acousticModels);
-                } else {
-                    log({
-                        file: `ProjectDetails.tsx`,
-                        caller: `getAcousticModels - failed to get acoustic models`,
-                        value: response,
-                        important: true,
-                    });
-                }
-                setAcousticModelsLoading(false);
-            }
-        };
-        if (!projectId) {
-            setIsValidId(false);
             setProjectLoading(false);
-            log({
-                file: `ProjectDetails.tsx`,
-                caller: `project id not valid`,
-                value: projectId,
-                important: true,
-            });
-        } else {
-            getProject();
-            if (hasModelConfigPermissions) {
-                getModelConfigs();
+        }
+    };
+
+    const getModelConfigs = async () => {
+        if (api?.modelConfig) {
+            const response = await api.modelConfig.getModelConfigs(projectId);
+            if (response.kind === 'ok') {
+                setModelConfigs(response.modelConfigs);
+            } else {
+                log({
+                    file: `ProjectDetails.tsx`,
+                    caller: `getModelConfigs - failed to get model configs`,
+                    value: response,
+                    important: true,
+                });
             }
+            setModelConfigsLoading(false);
         }
-        if (hasModelConfigPermissions) {
-            getTopGraphs();
-            getSubGraphs();
-            getLanguageModels();
-            getAcousticModels();
-        }
-        if (hasTdpPermissions) {
-            getAllDataSets();
-        }
-    }, [api, projectId]);
-
-    React.useEffect(() => {
-        setPageTitle(translate('path.projects'));
-    }, []);
-
-    const handleModelConfigUpdate = (modelConfig: ModelConfig) => {
-        setModelConfigs(prevConfigs => {
-            prevConfigs.push(modelConfig);
-            return prevConfigs;
-        });
     };
 
-    const handleSubGraphListUpdate = (newSubGraph: SubGraph) => {
-        setSubGraphs((prevSubGraphs) => {
-            prevSubGraphs.push(newSubGraph);
-            return prevSubGraphs;
-        });
-    };
-
-    const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
-        setLanguageModels((prevLanguageModels) => {
-            prevLanguageModels.push(newLanguageModel);
-            return prevLanguageModels;
-        });
-    };
-
-
-
-
-
-
-
-
-
-
-
-
-
-    const handleChange = (event: React.ChangeEvent<{}>, newActiveTab: number) => {
-        tabsThatShouldRender.add(newActiveTab);
-        setActiveTab(newActiveTab);
-    };
-
-    /**
-     * Increments the counter that is passed to the `SET` component
-     * - the child component refetches all data everytime the counter changes
-     */
-    const handleSetCreate = () => {
-        if (tabsThatShouldRender.has(TAB_INDEX.SET)) {
-            setRefreshCounterForSet(refreshCounterForSet + 1);
+    const getAllDataSets = async () => {
+        if (api?.dataSet && projectId) {
+            const response = await api.dataSet.getAll(projectId);
+            if (response.kind === 'ok') {
+                setDataSets(response.dataSets);
+            } else {
+                log({
+                    file: `ProjectDetails.tsx`,
+                    caller: `getAllDataSets - failed to get data sets`,
+                    value: response,
+                    important: true,
+                });
+            }
         }
     };
 
@@ -358,22 +208,133 @@ export function Admin({ match }: RouteComponentProps<AdminProps>) {
     };
 
     React.useEffect(() => {
+        if (!projectId) {
+            setProjectLoading(false);
+            log({
+                file: `ProjectDetails.tsx`,
+                caller: `project id not valid`,
+                value: projectId,
+                important: true,
+            });
+        } else {
+            getProject();
+            if (hasModelConfigPermissions) {
+                getModelConfigs();
+            }
+        }
+        if (hasTdpPermissions) {
+            getAllDataSets();
+        }
+    }, [api, projectId]);
+
+    React.useEffect(() => {
+        setPageTitle(translate('admin.pageTitle'));
+    }, []);
+
+    React.useEffect(() => {
         getTranscribersWithStats();
     }, []);
+
+    const renderSummary = () => {
+        if (!project || !isValidProject) {
+            return <NotFound text={translate('projects.notFound')} />;
+        }
+        return (<Card elevation={0} className={classes.card} >
+            <CardHeader
+                title={<Typography variant='h4'>{translate('common.summary')}</Typography>}
+            />
+            <CardContent className={classes.cardContent} >
+                {projectLoading ? <BulletList /> :
+                    <Grid
+                        container
+                        direction='row'
+                        justify='flex-start'
+                        alignItems='flex-start'
+                        alignContent='center'
+                        spacing={2}
+                    >
+                        <Grid
+                            container
+                            item
+                            direction='column'
+                            component={Box}
+                            border={1}
+                            borderColor={theme.table.border}
+                            xs={5}
+                            className={clsx(classes.infoBox, classes.boxSpacing)}
+                        >
+                            <Grid
+                                container
+                                item
+                                direction='row'
+                                justify='flex-start'
+                                alignItems='center'
+                                alignContent='center'
+                            >
+                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
+                                <TextField
+                                    id="api-key"
+                                    value={project?.apiKey ?? ""}
+                                    className={clsx(classes.textField, classes.apiInfo)}
+                                    margin="normal"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    variant="outlined"
+                                />
+                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
+                                <TextField
+                                    id="api-key"
+                                    value={project?.apiKey ?? ""}
+                                    className={clsx(classes.textField, classes.apiInfo)}
+                                    margin="normal"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    variant="outlined"
+                                />
+                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
+                                <TextField
+                                    id="api-key"
+                                    value={project?.apiKey ?? ""}
+                                    className={clsx(classes.textField, classes.apiInfo)}
+                                    margin="normal"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                }
+            </CardContent>
+        </Card>);
+    };
 
     return (
         <Container>
             <Paper square elevation={0} className={classes.root} >
-                    <TDP
+                <AddTranscriberDialog
+                    transcribers={transcribersStats}
+                    transcribersLoading={transcriberStatDataLoading}
+                    open={transcribersDialogOpen}
+                    onClose={closeTranscriberDialog}
+                    projectId={projectId}
+                    dataSet={selectedDataSet}
+                    dataSetIndex={selectedDataSetIndex}
+                    onUpdateDataSetSuccess={onUpdateDataSetSuccess}
+                />
+                {projectLoading ? <BulletList /> :
+                    renderSummary()
+                }
+                {project && isValidProject &&
+                    <AdminTable
                         projectId={projectId}
-                        project={project}
-                        modelConfigs={modelConfigs}
                         dataSets={dataSets}
-                        onSetCreate={handleSetCreate}
-                        openModelConfigDialog={openDialog}
-                        modelConfigDialogOpen={dialogOpen}
-                        transcriberStats={transcribersStats}
+                        openTranscriberDialog={handleTranscriberEditClick}
                     />
+                }
             </Paper>
         </Container>
     );

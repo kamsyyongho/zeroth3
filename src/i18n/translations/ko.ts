@@ -48,6 +48,8 @@ export const ko: ResourceLanguage = {
       confirmDelete: '선택한 데이터를 삭제하시겠습니까?',
       userId: '유저 아이디',
       search: '검색',
+      confirm: '승인하기',
+      reject: '반려하기',
     },
     table: {
       page: '페이지',
@@ -165,6 +167,12 @@ export const ko: ResourceLanguage = {
       length: '길이',
       filePath: '파일 경로',
       fileUrl: '파일 URL',
+    },
+    admin: {
+      pageTitle: '관리자',
+    },
+    transcribersTab: {
+
     },
     IAM: {
       users: '사용자',

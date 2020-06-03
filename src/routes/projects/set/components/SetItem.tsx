@@ -305,9 +305,7 @@ export function SetItem(props: SetItemProps) {
                 <RateReviewIcon />
               </IconButton>
             </Tooltip>
-            {
-              renderEvaluationRequest()
-            }
+            {renderEvaluationRequest()}
             {/*{*/}
             {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
             {/*      ?*/}

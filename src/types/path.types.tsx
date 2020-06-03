@@ -66,12 +66,12 @@ export const PATHS: { [x: string]: Path; } = {
   admin: {
     to: '/admin',
     title: 'admin',
-    Icon: props => <ICONS.IAM {...props} />
+    Icon: props => <ICONS.IAM {...props} />,
   },
   transcribers: {
     to: '/transcribers',
     title: 'transcribers',
-    Icon: props => <ICONS.IAM {...props} />
+    Icon: props => <ICONS.IAM {...props} />,
   },
   editor: {
     to: '/editor',

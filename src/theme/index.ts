@@ -31,6 +31,9 @@ const typography: TypographyOptions = {
  * a custom category that we are including in our theme
  */
 const customTheme = {
+  button: {
+    reject: '#c33636',
+  },
   table: {
     border: '#aec2cb',
     highlight: 'rgba(47, 153, 203, 0.1)',
@@ -64,6 +67,9 @@ const customTheme = {
  * Custom interface that must be used when using custom theme values
  */
 export interface CustomTheme extends Theme {
+  button:{
+    reject: '#c33636',
+  };
   table: {
     border: string;
     highlight: string;
