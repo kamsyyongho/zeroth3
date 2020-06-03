@@ -163,6 +163,33 @@ export function SetItem(props: SetItemProps) {
     }
   };
 
+  const renderEvaluationRequest = () => {
+    if(!dataSet.evaluationProgress) return;
+
+    return dataSet.evaluationProgress === -1
+        ?
+        <EvaluationChip progress={-1} />
+        :
+        dataSet?.evaluationProgress < 100
+            ?
+            <div className={classes.inlineBlockProgressBar}>
+              <Typography className={classes.processedText} >
+                {`${dataSet.evaluationProgress} %`}
+              </Typography>
+              <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
+            </div>
+            :
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
+                arrow={true}>
+              <IconButton color='primary'
+                          onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
+                <LaunchIcon />
+              </IconButton>
+            </Tooltip>
+  }
+
   // must be a number from 0 to 100
   const progress = processed / total * 100;
 
@@ -279,28 +306,7 @@ export function SetItem(props: SetItemProps) {
               </IconButton>
             </Tooltip>
             {
-              !dataSet.evaluationProgress
-                  ?
-                  <EvaluationChip progress={-1} />
-                  :
-                  dataSet?.evaluationProgress < 100
-                      ?
-                      <div className={classes.inlineBlockProgressBar}>
-                        <Typography className={classes.processedText} >
-                          {`${dataSet.evaluationProgress} %`}
-                        </Typography>
-                        <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
-                      </div>
-                      :
-                      <Tooltip
-                          placement='top'
-                          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
-                          arrow={true}>
-                        <IconButton color='primary'
-                                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
-                          <LaunchIcon />
-                        </IconButton>
-                      </Tooltip>
+              renderEvaluationRequest()
             }
             {/*{*/}
             {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
