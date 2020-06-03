@@ -23,7 +23,7 @@ import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
 import { EvaluationDetailModal } from './EvaluationDetailModal';
-import { TrainingChip } from '../../../shared/TrainingChip';
+import { EvaluationChip } from './EvaluationChip';
 
 interface SetItemProps {
   projectId: string;
@@ -104,6 +104,7 @@ export function SetItem(props: SetItemProps) {
   };
 
   const handleEvaluateClick = () => {
+    console.log(dataSet)
     if(dataSet?.evaluationUrl) {
       openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
     } else {
@@ -280,7 +281,7 @@ export function SetItem(props: SetItemProps) {
             {
               !dataSet.evaluationProgress
                   ?
-                  <TrainingChip progress={-1} />
+                  <EvaluationChip progress={-1} />
                   :
                   dataSet?.evaluationProgress < 100
                       ?

@@ -64,7 +64,7 @@ export const en: ResourceLanguage = {
       models: 'Models',
       editor: 'Editor',
       modelTraining: 'Model Training',
-      admin: 'Admmin',
+      admin: 'Admin',
       transcribers: 'Transcribers',
     },
     menu: {
@@ -230,6 +230,8 @@ export const en: ResourceLanguage = {
       addTranscriber: 'Add transcriber',
       selectModel: 'Select Model',
       rejected: 'Rejected',
+      evaluationInProgress: 'Evaluation in progress',
+      evaluationError: 'Evaluation error',
     },
     modelTraining: {
       header: 'Model Training',
