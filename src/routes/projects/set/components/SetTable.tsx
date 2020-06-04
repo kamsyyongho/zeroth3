@@ -10,7 +10,7 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { DataSet } from '../../../../types';
+import { DataSet, VoiceData } from '../../../../types';
 import { SetItem } from './SetItem';
 
 const FULL_ROW_COL_SPAN = 4;
@@ -20,6 +20,7 @@ interface SetTableProps {
   projectId: string;
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
+  displaySubSetInTDP: (subSet: VoiceData[]) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -50,7 +51,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetTable(props: SetTableProps) {
-  const { dataSets, projectId, openTranscriberDialog, openRequestEvaluationDialog } = props;
+  const { dataSets, projectId, openTranscriberDialog, openRequestEvaluationDialog, displaySubSetInTDP } = props;
   const { translate } = React.useContext(I18nContext);
   const [setType, setSetType] = React.useState(["none"]);
   const [setTypeString, setSetTypeString] = React.useState('');
@@ -99,6 +100,7 @@ export function SetTable(props: SetTableProps) {
       dataSetIndex={index}
       openTranscriberDialog={openTranscriberDialog}
       openRequestEvaluationDialog={openRequestEvaluationDialog}
+      displaySubSetInTDP={displaySubSetInTDP}
         // openEvaluationDetail={openEvaluationDetail}
       setType={setTypeString}
     />

@@ -99,7 +99,8 @@ export function TDPTable(props: TDPTableProps) {
     handleVoiceDataUpdate,
     setFilterParams,
   } = props;
-  const voiceData = voiceDataResults.content;
+  // const voiceData = voiceDataResults.content;
+  const [voiceData, setVoiceData] = React.useState<VoiceData[]>(voiceDataResults.content)
   const { translate, formatDate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { width } = useWindowSize();
@@ -235,7 +236,7 @@ export function TDPTable(props: TDPTableProps) {
   /**
    * The expand button should be rendered on the last item in the row
    * - `highRiskSegments` is the last item in the row
-   * @param cellData 
+   * @param cellData
    */
   const renderHighRiskSegmentsAndExpandButton = (cellData: CellProps<VoiceData>) => {
     const highRiskSegments: VoiceData['highRiskSegments'] = cellData.cell.value || 0;
@@ -386,6 +387,14 @@ export function TDPTable(props: TDPTableProps) {
       setExpandedRowsByIndex({});
     }
   }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
+
+  React.useEffect(() => {
+    if(!voiceDataResults?.content?.length) {
+      setVoiceData([]);
+    } else {
+      setVoiceData(voiceDataResults.content);
+    }
+  }, [voiceDataResults])
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {

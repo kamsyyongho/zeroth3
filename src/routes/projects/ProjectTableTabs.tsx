@@ -8,7 +8,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { ProblemKind } from '../../services/api/types';
-import { BooleanById, DataSet, ModelConfig, PaginatedResults, Project, TranscriberStats } from '../../types';
+import { BooleanById, DataSet, ModelConfig, PaginatedResults, Project, TranscriberStats, VoiceData } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from './set/SET';
 import { TDP } from './TDP/TDP';
@@ -58,6 +58,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
   const [isForbidden, setIsForbidden] = React.useState(false);
+  const [subSetsToTDP, setSubSetsToTDP] = React.useState<VoiceData[]>([])
 
   const classes = useStyles();
   const hasSetPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.SET), [roles]);
@@ -102,6 +103,11 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
       }
     };
 
+  const displaySubSetInTDP = (subSet: VoiceData[]) => {
+    setSubSetsToTDP(subSet);
+    handleChange({}, 0)
+  };
+
   React.useEffect(() => {
     getTranscribersWithStats();
   }, []);
@@ -129,6 +135,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}
             transcriberStats={transcribersStats}
+            subSetsToTDP={subSetsToTDP}
           />}
       </TabPanel>
       {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
@@ -141,6 +148,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             transcribersStats={transcribersStats}
             pagination={pagination}
             transcriberStatDataLoading={transcriberStatDataLoading}
+            displaySubSetInTDP={displaySubSetInTDP}
           />}
       </TabPanel>}
     </Paper>

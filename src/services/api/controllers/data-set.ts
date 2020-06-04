@@ -212,7 +212,7 @@ export class DataSet extends ParentApi {
 
   async getTrainingSet(projectId: string, dataSetId: string, types: string): Promise<getTrainingSet> {
     const param = types.length ? types : null;
-    const response = await this.apisauce.get<SubSet, ServerError>(
+    const response = await this.apisauce.get<VoiceData[], ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
         ), { types: param }

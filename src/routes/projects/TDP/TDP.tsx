@@ -37,6 +37,7 @@ interface TDPProps {
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
   transcriberStats: TranscriberStats[];
+  subSetsToTDP?: VoiceData[];
 }
 
 
@@ -68,6 +69,7 @@ export function TDP(props: TDPProps) {
     modelConfigDialogOpen,
     openModelConfigDialog,
     transcriberStats,
+    subSetsToTDP,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
@@ -218,6 +220,22 @@ export function TDP(props: TDPProps) {
       getVoiceDataWithDefautOptions();
     }
   }, [projectTdpDataShouldRefresh]);
+
+  React.useEffect(() => {
+    if(subSetsToTDP && subSetsToTDP.length) {
+      const voiceDataResult = {
+        content: subSetsToTDP
+      } as VoiceDataResults;
+      setVoiceDataResults(voiceDataResult);
+    }
+    return () => {
+      setVoiceDataResults({} as VoiceDataResults);
+    }
+  }, [subSetsToTDP])
+
+  React.useEffect(() => {
+    console.log('voiceData result : ', voiceDataResults);
+  }, [voiceDataResults])
 
   const modelConfigsById: GenericById<ModelConfig> = React.useMemo(
     () => {

@@ -3,7 +3,7 @@ import React from 'reactn';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
-import { DataSet, PaginatedResults, ModelConfig, GenericById, TranscriberStats } from '../../../types';
+import { DataSet, VoiceData, PaginatedResults, ModelConfig, GenericById, TranscriberStats } from '../../../types';
 import log from '../../../util/log/logger';
 import { Forbidden } from '../../shared/Forbidden';
 import { AddTranscriberDialog } from './components/AddTranscriberDialog';
@@ -20,13 +20,14 @@ interface SETProps {
   refreshCounter?: number;
   modelConfigs: ModelConfig[];
   getTranscribersWithStats: (page?:number, size?: number) => void;
+  displaySubSetInTDP: (subSet: VoiceData[]) => void;
   transcribersStats: TranscriberStats[];
   transcriberStatDataLoading: boolean;
   pagination?: PaginatedResults;
 }
 
 export default function SET(props: SETProps) {
-  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, transcribersStats, transcriberStatDataLoading, pagination } = props;
+  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, displaySubSetInTDP, transcribersStats, transcriberStatDataLoading, pagination } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -144,7 +145,7 @@ export default function SET(props: SETProps) {
     setSelectedDataSetIndex(dataSetIndex);
     openTranscriberDialog();
   };
-  
+
   // const handleEvaluationDetailClick = (dataSetIndex: number) => {
   //   setSelectedDataSet(dataSets[dataSetIndex]);
   //   setSelectedDataSetIndex(dataSetIndex);
@@ -196,6 +197,7 @@ export default function SET(props: SETProps) {
           openTranscriberDialog={handleTranscriberEditClick}
           openRequestEvaluationDialog={openRequestEvaluationDialog}
           // openEvaluationDetail={handleEvaluationDetailClick}
+          displaySubSetInTDP={displaySubSetInTDP}
         />
       }
     </>
