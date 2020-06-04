@@ -23,6 +23,10 @@ export interface GenericById<T> {
   [id: string]: T;
 }
 
+export interface GenericByTranscriber<T> {
+  [id: string]: T;
+}
+
 export interface GenericByIndex<T> {
   [id: string]: T;
 }

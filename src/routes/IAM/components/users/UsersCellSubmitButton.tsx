@@ -20,6 +20,9 @@ interface UsersCellSubmitButtonProps {
   transcriberRoleId: string;
   onTranscriberAssign: () => void;
   onUpdateRoleSuccess: (updatedUser: User, userIndex: number) => void;
+  onUpdateNoteAndPhone: (updatedUser: User, userIndex: string) => void;
+  noteLog?: any;
+  phoneLog?: any;
 }
 
 export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
@@ -29,6 +32,9 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     onUpdateRoleSuccess,
     transcriberRoleId,
     onTranscriberAssign,
+    onUpdateNoteAndPhone,
+    noteLog,
+    phoneLog,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
@@ -62,8 +68,21 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     return !isEqualSet<string>(initialSet, currentSet);
   };
 
+  const checkForPhoneOrMemoChange = () => {
+    const changedNoteIndex = Object.keys(noteLog);
+    const changedPhoneIndex = Object.keys(phoneLog);
+    const stringIndex = index.toString();
+    if((!noteLog && !phoneLog)
+        || (!changedNoteIndex.includes(stringIndex) && !changedPhoneIndex.includes(stringIndex))) return false;
+    if(user.note !== noteLog[stringIndex] || user.phone !== phoneLog[stringIndex]) {
+      return true
+    };
+  };
+
   const theme = useTheme();
   const rolesChanged = checkForRoleChange();
+  const noteOrPhoneChanged = checkForPhoneOrMemoChange();
+  const canSubmit = rolesChanged ? rolesChanged : noteOrPhoneChanged;
 
   const [isAddLoading, setIsAddLoading] = React.useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
@@ -183,14 +202,49 @@ export function UsersCellSubmitButton(props: UsersCellSubmitButtonProps) {
     if (rolesToAdd.length) addRoles(rolesToAdd);
   };
 
-  if (!currentSet.size) {
+  const updatePhoneAndNote = async () => {
+    const stringIndex = index.toString();
+    if (api?.IAM) {
+      setIsAddLoading(true);
+      const response = await api.IAM.updatePhoneAndNote(user.id, noteLog[stringIndex], phoneLog[stringIndex]);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === "ok") {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        // to refresh the transcriber list
+        onUpdateNoteAndPhone(response.user, index.toString());
+      } else {
+        log({
+          file: `UsersCellSubmitButton.tsx`,
+          caller: `addRoles - failed to add roles`,
+          value: response,
+          error: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setIsAddLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if(noteOrPhoneChanged) await updatePhoneAndNote();
+    if(rolesChanged) await submitRolesChange();
+  };
+
+  //codition check for currentSet.size and noteOrPhoneChange for eliminating the column needed for button all together
+  if (!currentSet.size && !noteOrPhoneChanged) {
     return null;
   }
 
   return (
-    <Grow in={rolesChanged}>
+    <Grow in={canSubmit}>
       <Button
-        onClick={submitRolesChange}
+        onClick={handleSubmit}
         key={key}
         variant="contained"
         color="primary"

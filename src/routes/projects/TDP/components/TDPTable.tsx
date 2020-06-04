@@ -22,7 +22,7 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, ORDER, PATHS, TDPTableColumns, VoiceData, VoiceDataResults } from '../../../../types';
+import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, ORDER, PATHS, TDPTableColumns, Transcriber, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
@@ -38,6 +38,7 @@ interface TDPTableProps {
   voiceDataResults: VoiceDataResults;
   modelConfigsById: GenericById<ModelConfig>;
   dataSetsById: GenericById<DataSet>;
+  transcribersById: Transcriber[];
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
@@ -91,6 +92,7 @@ export function TDPTable(props: TDPTableProps) {
     voiceDataResults,
     modelConfigsById,
     dataSetsById,
+    transcribersById,
     loading,
     getVoiceData,
     deleteUnconfirmedVoiceData,
@@ -252,7 +254,7 @@ export function TDPTable(props: TDPTableProps) {
   };
 
   const renderDateTime = (cellData: CellProps<VoiceData>) => {
-    const dateString: VoiceData['startAt'] | VoiceData['endAt'] = cellData.cell.value;
+    const dateString: VoiceData['decodedAt'] = cellData.cell.value;
     const date = new Date(dateString);
     return formatDate(date);
   };
@@ -277,7 +279,7 @@ export function TDPTable(props: TDPTableProps) {
       },
       {
         Header: translate('common.date'),
-        accessor: TDPTableColumns['startAt'],
+        accessor: TDPTableColumns['decodedAt'],
         Cell: (cellData: CellProps<VoiceData>) => renderDateTime(cellData),
       },
       {
@@ -456,6 +458,7 @@ export function TDPTable(props: TDPTableProps) {
         loading={loading}
         modelConfigsById={modelConfigsById}
         dataSetsById={dataSetsById}
+        transcribersById={transcribersById}
       />
     </div>
     <Table {...getTableProps()} className={classes.table} >

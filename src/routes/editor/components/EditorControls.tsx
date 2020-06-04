@@ -201,7 +201,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           };
           break;
         case EDITOR_CONTROLS.confirm:
-          label = translate('editor.confirm');
+          label = translate('editor.approvalRequest');
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
@@ -313,6 +313,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     * handle shortcut key presses
     */
     const handleKeyPress = (event: KeyboardEvent) => {
+      console.log('============editorInFocus : ', editorInFocus);
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
