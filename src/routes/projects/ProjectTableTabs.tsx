@@ -105,7 +105,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
 
   const displaySubSetInTDP = (subSet: VoiceData[]) => {
     setSubSetsToTDP(subSet);
-    handleChange({}, 0)
+    handleChange({} as React.ChangeEvent, 0)
   };
 
   React.useEffect(() => {

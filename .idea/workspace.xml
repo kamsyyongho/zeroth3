@@ -3,16 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="8e3dfca0-a37c-4ca1-986a-6a394942d9a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/projects.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/projects.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/path.types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/path.types.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

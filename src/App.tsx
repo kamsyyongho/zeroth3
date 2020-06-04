@@ -84,8 +84,8 @@ function App() {
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
-          <Route path={PATHS.admin.to} component={withErrorBoundary(Admin, PageErrorFallback)} />
-          <Route path={PATHS.transcribers.to} component={withErrorBoundary(Transcribers, PageErrorFallback)} />
+          {/*<Route path={PATHS.admin.to} component={withErrorBoundary(Admin, PageErrorFallback)} />*/}
+          {/*<Route path={PATHS.transcribers.to} component={withErrorBoundary(Transcribers, PageErrorFallback)} />*/}
           <Route component={NotFound} />
         </Switch>
       </Router>
