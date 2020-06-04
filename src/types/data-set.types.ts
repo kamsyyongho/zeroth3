@@ -5,8 +5,10 @@ export interface DataSet {
   createdAt: Date;
   evaluationProgress?: number;
   evaluationUrl?: string;
+  highRiskRatio: number;
   id: string;
   name: string;
+  wordCount: number;
   /** the number of completed transcriptions */
   processed: number;
   total: number;

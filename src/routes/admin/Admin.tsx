@@ -59,6 +59,12 @@ const useStyles = makeStyles((theme) =>
             minWidth: 75,
             margin: theme.spacing(1),
         },
+        summaryHeading: {
+            minWidth: 75,
+            margin: theme.spacing(1),
+            size: '16px',
+            color: '#077db5'
+        },
         apiInfo: {
             minWidth: 250,
             backgroundColor: theme.palette.grey[200],
@@ -241,9 +247,10 @@ export function Admin() {
         }
         return (<Card elevation={0} className={classes.card} >
             <CardHeader
-                title={<Typography variant='h4'>{translate('common.summary')}</Typography>}
+                title={<Typography variant='h4'>{translate('admin.pageTitle')}</Typography>}
             />
             <CardContent className={classes.cardContent} >
+
                 {projectLoading ? <BulletList /> :
                     <Grid
                         container
@@ -263,6 +270,7 @@ export function Admin() {
                             xs={5}
                             className={clsx(classes.infoBox, classes.boxSpacing)}
                         >
+                            <Typography align='left' className={classes.summaryHeading} >{translate('common.summary')}</Typography>
                             <Grid
                                 container
                                 item
@@ -282,6 +290,13 @@ export function Admin() {
                                     }}
                                     variant="outlined"
                                 />
+                            </Grid>
+                            <Grid container
+                                  item
+                                  direction='row'
+                                  justify='flex-start'
+                                  alignItems='center'
+                                  alignContent='center'>
                                 <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
                                 <TextField
                                     id="api-key"
@@ -293,6 +308,13 @@ export function Admin() {
                                     }}
                                     variant="outlined"
                                 />
+                            </Grid>
+                            <Grid container
+                                  item
+                                  direction='row'
+                                  justify='flex-start'
+                                  alignItems='center'
+                                  alignContent='center'>
                                 <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
                                 <TextField
                                     id="api-key"
@@ -325,8 +347,8 @@ export function Admin() {
                     dataSetIndex={selectedDataSetIndex}
                     onUpdateDataSetSuccess={onUpdateDataSetSuccess}
                 />
-                {projectLoading ? <BulletList /> :
-                    renderSummary()
+                {
+                    projectLoading ? <BulletList /> : renderSummary()
                 }
                 {project && isValidProject &&
                     <AdminTable

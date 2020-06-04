@@ -166,17 +166,17 @@ export function TDP(props: TDPProps) {
 
   /**
    * Deletes voice data and updates the table
-   * @param voiceDataId 
-   * @param voiceDataIndex 
-   * @param shoudRefresh determines if we need to redo a search 
+   * @param voiceDataId
+   * @param voiceDataIndex
+   * @param shouldRefresh determines if we need to redo a search
    * because the current page would have no results after deletion
    */
-  const deleteUnconfirmedVoiceData = async (voiceDataId: string, voiceDataIndex: number, shoudRefresh: boolean) => {
+  const deleteUnconfirmedVoiceData = async (voiceDataId: string, voiceDataIndex: number, shouldRefresh: boolean) => {
     if (api?.voiceData && projectId) {
       setVoiceDataDeleteLoading(true);
       const response = await api.voiceData.deleteUnconfirmedVoiceData(projectId, voiceDataId);
       if (response.kind === 'ok') {
-        if (shoudRefresh) {
+        if (shouldRefresh) {
           // redo seach if the page would show no results
           setInitialVoiceDataLoading(true);
           getVoiceData({ ...previousSearchOptions, page: undefined });

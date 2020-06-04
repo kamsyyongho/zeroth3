@@ -13,12 +13,13 @@ import EditIcon from '@material-ui/icons/Edit';
 import RateReviewIcon from '@material-ui/icons/RateReview'
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
-import React from 'reactn';
+import React, { useGlobal } from 'reactn';
+import { useHistory } from 'react-router-dom';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../theme';
-import {DataSet, VoiceData} from '../../../types';
+import {DataSet, VoiceData, PATHS} from '../../../types';
 import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
 import log from '../../../util/log/logger';
 import { ProgressBar } from '../../shared/ProgressBar';
@@ -26,6 +27,7 @@ import {SetDetail} from "../../projects/set/components/SetDetail";
 import { EvaluationDetailModal } from '../../projects/set/components/EvaluationDetailModal';
 import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
+import { ICONS } from '../../../theme/icons';
 
 interface AdminTableItem {
     projectId: string;
@@ -63,6 +65,8 @@ export function AdminTableItem(props: AdminTableItem) {
     const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
     const { transcribers, total, processed, name } = dataSet;
     const numberOfTranscribers = transcribers.length;
+    const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
+    const history = useHistory();
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
     const { translate } = React.useContext(I18nContext);
@@ -157,6 +161,11 @@ export function AdminTableItem(props: AdminTableItem) {
         }
     };
 
+    const handleDiffClick = () => {
+        // setNavigationProps({ voiceData, projectId });
+        PATHS.editor.to && history.push(PATHS.editor.to);
+    };
+
     // must be a number from 0 to 100
     const progress = processed / total * 100;
 
@@ -212,80 +221,48 @@ export function AdminTableItem(props: AdminTableItem) {
     },[expanded]);
 
     return (
-        <React.Fragment>
-            <TableRow
-                className={classes.tableRow}
-            >
-                <TableCell>
-                    <Typography>{name}</Typography>
-                </TableCell>
-                <TableCell>
-                    {processedText}
-                    <ProgressBar value={progress} maxWidth={200} />
-                </TableCell>
-                <TableCell>
-                    {renderTranscriberEdit()}
-                </TableCell>
-                <TableCell>
-                    <Typography>{dataSet.rejected}</Typography>
-                </TableCell>
-                <TableCell>
-                    <Typography>{dataSet.rejected}</Typography>
-                </TableCell>
-                <TableCell>
-                    <Typography>{dataSet.rejected}</Typography>
-                </TableCell>
-                <TableCell>
-                    <Typography>{dataSet.rejected}</Typography>
-                </TableCell>
-                <TableCell>
-                    <Button
-                        className={classes.button}
-                        variant='contained'
-                        color="primary"
-                        size='small'
-                        onClick={onClickAssignTranscriber}>
-                        {translate('common.confirm')}
-                    </Button>
-                    {/*<IconButton*/}
-                    {/*    color='primary'*/}
-                    {/*    onClick={getDownloadLink}*/}
-                    {/*>*/}
-                    {/*    {downloadLinkPending ? <MoonLoader*/}
-                    {/*        sizeUnit={"px"}*/}
-                    {/*        size={15}*/}
-                    {/*        color={theme.palette.primary.main}*/}
-                    {/*        loading={true}*/}
-                    {/*    /> : <CloudDownloadIcon />}*/}
-                    {/*</IconButton>*/}
-                    <Button
-                        className={[classes.button, classes.buttonReject].join(' ')}
-                        color='secondary'
-                        variant='contained'
-                        size='small'
-                        onClick={onClickAssignTranscriber}>
-                        {translate('common.reject')}
-                    </Button>
-                    {/*<IconButton*/}
-                    {/*    color='primary'*/}
-                    {/*    onClick={createTrainingSet}>*/}
-                    {/*    {isCreateTrainingSetLoading ? <MoonLoader*/}
-                    {/*        sizeUnit={"px"}*/}
-                    {/*        size={15}*/}
-                    {/*        color={theme.palette.primary.main}*/}
-                    {/*        loading={true}*/}
-                    {/*    /> : <AddCircleIcon />}*/}
-                    {/*</IconButton>*/}
-                </TableCell>
-            </TableRow>
-            {expanded &&
-            subSets.map((voiceData: VoiceData) =>
-                <SetDetail key={`setDetail-${voiceData.id}`}
-                           row={voiceData}
-                           setDetailLoading={setDetailLoading}
-                           projectId={projectId} />
-            )
-            }
-        </React.Fragment>
+        <TableRow
+            className={classes.tableRow}
+        >
+            <TableCell>
+                <Typography>{name}</Typography>
+            </TableCell>
+            <TableCell>
+                <Typography>{dataSet.highRiskRatio}</Typography>
+            </TableCell>
+            <TableCell>
+                {renderTranscriberEdit()}
+            </TableCell>
+            <TableCell>
+                <Typography>{dataSet.rejected}</Typography>
+            </TableCell>
+            <TableCell>
+                <Typography>{dataSet.rejected}</Typography>
+            </TableCell>
+            <TableCell>
+                <Button
+                    color='primary'
+                    startIcon={<ICONS.Diff />}
+                    onClick={handleDiffClick} />
+            </TableCell>
+            <TableCell>
+                <Button
+                    className={classes.button}
+                    variant='contained'
+                    color="primary"
+                    size='small'
+                    onClick={onClickAssignTranscriber}>
+                    {translate('common.confirm')}
+                </Button>
+                <Button
+                    className={[classes.button, classes.buttonReject].join(' ')}
+                    color='secondary'
+                    variant='contained'
+                    size='small'
+                    onClick={onClickAssignTranscriber}>
+                    {translate('common.reject')}
+                </Button>
+            </TableCell>
+        </TableRow>
     );
 }

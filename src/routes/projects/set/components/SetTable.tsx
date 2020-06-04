@@ -110,13 +110,19 @@ export function SetTable(props: SetTableProps) {
         {translate('forms.name')}
       </TableCell>
       <TableCell>
-        {translate('common.progress')}
+        {translate('TDP.wordCount')}
       </TableCell>
       <TableCell>
-        {translate('IAM.transcribers')}
+        {translate('SET.highRisk')}
+      </TableCell>
+      <TableCell>
+        {translate('SET.editProgress')}
       </TableCell>
       <TableCell>
         {translate('SET.rejected')}
+      </TableCell>
+      <TableCell>
+        {translate('SET.transcribers')}
       </TableCell>
       <TableCell>
         <FormControl className={classes.formControl}>

@@ -168,8 +168,9 @@ export const en: ResourceLanguage = {
       fileUrl: 'File URL',
     },
     admin: {
-      pageTitle: '관리자',
-
+      pageTitle: '관리자 페이지',
+      diff: 'Diff',
+      commentNumber: 'Number of Comments',
     },
     transcribersTab: {
 
@@ -213,12 +214,6 @@ export const en: ResourceLanguage = {
       originalFilename: 'Filename',
       wordCount: 'Word Count',
     },
-    transcribingSet: {
-      transcribingSet: 'Transcribing Set',
-      setName: 'SET Name',
-      wordCount: 'Word Count',
-      highrisk: 'High Risk',
-    },
     SET: {
       SET: 'SET',
       deleteAll: 'Delete All',
@@ -242,6 +237,9 @@ export const en: ResourceLanguage = {
       rejected: 'Rejected',
       evaluationInProgress: 'Evaluation in progress',
       evaluationError: 'Evaluation error',
+      highRisk: 'High Risk',
+      transcribers: 'Transcribers',
+      editProgress: 'Edit Progress',
     },
     modelTraining: {
       header: 'Model Training',

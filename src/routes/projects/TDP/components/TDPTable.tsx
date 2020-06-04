@@ -143,20 +143,20 @@ export function TDPTable(props: TDPTableProps) {
     setIsDeleteSetOpen(false);
   };
 
-  const openDeleteConfirmation = (voiceDataId: string, dataIndex: number) => {
-    const deleteSetInfo = {voiceDataId, dataIndex};
-    setIsDeleteSetOpen(true);
-    setDeleteSetInfo(deleteSetInfo)
-  };
-
   /**
    * navigates to the the editor
    * - passes required props to trigger read-only editor state
-   * @param voiceData 
+   * @param voiceData
    */
   const handleRowClick = (voiceData: VoiceData) => {
     setNavigationProps({ voiceData, projectId });
     PATHS.editor.to && history.push(PATHS.editor.to);
+  };
+
+  const openDeleteConfirmation = (voiceDataId: string, dataIndex: number) => {
+    const deleteSetInfo = {voiceDataId, dataIndex};
+    setIsDeleteSetOpen(true);
+    setDeleteSetInfo(deleteSetInfo)
   };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {

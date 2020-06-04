@@ -253,14 +253,20 @@ export function SetItem(props: SetItemProps) {
             <Typography>{name}</Typography>
           </TableCell>
           <TableCell>
+            <Typography>{dataSet.wordCount}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{dataSet.highRiskRatio + '%'}</Typography>
+          </TableCell>
+          <TableCell>
             {processedText}
             <ProgressBar value={progress} maxWidth={200} />
           </TableCell>
           <TableCell>
-            {renderTranscriberEdit()}
+            <Typography>{dataSet.rejected}</Typography>
           </TableCell>
           <TableCell>
-            <Typography>{dataSet.rejected}</Typography>
+            {renderTranscriberEdit()}
           </TableCell>
           <TableCell>
             <Tooltip
@@ -333,12 +339,7 @@ export function SetItem(props: SetItemProps) {
           </TableCell>
         </TableRow>
         {expanded &&
-        subSets.map((voiceData: VoiceData) =>
-            <SetDetail key={`setDetail-${voiceData.id}`}
-                       row={voiceData}
-                       setDetailLoading={setDetailLoading}
-                       projectId={projectId} />
-          )
+        <SetDetail setDetailLoading={setDetailLoading} projectId={projectId} />
         }
       </React.Fragment>
   );

@@ -18,7 +18,6 @@ import log from '../../util/log/logger';
 const STARTING_TAB_INDEX = 0;
 enum TAB_INDEX {
   TDP,
-  transcribingSet,
   SET,
 }
 
@@ -117,7 +116,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
         onChange={handleChange}
       >
         <Tab label={translate('TDP.TDP')} />
-        <Tab label={translate('transcribingSet.transcribingSet')} />
         <Tab label={translate('SET.SET')} />
       </Tabs>}
       <TabPanel value={activeTab} index={TAB_INDEX.TDP}>
@@ -133,18 +131,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             transcriberStats={transcribersStats}
           />}
       </TabPanel>
-      {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.transcribingSet}>
-        {tabsThatShouldRender.has(TAB_INDEX.transcribingSet) &&
-        <TranscribingSet
-            refreshCounter={refreshCounterForSet}
-            projectId={projectId}
-            modelConfigs={modelConfigs}
-            getTranscribersWithStats={getTranscribersWithStats}
-            transcribersStats={transcribersStats}
-            pagination={pagination}
-            transcriberStatDataLoading={transcriberStatDataLoading}
-        />}
-      </TabPanel>}
       {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
         {tabsThatShouldRender.has(TAB_INDEX.SET) &&
           <SET

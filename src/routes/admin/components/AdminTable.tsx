@@ -73,25 +73,22 @@ export function AdminTable(props: AdminTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.name')}
+                {translate('forms.transcript')}
             </TableCell>
             <TableCell>
-                {translate('common.progress')}
+                {translate('forms.modelConfig')}
             </TableCell>
             <TableCell>
-                {translate('IAM.transcribers')}
+                {translate('admin.commentNumber')}
             </TableCell>
             <TableCell>
-                {translate('SET.rejected')}
+                {translate('common.length')}
             </TableCell>
             <TableCell>
-                {translate('SET.rejected')}
+                {translate('common.date')}
             </TableCell>
             <TableCell>
-                {translate('SET.rejected')}
-            </TableCell>
-            <TableCell>
-                {translate('SET.rejected')}
+                {translate('admin.diff')}
             </TableCell>
             <TableCell>
             </TableCell>

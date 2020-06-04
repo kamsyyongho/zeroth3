@@ -170,6 +170,8 @@ export const ko: ResourceLanguage = {
     },
     admin: {
       pageTitle: '관리자',
+      diff: 'Diff',
+      commentNumber: '댓글수',
     },
     transcribersTab: {
 
@@ -240,6 +242,9 @@ export const ko: ResourceLanguage = {
       openToRate: '전사상태 평가',
       selectModel: '모델 선택',
       rejected: '반려',
+      transcribers: '전사자',
+      highRisk: 'High Risk',
+      editProgress: '진행상황',
     },
     modelTraining: {
       header: '모델 학습',
