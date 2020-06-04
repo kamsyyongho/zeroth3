@@ -8,6 +8,7 @@ export const calculateWordTime = (
   segmentIndex: number,
   wordIndex: number,
 ) => {
+  console.log('================arguments in caculateWordTime', segments, segmentIndex, wordIndex);
   try {
     const segment = segments[segmentIndex];
     const word = segment.wordAlignments[wordIndex];

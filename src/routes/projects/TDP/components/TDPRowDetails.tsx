@@ -57,21 +57,20 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     onSuccess,
   } = props;
   const {
-    startAt,
-    endAt,
+    decodedAt,
     fetchedAt,
     confirmedAt,
+    memo,
     originalFilename,
+    modelConfigId,
     sessionId,
     ip,
-    webSocketCloseReason,
-    webSocketCloseStatus,
     transcriber,
-    transferredBytes,
+    wordCount,
   } = row.original;
 
-  const startDate = new Date(startAt);
-  const endDate = new Date(endAt);
+  const startDate = new Date(decodedAt);
+  // const endDate = new Date(endAt);
   const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
   const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
   const confirmed = row.values.status === CONTENT_STATUS.CONFIRMED;
@@ -101,21 +100,21 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
           justify='flex-start'
         >
           <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
+              container
+              item
+              wrap='nowrap'
+              direction='row'
+              alignContent='center'
+              alignItems='center'
+              justify='flex-start'
           >
             <Typography
-              className={classes.category}
-              variant='subtitle2'
+                className={classes.category}
+                variant='subtitle2'
             >
-              {`${translate('common.startAt')}:`}
+              {`${translate('TDP.originalFilename')}:`}
             </Typography>
-            <Typography>{formatDate(startDate)}</Typography>
+            <Typography>{originalFilename ? originalFilename : '-'}</Typography>
           </Grid>
           <Grid
             container
@@ -130,10 +129,27 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               className={classes.category}
               variant='subtitle2'
             >
-              {`${translate('common.endAt')}:`}
+              {`${translate('common.startAt')}:`}
             </Typography>
-            <Typography>{formatDate(endDate)}</Typography>
+            <Typography>{startDate ? formatDate(startDate) : '-'}</Typography>
           </Grid>
+          {/*<Grid*/}
+          {/*  container*/}
+          {/*  item*/}
+          {/*  wrap='nowrap'*/}
+          {/*  direction='row'*/}
+          {/*  alignContent='center'*/}
+          {/*  alignItems='center'*/}
+          {/*  justify='flex-start'*/}
+          {/*>*/}
+          {/*  <Typography*/}
+          {/*    className={classes.category}*/}
+          {/*    variant='subtitle2'*/}
+          {/*  >*/}
+          {/*    {`${translate('common.endAt')}:`}*/}
+          {/*  </Typography>*/}
+          {/*  <Typography>{formatDate(endDate)}</Typography>*/}
+          {/*</Grid>*/}
           <Grid
             container
             item
@@ -149,7 +165,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             >
               {`${translate('TDP.sessionId')}:`}
             </Typography>
-            <Typography>{sessionId}</Typography>
+            <Typography>{sessionId ? sessionId : '-'}</Typography>
           </Grid>
           <Grid
             container
@@ -166,7 +182,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             >
               {`${translate('TDP.ip')}:`}
             </Typography>
-            <Typography>{ip}</Typography>
+            <Typography>{ip ? ip : '-'}</Typography>
           </Grid>
           <Grid
             container
@@ -183,7 +199,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             >
               {`${translate('common.fetchedAt')}:`}
             </Typography>
-            <Typography>{fetchedDate ? formatDate(fetchedDate) : ''}</Typography>
+            <Typography>{fetchedDate ? formatDate(fetchedDate) : '-'}</Typography>
           </Grid>
           <Grid
             container
@@ -200,7 +216,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             >
               {`${translate('common.confirmedAt')}:`}
             </Typography>
-            <Typography>{confirmedDate ? formatDate(confirmedDate) : ''}</Typography>
+            <Typography>{confirmedDate ? formatDate(confirmedDate) : '-'}</Typography>
           </Grid>
         </Grid>
         <Grid
@@ -226,61 +242,45 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               className={classes.category}
               variant='subtitle2'
             >
-              {`${translate('TDP.websocketCloseStatus')}:`}
+              {`${translate('TDP.wordCount')}:`}
             </Typography>
-            <Typography>{webSocketCloseStatus}</Typography>
+            <Typography>{wordCount}</Typography>
           </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.websocketCloseReason')}:`}
-            </Typography>
-            <Typography>{webSocketCloseReason}</Typography>
-          </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.transferredBytes')}:`}
-            </Typography>
-            <Typography>{transferredBytes}</Typography>
-          </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.originalFilename')}:`}
-            </Typography>
-            <Typography>{originalFilename}</Typography>
-          </Grid>
+          {/*<Grid*/}
+          {/*  container*/}
+          {/*  item*/}
+          {/*  wrap='nowrap'*/}
+          {/*  direction='row'*/}
+          {/*  alignContent='center'*/}
+          {/*  alignItems='center'*/}
+          {/*  justify='flex-start'*/}
+          {/*>*/}
+          {/*  <Typography*/}
+          {/*    className={classes.category}*/}
+          {/*    variant='subtitle2'*/}
+          {/*  >*/}
+          {/*    {`${translate('TDP.websocketCloseReason')}:`}*/}
+          {/*  </Typography>*/}
+          {/*  <Typography>{webSocketCloseReason}</Typography>*/}
+          {/*</Grid>*/}
+          {/*<Grid*/}
+          {/*  container*/}
+          {/*  item*/}
+          {/*  wrap='nowrap'*/}
+          {/*  direction='row'*/}
+          {/*  alignContent='center'*/}
+          {/*  alignItems='center'*/}
+          {/*  justify='flex-start'*/}
+          {/*>*/}
+          {/*  <Typography*/}
+          {/*    className={classes.category}*/}
+          {/*    variant='subtitle2'*/}
+          {/*  >*/}
+          {/*    {`${translate('TDP.transferredBytes')}:`}*/}
+          {/*  </Typography>*/}
+          {/*  <Typography>{transferredBytes}</Typography>*/}
+          {/*</Grid>*/}
+
           <Grid
             container
             item

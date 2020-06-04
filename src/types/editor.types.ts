@@ -19,6 +19,11 @@ export interface WordKeyStoreContent {
   wordKeyLocations: WordKeyLocation3DArray;
 }
 
+export interface PlayingTimeData {
+  currentPlayingWordPlayerSegment?: any;
+  timeToSeekTo?: number
+} 
+
 export interface Range {
   start: number;
   end: number; // this value used as rangeIndex
@@ -52,7 +57,7 @@ export interface WordToCreateTimeFor extends Word {
  */
 export type PlayingWordAndSegment = [WordToCreateTimeFor, WordToCreateTimeFor];
 
-export type SegmentAndWordIndex = [number, number];
+export type SegmentAndWordIndex =  any;
 
 export interface WordAlignmentEntityData {
   wordKey: number;
@@ -256,3 +261,9 @@ export const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
   top: 140,
   bottom: 190,
 };
+
+export interface UndoRedoData {
+  location: number[];
+  undoStack?: string[];
+  redoStack?: string[];
+}

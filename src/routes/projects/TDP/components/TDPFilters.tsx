@@ -7,7 +7,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { Field, Formik } from 'formik';
+import { Field, Formik, ErrorMessage } from 'formik';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import * as yup from 'yup';
@@ -15,7 +15,7 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig } from '../../../../types';
+import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, Transcriber } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
@@ -23,7 +23,8 @@ import { TextFormField } from '../../../shared/form-fields/TextFormField';
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
   modelConfigsById: GenericById<ModelConfig>;
-  dataSetsById: GenericById<DataSet>;
+  dataSetsById: any;
+  transcribersById: Transcriber[];
   loading?: boolean;
 }
 
@@ -41,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPFilters(props: TDPFiltersProps) {
-  const { updateVoiceData, modelConfigsById, dataSetsById, loading } = props;
+  const { updateVoiceData, modelConfigsById, dataSetsById, transcribersById, loading } = props;
   const { translate } = React.useContext(I18nContext);
   const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
@@ -75,13 +76,27 @@ export function TDPFilters(props: TDPFiltersProps) {
     return tempFormSelectOptions;
   }, [modelConfigsById, translate]);
 
+    const transcriberFormSelectOptions = React.useMemo(() => {
+      const tempFormSelectOptions: SelectFormFieldOptions = transcribersById.map((transcriber) => ({
+        label: transcriber.email,
+        value: transcriber.id,
+      }));
+    // add the placeholder
+    tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
+    return tempFormSelectOptions;
+  }, [transcribersById, translate]);
+
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
   const lengthMinText = translate("forms.validation.greaterEqualTo", { target: translate('forms.lengthMin'), value: VALIDATION.TDP.length.min });
+  const minEndDateText = translate('forms.validation.TDPFilterEndDate');
 
   const formSchema = yup.object({
     startDate: yup.date().nullable().notRequired(),
-    endDate: yup.date().nullable().notRequired(),
+    endDate: yup.date()
+        .min(yup.ref('startDate'), minEndDateText)
+        .nullable()
+        .notRequired(),
     maxLength: yup.number().typeError(numberText).integer(integerText).notRequired(),
     minLength: yup.number().typeError(numberText).integer(integerText).min(VALIDATION.TDP.length.min, lengthMinText).notRequired(),
     transcript: yup.string().notRequired(),
@@ -89,6 +104,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     modelConfigId: yup.mixed<string | ''>().notRequired(),
     dataSetId: yup.mixed<string | ''>().notRequired(),
     filename: yup.string().notRequired(),
+    transcriber: yup.mixed<string | ''>().notRequired(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -111,6 +127,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       modelConfigId,
       dataSetId,
       filename,
+      transcriber,
     } = values;
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
@@ -125,6 +142,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
       'data-set': dataSetId === '' ? undefined : dataSetId,
       filename,
+      transcriber,
     };
     updateVoiceData(options);
   };
@@ -305,6 +323,19 @@ export function TDPFilters(props: TDPFiltersProps) {
                         />
                       </Grid>
                       <Grid
+                          item
+                          xs={6}
+                          md={4}
+                      >
+                        <Field
+                            fullWidth
+                            name='transcriber'
+                            component={SelectFormField}
+                            options={transcriberFormSelectOptions}
+                            label={translate('common.userId')}
+                        />
+                      </Grid>
+                      <Grid
                         item
                         xs={6}
                         md={4}
@@ -363,7 +394,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                       color={theme.palette.common.white}
                       loading={true}
                     />}
-                    {translate('common.submit')}
+                    {translate('common.search')}
                   </Button>
                 </CardActions>
               </Card>

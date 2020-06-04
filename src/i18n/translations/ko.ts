@@ -23,8 +23,8 @@ export const ko: ResourceLanguage = {
       clearAll: '초기화',
       startAt: '시작 시간',
       endAt: '종료 시간',
-      fetchedAt: '받아온 시간',
-      confirmedAt: '확인 시간',
+      fetchedAt: '전사 시작 시간',
+      confirmedAt: '전사 제출 시간',
       length: '길이',
       score: '점수',
       upload: '업로드',
@@ -46,6 +46,8 @@ export const ko: ResourceLanguage = {
       url: 'URL',
       path: '경로',
       confirmDelete: '선택한 데이터를 삭제하시겠습니까?',
+      userId: '유저 아이디',
+      search: '검색',
     },
     table: {
       page: '페이지',
@@ -103,6 +105,7 @@ export const ko: ResourceLanguage = {
         between_characters:
           '{{target}}은(는) {{first}} 자에서 {{second}} 글자만 가능합니다',
         maxFileSize: '최대 파일 개수를 초과했습니다. ({{value}})',
+        TDPFilterEndDate: '시작시간은 종료시간보다 전이여야 합니다.',
       },
       dropZone: {
         main: '업로드할 파일을 끌어다 놓거나 클릭해주세요',
@@ -120,6 +123,7 @@ export const ko: ResourceLanguage = {
       },
       numberFiles: '업로드할 파일 개수: {{count}}',
       email: '이메일',
+      phone: '전화번호',
       speaker: '발화자',
       name: '이름',
       text: '텍스트 입력',
@@ -146,8 +150,8 @@ export const ko: ResourceLanguage = {
       status: '상태',
       startDate: '시작시간',
       endDate: '종료시간',
-      lengthMin: '최소 길이',
-      lengthMax: '최대 길이',
+      lengthMin: '최소 길이 (초)',
+      lengthMax: '최대 길이 (초)',
       scoreMin: '최소 Score',
       scoreMax: '최대 Score',
       transcript: '전사 결과',
@@ -196,6 +200,7 @@ export const ko: ResourceLanguage = {
       websocketCloseReason: 'Websocket close reason',
       transferredBytes: '전송된 바이트',
       originalFilename: '파일 이름',
+      wordCount: '글자 수',
     },
     SET: {
       SET: '전사세트',
@@ -230,6 +235,7 @@ export const ko: ResourceLanguage = {
     },
     editor: {
       editor: '에디터',
+      approvalRequest: '승인요청',
       confirm: '확인',
       merge: '합치기',
       split: '나누기',

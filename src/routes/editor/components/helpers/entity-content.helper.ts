@@ -1,6 +1,6 @@
 /** finds the location of the playing word on the screen and scrolls to keep it visible */
 export const checkLocationOnScreenAndScroll = (
-  referenceElement: HTMLButtonElement | null,
+  referenceElement: HTMLDivElement | HTMLButtonElement | null,
   editorElement: Element | null,
   editorContentHeight = 0,
   windowHeight = 0,
@@ -11,6 +11,7 @@ export const checkLocationOnScreenAndScroll = (
   const editorBottomScrollZone = editorContentHeight * AUTO_SCROLL_AREA_RATIO;
   const heightRange = editorContentHeight - editorBottomScrollZone;
   const nonScrollArea = (windowHeight - editorContentHeight) / 2; // only use the area above the editor
+
   // check the location and scroll accordingly
   if (referenceElement && nonScrollArea && editorElement && heightRange) {
     const { bottom } = referenceElement.getBoundingClientRect();

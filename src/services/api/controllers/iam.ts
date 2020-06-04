@@ -5,6 +5,7 @@ import {
   assignRolesToUserResult,
   deleteRoleResult,
   deleteUserResult,
+  updatePhoneAndNote,
   getRolesResult,
   getUserResult,
   inviteUserResult,
@@ -77,6 +78,34 @@ export class IAM extends ParentApi {
     try {
       const roles = response.data as Role[];
       return { kind: 'ok', roles };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async updatePhoneAndNote(userId: string, note: string, phone: string): Promise<updatePhoneAndNote> {
+    note = note ? note : '';
+    phone = phone ? phone : '';
+    const request = {note, phone};
+    // make the api call
+    const response: ApiResponse<User, ServerError> = await this.apisauce.put(
+        this.getPathWithOrganization(`/iam/users/${userId}`),
+        request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const user = response.data as User;
+      return { kind: 'ok', user };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

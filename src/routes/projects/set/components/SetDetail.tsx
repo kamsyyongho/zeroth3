@@ -61,21 +61,19 @@ export function SetDetail(props: SetDetailProps) {
         setDetailLoading,
     } = props;
     const {
-        startAt,
-        endAt,
+        decodedAt,
         fetchedAt,
         confirmedAt,
+        memo,
         originalFilename,
+        modelConfigId,
         sessionId,
         ip,
-        webSocketCloseReason,
-        webSocketCloseStatus,
         transcriber,
-        transferredBytes,
+        wordCount,
     } = row;
 
-    const startDate = new Date(startAt);
-    const endDate = new Date(endAt);
+    const startDate = new Date(decodedAt);
     const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
     const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
 
@@ -112,25 +110,25 @@ export function SetDetail(props: SetDetailProps) {
                         >
                             {`${translate('common.startAt')}:`}
                         </Typography>
-                        <Typography>{formatDate(startDate)}</Typography>
+                        <Typography>{startDate ? formatDate(startDate) : '-'}</Typography>
                     </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('common.endAt')}:`}
-                        </Typography>
-                        <Typography>{formatDate(endDate)}</Typography>
-                    </Grid>
+                    {/*<Grid*/}
+                    {/*    container*/}
+                    {/*    item*/}
+                    {/*    wrap='nowrap'*/}
+                    {/*    direction='row'*/}
+                    {/*    alignContent='center'*/}
+                    {/*    alignItems='center'*/}
+                    {/*    justify='flex-start'*/}
+                    {/*>*/}
+                    {/*    <Typography*/}
+                    {/*        className={classes.category}*/}
+                    {/*        variant='subtitle2'*/}
+                    {/*    >*/}
+                    {/*        {`${translate('common.endAt')}:`}*/}
+                    {/*    </Typography>*/}
+                    {/*    <Typography>{formatDate(endDate)}</Typography>*/}
+                    {/*</Grid>*/}
                     <Grid
                         container
                         item
@@ -146,7 +144,7 @@ export function SetDetail(props: SetDetailProps) {
                         >
                             {`${translate('TDP.sessionId')}:`}
                         </Typography>
-                        <Typography>{sessionId}</Typography>
+                        <Typography>{sessionId ? sessionId : '-'}</Typography>
                     </Grid>
                     <Grid
                         container
@@ -163,7 +161,7 @@ export function SetDetail(props: SetDetailProps) {
                         >
                             {`${translate('TDP.ip')}:`}
                         </Typography>
-                        <Typography>{ip}</Typography>
+                        <Typography>{ip ? ip : '-'}</Typography>
                     </Grid>
                     <Grid
                         container
@@ -210,6 +208,57 @@ export function SetDetail(props: SetDetailProps) {
                     alignItems='flex-start'
                     justify='flex-start'
                 >
+                    {/*<Grid*/}
+                    {/*    container*/}
+                    {/*    item*/}
+                    {/*    wrap='nowrap'*/}
+                    {/*    direction='row'*/}
+                    {/*    alignContent='center'*/}
+                    {/*    alignItems='center'*/}
+                    {/*    justify='flex-start'*/}
+                    {/*>*/}
+                    {/*    <Typography*/}
+                    {/*        className={classes.category}*/}
+                    {/*        variant='subtitle2'*/}
+                    {/*    >*/}
+                    {/*        {`${translate('TDP.websocketCloseStatus')}:`}*/}
+                    {/*    </Typography>*/}
+                    {/*    <Typography>{webSocketCloseStatus}</Typography>*/}
+                    {/*</Grid>*/}
+                    {/*<Grid*/}
+                    {/*    container*/}
+                    {/*    item*/}
+                    {/*    wrap='nowrap'*/}
+                    {/*    direction='row'*/}
+                    {/*    alignContent='center'*/}
+                    {/*    alignItems='center'*/}
+                    {/*    justify='flex-start'*/}
+                    {/*>*/}
+                    {/*    <Typography*/}
+                    {/*        className={classes.category}*/}
+                    {/*        variant='subtitle2'*/}
+                    {/*    >*/}
+                    {/*        {`${translate('TDP.websocketCloseReason')}:`}*/}
+                    {/*    </Typography>*/}
+                    {/*    <Typography>{webSocketCloseReason}</Typography>*/}
+                    {/*</Grid>*/}
+                    {/*<Grid*/}
+                    {/*    container*/}
+                    {/*    item*/}
+                    {/*    wrap='nowrap'*/}
+                    {/*    direction='row'*/}
+                    {/*    alignContent='center'*/}
+                    {/*    alignItems='center'*/}
+                    {/*    justify='flex-start'*/}
+                    {/*>*/}
+                    {/*    <Typography*/}
+                    {/*        className={classes.category}*/}
+                    {/*        variant='subtitle2'*/}
+                    {/*    >*/}
+                    {/*        {`${translate('TDP.transferredBytes')}:`}*/}
+                    {/*    </Typography>*/}
+                    {/*    <Typography>{transferredBytes}</Typography>*/}
+                    {/*</Grid>*/}
                     <Grid
                         container
                         item
@@ -223,43 +272,9 @@ export function SetDetail(props: SetDetailProps) {
                             className={classes.category}
                             variant='subtitle2'
                         >
-                            {`${translate('TDP.websocketCloseStatus')}:`}
+                            {`${translate('TDP.wordCount')}:`}
                         </Typography>
-                        <Typography>{webSocketCloseStatus}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.websocketCloseReason')}:`}
-                        </Typography>
-                        <Typography>{webSocketCloseReason}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.transferredBytes')}:`}
-                        </Typography>
-                        <Typography>{transferredBytes}</Typography>
+                        <Typography>{wordCount}</Typography>
                     </Grid>
                     <Grid
                         container
@@ -276,7 +291,7 @@ export function SetDetail(props: SetDetailProps) {
                         >
                             {`${translate('TDP.originalFilename')}:`}
                         </Typography>
-                        <Typography>{originalFilename}</Typography>
+                        <Typography>{originalFilename ? originalFilename : '-'}</Typography>
                     </Grid>
                     <Grid
                         container

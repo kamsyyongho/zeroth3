@@ -42,6 +42,7 @@ export interface SearchDataRequest {
   page?: number;
   status?: CONTENT_STATUS;
   transcript?: string;
+  transcriber?: string;
   /**
    * in the form of `field.order` with order being `desc` or `asc`
    * - the field values are `VoiceData` keys
@@ -112,6 +113,8 @@ export type UpdateSegmentsRequest = Segment[];
 /////////////
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type approveDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
