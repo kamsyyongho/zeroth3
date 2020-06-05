@@ -12,7 +12,6 @@ import { BooleanById, DataSet, ModelConfig, PaginatedResults, VoiceDataResults, 
 import { TabPanel } from '../shared/TabPanel';
 import SET from './set/SET';
 import { TDP } from './TDP/TDP';
-import TranscribingSet from './transcribingSet/TranscribingSet'
 import log from '../../util/log/logger';
 
 const STARTING_TAB_INDEX = 0;
@@ -58,7 +57,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
   const [isForbidden, setIsForbidden] = React.useState(false);
-  const [subSetsToTDP, setSubSetsToTDP] = React.useState<VoiceDataResults>([])
+  const [subSetsToTDP, setSubSetsToTDP] = React.useState<VoiceDataResults>({} as VoiceDataResults)
 
   const classes = useStyles();
   const hasSetPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.SET), [roles]);

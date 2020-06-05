@@ -131,7 +131,7 @@ export function Transcribers(props: ProjectTableTabsProps) {
                     transcriberStats={transcribersStats}
                 />}
             </TabPanel>
-            {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
+            {/*{hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
                 {tabsThatShouldRender.has(TAB_INDEX.SET) &&
                 <SET
                     refreshCounter={refreshCounterForSet}
@@ -142,7 +142,7 @@ export function Transcribers(props: ProjectTableTabsProps) {
                     pagination={pagination}
                     transcriberStatDataLoading={transcriberStatDataLoading}
                 />}
-            </TabPanel>}
+            </TabPanel>}*/}
         </Paper>
     );
 }

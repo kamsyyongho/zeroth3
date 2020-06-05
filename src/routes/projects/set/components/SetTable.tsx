@@ -55,20 +55,6 @@ export function SetTable(props: SetTableProps) {
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
 
-
-  const handleTypeChange = (event: any) => {
-    const { value } = event.target;
-    if(value.length === 1 && event.target.value.includes("none")) {
-      setSetType(["none"]);
-    } else if(value[value.length - 1] === "none") {
-      setSetType(["none"]);
-    } else {
-      setSetType(value.filter((value: string ) => {
-        return value !== "none"
-      }));
-    }
-  };
-
   const renderRowFiller = (<TableRow >
     <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
   </TableRow>);

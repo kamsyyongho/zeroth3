@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
+      width: '100%',
     },
     cell: {
       backgroundColor: theme.palette.background.default,
@@ -67,6 +68,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     ip,
     transcriber,
     wordCount,
+    stateChanges,
   } = row.original;
 
   const startDate = new Date(decodedAt);
@@ -248,24 +250,37 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
           </Grid>
           <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
+              container
+              item
+              wrap='nowrap'
+              direction='row'
+              alignContent='center'
+              alignItems='center'
+              justify='flex-start'
           >
+            {
+              stateChanges.length &&
+              <Grid item>
+                <Button
+                    color='primary'
+                    variant='outlined'
+                    onClick={handleDeleteClick}
+                >
+                  {'Train'}
+                </Button>
+              </Grid>
+            }
             {!confirmed && <Button
-              color='secondary'
-              variant='contained'
-              size='small'
-              onClick={handleDeleteClick}
-              startIcon={<DeleteIcon />}
+                color='secondary'
+                variant='contained'
+                size='small'
+                onClick={handleDeleteClick}
+                startIcon={<DeleteIcon />}
             >
               {translate('common.delete')}
             </Button>}
           </Grid>
+
         </Grid>
         <Grid
           item

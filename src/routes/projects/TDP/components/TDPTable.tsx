@@ -425,7 +425,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const fullRowColSpan = flatColumns.length;
   // subtracting the transcript column
-  const detailsRowColSpan = fullRowColSpan - SINGLE_WIDTH_COLUMN;
+  const detailsRowColSpan = fullRowColSpan;
 
   const renderRows = () => rows.map(
     (row: Row<VoiceData>, rowIndex: number) => {
