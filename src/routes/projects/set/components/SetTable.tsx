@@ -10,7 +10,7 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { DataSet, VoiceData } from '../../../../types';
+import { DataSet, VoiceData, VoiceDataResults } from '../../../../types';
 import { SetItem } from './SetItem';
 
 const FULL_ROW_COL_SPAN = 4;
@@ -20,7 +20,7 @@ interface SetTableProps {
   projectId: string;
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
-  displaySubSetInTDP: (subSet: VoiceData[]) => void;
+  displaySubSetInTDP: (subSet: VoiceDataResults) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -53,8 +53,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export function SetTable(props: SetTableProps) {
   const { dataSets, projectId, openTranscriberDialog, openRequestEvaluationDialog, displaySubSetInTDP } = props;
   const { translate } = React.useContext(I18nContext);
-  const [setType, setSetType] = React.useState(["none"]);
-  const [setTypeString, setSetTypeString] = React.useState('');
   const classes = useStyles();
 
 
@@ -69,21 +67,6 @@ export function SetTable(props: SetTableProps) {
         return value !== "none"
       }));
     }
-  };
-
-  const handleFilterRequest = () => {
-    let prepareSetTypeString = '';
-    if(setType[0] === "none") {
-      prepareSetTypeString = '';
-    } else if(setType.length === 1) {
-      prepareSetTypeString = setType[0];
-    } else {
-      prepareSetTypeString = setType[0];
-      for(let i = 1; i < setType.length; i++) {
-        prepareSetTypeString = prepareSetTypeString.concat(',', setType[i]);
-      }
-    }
-    setSetTypeString(prepareSetTypeString);
   };
 
   const renderRowFiller = (<TableRow >
@@ -102,7 +85,6 @@ export function SetTable(props: SetTableProps) {
       openRequestEvaluationDialog={openRequestEvaluationDialog}
       displaySubSetInTDP={displaySubSetInTDP}
         // openEvaluationDetail={openEvaluationDetail}
-      setType={setTypeString}
     />
   </React.Fragment>));
 
@@ -127,25 +109,6 @@ export function SetTable(props: SetTableProps) {
         {translate('SET.transcribers')}
       </TableCell>
       <TableCell>
-        <FormControl className={classes.formControl}>
-          <InputLabel id="set-type-label">Filter By Set Type</InputLabel>
-          <Select
-              labelId="set-type-label"
-              id="demo-simple-select-autowidth"
-              label="Set Type"
-              className={classes.formControl}
-              value={setType}
-              onChange={handleTypeChange}
-              multiple={true}
-              autoWidth
-              MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
-            <MenuItem value={"none"}>None</MenuItem>
-            <MenuItem value={'TRAINING'}>Training Set</MenuItem>
-            <MenuItem value={'VALIDATION'}>Validation Set</MenuItem>
-            <MenuItem value={'TEST'}>Test Set</MenuItem>
-          </Select>
-          <Button className={classes.filterBtn} color="primary" variant="outlined" onClick={handleFilterRequest}>Filter</Button>
-        </FormControl>
       </TableCell>
     </TableRow>
   </TableHead>);

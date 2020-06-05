@@ -1,5 +1,5 @@
 import { ApisauceInstance } from 'apisauce';
-import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber} from '../../../types';
+import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber, VoiceDataResults} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   AssignTranscribersToDataSetRequest,
@@ -212,7 +212,7 @@ export class DataSet extends ParentApi {
 
   async getTrainingSet(projectId: string, dataSetId: string, types: string): Promise<getTrainingSet> {
     const param = types.length ? types : null;
-    const response = await this.apisauce.get<VoiceData[], ServerError>(
+    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
         ), { types: param }
@@ -228,7 +228,7 @@ export class DataSet extends ParentApi {
     }
 
     try {
-      const subSets = response.data as SubSet;
+      const subSets = response.data as VoiceDataResults;
       return { kind: 'ok', subSets };
     } catch {
       return {kind: ProblemKind['bad-data']};

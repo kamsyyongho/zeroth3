@@ -3,7 +3,7 @@ import React from 'reactn';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind } from '../../../services/api/types';
-import { DataSet, VoiceData, PaginatedResults, ModelConfig, GenericById, TranscriberStats } from '../../../types';
+import { DataSet, VoiceData, PaginatedResults, ModelConfig, GenericById, TranscriberStats, VoiceDataResults } from '../../../types';
 import log from '../../../util/log/logger';
 import { Forbidden } from '../../shared/Forbidden';
 import { AddTranscriberDialog } from './components/AddTranscriberDialog';
@@ -20,7 +20,7 @@ interface SETProps {
   refreshCounter?: number;
   modelConfigs: ModelConfig[];
   getTranscribersWithStats: (page?:number, size?: number) => void;
-  displaySubSetInTDP: (subSet: VoiceData[]) => void;
+  displaySubSetInTDP: (subSet: VoiceDataResults) => void;
   transcribersStats: TranscriberStats[];
   transcriberStatDataLoading: boolean;
   pagination?: PaginatedResults;

@@ -17,7 +17,7 @@ import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../../theme';
-import {DataSet, VoiceData} from '../../../../types';
+import {DataSet, VoiceDataResults, VoiceData} from '../../../../types';
 import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
@@ -29,10 +29,9 @@ interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
-  setType: string;
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
-  displaySubSetInTDP: (subSet: VoiceData[]) => void;
+  displaySubSetInTDP: (subSet: VoiceDataResults) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -57,7 +56,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, displaySubSetInTDP, openRequestEvaluationDialog, setType } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, displaySubSetInTDP, openRequestEvaluationDialog } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -69,7 +68,6 @@ export function SetItem(props: SetItemProps) {
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
-  const [setTypeParam, setSetTypeParam] = React.useState(setType);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -140,27 +138,6 @@ export function SetItem(props: SetItemProps) {
         enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
       }
       setDownloadLinkPending(false);
-    }
-  };
-
-  const getSetDetail = async () => {
-    if(api?.dataSet) {
-      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
-      if(response.kind === "ok") {
-        setSubSets(response.subSets.content);
-        return true;
-      }
-    }
-  };
-
-  const openSetDetail = async () => {
-    if(subSets.length) {
-      setExpanded(!expanded);
-      return;
-    }
-    const subSetsFromRequest = await getSetDetail();
-    if(subSetsFromRequest) {
-      setExpanded(!expanded);
     }
   };
 
@@ -238,12 +215,6 @@ export function SetItem(props: SetItemProps) {
       </Grid>
     );
   };
-
-  React.useEffect(() => {
-    if(expanded) {
-      getSetDetail();
-    }
-  },[setType]);
 
   return (
       <React.Fragment>
@@ -334,7 +305,7 @@ export function SetItem(props: SetItemProps) {
                 color='primary'
                 size='medium'
                 aria-label="open"
-                onClick={openSetDetail}>
+                onClick={() => setExpanded(!expanded)}>
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </TableCell>

@@ -6,7 +6,7 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { CONTENT_STATUS, VoiceData, DataSet } from '../../../../types';
+import { CONTENT_STATUS, VoiceData, VoiceDataResults, DataSet } from '../../../../types';
 import { SUB_SET_TYPES } from '../../../../constants'
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 
@@ -52,7 +52,7 @@ interface SetDetailProps {
     setDetailLoading: boolean;
     // row: VoiceData;
     projectId: string;
-    displaySubSetInTDP: (subSet: VoiceData[]) => void;
+    displaySubSetInTDP: (subSet: VoiceDataResults) => void;
     dataSetId: string;
 }
 
@@ -60,9 +60,9 @@ export function SetDetail(props: SetDetailProps) {
     const classes = useStyles();
     const { translate, formatDate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
-    const [testSet, setTestSet] = React.useState<VoiceData[]>([]);
-    const [validationSet, setValidationSet] = React.useState<VoiceData[]>([]);
-    const [trainingSet, setTrainingSet] = React.useState<VoiceData[]>([]);
+    const [testSet, setTestSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [validationSet, setValidationSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [trainingSet, setTrainingSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
 
     const {
         // row,
@@ -93,7 +93,7 @@ export function SetDetail(props: SetDetailProps) {
         if(api?.dataSet) {
             const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.test);
             if(response.kind === "ok") {
-                setTestSet(response.subSets.content);
+                setTestSet(response.subSets);
                 return true;
             }
         }
@@ -103,7 +103,7 @@ export function SetDetail(props: SetDetailProps) {
         if(api?.dataSet) {
             const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.validation);
             if(response.kind === "ok") {
-                setTestSet(response.subSets.content);
+                setValidationSet(response.subSets);
                 return true;
             }
         }
@@ -114,7 +114,7 @@ export function SetDetail(props: SetDetailProps) {
         if(api?.dataSet) {
             const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.training);
             if(response.kind === "ok") {
-                setTestSet(response.subSets.content);
+                setTrainingSet(response.subSets);
                 return true;
             }
         }
@@ -126,11 +126,11 @@ export function SetDetail(props: SetDetailProps) {
         getValidationSet();
         getTrainSet();
         return () => {
-            setTestSet([]);
-            setValidationSet([]);
-            setTrainingSet([]);
+            setTestSet({} as VoiceDataResults);
+            setValidationSet({} as VoiceDataResults);
+            setTrainingSet({} as VoiceDataResults);
         }
-    }, []);
+    }, [dataSetId]);
 
     return (<TableRow
         className={classes.row}
@@ -168,7 +168,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${testSet.length}`}</Typography>
+                            <Typography>{`Record Count : ${testSet.numberOfElements}`}</Typography>
                         </Grid>
                     </Grid>
                     <Grid
@@ -189,7 +189,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${validationSet.length}`}</Typography>
+                            <Typography>{`Record Count : ${validationSet.numberOfElements}`}</Typography>
                         </Grid>
                     </Grid>
                     <Grid
@@ -210,7 +210,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${trainingSet.length}`}</Typography>
+                            <Typography>{`Record Count : ${trainingSet.numberOfElements}`}</Typography>
                         </Grid>
                     </Grid>
                 </Grid>
