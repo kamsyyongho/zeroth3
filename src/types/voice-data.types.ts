@@ -67,6 +67,12 @@ export interface VoiceData {
   wordCount: number;
 }
 
+export interface SubSetCountResults {
+  testCount: number;
+  trainCount: number;
+  validationCount: number;
+}
+
 export interface VoiceDataResults extends PaginatedResults {
   content: VoiceData[];
 }

@@ -167,7 +167,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
   return (<>
     <Table stickyHeader {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody >
+      <TableBody>
         {transcribersStats.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={columns.length} >

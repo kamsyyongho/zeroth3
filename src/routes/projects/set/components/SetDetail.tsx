@@ -6,7 +6,7 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { CONTENT_STATUS, VoiceData, VoiceDataResults, DataSet } from '../../../../types';
+import { CONTENT_STATUS, VoiceData, VoiceDataResults, DataSet, SubSetCountResults } from '../../../../types';
 import { SUB_SET_TYPES } from '../../../../constants'
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 
@@ -63,6 +63,7 @@ export function SetDetail(props: SetDetailProps) {
     const [testSet, setTestSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [validationSet, setValidationSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [trainingSet, setTrainingSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [subSetCount, setSubSetCount] = React.useState<SubSetCountResults>({} as SubSetCountResults);
 
     const {
         // row,
@@ -73,26 +74,26 @@ export function SetDetail(props: SetDetailProps) {
     } = props;
 
     const handleSubSetClick = (subSetType: string) => {
-        switch(subSetType) {
-            case SUB_SET_TYPES.test :
+        switch (subSetType) {
+            case SUB_SET_TYPES.test:
                 displaySubSetInTDP(testSet);
                 break;
-            case SUB_SET_TYPES.validation :
+            case SUB_SET_TYPES.validation:
                 displaySubSetInTDP(validationSet);
                 break;
-            case SUB_SET_TYPES.training :
+            case SUB_SET_TYPES.training:
                 displaySubSetInTDP(trainingSet);
                 break;
-            default :
+            default:
                 return;
         }
     };
 
 
     const getTestSet = async () => {
-        if(api?.dataSet) {
-            const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.test);
-            if(response.kind === "ok") {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSet(projectId, dataSetId, SUB_SET_TYPES.test);
+            if (response.kind === "ok") {
                 setTestSet(response.subSets);
                 return true;
             }
@@ -100,9 +101,9 @@ export function SetDetail(props: SetDetailProps) {
     };
 
     const getValidationSet = async () => {
-        if(api?.dataSet) {
-            const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.validation);
-            if(response.kind === "ok") {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSet(projectId, dataSetId, SUB_SET_TYPES.validation);
+            if (response.kind === "ok") {
                 setValidationSet(response.subSets);
                 return true;
             }
@@ -111,26 +112,31 @@ export function SetDetail(props: SetDetailProps) {
     };
 
     const getTrainSet = async () => {
-        if(api?.dataSet) {
-            const response = await api.dataSet?.getTrainingSet(projectId, dataSetId, SUB_SET_TYPES.training);
-            if(response.kind === "ok") {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSet(projectId, dataSetId, SUB_SET_TYPES.training);
+            if (response.kind === "ok") {
                 setTrainingSet(response.subSets);
                 return true;
             }
         }
     };
 
+    const getSubSetCount = async () => {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSetCount(projectId, dataSetId);
+            if (response.kind === "ok") {
+                setSubSetCount(response.count);
+            }
+        }
+    };
+
 
     React.useEffect(() => {
-        getTestSet();
-        getValidationSet();
-        getTrainSet();
+        getSubSetCount();
         return () => {
-            setTestSet({} as VoiceDataResults);
-            setValidationSet({} as VoiceDataResults);
-            setTrainingSet({} as VoiceDataResults);
+            setSubSetCount({} as SubSetCountResults);
         }
-    }, [dataSetId]);
+    }, []);
 
     return (<TableRow
         className={classes.row}
@@ -168,7 +174,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${testSet.numberOfElements}`}</Typography>
+                            <Typography>{`Record Count : ${subSetCount.testCount}`}</Typography>
                         </Grid>
                     </Grid>
                     <Grid
@@ -189,7 +195,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${validationSet.numberOfElements}`}</Typography>
+                            <Typography>{`Record Count : ${subSetCount.validationCount}`}</Typography>
                         </Grid>
                     </Grid>
                     <Grid
@@ -210,7 +216,7 @@ export function SetDetail(props: SetDetailProps) {
                             </Button>
                         </Grid>
                         <Grid item>
-                            <Typography>{`Record Count : ${trainingSet.numberOfElements}`}</Typography>
+                            <Typography>{`Record Count : ${subSetCount.trainCount}`}</Typography>
                         </Grid>
                     </Grid>
                 </Grid>

@@ -1,4 +1,4 @@
-import {Grid, TableCell, Tooltip, Typography} from '@material-ui/core';
+import { Grid, TableCell, Tooltip, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -19,11 +19,11 @@ import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../theme';
-import {DataSet, VoiceData, PATHS} from '../../../types';
+import { DataSet, VoiceData, PATHS } from '../../../types';
 import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
 import log from '../../../util/log/logger';
 import { ProgressBar } from '../../shared/ProgressBar';
-import {SetDetail} from "../../projects/set/components/SetDetail";
+import { SetDetail } from "../../projects/set/components/SetDetail";
 import { EvaluationDetailModal } from '../../projects/set/components/EvaluationDetailModal';
 import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
@@ -86,11 +86,11 @@ export function AdminTableItem(props: AdminTableItem) {
 
     const createTrainingSet = async () => {
         setIsCreateTrainingSetLoading(true);
-        if(api?.dataSet) {
+        if (api ?.dataSet) {
             let serverError: ServerError | undefined;
             const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
 
-            if(response.kind === 'ok') {
+            if (response.kind === 'ok') {
                 enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
             } else {
                 log({
@@ -101,7 +101,7 @@ export function AdminTableItem(props: AdminTableItem) {
                 });
                 serverError = response.serverError;
                 let errorMessageText = translate('common.error');
-                if(serverError?.message) {
+                if (serverError ?.message) {
                     errorMessageText = serverError.message;
                 }
                 enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
@@ -115,7 +115,7 @@ export function AdminTableItem(props: AdminTableItem) {
             startDownload(downloadLink);
             return;
         }
-        if (api?.dataSet && !downloadLinkPending) {
+        if (api ?.dataSet && !downloadLinkPending) {
             setDownloadLinkPending(true);
             setDownloadLink('');
             let serverError: ServerError | undefined;
@@ -131,7 +131,7 @@ export function AdminTableItem(props: AdminTableItem) {
                 });
                 serverError = response.serverError;
                 let errorMessageText = translate('common.error');
-                if (serverError?.message) {
+                if (serverError ?.message) {
                     errorMessageText = serverError.message;
                 }
                 enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
@@ -141,9 +141,9 @@ export function AdminTableItem(props: AdminTableItem) {
     };
 
     const getSetDetail = async () => {
-        if(api?.dataSet) {
-            const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, '');
-            if(response.kind === "ok") {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSet(projectId, dataSet.id, '');
+            if (response.kind === "ok") {
                 setSubSets(response.subSets.content);
                 return true;
             }
@@ -151,12 +151,12 @@ export function AdminTableItem(props: AdminTableItem) {
     };
 
     const openSetDetail = async () => {
-        if(subSets.length) {
+        if (subSets.length) {
             setExpanded(!expanded);
             return;
         }
         const subSetsFromRequest = await getSetDetail();
-        if(subSetsFromRequest) {
+        if (subSetsFromRequest) {
             setExpanded(!expanded);
         }
     };
@@ -215,10 +215,10 @@ export function AdminTableItem(props: AdminTableItem) {
     };
 
     React.useEffect(() => {
-        if(expanded) {
+        if (expanded) {
             getSetDetail();
         }
-    },[expanded]);
+    }, [expanded]);
 
     return (
         <TableRow

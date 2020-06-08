@@ -1,12 +1,12 @@
 import { ApisauceInstance } from 'apisauce';
-import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber, VoiceDataResults} from '../../../types';
+import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber, VoiceDataResults, SubSetCountResults} from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   AssignTranscribersToDataSetRequest,
   assignTranscribersToDataSetResult,
   getAllResult,
   getDownloadLinkResult,
-  getTrainingSet,
+  getSubSet,
   createTrainingSet,
   PostDataSetRequest,
   postDataSetResult,
@@ -14,6 +14,7 @@ import {
   removeTranscriberFromDataSetResult,
   ServerError,
   requestEvaluation,
+  getSubSetCount,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -210,7 +211,7 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async getTrainingSet(projectId: string, dataSetId: string, types: string): Promise<getTrainingSet> {
+  async getSubSet(projectId: string, dataSetId: string, types: string): Promise<getSubSet> {
     const param = types.length ? types : null;
     const response = await this.apisauce.get<VoiceDataResults, ServerError>(
         this.getPathWithOrganization(
@@ -233,7 +234,27 @@ export class DataSet extends ParentApi {
     } catch {
       return {kind: ProblemKind['bad-data']};
     }
+  }
 
+  async getSubSetCount(projectId: string, dataSetId: string): Promise<getSubSetCount> {
+    const response = await this.apisauce.get<SubSetCountResults, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data-sets/${dataSetId}/sub-sets/count`));
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      const count = response.data as SubSetCountResults;
+      return { kind: 'ok', count };
+    } catch {
+      return {kind: ProblemKind['bad-data']};
+    }
   }
 
   async requestEvaluation(projectId: string, dataSetId: string, modelConfigId: string): Promise<requestEvaluation> {

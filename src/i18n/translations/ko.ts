@@ -213,6 +213,7 @@ export const ko: ResourceLanguage = {
       transferredBytes: '전송된 바이트',
       originalFilename: '파일 이름',
       wordCount: '글자 수',
+      statusChange: '상태변화 내역',
     },
     transcribingSet: {
       transcribingSet: 'TDP 세트',

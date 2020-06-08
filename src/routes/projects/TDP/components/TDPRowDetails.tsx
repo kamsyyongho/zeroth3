@@ -4,6 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DeleteIcon from '@material-ui/icons/Delete';
+import HistoryIcon from '@material-ui/icons/History';
 import { Row } from 'react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
@@ -257,28 +258,33 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               alignContent='center'
               alignItems='center'
               justify='flex-start'
+              style={{ paddingTop: '5px' }}
           >
-            {
-              stateChanges.length &&
-              <Grid item>
+            <Grid item>
+              {
+                stateChanges.length &&
                 <Button
-                    color='primary'
-                    variant='outlined'
+                    color='secondary'
+                    variant='contained'
+                    size='small'
                     onClick={handleDeleteClick}
+                    startIcon={<HistoryIcon />}
                 >
-                  {'Train'}
+                  {translate('TDP.statusChange')}
                 </Button>
-              </Grid>
-            }
-            {!confirmed && <Button
-                color='secondary'
-                variant='contained'
-                size='small'
-                onClick={handleDeleteClick}
-                startIcon={<DeleteIcon />}
-            >
-              {translate('common.delete')}
-            </Button>}
+              }
+            </Grid>
+            <Grid item style={{ marginLeft: '15px' }}>
+              {!confirmed && <Button
+                  color='secondary'
+                  variant='contained'
+                  size='small'
+                  onClick={handleDeleteClick}
+                  startIcon={<DeleteIcon />}
+              >
+                {translate('common.delete')}
+              </Button>}
+            </Grid>
           </Grid>
 
         </Grid>

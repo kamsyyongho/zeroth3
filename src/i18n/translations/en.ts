@@ -213,6 +213,7 @@ export const en: ResourceLanguage = {
       openToRate: 'Open to rate',
       originalFilename: 'Filename',
       wordCount: 'Word Count',
+      statusChange: 'Status Changes',
     },
     SET: {
       SET: 'SET',

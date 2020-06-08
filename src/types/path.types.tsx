@@ -63,11 +63,11 @@ export const PATHS: { [x: string]: Path; } = {
     title: 'modelTraining',
     Icon: props => <ICONS.Training {...props} />,
   },
-  // admin: {
-  //   to: '/admin',
-  //   title: 'admin',
-  //   Icon: props => <ICONS.IAM {...props} />,
-  // },
+  admin: {
+    to: '/admin',
+    title: 'admin',
+    Icon: props => <ICONS.IAM {...props} />,
+  },
   // transcribers: {
   //   to: '/transcribers',
   //   title: 'transcribers',
