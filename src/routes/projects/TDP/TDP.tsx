@@ -213,7 +213,7 @@ export function TDP(props: TDPProps) {
 
   const getSubSetVoiceData = async (parameter: any = {}) => {
     if (api?.dataSet && projectId && setId && setType) {
-      const param = { ...parameter, type: setType }
+      const param = { ...parameter, types: setType }
       if(!parameter?.size && initialPageSize) {
         Object.assign(param, {size: initialPageSize});
       }
