@@ -57,7 +57,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
   const [isForbidden, setIsForbidden] = React.useState(false);
-  const [subSetsToTDP, setSubSetsToTDP] = React.useState<VoiceDataResults>({} as VoiceDataResults)
   const [setId, setSetId] = React.useState<string>();
   const [setType, setSetType] = React.useState<string>();
 
@@ -138,7 +137,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}
             transcriberStats={transcribersStats}
-            subSetsToTDP={subSetsToTDP}
             setId={setId}
             setType={setType}
           />}

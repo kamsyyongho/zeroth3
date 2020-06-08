@@ -20,6 +20,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { CustomTheme } from '../../../../theme';
 import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
 import { ProgressBar } from '../../../shared/ProgressBar';
@@ -27,7 +28,6 @@ import { ProgressBar } from '../../../shared/ProgressBar';
 interface StatusLogModalProps {
     open: boolean;
     onClose: () => void;
-    onSuccess: () => void;
     statusChanges: any[];
 }
 
@@ -55,22 +55,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function StatusLogModal(props: StatusLogModalProps) {
-    const { open, onClose, onSuccess } = props;
-    const { translate } = React.useContext(I18nContext);
+    const { open, onClose, statusChanges } = props;
+    const { translate, formatDate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);
     const [setType, setSetType] = React.useState("none");
     const classes = useStyles();
     const theme = useTheme();
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
-
-    const renderButton = React.useMemo(() => {
-        if(buttonMsg === translate("common.delete")) {
-            return (<DeleteIcon />)
-        }else{
-            return (<DoneIcon />)
-        }
-    },[buttonMsg])
 
     const handleClose = () => {
         setLoading(false);
@@ -87,50 +79,45 @@ export function StatusLogModal(props: StatusLogModalProps) {
             aria-labelledby="create-set-dialog"
         >
             <DialogTitle id="create-set-dialog">
-                {contentMsg}
-
+                {translate('TDP.statusChange')}
             </DialogTitle>
             <DialogContent className={classes.dialogContent}>
-                {modelConfigsById && selectedDataSet &&
                 <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                {translate('forms.status')}
+                            </TableCell>
+                            <TableCell>
+                                {translate('common.date')}
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
                     <TableBody>
                         {
-                            selectedDataSet.evaluationProgress && selectedDataSet.evaluationProgress !== 100 &&
-                            <TableRow className={classes.tableRow}>
-                                <TableCell>
-                                    <Typography>{translate('common.progress')}</Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography className={classes.processedText} >
-                                        {selectedDataSet.evaluationProgress}
-                                        <Typography component='span' color='textPrimary' >
-                                            {` / 100`}
-                                        </Typography>
-                                    </Typography>
-                                    <ProgressBar value={selectedDataSet?.evaluationProgress || 0} maxWidth={200} />
-                                </TableCell>
-                            </TableRow>
+                            statusChanges.map((change: any, index: number) => {
+                                return (
+                                    <TableRow key={`status-change-row-${index}`}>
+                                        <TableCell>
+                                            <Typography>{change.state}</Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography>
+                                                {formatDate(new Date(change.changedAt))}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })
                         }
                     </TableBody>
                 </Table>
-                }
             </DialogContent>
             <DialogActions>
-                <Button disabled={loading} onClick={onClose} color="primary">
-                    {translate("common.cancel")}
-                </Button>
                 <Button
-                    onClick={handleSuccess}
-                    disabled={modelConfigsById && setType === "none"}
+                    onClick={onClose}
                     color="primary"
-                    variant="outlined"
-                    startIcon={loading ?
-                        <MoonLoader
-                            sizeUnit={"px"}
-                            size={15}
-                            color={theme.palette.primary.main}
-                            loading={true}
-                        /> : renderButton}>
+                    variant="outlined">
                     {translate('common.close')}
                 </Button>
             </DialogActions>

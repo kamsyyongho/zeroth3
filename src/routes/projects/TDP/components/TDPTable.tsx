@@ -45,6 +45,7 @@ interface TDPTableProps {
   deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
   handlePagination: (pageIndex: number, size: number) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
+  handleStatusChangesModalOpen: (statusChanges: any[]) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -99,6 +100,7 @@ export function TDPTable(props: TDPTableProps) {
     deleteUnconfirmedVoiceData,
     handleVoiceDataUpdate,
     handlePagination,
+    handleStatusChangesModalOpen,
     setFilterParams,
   } = props;
   // const voiceData = voiceDataResults.content;
@@ -389,7 +391,7 @@ export function TDPTable(props: TDPTableProps) {
       setExpandedRowsByIndex({});
     }
   }, [getVoiceData, voiceDataOptions, sortBy]);
-  
+
   React.useEffect(() => {
     handlePagination(pageIndex, pageSize);
   }, [pageIndex, pageSize])
@@ -472,6 +474,7 @@ export function TDPTable(props: TDPTableProps) {
               projectId={projectId}
               onDelete={openDeleteConfirmation}
               onSuccess={handleVoiceDataUpdate}
+              handleStatusChangesModalOpen={handleStatusChangesModalOpen}
             />
           }
         </React.Fragment >

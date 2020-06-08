@@ -46,6 +46,7 @@ interface TDPRowDetailsProps {
   projectId: string;
   onDelete: (voiceDataId: string, dataIndex: number) => void;
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  handleStatusChangesModalOpen: (statusChanges: any[]) => void;
 }
 
 export function TDPRowDetails(props: TDPRowDetailsProps) {
@@ -57,6 +58,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     projectId,
     onDelete,
     onSuccess,
+    handleStatusChangesModalOpen,
   } = props;
   const {
     decodedAt,
@@ -267,7 +269,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
                     color='secondary'
                     variant='contained'
                     size='small'
-                    onClick={handleDeleteClick}
+                    onClick={() => handleStatusChangesModalOpen(stateChanges)}
                     startIcon={<HistoryIcon />}
                 >
                   {translate('TDP.statusChange')}

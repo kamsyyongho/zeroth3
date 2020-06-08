@@ -26,6 +26,7 @@ import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
 import { TDPTable } from './components/TDPTable';
 import { ConfirmationDialog } from "./components/Confirmation";
+import { StatusLogModal } from './components/StatusLogModal';
 import DeleteIcon from "@material-ui/icons/Delete";
 
 interface TDPProps {
@@ -37,7 +38,6 @@ interface TDPProps {
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
   transcriberStats: TranscriberStats[];
-  subSetsToTDP?: VoiceDataResults;
   setId?: string;
   setType?: string;
 }
@@ -71,7 +71,6 @@ export function TDP(props: TDPProps) {
     modelConfigDialogOpen,
     openModelConfigDialog,
     transcriberStats,
-    subSetsToTDP,
     setId,
     setType,
   } = props;
@@ -89,6 +88,8 @@ export function TDP(props: TDPProps) {
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
   const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
   const [setTypeTDP, setSetTypeTDP] = React.useState<string | undefined>(setType);
+  const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = React.useState<boolean>(false);
+  const [selectedStatusChanges, setSelectedStatusChange] = React.useState([]);
 
   const classes = useStyles();
 
@@ -239,6 +240,11 @@ export function TDP(props: TDPProps) {
     }
   };
 
+  const handleStatusChangesModalOpen = (statusChanges: any[]) => {
+    setSelectedStatusChange(statusChanges);
+    setIsStatusChangeModalOpen(true);
+  }
+
   React.useEffect(() => {
     setSetTypeTDP(setType)
     return () => {
@@ -350,6 +356,7 @@ export function TDP(props: TDPProps) {
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
             handlePagination={handlePagination}
+            handleStatusChangesModalOpen={handleStatusChangesModalOpen}
             loading={voiceDataLoading || voiceDataDeleteLoading}
             setFilterParams={setFilterParams}
             deleteUnconfirmedVoiceData={deleteUnconfirmedVoiceData}
@@ -380,6 +387,10 @@ export function TDP(props: TDPProps) {
         projectId={projectId}
         filterParams={filterParams as FilterParams}
       />
+      <StatusLogModal
+          open={isStatusChangeModalOpen}
+          onClose={() => setIsStatusChangeModalOpen(false)}
+          statusChanges={selectedStatusChanges}/>
       <ConfirmationDialog
           contentMsg={translate('SET.deleteAllMsg')}
           buttonMsg={translate('common.delete')}
