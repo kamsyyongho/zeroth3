@@ -89,7 +89,7 @@ export function TDP(props: TDPProps) {
   const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
   const [setTypeTDP, setSetTypeTDP] = React.useState<string | undefined>(setType);
   const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = React.useState<boolean>(false);
-  const [selectedStatusChanges, setSelectedStatusChange] = React.useState([]);
+  const [selectedStatusChanges, setSelectedStatusChange] = React.useState<any[]>([]);
 
   const classes = useStyles();
 
@@ -214,6 +214,9 @@ export function TDP(props: TDPProps) {
   const getSubSetVoiceData = async (parameter: any = {}) => {
     if (api?.dataSet && projectId && setId && setType) {
       const param = { ...parameter, type: setType }
+      if(!parameter?.size && initialPageSize) {
+        Object.assign(param, {size: initialPageSize});
+      }
       setVoiceDataLoading(true);
       const response = await api.dataSet.getSubSet(projectId, setId, param);
       if (response.kind === 'ok') {

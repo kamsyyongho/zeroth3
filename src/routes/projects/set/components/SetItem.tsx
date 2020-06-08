@@ -103,7 +103,6 @@ export function SetItem(props: SetItemProps) {
   };
 
   const handleEvaluateClick = () => {
-    console.log(dataSet)
     if(dataSet?.evaluationUrl) {
       openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
     } else {
