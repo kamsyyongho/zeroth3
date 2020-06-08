@@ -20,7 +20,7 @@ interface SETProps {
   refreshCounter?: number;
   modelConfigs: ModelConfig[];
   getTranscribersWithStats: (page?:number, size?: number) => void;
-  displaySubSetInTDP: (subSet: VoiceDataResults) => void;
+  displaySubSetInTDP: (setId: string, subSetType: string) => void;
   transcribersStats: TranscriberStats[];
   transcriberStatDataLoading: boolean;
   pagination?: PaginatedResults;

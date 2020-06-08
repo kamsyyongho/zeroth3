@@ -43,6 +43,7 @@ interface TDPTableProps {
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
   deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
+  handlePagination: (pageIndex: number, size: number) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
 }
 
@@ -97,6 +98,7 @@ export function TDPTable(props: TDPTableProps) {
     getVoiceData,
     deleteUnconfirmedVoiceData,
     handleVoiceDataUpdate,
+    handlePagination,
     setFilterParams,
   } = props;
   // const voiceData = voiceDataResults.content;
@@ -386,7 +388,11 @@ export function TDPTable(props: TDPTableProps) {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
       setExpandedRowsByIndex({});
     }
-  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
+  }, [getVoiceData, voiceDataOptions, sortBy]);
+  
+  React.useEffect(() => {
+    handlePagination(pageIndex, pageSize);
+  }, [pageIndex, pageSize])
 
   React.useEffect(() => {
     if(!voiceDataResults?.content?.length) {

@@ -2,18 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/path.types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/path.types.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/voice-data.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +78,7 @@
       <workItem from="1589244559766" duration="35000" />
       <workItem from="1589244756954" duration="109572000" />
       <workItem from="1591260853215" duration="192000" />
-      <workItem from="1591577932315" duration="5476000" />
+      <workItem from="1591577932315" duration="10393000" />
     </task>
     <servers />
   </component>
@@ -132,8 +129,8 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="0" y="0" width="896" height="1080" key="dock-window-1" timestamp="1591582359919">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state x="1920" y="0" width="896" height="1080" key="dock-window-1" timestamp="1591588940420">
+      <screen x="1920" y="23" width="1920" height="1057" />
     </state>
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
     <state x="1920" y="0" width="1142" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/69.1080.1792.1120@0.0.1920.1080" timestamp="1591260876052" />
@@ -155,6 +152,7 @@
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/214.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591578078858" />
     <state x="880" y="-1080" width="1272" height="1080" key="dock-window-1/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589458417891" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591581583685" />
+    <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1097/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591588940420" />
     <state x="2057" y="-1057" width="1078" height="1057" key="dock-window-2" timestamp="1589475501857">
       <screen x="880" y="-1057" width="2560" height="1057" />
     </state>

@@ -52,7 +52,7 @@ interface SetDetailProps {
     setDetailLoading: boolean;
     // row: VoiceData;
     projectId: string;
-    displaySubSetInTDP: (subSet: VoiceDataResults) => void;
+    displaySubSetInTDP: (setId: string, subSetType: string) => void;
     dataSetId: string;
 }
 
@@ -74,19 +74,19 @@ export function SetDetail(props: SetDetailProps) {
     } = props;
 
     const handleSubSetClick = (subSetType: string) => {
-        switch (subSetType) {
-            case SUB_SET_TYPES.test:
-                displaySubSetInTDP(testSet);
-                break;
-            case SUB_SET_TYPES.validation:
-                displaySubSetInTDP(validationSet);
-                break;
-            case SUB_SET_TYPES.training:
-                displaySubSetInTDP(trainingSet);
-                break;
-            default:
-                return;
-        }
+        // switch (subSetType) {
+        //     case SUB_SET_TYPES.test:
+        //         displaySubSetInTDP(testSet);
+        //         break;
+        //     case SUB_SET_TYPES.validation:
+        //         displaySubSetInTDP(validationSet);
+        //         break;
+        //     case SUB_SET_TYPES.training:
+        //         displaySubSetInTDP(trainingSet);
+        //         break;
+        //     default:
+        //         return;
+        // }
     };
 
 
@@ -168,7 +168,7 @@ export function SetDetail(props: SetDetailProps) {
                             <Button
                                 color='primary'
                                 variant='outlined'
-                                onClick={() => handleSubSetClick(SUB_SET_TYPES.test)}
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.test)}
                             >
                                 {'Test'}
                             </Button>
@@ -189,7 +189,7 @@ export function SetDetail(props: SetDetailProps) {
                             <Button
                                 color='primary'
                                 variant='outlined'
-                                onClick={() => handleSubSetClick(SUB_SET_TYPES.validation)}
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.validation)}
                             >
                                 {'Validation'}
                             </Button>
@@ -210,7 +210,7 @@ export function SetDetail(props: SetDetailProps) {
                             <Button
                                 color='primary'
                                 variant='outlined'
-                                onClick={() => handleSubSetClick(SUB_SET_TYPES.training)}
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.training)}
                             >
                                 {'Train'}
                             </Button>

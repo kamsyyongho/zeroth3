@@ -211,12 +211,12 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async getSubSet(projectId: string, dataSetId: string, types: string): Promise<getSubSet> {
-    const param = types.length ? types : null;
+  async getSubSet(projectId: string, dataSetId: string, params: any): Promise<getSubSet> {
+    // const param = types.length ? types : null;
     const response = await this.apisauce.get<VoiceDataResults, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
-        ), { types: param }
+        ), params
     );
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);

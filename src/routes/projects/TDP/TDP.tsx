@@ -38,6 +38,8 @@ interface TDPProps {
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
   transcriberStats: TranscriberStats[];
   subSetsToTDP?: VoiceDataResults;
+  setId?: string;
+  setType?: string;
 }
 
 
@@ -70,6 +72,8 @@ export function TDP(props: TDPProps) {
     openModelConfigDialog,
     transcriberStats,
     subSetsToTDP,
+    setId,
+    setType,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
@@ -84,6 +88,7 @@ export function TDP(props: TDPProps) {
   const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
   const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
+  const [setTypeTDP, setSetTypeTDP] = React.useState<string | undefined>(setType);
 
   const classes = useStyles();
 
@@ -197,7 +202,7 @@ export function TDP(props: TDPProps) {
     }
   };
 
-  const getVoiceDataWithDefautOptions = () => {
+  const getVoiceDataWithDefaultOptions = () => {
     const options: SearchDataRequest = {};
     if (initialPageSize) {
       options.size = initialPageSize;
@@ -205,30 +210,71 @@ export function TDP(props: TDPProps) {
     getVoiceData(options);
   };
 
+  const getSubSetVoiceData = async (parameter: any = {}) => {
+    if (api?.dataSet && projectId && setId && setType) {
+      const param = { ...parameter, type: setType }
+      setVoiceDataLoading(true);
+      const response = await api.dataSet.getSubSet(projectId, setId, param);
+      if (response.kind === 'ok') {
+        setVoiceDataResults(response.subSets);
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `getSubSetVoiceData - failed to get voice data`,
+          value: response,
+          important: true,
+        });
+      }
+      setVoiceDataLoading(false);
+      setInitialVoiceDataLoading(false);
+    }
+  };
+
+  const handlePagination = async (pageIndex: number, size: number) => {
+    const options = { page: pageIndex, size }
+    if(setTypeTDP?.length) {
+      getSubSetVoiceData(options)
+    } else {
+      getVoiceData(options);
+    }
+  };
+
+  React.useEffect(() => {
+    setSetTypeTDP(setType)
+    return () => {
+      setSetTypeTDP(undefined);
+    }
+  }, [setType])
+
   React.useEffect(() => {
     // if the flag was already set when we first load the page
     if (projectTdpDataShouldRefresh) {
       setProjectTdpDataShouldRefresh(false);
     }
-    getVoiceDataWithDefautOptions();
+    if(setTypeTDP?.length) {
+      getSubSetVoiceData();
+    } else {
+      getVoiceDataWithDefaultOptions();
+    }
   }, []);
 
   React.useEffect(() => {
     // if the flag triggers after we are already on the page
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
       setProjectTdpDataShouldRefresh(false);
-      getVoiceDataWithDefautOptions();
+      if(setTypeTDP?.length) {
+        getSubSetVoiceData();
+      } else {
+        getVoiceDataWithDefaultOptions();
+      }
     }
   }, [projectTdpDataShouldRefresh]);
 
   React.useEffect(() => {
-    if(subSetsToTDP && subSetsToTDP.content?.length) {
-      setVoiceDataResults(subSetsToTDP);
+    if(setTypeTDP?.length) {
+      getSubSetVoiceData();
     }
-    return () => {
-      setVoiceDataResults({} as VoiceDataResults);
-    }
-  }, [subSetsToTDP]);
+  }, [setTypeTDP]);
 
   const modelConfigsById: GenericById<ModelConfig> = React.useMemo(
     () => {
@@ -303,6 +349,7 @@ export function TDP(props: TDPProps) {
             voiceDataResults={voiceDataResults}
             getVoiceData={getVoiceData}
             handleVoiceDataUpdate={handleVoiceDataUpdate}
+            handlePagination={handlePagination}
             loading={voiceDataLoading || voiceDataDeleteLoading}
             setFilterParams={setFilterParams}
             deleteUnconfirmedVoiceData={deleteUnconfirmedVoiceData}

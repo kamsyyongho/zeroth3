@@ -58,6 +58,8 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
   const [isForbidden, setIsForbidden] = React.useState(false);
   const [subSetsToTDP, setSubSetsToTDP] = React.useState<VoiceDataResults>({} as VoiceDataResults)
+  const [setId, setSetId] = React.useState<string>();
+  const [setType, setSetType] = React.useState<string>();
 
   const classes = useStyles();
   const hasSetPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.SET), [roles]);
@@ -102,8 +104,10 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
       }
     };
 
-  const displaySubSetInTDP = (subSet: VoiceDataResults) => {
-    setSubSetsToTDP(subSet);
+  const displaySubSetInTDP = (setId: string, subSetType: string) => {
+    // setSubSetsToTDP(subSet);
+    setSetId(setId);
+    setSetType(subSetType);
     handleChange({} as React.ChangeEvent, 0)
   };
 
@@ -135,6 +139,8 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             modelConfigDialogOpen={modelConfigDialogOpen}
             transcriberStats={transcribersStats}
             subSetsToTDP={subSetsToTDP}
+            setId={setId}
+            setType={setType}
           />}
       </TabPanel>
       {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>

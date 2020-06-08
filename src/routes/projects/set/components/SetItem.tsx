@@ -31,7 +31,7 @@ interface SetItemProps {
   dataSetIndex: number;
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
-  displaySubSetInTDP: (subSet: VoiceDataResults) => void;
+  displaySubSetInTDP: (setId: string, subSetType: string) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
