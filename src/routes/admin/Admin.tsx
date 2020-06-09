@@ -105,7 +105,7 @@ export function Admin() {
     const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
     const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
-    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number | undefined>();
+    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number>(0);
     const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
     const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -162,8 +162,8 @@ export function Admin() {
 
     const getAllDataSets = async () => {
         if (api?.voiceData) {
-            const response = await api.voiceData.getHistory();
-            // const response = await api.voiceData.getDataToReview();
+            // const response = await api.voiceData.getHistory();
+            const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
                 setVoiceData(response.voiceData);
             } else {
@@ -177,48 +177,33 @@ export function Admin() {
         }
     };
 
-    const getTranscribersWithStats = async (page?: number, size = 10000) => {
-        if (api?.transcriber) {
-            setTranscriberStatDataLoading(true);
-            const response = await api.transcriber.getTranscribersWithStats(page, size);
-            if (response.kind === 'ok') {
-                setTranscribersStats(response.transcribersStats);
-                setPagination(response.pagination);
-            } else {
-                if (response.kind === ProblemKind['forbidden']) {
-                    setIsForbidden(true);
-                }
-                log({
-                    file: `SET.tsx`,
-                    caller: `getTranscribersWithStats - failed to get transcribers stat data`,
-                    value: response,
-                    important: true,
-                });
-            }
-            setTranscriberStatDataLoading(false);
-        }
-    };
+    const setSelectionAndOpenDialog = (index: number) => {
+        setSelectedVoiceDataIndex(index);
+        setSelectedVoiceData(voiceData[index]);
+        setIsConfirmationOpen(true);
+    }
 
     const handleConfirmationClick = (voiceDataIndex: number) => {
-        setSelectedVoiceDataIndex(voiceDataIndex);
         setIsConfirm(true);
-        setIsConfirmationOpen(true);
+        setSelectionAndOpenDialog(voiceDataIndex)
     };
 
     const handleRejectClick = (voiceDataIndex: number) => {
-        setSelectedVoiceDataIndex(voiceDataIndex);
         setIsConfirm(false);
-        setIsConfirmationOpen(true);
+        setSelectionAndOpenDialog(voiceDataIndex)
     };
 
     const handleConfirmation = async () => {
-        if (api?.voiceData && projectId && voiceData && selectedVoiceDataIndex) {
+        if (api?.voiceData && voiceData && selectedVoiceData) {
             setIsLoading(true);
             setIsConfirmationOpen(false);
-            const response = await api.voiceData.requestApproval(projectId, voiceData[selectedVoiceDataIndex].id);
+            const response = await api.voiceData.confirmData(selectedVoiceData.projectId, selectedVoiceData.id);
             let snackbarError: SnackbarError | undefined = {} as SnackbarError;
             if (response.kind === 'ok') {
+                const copyData = voiceData.slice();
                 snackbarError = undefined;
+                copyData.splice(selectedVoiceDataIndex, 1);
+                setVoiceData(copyData);
                 enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
                 // to trigger the `useEffect` to fetch more
                 // setVoiceData(undefined);
@@ -241,7 +226,35 @@ export function Admin() {
     };
 
     const handleRejection = async () => {
-
+        if (api?.voiceData && voiceData && selectedVoiceData) {
+            setIsLoading(true);
+            setIsConfirmationOpen(false);
+            const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                const copyData = voiceData.slice();
+                snackbarError = undefined;
+                copyData.splice(selectedVoiceDataIndex, 1);
+                setVoiceData(copyData);
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                // setVoiceData(undefined);
+            } else {
+                log({
+                    file: `EditorPage.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setIsLoading(false);
+        }
     };
 
     React.useEffect(() => {
@@ -266,10 +279,6 @@ export function Admin() {
 
     React.useEffect(() => {
         setPageTitle(translate('admin.pageTitle'));
-    }, []);
-
-    React.useEffect(() => {
-        getTranscribersWithStats();
     }, []);
 
     const renderSummary = () => {

@@ -174,6 +174,7 @@ export const ko: ResourceLanguage = {
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',
       rejectMsg: '반려하시겠습니까?',
+      reason: '이유',
     },
     IAM: {
       users: '사용자',

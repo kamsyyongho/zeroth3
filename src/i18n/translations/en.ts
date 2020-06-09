@@ -173,6 +173,7 @@ export const en: ResourceLanguage = {
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',
       rejectMsg: 'Reject this transcript?',
+      reason: 'Reason',
     },
     IAM: {
       users: 'Users',

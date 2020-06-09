@@ -12,7 +12,6 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ModelConfig, GenericById, DataSet } from '../../../types';
 import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
-import { Field } from 'formik';
 import Select from '@material-ui/core/Select';
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
@@ -24,6 +23,9 @@ import TableRow from '@material-ui/core/TableRow';
 import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
 import { ProgressBar } from '../../shared/ProgressBar';
 import ThumbDownIcon from '@material-ui/icons/ThumbDown';
+import { TextFormField } from '../../shared/form-fields/TextFormField';
+import * as yup from 'yup';
+import { Field, Form, Formik } from 'formik';
 
 interface CreateSetFormDialogProps {
     open: boolean;
@@ -55,6 +57,13 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             borderColor: theme.table.border,
             border: 'solid',
             borderCollapse: undefined,
+        },
+        button: {
+            marginLeft: '15px',
+            width: '90px',
+        },
+        buttonReject: {
+            backgroundColor: '#c33636',
         }
     }));
 
@@ -67,14 +76,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
     const theme = useTheme();
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
-
-    const renderButton = React.useMemo(() => {
-        if(buttonMsg === translate("common.delete")) {
-            return (<DeleteIcon />)
-        }else{
-            return (<DoneIcon />)
-        }
-    },[buttonMsg])
+    const requiredTranslationText = translate("forms.validation.required");
 
     const handleClose = () => {
         setLoading(false);
@@ -82,17 +84,53 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
         onClose();
     };
 
-    const handleSuccess = async () => {
-        setLoading(true);
-        await onSuccess();
-        setSetType('none');
-        setLoading(false);
+    const handleSubmit = (values: FormValues) => {
+        const { reason } = values;
+        onReject(reason);
+    }
+
+    const formSchema = yup.object({
+        reason: yup.string().required(requiredTranslationText).trim(),
+    });
+    type FormValues = yup.InferType<typeof formSchema>;
+    const initialValues: FormValues = {
+        reason: "",
     };
 
-    const handleModelConfigId = (event: any) => {
-        const modelConfigId = event.target.value;
-        setSetType(modelConfigId);
-        if(setSelectedModelConfigId) setSelectedModelConfigId(modelConfigId)
+    const renderRejectContent = () => {
+        return (
+            <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
+                {(formikProps) => {
+                    return (<>
+                        <DialogContent className={classes.dialogContent}>
+                            <Form>
+                                <Field
+                                    name='reason'
+                                    component={TextFormField}
+                                    label={translate("admin.reason")}
+                                    autoFocus
+                                />
+
+                            </Form>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button disabled={loading} onClick={onClose} color="primary">
+                                {translate("common.cancel")}
+                            </Button>
+                            <Button
+                                disabled={!formikProps.isValid}
+                                onClick={formikProps.submitForm}
+                                className={[classes.button, classes.buttonReject].join(' ')}
+                                color='secondary'
+                                variant='contained'
+                                size='small'>
+                                {buttonMsg}
+                            </Button>
+                        </DialogActions>
+                    </>);
+                }}
+            </Formik>
+        );
     }
 
     return (
@@ -108,28 +146,35 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                 {contentMsg}
 
             </DialogTitle>
-            <DialogContent className={classes.dialogContent}>
+              <DialogContent className={classes.dialogContent}>
+              </DialogContent>
+              <DialogActions>
+                  <Button disabled={loading} onClick={onClose} color="primary">
+                      {translate("common.cancel")}
+                  </Button>
+                  {
+                      isConfirm ?
+                          <Button
+                              className={classes.button}
+                              variant='contained'
+                              color="primary"
+                              size='small'
+                              onClick={onConfirm}>
+                              {buttonMsg}
+                          </Button>
+                          :
+                          <Button
+                              onClick={onReject}
+                              className={[classes.button, classes.buttonReject].join(' ')}
+                              color='secondary'
+                              variant='contained'
+                              size='small'>
+                              {buttonMsg}
+                          </Button>
+                  }
+    
+              </DialogActions>
 
-            </DialogContent>
-                <DialogActions>
-                    <Button disabled={loading} onClick={onClose} color="primary">
-                        {translate("common.cancel")}
-                    </Button>
-                    <Button
-                        onClick={handleSuccess}
-                        // disabled={modelConfigsById && setType === "none"}
-                        color="primary"
-                        variant="outlined"
-                        startIcon={loading ?
-                            <MoonLoader
-                                sizeUnit={"px"}
-                                size={15}
-                                color={theme.palette.primary.main}
-                                loading={true}
-                            /> : renderButton}>
-                        {buttonMsg}
-                    </Button>
-                </DialogActions>
         </Dialog>
     );
 }

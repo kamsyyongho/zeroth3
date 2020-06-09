@@ -85,11 +85,7 @@ export function AdminTableItem(props: AdminTableItemProps) {
         // setNavigationProps({ voiceData, projectId });
         PATHS.editor.to && history.push(PATHS.editor.to);
     };
-
-    const onClickConfirmData = async () => {
-
-    }
-
+    
     return (
         <TableRow
             className={classes.tableRow}

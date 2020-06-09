@@ -52,7 +52,7 @@ export interface VoiceData {
   memo: string | null;
   modelConfigId: string;
   originalFilename: string | null
-  projectId: string | null;
+  projectId: string;
   sessionId: string;
   ip: string;
   stateChanges: any[];

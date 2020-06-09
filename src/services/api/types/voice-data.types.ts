@@ -114,6 +114,8 @@ export type UpdateSegmentsRequest = Segment[];
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
+export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type approveDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
