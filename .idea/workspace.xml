@@ -2,16 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/global.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTableItem.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +76,7 @@
       <workItem from="1591260853215" duration="192000" />
       <workItem from="1591577932315" duration="22275000" />
       <workItem from="1591667787158" duration="521000" />
-      <workItem from="1591668616571" duration="254000" />
+      <workItem from="1591668616571" duration="1346000" />
     </task>
     <servers />
   </component>
@@ -137,8 +132,8 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="2187" y="23" width="896" height="1057" key="dock-window-1" timestamp="1591668092105">
-      <screen x="1920" y="23" width="1920" height="1057" />
+    <state x="1920" y="0" width="954" height="1080" key="dock-window-1" timestamp="1591670096181">
+      <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
     <state x="1920" y="0" width="1142" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/69.1080.1792.1120@0.0.1920.1080" timestamp="1591260876052" />
@@ -160,6 +155,8 @@
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/214.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591578078858" />
     <state x="880" y="-1080" width="1272" height="1080" key="dock-window-1/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589458417891" />
     <state x="1920" y="0" width="817" height="1080" key="dock-window-1/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591667813533" />
+    <state x="1920" y="0" width="954" height="1080" key="dock-window-1/56.1103.1792.1044/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591670096181" />
+    <state x="1920" y="0" width="1920" height="1080" key="dock-window-1/56.1103.1792.1044/0.0.1920.1080/1920.23.1920.1057@0.0.1920.1080" timestamp="1591670079205" />
     <state x="2187" y="23" width="896" height="1057" key="dock-window-1/56.1103.1792.1044/0.23.1920.1057/1920.23.1920.1057@0.23.1920.1057" timestamp="1591668092105" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1591599674072" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591581583685" />

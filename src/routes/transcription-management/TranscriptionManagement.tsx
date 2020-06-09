@@ -30,7 +30,7 @@ import {
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { AdminTable } from './components/TranscriptionManagementTable';
+import { TrancriptionManagementTable } from './components/TranscriptionManagementTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
@@ -352,7 +352,7 @@ export function TranscriptionManagement() {
                     projectLoading ? <BulletList /> : renderSummary()
                 }
                 {project && isValidProject &&
-                    <AdminTable
+                    <TrancriptionManagementTable
                         projectId={projectId}
                         voiceData={voiceData}
                         openTranscriberDialog={handleTranscriberEditClick}

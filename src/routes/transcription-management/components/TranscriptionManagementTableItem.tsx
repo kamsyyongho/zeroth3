@@ -29,7 +29,7 @@ import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
 import { ICONS } from '../../../theme/icons';
 
-interface AdminTableItem {
+interface TranscriptionManagementTableItemProps {
     projectId: string;
     voiceData: VoiceData;
     voiceDataIndex: number;
@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTableItem(props: AdminTableItem) {
+export function TranscriptionManagementTableItem(props: TranscriptionManagementTableItemProps) {
     const { projectId, voiceData, voiceDataIndex, openTranscriberDialog } = props;
     // const { transcribers, total, processed, name } = dataSet;
     // const numberOfTranscribers = transcribers.length;
@@ -165,7 +165,7 @@ export function AdminTableItem(props: AdminTableItem) {
         // setNavigationProps({ voiceData, projectId });
         PATHS.editor.to && history.push(PATHS.editor.to);
     };
-/*
+
     const onClickConfirmData = async () => {
         if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
             setConfirmSegmentsLoading(true);
@@ -193,7 +193,7 @@ export function AdminTableItem(props: AdminTableItem) {
             snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
             setConfirmSegmentsLoading(false);
         }
-    }*/
+    }
 
     React.useEffect(() => {
         if (expanded) {

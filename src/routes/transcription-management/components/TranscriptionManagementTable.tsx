@@ -11,11 +11,11 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { AdminTableItem } from './TranscriptionManagementTableItem';
+import { TranscriptionManagementTableItem } from './TranscriptionManagementTableItem';
 
 const FULL_ROW_COL_SPAN = 4;
 
-interface AdminTableProps {
+interface TranscriptionManagementTableProps {
     voiceData: voiceData[];
     projectId: string;
     openTranscriberDialog: (voiceDataIndex: number) => void;
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTable(props: AdminTableProps) {
+export function TrancriptionManagementTable(props: TranscriptionManagementTableProps) {
     const { voiceData, projectId, openTranscriberDialog } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
@@ -61,7 +61,7 @@ export function AdminTable(props: AdminTableProps) {
         key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
-        <AdminTableItem
+        <TranscriptionManagementTableItem
             projectId={projectId}
             voiceData={voiceData}
             voiceDataIndex={index}
