@@ -173,3 +173,11 @@ export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;
 export type deleteUnconfirmedVoiceDataResult =
   | { kind: 'ok' }
   | GeneralApiProblem;
+
+export type getDataToReview =
+  | { kind: 'ok'; voiceData: VoiceData }
+  | GeneralApiProblem;
+
+export type getHistory =
+  | { kind: 'ok'; voiceData: VoiceData }
+  | GeneralApiProblem;

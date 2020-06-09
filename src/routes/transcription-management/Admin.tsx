@@ -17,6 +17,7 @@ import { ProblemKind } from '../../services/api/types';
 import {
     AcousticModel,
     DataSet,
+    VoiceData,
     LanguageModel,
     ModelConfig,
     PATHS,
@@ -96,7 +97,7 @@ export function Admin() {
     const [projectLoading, setProjectLoading] = React.useState(true);
     const [project, setProject] = React.useState<Project | undefined>();
     const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
-    const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
+    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
     const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
     const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
@@ -107,7 +108,7 @@ export function Admin() {
 
 
     const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
-        setDataSets((prevDataSets) => {
+        setVoiceData((prevDataSets) => {
             const updatedDataSets = [...prevDataSets];
             updatedDataSets.splice(dataSetIndex, 1, updatedDataSet);
             return updatedDataSets;
@@ -117,7 +118,7 @@ export function Admin() {
     const openTranscriberDialog = () => setTranscribersDialogOpen(true);
 
     const handleTranscriberEditClick = (dataSetIndex: number) => {
-        setSelectedDataSet(dataSets[dataSetIndex]);
+        setSelectedDataSet(voiceData[dataSetIndex]);
         setSelectedDataSetIndex(dataSetIndex);
         openTranscriberDialog();
     };
@@ -176,10 +177,10 @@ export function Admin() {
     };
 
     const getAllDataSets = async () => {
-        if (api?.dataSet && projectId) {
-            const response = await api.dataSet.getAll(projectId);
+        if (api?.voiceData) {
+            const response = await api.voiceData.getHistory();
             if (response.kind === 'ok') {
-                setDataSets(response.dataSets);
+                setVoiceData(response.voiceData);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
@@ -353,7 +354,7 @@ export function Admin() {
                 {project && isValidProject &&
                     <AdminTable
                         projectId={projectId}
-                        dataSets={dataSets}
+                        voiceData={voiceData}
                         openTranscriberDialog={handleTranscriberEditClick}
                     />
                 }

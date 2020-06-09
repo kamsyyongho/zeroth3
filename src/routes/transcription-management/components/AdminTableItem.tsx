@@ -31,8 +31,8 @@ import { ICONS } from '../../../theme/icons';
 
 interface AdminTableItem {
     projectId: string;
-    dataSet: DataSet;
-    dataSetIndex: number;
+    voiceData: VoiceData;
+    voiceDataIndex: number;
     openTranscriberDialog: (dataSetIndex: number) => void;
     // openEvaluationDetail: (dataSetIndex: number) => void;
 }
@@ -62,14 +62,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function AdminTableItem(props: AdminTableItem) {
-    const { projectId, dataSet, dataSetIndex, openTranscriberDialog } = props;
-    const { transcribers, total, processed, name } = dataSet;
-    const numberOfTranscribers = transcribers.length;
+    const { projectId, voiceData, voiceDataIndex, openTranscriberDialog } = props;
+    // const { transcribers, total, processed, name } = dataSet;
+    // const numberOfTranscribers = transcribers.length;
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const history = useHistory();
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
-    const { translate } = React.useContext(I18nContext);
+    const { translate, formatDate } = React.useContext(I18nContext);
     const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
     const [downloadLink, setDownloadLink] = React.useState('');
     const [expanded, setExpanded] = React.useState(false);
@@ -80,7 +80,7 @@ export function AdminTableItem(props: AdminTableItem) {
     const classes = useStyles();
     const theme: CustomTheme = useTheme();
 
-    const onClickAssignTranscriber = () => openTranscriberDialog(dataSetIndex);
+    const onClickAssignTranscriber = () => openTranscriberDialog(voiceDataIndex);
 
     const startDownload = (url: string) => window.open(url);
 
@@ -88,7 +88,7 @@ export function AdminTableItem(props: AdminTableItem) {
         setIsCreateTrainingSetLoading(true);
         if (api ?.dataSet) {
             let serverError: ServerError | undefined;
-            const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
+            const response = await api.dataSet.createTrainingSet(projectId, voiceData.id);
 
             if (response.kind === 'ok') {
                 enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
@@ -119,7 +119,7 @@ export function AdminTableItem(props: AdminTableItem) {
             setDownloadLinkPending(true);
             setDownloadLink('');
             let serverError: ServerError | undefined;
-            const response = await api.dataSet.getDownloadLink(projectId, dataSet.id);
+            const response = await api.dataSet.getDownloadLink(projectId, voiceData.id);
             if (response.kind === 'ok') {
                 startDownload(response.url);
             } else {
@@ -142,7 +142,7 @@ export function AdminTableItem(props: AdminTableItem) {
 
     const getSetDetail = async () => {
         if (api ?.dataSet) {
-            const response = await api.dataSet ?.getSubSet(projectId, dataSet.id, '');
+            const response = await api.dataSet ?.getSubSet(projectId, voiceData.id, '');
             if (response.kind === "ok") {
                 setSubSets(response.subSets.content);
                 return true;
@@ -165,54 +165,35 @@ export function AdminTableItem(props: AdminTableItem) {
         // setNavigationProps({ voiceData, projectId });
         PATHS.editor.to && history.push(PATHS.editor.to);
     };
-
-    // must be a number from 0 to 100
-    const progress = processed / total * 100;
-
-    let processedText = (
-        <Typography className={classes.processedText} >
-            {processed}
-            <Typography component='span' color='textPrimary' >
-                {` / ${total}`}
-            </Typography>
-        </Typography>
-    );
-
-    if (!total || isNaN(progress)) {
-        processedText = (<Typography color='textSecondary' >
-            {translate('common.noData')}
-        </Typography>);
-    }
-
-    const renderTranscriberEdit = () => {
-        const transcriberText = numberOfTranscribers ?
-            (translate('SET.numberTranscribers', { count: numberOfTranscribers })) :
-            (translate('SET.addTranscriber'));
-        return (
-            <Grid
-                container
-                wrap='nowrap'
-                direction='row'
-                alignContent='center'
-                alignItems='center'
-                justify='flex-start'
-                spacing={1}
-            >
-                <Typography color={numberOfTranscribers ? 'textPrimary' : 'textSecondary'}>
-                    {transcriberText}
-                </Typography>
-                <IconButton
-                    color='primary'
-                    size='small'
-                    edge='end'
-                    aria-label="submit"
-                    onClick={onClickAssignTranscriber}
-                >
-                    {numberOfTranscribers ? <EditIcon /> : <AddIcon />}
-                </IconButton>
-            </Grid>
-        );
-    };
+/*
+    const onClickConfirmData = async () => {
+        if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
+            setConfirmSegmentsLoading(true);
+            closeConfirmDialog();
+            const response = await api.voiceData.requestApproval(projectId, voiceData.id);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                snackbarError = undefined;
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                setVoiceData(undefined);
+            } else {
+                log({
+                    file: `EditorPage.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setConfirmSegmentsLoading(false);
+        }
+    }*/
 
     React.useEffect(() => {
         if (expanded) {
@@ -225,19 +206,19 @@ export function AdminTableItem(props: AdminTableItem) {
             className={classes.tableRow}
         >
             <TableCell>
-                <Typography>{name}</Typography>
+                <Typography>{voiceData.originalFilename}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{dataSet.highRiskRatio}</Typography>
+                <Typography>{voiceData.modelConfigId}</Typography>
             </TableCell>
             <TableCell>
-                {renderTranscriberEdit()}
+                {voiceData.length}
             </TableCell>
             <TableCell>
-                <Typography>{dataSet.rejected}</Typography>
+                <Typography>{voiceData.wordCount}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{dataSet.rejected}</Typography>
+                <Typography>{formatDate(new Date(voiceData.decodedAt))}</Typography>
             </TableCell>
             <TableCell>
                 <Button
@@ -245,13 +226,13 @@ export function AdminTableItem(props: AdminTableItem) {
                     startIcon={<ICONS.Diff />}
                     onClick={handleDiffClick} />
             </TableCell>
-            <TableCell>
+            <TableCell style={{ minWidth: '250px' }}>
                 <Button
                     className={classes.button}
                     variant='contained'
                     color="primary"
                     size='small'
-                    onClick={onClickAssignTranscriber}>
+                    onClick={onClickConfirmData}>
                     {translate('common.confirm')}
                 </Button>
                 <Button
@@ -259,7 +240,7 @@ export function AdminTableItem(props: AdminTableItem) {
                     color='secondary'
                     variant='contained'
                     size='small'
-                    onClick={onClickAssignTranscriber}>
+                    onClick={onClickRejectData}>
                     {translate('common.reject')}
                 </Button>
             </TableCell>

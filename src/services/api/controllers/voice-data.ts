@@ -1,17 +1,13 @@
-import { ApisauceInstance } from 'apisauce';
-import {
-  CONTENT_STATUS,
-  Segment,
-  VoiceData as IVoiceData,
-  VoiceDataResults,
-  WordAlignment,
-} from '../../../types';
-import { getGeneralApiProblem } from '../api-problem';
+import {ApisauceInstance} from 'apisauce';
+import {CONTENT_STATUS, Segment, VoiceData as IVoiceData, VoiceDataResults, WordAlignment,} from '../../../types';
+import {getGeneralApiProblem} from '../api-problem';
 import {
   approveDataResult,
   confirmDataResult,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
+  getDataToReview,
+  getHistory,
   getSegmentsDataResult,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
@@ -44,8 +40,8 @@ import {
   UpdateStatusRequest,
   updateStatusResult,
 } from '../types';
-import { deleteUnconfirmedVoiceDataResult } from '../types/voice-data.types';
-import { ParentApi } from './parent-api';
+import {deleteUnconfirmedVoiceDataResult} from '../types/voice-data.types';
+import {ParentApi} from './parent-api';
 
 /**
  * Manages all voice data requests to the API.
@@ -872,5 +868,48 @@ export class VoiceData extends ParentApi {
       }
     }
     return { kind: 'ok' };
+  }
+  async getDataToReview(): Promise<getDataToReview> {
+    const response = await this.apisauce.get<IVoiceData, ServerError>(
+        this.getPathWithOrganization('/reviews')
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind = ProblemKind.unauthorized) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const voiceData = response.data as IVoiceData;
+      return { kind: 'ok', voiceData };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async getHistory(): Promise<getHistory> {
+    const response = await this.apisauce.get<IVoiceData, ServerError>(
+        this.getPathWithOrganization('/history')
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind = ProblemKind.unauthorized) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const voiceData = response.data as IVoiceData;
+      return { kind: 'ok', voiceData };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

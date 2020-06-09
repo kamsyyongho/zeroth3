@@ -10,16 +10,16 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DataSet } from '../../../types';
+import { DataSet, VoiceData } from '../../../types';
 import { AdminTableItem } from './AdminTableItem';
 
 const FULL_ROW_COL_SPAN = 4;
 
 interface AdminTableProps {
-    dataSets: DataSet[];
+    voiceData: voiceData[];
     projectId: string;
-    openTranscriberDialog: (dataSetIndex: number) => void;
-    // openEvaluationDetail: (dataSetIndex: number) => void;
+    openTranscriberDialog: (voiceDataIndex: number) => void;
+    // openEvaluationDetail: (voiceDataIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function AdminTable(props: AdminTableProps) {
-    const { dataSets, projectId, openTranscriberDialog } = props;
+    const { voiceData, projectId, openTranscriberDialog } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -57,14 +57,14 @@ export function AdminTable(props: AdminTableProps) {
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
     </TableRow>);
 
-    const renderSets = () => dataSets.map((dataSet, index) => (<React.Fragment
-        key={dataSet.id}
+    const renderSets = () => voiceData.map((voiceData, index) => (<React.Fragment
+        key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
         <AdminTableItem
             projectId={projectId}
-            dataSet={dataSet}
-            dataSetIndex={index}
+            voiceData={voiceData}
+            voiceDataIndex={index}
             openTranscriberDialog={openTranscriberDialog}
             // openEvaluationDetail={openEvaluationDetail}
         />
@@ -105,7 +105,7 @@ export function AdminTable(props: AdminTableProps) {
         <Table className={classes.table}>
             {renderHeader()}
             <TableBody>
-                {(!dataSets.length) ? renderNoResults() : renderSets()}
+                {(!voiceData.length) ? renderNoResults() : renderSets()}
             </TableBody>
         </Table>
     );
