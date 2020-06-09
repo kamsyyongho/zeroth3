@@ -2,6 +2,8 @@ import Paper from '@material-ui/core/Paper';
 import { Box, Card, CardContent, CardHeader, Container, Grid, TextField, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {useSnackbar, VariantType} from 'notistack';
+import { SNACKBAR_VARIANTS } from '../../types/snackbar.types';
 import clsx from 'clsx';
 import { RouteComponentProps } from "react-router";
 import { useHistory } from 'react-router-dom';
@@ -26,16 +28,19 @@ import {
     TopGraph,
     BooleanById,
     PaginatedResults,
-    TranscriberStats } from '../../types';
+    TranscriberStats,
+    SnackbarError } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { TrancriptionManagementTable } from './components/TranscriptionManagementTable';
+import { AdminTable } from './components/AdminTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
 import { NotFound } from '../shared/NotFound';
 import { CustomTheme } from '../../theme';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
+import ScaleLoader from 'react-spinners/ScaleLoader';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -80,7 +85,7 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function TranscriptionManagement() {
+export function Admin() {
     //temporary hardcoded projectId for setting up dummy component
     const projectId = "845ad229-580f-449f-9368-241e2ddf2d64"
     const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
@@ -91,6 +96,7 @@ export function TranscriptionManagement() {
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const history = useHistory();
+    const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [isValidProject, setIsValidProject] = React.useState(true);
@@ -98,36 +104,14 @@ export function TranscriptionManagement() {
     const [project, setProject] = React.useState<Project | undefined>();
     const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
     const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
-    const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
-    const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
-    const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
-    const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
+    const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
+    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number | undefined>();
+    const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
+    const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
-
-
-    const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
-        setVoiceData((prevDataSets) => {
-            const updatedDataSets = [...prevDataSets];
-            updatedDataSets.splice(dataSetIndex, 1, updatedDataSet);
-            return updatedDataSets;
-        });
-    };
-
-    const openTranscriberDialog = () => setTranscribersDialogOpen(true);
-
-    const handleTranscriberEditClick = (dataSetIndex: number) => {
-        setSelectedDataSet(voiceData[dataSetIndex]);
-        setSelectedDataSetIndex(dataSetIndex);
-        openTranscriberDialog();
-    };
-
-    const closeTranscriberDialog = () => {
-        setTranscribersDialogOpen(false);
-        setSelectedDataSet(undefined);
-        setSelectedDataSetIndex(undefined);
-    };
 
     const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
     const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
@@ -172,13 +156,14 @@ export function TranscriptionManagement() {
                     important: true,
                 });
             }
-            setModelConfigsLoading(false);
+            setIsLoading(false);
         }
     };
 
     const getAllDataSets = async () => {
         if (api?.voiceData) {
             const response = await api.voiceData.getHistory();
+            // const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
                 setVoiceData(response.voiceData);
             } else {
@@ -212,6 +197,51 @@ export function TranscriptionManagement() {
             }
             setTranscriberStatDataLoading(false);
         }
+    };
+
+    const handleConfirmationClick = (voiceDataIndex: number) => {
+        setSelectedVoiceDataIndex(voiceDataIndex);
+        setIsConfirm(true);
+        setIsConfirmationOpen(true);
+    };
+
+    const handleRejectClick = (voiceDataIndex: number) => {
+        setSelectedVoiceDataIndex(voiceDataIndex);
+        setIsConfirm(false);
+        setIsConfirmationOpen(true);
+    };
+
+    const handleConfirmation = async () => {
+        if (api?.voiceData && projectId && voiceData && selectedVoiceDataIndex) {
+            setIsLoading(true);
+            setIsConfirmationOpen(false);
+            const response = await api.voiceData.requestApproval(projectId, voiceData[selectedVoiceDataIndex].id);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                snackbarError = undefined;
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                // setVoiceData(undefined);
+            } else {
+                log({
+                    file: `EditorPage.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setIsLoading(false);
+        }
+    };
+
+    const handleRejection = async () => {
+
     };
 
     React.useEffect(() => {
@@ -338,24 +368,27 @@ export function TranscriptionManagement() {
     return (
         <Container>
             <Paper square elevation={0} className={classes.root} >
-                <AddTranscriberDialog
-                    transcribers={transcribersStats}
-                    transcribersLoading={transcriberStatDataLoading}
-                    open={transcribersDialogOpen}
-                    onClose={closeTranscriberDialog}
-                    projectId={projectId}
-                    dataSet={selectedDataSet}
-                    dataSetIndex={selectedDataSetIndex}
-                    onUpdateDataSetSuccess={onUpdateDataSetSuccess}
-                />
+                {isLoading && <ScaleLoader
+                    color={theme.palette.common.white}
+                    loading={true}
+                />}
+                <ConfirmationDialog
+                    open={isConfirmationOpen}
+                    buttonMsg={isConfirm ? translate('common.confirm') : translate('common.reject')}
+                    contentMsg={isConfirm ? translate('admin.approveMsg') : translate('admin.rejectMsg')}
+                    isConfirm={isConfirm}
+                    onClose={() => setIsConfirmationOpen(false)}
+                    onConfirm={handleConfirmation}
+                    onReject={handleRejection} />
                 {
                     projectLoading ? <BulletList /> : renderSummary()
                 }
                 {project && isValidProject &&
-                    <TrancriptionManagementTable
+                    <AdminTable
                         projectId={projectId}
                         voiceData={voiceData}
-                        openTranscriberDialog={handleTranscriberEditClick}
+                        handleConfirmationClick={handleConfirmationClick}
+                        handleRejectClick={handleRejectClick}
                     />
                 }
             </Paper>

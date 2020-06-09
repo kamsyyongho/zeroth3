@@ -85,9 +85,7 @@ export default function SET(props: SETProps) {
     getTranscribersWithStats();
     getDataSets();
   }, [projectId]);
-
-
-
+  
   const openTranscriberDialog = () => setTranscribersDialogOpen(true);
   const closeTranscriberDialog = () => {
     setTranscribersDialogOpen(false);

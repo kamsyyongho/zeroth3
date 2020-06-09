@@ -884,7 +884,7 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const voiceData = response.data as IVoiceData;
+      const voiceData = response.data as IVoiceData[];
       return { kind: 'ok', voiceData };
     } catch {
       return { kind: ProblemKind['bad-data'] };
@@ -906,7 +906,7 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const voiceData = response.data as IVoiceData;
+      const voiceData = response.data as IVoiceData[];
       return { kind: 'ok', voiceData };
     } catch {
       return { kind: ProblemKind['bad-data'] };

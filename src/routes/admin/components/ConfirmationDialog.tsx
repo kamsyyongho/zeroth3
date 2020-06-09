@@ -9,30 +9,30 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import DoneIcon from '@material-ui/icons/Done';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
-import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { ModelConfig, GenericById, DataSet } from '../../../../types';
-import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
+import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { ModelConfig, GenericById, DataSet } from '../../../types';
+import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
 import { Field } from 'formik';
 import Select from '@material-ui/core/Select';
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { CustomTheme } from '../../../../theme';
+import { CustomTheme } from '../../../theme';
 import Table from '@material-ui/core/Table';
 import TableRow from '@material-ui/core/TableRow';
 import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
-import { ProgressBar } from '../../../shared/ProgressBar';
+import { ProgressBar } from '../../shared/ProgressBar';
+import ThumbDownIcon from '@material-ui/icons/ThumbDown';
 
 interface CreateSetFormDialogProps {
     open: boolean;
     buttonMsg: string;
     contentMsg: string;
+    isConfirm: boolean;
     onClose: () => void;
-    onSuccess: () => void;
-    setSelectedModelConfigId?: (modelConfigId: string) => void;
-    selectedDataSet?: DataSet;
-    modelConfigsById?: GenericById<ModelConfig>;
+    onConfirm: () => void;
+    onReject: () => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function ConfirmationDialog(props: CreateSetFormDialogProps) {
-    const { contentMsg , buttonMsg, open, onClose, onSuccess, modelConfigsById, selectedDataSet, setSelectedModelConfigId } = props;
+    const { contentMsg , buttonMsg, isConfirm, open, onClose, onConfirm, onReject } = props;
     const { translate } = React.useContext(I18nContext);
     const [loading, setLoading] = React.useState(false);
     const [setType, setSetType] = React.useState("none");
@@ -109,51 +109,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
 
             </DialogTitle>
             <DialogContent className={classes.dialogContent}>
-                {modelConfigsById && selectedDataSet &&
-                    <Table>
-                        <TableBody>
-                            {
-                                selectedDataSet.evaluationProgress && selectedDataSet.evaluationProgress !== 100 &&
-                                <TableRow className={classes.tableRow}>
-                                    <TableCell>
-                                        <Typography>{translate('common.progress')}</Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography className={classes.processedText} >
-                                            {selectedDataSet.evaluationProgress}
-                                            <Typography component='span' color='textPrimary' >
-                                                {` / 100`}
-                                            </Typography>
-                                        </Typography>
-                                        <ProgressBar value={selectedDataSet?.evaluationProgress || 0} maxWidth={200} />
-                                    </TableCell>
-                                </TableRow>
-                            }
-                            <TableRow className={classes.tableRow}>
-                                <TableCell>
-                                    <Typography>{translate('SET.selectModel')}</Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <FormControl className={classes.formControl}>
-                                        <Select
-                                            id="demo-simple-select-autowidth"
-                                            label="Set Type"
-                                            value={setType}
-                                            onChange={handleModelConfigId}
-                                            autoWidth
-                                            MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
-                                            <MenuItem value={"none"}>None</MenuItem>
-                                            {Object.keys(modelConfigsById).map((id: string, index: number) => {
-                                                return <MenuItem key={`modelConfigId-${index}`}
-                                                                 value={modelConfigsById[id].id}>{modelConfigsById[id].name}</MenuItem>
-                                            })}
-                                        </Select>
-                                    </FormControl>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                }
+
             </DialogContent>
                 <DialogActions>
                     <Button disabled={loading} onClick={onClose} color="primary">
@@ -161,7 +117,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                     </Button>
                     <Button
                         onClick={handleSuccess}
-                        disabled={modelConfigsById && setType === "none"}
+                        // disabled={modelConfigsById && setType === "none"}
                         color="primary"
                         variant="outlined"
                         startIcon={loading ?

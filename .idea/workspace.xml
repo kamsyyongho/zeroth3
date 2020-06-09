@@ -4,9 +4,16 @@
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTableItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/ConfirmationDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/ConfirmationDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTableItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,7 +42,7 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/routes/transcription-management/components" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -46,6 +53,11 @@
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/routes/transcription-management/components" />
+    </key>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -76,7 +88,7 @@
       <workItem from="1591260853215" duration="192000" />
       <workItem from="1591577932315" duration="22275000" />
       <workItem from="1591667787158" duration="521000" />
-      <workItem from="1591668616571" duration="1346000" />
+      <workItem from="1591668616571" duration="9491000" />
     </task>
     <servers />
   </component>
@@ -132,7 +144,7 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="1920" y="0" width="954" height="1080" key="dock-window-1" timestamp="1591670096181">
+    <state x="1920" y="0" width="954" height="1080" key="dock-window-1" timestamp="1591676619894">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
@@ -155,7 +167,7 @@
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/214.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591578078858" />
     <state x="880" y="-1080" width="1272" height="1080" key="dock-window-1/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589458417891" />
     <state x="1920" y="0" width="817" height="1080" key="dock-window-1/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591667813533" />
-    <state x="1920" y="0" width="954" height="1080" key="dock-window-1/56.1103.1792.1044/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591670096181" />
+    <state x="1920" y="0" width="954" height="1080" key="dock-window-1/56.1103.1792.1044/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591676619894" />
     <state x="1920" y="0" width="1920" height="1080" key="dock-window-1/56.1103.1792.1044/0.0.1920.1080/1920.23.1920.1057@0.0.1920.1080" timestamp="1591670079205" />
     <state x="2187" y="23" width="896" height="1057" key="dock-window-1/56.1103.1792.1044/0.23.1920.1057/1920.23.1920.1057@0.23.1920.1057" timestamp="1591668092105" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1591599674072" />
@@ -198,7 +210,7 @@
       <screen x="-207" y="-1080" width="1920" height="1080" />
     </state>
     <state x="418" y="-284" key="run.anything.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588919184262" />
-    <state x="707" y="239" width="767" height="680" key="search.everywhere.popup" timestamp="1591593076400">
+    <state x="707" y="239" width="767" height="680" key="search.everywhere.popup" timestamp="1591679068001">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="-1213" y="239" width="766" height="679" key="search.everywhere.popup/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586154452622" />
@@ -209,6 +221,7 @@
     <state x="707" y="239" width="767" height="680" key="search.everywhere.popup/128.1080.1792.1120/0.0.1920.1080@0.0.1920.1080" timestamp="1591582716922" />
     <state x="627" y="-841" width="766" height="679" key="search.everywhere.popup/1840.-1080.1920.1080/0.0.1792.1120/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589433324079" />
     <state x="1267" y="319" width="1373" height="906" key="search.everywhere.popup/3440.-1080.1080.2560/0.0.3440.1440/880.-1080.2560.1080@0.0.3440.1440" timestamp="1589460240040" />
+    <state x="707" y="239" width="767" height="680" key="search.everywhere.popup/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591679068001" />
     <state x="707" y="239" width="767" height="680" key="search.everywhere.popup/56.1080.1792.1120/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1591593076400" />
   </component>
 </project>

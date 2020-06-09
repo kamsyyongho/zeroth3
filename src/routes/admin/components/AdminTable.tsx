@@ -11,15 +11,15 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { TranscriptionManagementTableItem } from './TranscriptionManagementTableItem';
+import { AdminTableItem } from './AdminTableItem';
 
 const FULL_ROW_COL_SPAN = 4;
 
-interface TranscriptionManagementTableProps {
-    voiceData: voiceData[];
+interface AdminTableProps {
+    voiceData: VoiceData[];
     projectId: string;
-    openTranscriberDialog: (voiceDataIndex: number) => void;
-    // openEvaluationDetail: (voiceDataIndex: number) => void;
+    handleConfirmationClick: (voiceDataIndex: number) => void;
+    handleRejectClick: (voiceDataIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,8 +48,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function TrancriptionManagementTable(props: TranscriptionManagementTableProps) {
-    const { voiceData, projectId, openTranscriberDialog } = props;
+export function AdminTable(props: AdminTableProps) {
+    const { voiceData, projectId, handleConfirmationClick, handleRejectClick } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -61,11 +61,12 @@ export function TrancriptionManagementTable(props: TranscriptionManagementTableP
         key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
-        <TranscriptionManagementTableItem
+        <AdminTableItem
             projectId={projectId}
             voiceData={voiceData}
             voiceDataIndex={index}
-            openTranscriberDialog={openTranscriberDialog}
+            handleConfirmationClick={handleConfirmationClick}
+            handleRejectClick={handleRejectClick}
             // openEvaluationDetail={openEvaluationDetail}
         />
     </React.Fragment>));

@@ -29,11 +29,12 @@ import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
 import { ICONS } from '../../../theme/icons';
 
-interface TranscriptionManagementTableItemProps {
+interface AdminTableItemProps {
     projectId: string;
     voiceData: VoiceData;
     voiceDataIndex: number;
-    openTranscriberDialog: (dataSetIndex: number) => void;
+    handleConfirmationClick: (voiceDataIndex: number) => void;
+    handleRejectClick: (voiceDataIndex: number) => void;
     // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -61,8 +62,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function TranscriptionManagementTableItem(props: TranscriptionManagementTableItemProps) {
-    const { projectId, voiceData, voiceDataIndex, openTranscriberDialog } = props;
+export function AdminTableItem(props: AdminTableItemProps) {
+    const { projectId, voiceData, voiceDataIndex, handleConfirmationClick, handleRejectClick } = props;
     // const { transcribers, total, processed, name } = dataSet;
     // const numberOfTranscribers = transcribers.length;
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
@@ -80,126 +81,14 @@ export function TranscriptionManagementTableItem(props: TranscriptionManagementT
     const classes = useStyles();
     const theme: CustomTheme = useTheme();
 
-    const onClickAssignTranscriber = () => openTranscriberDialog(voiceDataIndex);
-
-    const startDownload = (url: string) => window.open(url);
-
-    const createTrainingSet = async () => {
-        setIsCreateTrainingSetLoading(true);
-        if (api ?.dataSet) {
-            let serverError: ServerError | undefined;
-            const response = await api.dataSet.createTrainingSet(projectId, voiceData.id);
-
-            if (response.kind === 'ok') {
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-            } else {
-                log({
-                    file: 'SetItem.tsx',
-                    caller: 'createTrainingSet - failed to send post request',
-                    value: response,
-                    important: true,
-                });
-                serverError = response.serverError;
-                let errorMessageText = translate('common.error');
-                if (serverError ?.message) {
-                    errorMessageText = serverError.message;
-                }
-                enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
-            }
-        }
-        setIsCreateTrainingSetLoading(false);
-    };
-
-    const getDownloadLink = async () => {
-        if (downloadLink) {
-            startDownload(downloadLink);
-            return;
-        }
-        if (api ?.dataSet && !downloadLinkPending) {
-            setDownloadLinkPending(true);
-            setDownloadLink('');
-            let serverError: ServerError | undefined;
-            const response = await api.dataSet.getDownloadLink(projectId, voiceData.id);
-            if (response.kind === 'ok') {
-                startDownload(response.url);
-            } else {
-                log({
-                    file: `SetItem.tsx`,
-                    caller: `getDownloadLink - failed to get download link`,
-                    value: response,
-                    important: true,
-                });
-                serverError = response.serverError;
-                let errorMessageText = translate('common.error');
-                if (serverError ?.message) {
-                    errorMessageText = serverError.message;
-                }
-                enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
-            }
-            setDownloadLinkPending(false);
-        }
-    };
-
-    const getSetDetail = async () => {
-        if (api ?.dataSet) {
-            const response = await api.dataSet ?.getSubSet(projectId, voiceData.id, '');
-            if (response.kind === "ok") {
-                setSubSets(response.subSets.content);
-                return true;
-            }
-        }
-    };
-
-    const openSetDetail = async () => {
-        if (subSets.length) {
-            setExpanded(!expanded);
-            return;
-        }
-        const subSetsFromRequest = await getSetDetail();
-        if (subSetsFromRequest) {
-            setExpanded(!expanded);
-        }
-    };
-
     const handleDiffClick = () => {
         // setNavigationProps({ voiceData, projectId });
         PATHS.editor.to && history.push(PATHS.editor.to);
     };
 
     const onClickConfirmData = async () => {
-        if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
-            setConfirmSegmentsLoading(true);
-            closeConfirmDialog();
-            const response = await api.voiceData.requestApproval(projectId, voiceData.id);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                snackbarError = undefined;
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                // to trigger the `useEffect` to fetch more
-                setVoiceData(undefined);
-            } else {
-                log({
-                    file: `EditorPage.tsx`,
-                    caller: `confirmData - failed to confirm segments`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-            }
-            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-            setConfirmSegmentsLoading(false);
-        }
-    }
 
-    React.useEffect(() => {
-        if (expanded) {
-            getSetDetail();
-        }
-    }, [expanded]);
+    }
 
     return (
         <TableRow
@@ -232,7 +121,7 @@ export function TranscriptionManagementTableItem(props: TranscriptionManagementT
                     variant='contained'
                     color="primary"
                     size='small'
-                    onClick={onClickConfirmData}>
+                    onClick={() => handleConfirmationClick(voiceDataIndex)}>
                     {translate('common.confirm')}
                 </Button>
                 <Button
@@ -240,7 +129,7 @@ export function TranscriptionManagementTableItem(props: TranscriptionManagementT
                     color='secondary'
                     variant='contained'
                     size='small'
-                    onClick={onClickRejectData}>
+                    onClick={() => handleRejectClick(voiceDataIndex)}>
                     {translate('common.reject')}
                 </Button>
             </TableCell>

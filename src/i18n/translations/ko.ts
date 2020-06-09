@@ -172,9 +172,8 @@ export const ko: ResourceLanguage = {
       pageTitle: '관리자',
       diff: 'Diff',
       commentNumber: '댓글수',
-    },
-    transcribersTab: {
-
+      approveMsg: '승인하시겠습니까?',
+      rejectMsg: '반려하시겠습니까?',
     },
     IAM: {
       users: '사용자',

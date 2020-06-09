@@ -49,8 +49,8 @@ export const en: ResourceLanguage = {
       userId: 'User ID',
       search: 'Search',
       summary: 'Summary',
-      confirm: '승인하기',
-      reject: '반려하기',
+      confirm: 'Approve',
+      reject: 'Reject',
     },
     table: {
       page: 'Page',
@@ -168,12 +168,11 @@ export const en: ResourceLanguage = {
       fileUrl: 'File URL',
     },
     admin: {
-      pageTitle: '관리자 페이지',
+      pageTitle: 'Admin',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
-    },
-    transcribersTab: {
-
+      approveMsg: 'Approve this transcript?',
+      rejectMsg: 'Reject this transcript?',
     },
     IAM: {
       users: 'Users',

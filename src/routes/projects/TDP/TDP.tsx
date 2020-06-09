@@ -393,13 +393,13 @@ export function TDP(props: TDPProps) {
       <StatusLogModal
           open={isStatusChangeModalOpen}
           onClose={() => setIsStatusChangeModalOpen(false)}
-          statusChanges={selectedStatusChanges}/>
+          statusChanges={selectedStatusChanges} />
       <ConfirmationDialog
           contentMsg={translate('SET.deleteAllMsg')}
           buttonMsg={translate('common.delete')}
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
-          onSuccess={handleDeleteAll}/>
+          onSuccess={handleDeleteAll} />
     </>
   );
 }
