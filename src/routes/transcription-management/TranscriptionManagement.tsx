@@ -35,7 +35,7 @@ import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
 import { NotFound } from '../shared/NotFound';
-import { CustomTheme } from '../../theme/index';
+import { CustomTheme } from '../../theme';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function Admin() {
+export function TranscriptionManagement() {
     //temporary hardcoded projectId for setting up dummy component
     const projectId = "845ad229-580f-449f-9368-241e2ddf2d64"
     const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);

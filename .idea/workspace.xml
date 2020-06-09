@@ -3,11 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/components/AdminTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/components/AdminTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTableItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/Admin.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/AdminTable.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/AdminTableItem.tsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +43,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
-    <property name="settings.editor.selected.configurable" value="preferences.editor" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="SvnConfiguration">
@@ -75,7 +73,8 @@
       <workItem from="1589244559766" duration="35000" />
       <workItem from="1589244756954" duration="109572000" />
       <workItem from="1591260853215" duration="192000" />
-      <workItem from="1591577932315" duration="21976000" />
+      <workItem from="1591577932315" duration="22275000" />
+      <workItem from="1591667787158" duration="521000" />
     </task>
     <servers />
   </component>
@@ -108,6 +107,10 @@
     </state>
     <state x="-3328" y="-220" key="#com.intellij.fileTypes.FileTypeChooser/-7080.-678.2560.1080/-4520.-678.3440.1440/-1080.-678.1080.2560/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589254003235" />
     <state x="582" y="334" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1680.1050@0.0.1680.1050" timestamp="1584433229714" />
+    <state x="2323" y="294" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1591668557628">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2323" y="294" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591668557628" />
     <state x="577" y="278" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1584432677108">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -116,18 +119,19 @@
       <screen x="0" y="-1080" width="1920" height="1080" />
     </state>
     <state x="670" y="-826" key="MultipleFileMergeDialog/0.-1080.1920.1080/0.0.1792.1120@0.-1080.1920.1080" timestamp="1588056906339" />
-    <state x="982" y="-912" key="SettingsEditor" timestamp="1585268348338">
-      <screen x="609" y="-1080" width="2560" height="1080" />
+    <state x="280" y="168" key="SettingsEditor" timestamp="1591667921716">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="-507" y="-1216" key="SettingsEditor/0.0.1680.1050/-880.-1440.2560.1440@-880.-1440.2560.1440" timestamp="1585127129595" />
     <state x="982" y="-912" key="SettingsEditor/0.0.1680.1050/609.-1080.2560.1080/-1951.-1080.2560.1080@609.-1080.2560.1080" timestamp="1585268348338" />
     <state x="245" y="163" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1584420303026" />
+    <state x="280" y="168" key="SettingsEditor/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591667921716" />
     <state width="500" height="445" key="SwitcherDM" timestamp="1586155584785">
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="1920" y="0" width="896" height="1080" key="dock-window-1" timestamp="1591599674072">
-      <screen x="1920" y="0" width="1920" height="1080" />
+    <state x="2187" y="23" width="896" height="1057" key="dock-window-1" timestamp="1591668092105">
+      <screen x="1920" y="23" width="1920" height="1057" />
     </state>
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
     <state x="1920" y="0" width="1142" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/69.1080.1792.1120@0.0.1920.1080" timestamp="1591260876052" />
@@ -148,6 +152,8 @@
     <state x="0" y="0" width="1110" height="1080" key="dock-window-1/1920.23.1792.1097/0.23.1920.1057@0.23.1920.1057" timestamp="1591580768863" />
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/214.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591578078858" />
     <state x="880" y="-1080" width="1272" height="1080" key="dock-window-1/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589458417891" />
+    <state x="1920" y="0" width="817" height="1080" key="dock-window-1/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591667813533" />
+    <state x="2187" y="23" width="896" height="1057" key="dock-window-1/56.1103.1792.1044/0.23.1920.1057/1920.23.1920.1057@0.23.1920.1057" timestamp="1591668092105" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1591599674072" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591581583685" />
     <state x="1920" y="0" width="896" height="1080" key="dock-window-1/56.1103.1792.1097/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591588940420" />
