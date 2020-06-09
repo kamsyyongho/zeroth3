@@ -1,6 +1,6 @@
 import { withStyles } from '@material-ui/core/styles';
 import React from 'reactn';
-import { CustomTheme } from '../../../theme/index';
+import { CustomTheme } from '../../../theme';
 import ContentEditable from "react-contenteditable";
 import localForage from 'localforage';
 import { UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK } from "../../../common/constants";

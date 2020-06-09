@@ -6,7 +6,7 @@ import { MdPersonAdd, MdPersonPin } from 'react-icons/md';
 import VisibilitySensor from "react-visibility-sensor";
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { CustomTheme } from '../../../theme/index';
+import { CustomTheme } from '../../../theme';
 import { DEFAULT_OFFSET, Segment } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 

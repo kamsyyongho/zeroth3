@@ -1,5 +1,5 @@
 import { FilterParams, SubSet, Transcriber, VoiceData, SubSetCountResults } from '../../../types';
-import { DataSet } from '../../../types/';
+import { DataSet } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////

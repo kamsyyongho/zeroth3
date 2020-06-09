@@ -1,5 +1,5 @@
 import 'reactn';
-import { Organization, Project } from './index';
+import { Organization, Project } from '.';
 
 interface undoRedoData {
   undoRedoData: {

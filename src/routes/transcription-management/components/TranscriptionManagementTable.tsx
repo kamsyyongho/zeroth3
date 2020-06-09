@@ -11,7 +11,7 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { AdminTableItem } from './AdminTableItem';
+import { AdminTableItem } from './TranscriptionManagementTableItem';
 
 const FULL_ROW_COL_SPAN = 4;
 

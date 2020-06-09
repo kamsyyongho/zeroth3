@@ -10,7 +10,7 @@ import {
   SelectionState,
 } from 'draft-js';
 import { Map } from 'immutable';
-import { CustomTheme } from '../../../theme/index';
+import { CustomTheme } from '../../../theme';
 import {
   EDITOR_CHANGE_TYPE,
   HANDLE_VALUES,
