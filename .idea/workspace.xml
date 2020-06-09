@@ -2,10 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/Admin.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/AdminTable.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/AdminTableItem.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/TranscriptionManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription-management/components/TranscriptionManagementTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/global.d.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,6 +81,7 @@
       <workItem from="1591260853215" duration="192000" />
       <workItem from="1591577932315" duration="22275000" />
       <workItem from="1591667787158" duration="521000" />
+      <workItem from="1591668616571" duration="254000" />
     </task>
     <servers />
   </component>
