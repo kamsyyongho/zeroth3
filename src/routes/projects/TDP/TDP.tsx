@@ -125,6 +125,9 @@ export function TDP(props: TDPProps) {
       setPreviousSearchOptions(options);
       const response = await api.voiceData.searchData(projectId, options);
       if (response.kind === 'ok') {
+        const audio = await api.voiceData.getAudio(response.data.content[0].audioUrl);
+        console.log('=============================audioUrl')
+
         setVoiceDataResults(response.data);
       } else {
         log({

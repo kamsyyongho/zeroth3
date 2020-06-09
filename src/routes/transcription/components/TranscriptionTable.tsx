@@ -11,11 +11,11 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { AdminTableItem } from './AdminTableItem';
+import { TranscriptionTableItem } from './TranscriptionTableItem';
 
 const FULL_ROW_COL_SPAN = 7;
 
-interface AdminTableProps {
+interface TranscriptionTableProps {
     voiceData: VoiceData[];
     handleConfirmationClick: (voiceDataIndex: number) => void;
     handleRejectClick: (voiceDataIndex: number) => void;
@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTable(props: AdminTableProps) {
+export function TranscriptionTable(props: TranscriptionTableProps) {
     const { voiceData, handleConfirmationClick, handleRejectClick } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
@@ -60,7 +60,7 @@ export function AdminTable(props: AdminTableProps) {
         key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
-        <AdminTableItem
+        <TranscriptionTableItem
             voiceData={voiceData}
             voiceDataIndex={index}
             handleConfirmationClick={handleConfirmationClick}
@@ -78,7 +78,7 @@ export function AdminTable(props: AdminTableProps) {
                 {translate('forms.modelConfig')}
             </TableCell>
             <TableCell>
-                {translate('admin.commentNumber')}
+                {translate('transcription.commentNumber')}
             </TableCell>
             <TableCell>
                 {translate('common.length')}
@@ -87,9 +87,10 @@ export function AdminTable(props: AdminTableProps) {
                 {translate('common.date')}
             </TableCell>
             <TableCell>
-                {translate('admin.diff')}
+                {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
+                {translate('forms.status')}
             </TableCell>
         </TableRow>
     </TableHead>);

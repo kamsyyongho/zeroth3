@@ -67,7 +67,7 @@ export const ko: ResourceLanguage = {
       editor: '에디터',
       modelTraining: '모델 학습',
       admin: '관리자',
-      transcribers: '전사자',
+      transcription: '전사관리',
     },
     menu: {
       login: '로그인',
@@ -170,6 +170,14 @@ export const ko: ResourceLanguage = {
     },
     admin: {
       pageTitle: '관리자',
+      diff: 'Diff',
+      commentNumber: '댓글수',
+      approveMsg: '승인하시겠습니까?',
+      rejectMsg: '반려하시겠습니까?',
+      reason: '이유',
+    },
+    transcription: {
+      pageTitle: '전사 관리',
       diff: 'Diff',
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',

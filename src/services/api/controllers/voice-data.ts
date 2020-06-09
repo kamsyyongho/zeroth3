@@ -107,6 +107,7 @@ export class VoiceData extends ParentApi {
     // transform the data into the format we are expecting
     try {
       const data = response.data as VoiceDataResults;
+
       return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
@@ -132,10 +133,13 @@ export class VoiceData extends ParentApi {
         return problem;
       }
     }
+
     // transform the data into the format we are expecting
     try {
+
       const noContent = response.status === ResponseCode['no-content'];
       const voiceData = response.data as IVoiceData;
+
       return { kind: 'ok', voiceData, noContent };
     } catch {
       return { kind: ProblemKind['bad-data'] };
@@ -934,5 +938,11 @@ export class VoiceData extends ParentApi {
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
+  }
+
+  async getAudio (audioUrl: string) {
+    const response = await this.apisauce.get(audioUrl);
+
+    return response;
   }
 }

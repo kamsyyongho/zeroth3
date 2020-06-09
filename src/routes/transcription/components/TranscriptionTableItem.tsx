@@ -29,7 +29,7 @@ import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
 import { ICONS } from '../../../theme/icons';
 
-interface AdminTableItemProps {
+interface TranscriptionTableItemProps {
     voiceData: VoiceData;
     voiceDataIndex: number;
     handleConfirmationClick: (voiceDataIndex: number) => void;
@@ -61,8 +61,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTableItem(props: AdminTableItemProps) {
+export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const { voiceData, voiceDataIndex, handleConfirmationClick, handleRejectClick } = props;
+    // const { transcribers, total, processed, name } = dataSet;
+    // const numberOfTranscribers = transcribers.length;
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const history = useHistory();
     const api = React.useContext(ApiContext);
@@ -104,28 +106,10 @@ export function AdminTableItem(props: AdminTableItemProps) {
                 <Typography>{formatDate(new Date(voiceData.decodedAt))}</Typography>
             </TableCell>
             <TableCell>
-                <Button
-                    color='primary'
-                    startIcon={<ICONS.Diff />}
-                    onClick={handleDiffClick} />
+                <Typography>{voiceData.wordCount}</Typography>
             </TableCell>
-            <TableCell style={{ minWidth: '250px' }}>
-                <Button
-                    className={classes.button}
-                    variant='contained'
-                    color="primary"
-                    size='small'
-                    onClick={() => handleConfirmationClick(voiceDataIndex)}>
-                    {translate('common.confirm')}
-                </Button>
-                <Button
-                    className={[classes.button, classes.buttonReject].join(' ')}
-                    color='secondary'
-                    variant='contained'
-                    size='small'
-                    onClick={() => handleRejectClick(voiceDataIndex)}>
-                    {translate('common.reject')}
-                </Button>
+            <TableCell>
+                <Typography>{voiceData.status}</Typography>
             </TableCell>
         </TableRow>
     );

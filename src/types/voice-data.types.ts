@@ -64,6 +64,7 @@ export interface VoiceData {
   transcriber: string | null;
   transcript: string;
   transcriptionRating: number | null;
+  waveformUrl: string;
   wordCount: number;
 }
 

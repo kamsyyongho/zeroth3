@@ -33,13 +33,12 @@ import {
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { AdminTable } from './components/AdminTable';
+import { TranscriptionTable } from './components/TranscriptionTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
 import { NotFound } from '../shared/NotFound';
 import { CustomTheme } from '../../theme';
-import { ConfirmationDialog } from './components/ConfirmationDialog';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 
 const useStyles = makeStyles((theme) =>
@@ -85,7 +84,7 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function Admin() {
+export function Transcription() {
     //temporary hardcoded projectId for setting up dummy component
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
@@ -106,14 +105,11 @@ export function Admin() {
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
 
-    const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
-    const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
-    const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
+    // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
     const getAllVoiceData = async () => {
         if (api?.voiceData) {
-            // const response = await api.voiceData.getHistory();
-            const response = await api.voiceData.getDataToReview();
+            const response = await api.voiceData.getHistory();
             if (response.kind === 'ok') {
                 setVoiceData(response.voiceData);
             } else {
@@ -208,14 +204,14 @@ export function Admin() {
     };
 
     React.useEffect(() => {
-        setPageTitle(translate('admin.pageTitle'));
+        setPageTitle(translate('transcription.pageTitle'));
         getAllVoiceData();
     }, []);
 
     const renderSummary = () => {
         return (<Card elevation={0} className={classes.card} >
             <CardHeader
-                title={<Typography variant='h4'>{translate('admin.pageTitle')}</Typography>}
+                title={<Typography variant='h4'>{translate('transcription.pageTitle')}</Typography>}
             />
             <CardContent className={classes.cardContent} >
                 {isLoading ? <BulletList /> :
@@ -311,23 +307,15 @@ export function Admin() {
                     color={theme.palette.common.white}
                     loading={true}
                 />}
-                <ConfirmationDialog
-                    open={isConfirmationOpen}
-                    buttonMsg={isConfirm ? translate('common.confirm') : translate('common.reject')}
-                    contentMsg={isConfirm ? translate('admin.approveMsg') : translate('admin.rejectMsg')}
-                    isConfirm={isConfirm}
-                    onClose={() => setIsConfirmationOpen(false)}
-                    onConfirm={handleConfirmation}
-                    onReject={handleRejection} />
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
                 {voiceData &&
-                    <AdminTable
-                        voiceData={voiceData}
-                        handleConfirmationClick={handleConfirmationClick}
-                        handleRejectClick={handleRejectClick}
-                    />
+                <TranscriptionTable
+                    voiceData={voiceData}
+                    handleConfirmationClick={handleConfirmationClick}
+                    handleRejectClick={handleRejectClick}
+                />
                 }
             </Paper>
         </Container>

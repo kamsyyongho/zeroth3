@@ -144,6 +144,8 @@ export function EditorPage() {
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
   const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>({});
+  const [audioUrl, setAudioUrl] = React.useState<string>('');
+  const [waveformUrl, setWaveformUrl] = React.useState<string>('');
 
   // get the passed info if we got here via the details page
   interface NavigationPropsToGet {
@@ -184,11 +186,14 @@ export function EditorPage() {
       setVoiceDataLoading(true);
       const response = await api.voiceData.getAssignedData();
       if (response.kind === 'ok') {
+        console.log('data : ',response.voiceData);
         setNoAssignedData(response.noContent);
-        setVoiceData(response.voiceData);
+        // setVoiceData(response.voiceData);
         if (response.voiceData?.projectId) {
           setProjectId(response.voiceData.projectId);
         }
+        const wavFormat = await api.voiceData.getWavForm(response.voiceData.audioUrl);
+        console.log('==============wavFormat : ',wavFormat);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -758,6 +763,22 @@ export function EditorPage() {
     setCanRedo(canRedo);
   };
 
+  const getAudioUrl = async ()=> {
+    if(api?.voiceData && voiceData) {
+      const audio = await api.voiceData.getAudio(voiceData.audioUrl);
+      console.log('=============audio : ', audio);
+      setAudioUrl(audio)
+    }
+  };
+
+  const getWaveformUrl = async () => {
+    if(api?.voiceData && voiceData) {
+      const audio = await api.voiceData.getAudio(voiceData.waveformUrl);
+      console.log('=============audio : ', audio);
+      setWaveformUrl(audio);
+    }
+  }
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.save:
@@ -820,6 +841,12 @@ export function EditorPage() {
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
+    if(!audioUrl.length) {
+      getAudioUrl();
+    }
+    if(!waveformUrl.length) {
+      getWaveformUrl();
+    }
     if (!readOnly) {
       getSegments();
     }
@@ -953,7 +980,8 @@ export function EditorPage() {
               <AudioPlayer
                   segments={segments}
                   key={voiceData.id}
-                  url={voiceData.audioUrl}
+                  audioUrl={audioUrl}
+                  waveformUrl={voiceData.waveformUrl}
                   // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
                   disabledTimes={disabledTimes}
                   segmentIdToDelete={segmentIdToDelete}

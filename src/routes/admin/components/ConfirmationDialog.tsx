@@ -84,55 +84,6 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
         onClose();
     };
 
-    const handleSubmit = (values: FormValues) => {
-        const { reason } = values;
-        onReject(reason);
-    }
-
-    const formSchema = yup.object({
-        reason: yup.string().required(requiredTranslationText).trim(),
-    });
-    type FormValues = yup.InferType<typeof formSchema>;
-    const initialValues: FormValues = {
-        reason: "",
-    };
-
-    const renderRejectContent = () => {
-        return (
-            <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
-                {(formikProps) => {
-                    return (<>
-                        <DialogContent className={classes.dialogContent}>
-                            <Form>
-                                <Field
-                                    name='reason'
-                                    component={TextFormField}
-                                    label={translate("admin.reason")}
-                                    autoFocus
-                                />
-
-                            </Form>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button disabled={loading} onClick={onClose} color="primary">
-                                {translate("common.cancel")}
-                            </Button>
-                            <Button
-                                disabled={!formikProps.isValid}
-                                onClick={formikProps.submitForm}
-                                className={[classes.button, classes.buttonReject].join(' ')}
-                                color='secondary'
-                                variant='contained'
-                                size='small'>
-                                {buttonMsg}
-                            </Button>
-                        </DialogActions>
-                    </>);
-                }}
-            </Formik>
-        );
-    }
-
     return (
         <Dialog
             fullScreen={fullScreen}
@@ -172,7 +123,7 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                               {buttonMsg}
                           </Button>
                   }
-    
+
               </DialogActions>
 
         </Dialog>

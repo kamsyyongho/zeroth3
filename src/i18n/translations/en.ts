@@ -68,7 +68,7 @@ export const en: ResourceLanguage = {
       editor: 'Editor',
       modelTraining: 'Model Training',
       admin: 'Admin',
-      transcribers: 'Transcribers',
+      transcription: 'Manage Transcript',
     },
     menu: {
       login: 'Login',
@@ -169,6 +169,14 @@ export const en: ResourceLanguage = {
     },
     admin: {
       pageTitle: 'Admin',
+      diff: 'Diff',
+      commentNumber: 'Number of Comments',
+      approveMsg: 'Approve this transcript?',
+      rejectMsg: 'Reject this transcript?',
+      reason: 'Reason',
+    },
+    transcription: {
+      pageTitle: 'Manage Transcripts',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',

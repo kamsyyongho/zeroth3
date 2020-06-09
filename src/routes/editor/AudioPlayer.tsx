@@ -116,7 +116,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface AudioPlayerProps {
   audioPlayerTimeIndex?: number[];
   segments: SegmentEditor[];
-  url: string;
+  audioUrl: string;
+  waveformUrl: string;
   disabledTimes?: Time[];
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
@@ -144,7 +145,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const {
     audioPlayerTimeIndex,
     segments,
-    url,
+    audioUrl,
+    waveformUrl,
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
@@ -1133,6 +1135,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [segmentSplitTimeBoundary]);
 
+
   // initial mount and unmount logic
   React.useEffect(() => {
     /**
@@ -1197,7 +1200,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         },
         mediaElement: mediaElement as HTMLAudioElement,
         dataUri: {
-          json: `${url}.json`,
+          json: waveformUrl,
         },
         withCredentials: false,
         logger: console.error.bind(console),
@@ -1247,7 +1250,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer.on('ready', function (error) {
         if (StreamPlayer) {
           StreamPlayer?.src({
-            src: url,
+            src: audioUrl,
           });
           // load the waveform once ready
           peaksJsInit();
@@ -1256,7 +1259,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
 
     // only initialize if we have a valid url
-    if (url) {
+    if (waveformUrl) {
       initPlayer();
     }
 
@@ -1440,7 +1443,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           elevation={5}
           className={classes.root}
       >
-        {(!url || !!errorText) && (<Grid
+        {(!waveformUrl || !audioUrl || !!errorText) && (<Grid
             container
             direction='row'
             spacing={1}
@@ -1452,7 +1455,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
             <WarningIcon className={classes.error} />
           </Grid>
           <Grid item>
-            <Typography>{!url ? translate('audioPlayer.noUrl') : errorText}</Typography>
+            <Typography>{!audioUrl || !waveformUrl ? translate('audioPlayer.noUrl') : errorText}</Typography>
           </Grid>
         </Grid>)}
         {(ready && !errorText) && (
