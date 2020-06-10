@@ -80,7 +80,7 @@ export function AdminTableItem(props: AdminTableItemProps) {
 
     const handleDiffClick = () => {
         const projectId = voiceData.projectId;
-        setNavigationProps({ voiceData, projectId });
+        setNavigationProps({ voiceData, projectId, isDiff: true });
         PATHS.editor.to && history.push(PATHS.editor.to);
     };
 

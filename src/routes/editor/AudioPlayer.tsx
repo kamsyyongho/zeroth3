@@ -66,6 +66,7 @@ const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
+
 /**
  * for adding a bit of slop because `Peaks.js` does
  * not like creating segments at exactly `0`
@@ -306,6 +307,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (fatalError || !mediaElement) return;
     try {
       duration = PeaksPlayer?.player.getDuration() as number;
+      console.log('=====================duration : ', duration);
       if (isNaN(duration)) {
         duration = mediaElement.duration;
       }
@@ -325,6 +327,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handlePeaksReady = () => {
+    console.log('==============handlePeaksReady fataError, PeaksPlayer: ',fatalError, !PeaksPlayer?.player);
     if (fatalError || !PeaksPlayer?.player) return;
     setPeaksReady(true);
   };
@@ -1138,6 +1141,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
+    console.log('====================================audioUrl in initial render', audioUrl);
     /**
      * handle shortcut key presses
      */
@@ -1220,6 +1224,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       };
 
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
+        console.log('===============peaks init error and instance : ', error, peaksInstance);
         setReady(!error);
         if (error) {
           handleError(error);
@@ -1248,9 +1253,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer = videojs(WAVEFORM_DOM_IDS['audio-container'], options) as VideoJsPlayer;
       // load the content once ready
       StreamPlayer.on('ready', function (error) {
+        console.log('============videoJS error : ', error);
+        console.log('isStream player : ', audioUrl);
+
         if (StreamPlayer) {
-          StreamPlayer?.src({
+          StreamPlayer.src({
             src: audioUrl,
+            type: 'application/x-mpegURL'
           });
           // load the waveform once ready
           peaksJsInit();
@@ -1259,7 +1268,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
 
     // only initialize if we have a valid url
-    if (waveformUrl) {
+    if (audioUrl) {
       initPlayer();
     }
 
@@ -1315,7 +1324,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       tempDragStartSegmentResetOptions = undefined;
       editorInFocus = false;
     };
-  }, []);
+  }, [audioUrl]);
 
   const renderControlWithTooltip = (text: string, button: JSX.Element) => {
     if (button.props.disabled) {

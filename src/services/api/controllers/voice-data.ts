@@ -1,11 +1,12 @@
 import {ApisauceInstance} from 'apisauce';
-import {CONTENT_STATUS, Segment, VoiceData as IVoiceData, VoiceDataResults, WordAlignment,} from '../../../types';
+import {CONTENT_STATUS, Segment, VoiceData as IVoiceData, VoiceDataResults, WordAlignment, AudioUrlResponse} from '../../../types';
 import {getGeneralApiProblem} from '../api-problem';
 import {
   approveDataResult,
   confirmDataResult,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
+  getAudioUrl,
   getDataToReview,
   getHistory,
   getSegmentsDataResult,
@@ -941,8 +942,22 @@ export class VoiceData extends ParentApi {
   }
 
   async getAudio (audioUrl: string) {
-    const response = await this.apisauce.get(audioUrl);
+    const response = await this.apisauce.get<getAudioUrl, ServerError>(audioUrl);
 
-    return response;
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind = ProblemKind.unauthorized) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const data = response.data as AudioUrlResponse;
+      return { kind: 'ok', url: data.url };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
   }
 }

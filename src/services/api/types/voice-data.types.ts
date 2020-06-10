@@ -4,6 +4,7 @@ import {
   VoiceData,
   VoiceDataResults,
   WordAlignment,
+  AudioUrlResponse,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -183,3 +184,7 @@ export type getDataToReview =
 export type getHistory =
   | { kind: 'ok'; voiceData: VoiceData[] }
   | GeneralApiProblem;
+
+export type getAudioUrl =
+    | { kind: 'ok'; url: string }
+    | GeneralApiProblem;

@@ -125,8 +125,14 @@ export function TDP(props: TDPProps) {
       setPreviousSearchOptions(options);
       const response = await api.voiceData.searchData(projectId, options);
       if (response.kind === 'ok') {
-        const audio = await api.voiceData.getAudio(response.data.content[0].audioUrl);
-        console.log('=============================audioUrl')
+        const url = response.data.content[0].audioUrl;
+        const audioUrl = url.split('/')
+        audioUrl[4] = '1b3706dc-fc51-4bf2-b4d5-7f7b04ea565d';
+        let processedUrl = '';
+        audioUrl.forEach((url: string) => {
+          processedUrl += `${url}/`
+        })
+        const audio = await api.voiceData.getAudio(processedUrl);
 
         setVoiceDataResults(response.data);
       } else {

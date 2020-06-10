@@ -126,3 +126,11 @@ export enum TDPTableColumns {
   'status' = 'status',
   'highRiskSegments' = 'highRiskSegments',
 }
+
+export interface AudioUrlResponse extends AudioUrlData {
+  data: AudioUrlData;
+}
+
+interface AudioUrlData {
+  url: string;
+}
