@@ -64,6 +64,8 @@ const customTheme = {
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
+    margin: '0px',
+    padding: '0px',
   },
   audioPlayer: {
     waveform: '#2f99cb',

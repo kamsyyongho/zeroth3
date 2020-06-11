@@ -20,6 +20,7 @@ import {WordTimePicker} from './components/WordTimePicker';
 import {PARENT_METHOD_TYPES, ParentMethodResponse, SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
 import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
+import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import localForage from 'localforage';
 import { getRandomColor } from '../../util/misc';
 import {
@@ -27,6 +28,10 @@ import {
   getSegmentAndWordIndex } from './helpers/editor.helper';
 
 let renderTimes = 0;
+const AUDIO_PLAYER_HEIGHT = 384;
+const DIFF_TITLE_HEIGHT = 77;
+const COMMENT_HEIGHT = 40;
+const EDITOR_MARGIN_TOP = 25;
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     draggable: {
@@ -46,14 +51,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       border: '2px solid #d8d8d8',
       overflowY: 'auto',
       alignItems: 'center',
+      width: '50%',
     },
     diffTitle: {
-      height: '97px'
+      height: `${DIFF_TITLE_HEIGHT}px`
     },
   }),
 );
 
-const AUDIO_PLAYER_HEIGHT = 384;
 
 
 interface WordPickerOptions {
@@ -151,10 +156,11 @@ export function Editor(props: EditorProps) {
   const [readOnlyEditorState, setReadOnlyEditorState] = React.useState(false);
   const [previousSelectedCursorContent, setPreviousSelectedCursorContent] = React.useState<CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined>();
   const [previousSelectionState, setPreviousSelectionState] = React.useState<SelectionState | undefined>();
+  const [isCommentEnabled, setIsCommentEnabled] = React.useState<boolean>(false);
 
   const editorRef = React.useRef<DraftEditor | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const diffTextHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT - 97 - 25 - 64);
+  const diffTextHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT - DIFF_TITLE_HEIGHT - EDITOR_MARGIN_TOP - COMMENT_HEIGHT - 13);
 
   const getIndexOfSegmentId = (segmentId: string): number | null => {
     const indexLocation = segments.map((segment: Segment, index: number) => {
@@ -168,11 +174,12 @@ export function Editor(props: EditorProps) {
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
     //
-    // onWordClick([segmentIndex, wordIndex]);
-    handleClickInsideEditor();
+    onWordClick([segmentIndex, wordIndex]);
+    // handleClickInsideEditor();
   };
 
   const updatePlayingLocation = () => {
+    console.log('=======huh?');
     if(playingLocation) {
       const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
       const selection = window.getSelection();
@@ -436,11 +443,15 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     if(playingLocation && ready) {
       if(playingLocation[0] === 0 && playingLocation[1] === 0) {
-
+        // updatePlayingLocation();
       }
     }
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
+
+  React.useEffect(() => {
+    console.log('isDiffChanging : ', isDiff);
+  }, [isDiff]);
 
   return (
     <div
@@ -501,7 +512,7 @@ export function Editor(props: EditorProps) {
       </Backdrop>
       {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
       {
-        ready && !isDiff ?
+        !isDiff ?
         <>
           <div className={classes.diffTitle}>
             <h1>hi</h1>
@@ -511,27 +522,18 @@ export function Editor(props: EditorProps) {
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'hidden' }}>
               {
                 segments.map( (segment: Segment, index: number) => {
-                  return <MemoizedSegmentBlock key={`decoder-segment-block-${index}`}
+                  return <MemoizedDecoderSegmentBlock key={`decoder-segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
                                                editorCommand={editorCommand}
-                      // onChange={handleChange}
                                                readOnly={true}
-                                               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                                               updateCaretLocation={updateCaretLocation}
-                                               updateChange={updateChange}
-                                               updateSegment={updateSegment}
-                                               onCommandHandled={onCommandHandled}
-                                               findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                                               getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
                                                removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                                                playingLocation={playingLocation} />
                 })
               }
 
             </div>
-
             }
             {ready &&
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'scroll' }}>
@@ -542,6 +544,7 @@ export function Editor(props: EditorProps) {
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
                                                editorCommand={editorCommand}
+                                               isAudioPlaying={isAudioPlaying}
                       // onChange={handleChange}
                                                readOnly={readOnly}
                                                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
@@ -559,28 +562,28 @@ export function Editor(props: EditorProps) {
             }
 
           </div>
-          <div style={{ height: '64px' }}>
-            <h1>comment</h1>
+          <div style={{ height: `${COMMENT_HEIGHT}px` }}>
           </div>
         </>
           :
-            segments.map( (segment: Segment, index: number) => {
-            return <MemoizedSegmentBlock key={`segment-block-${index}`}
-            segment={segment}
-            segmentIndex={index}
-            assignSpeakerForSegment={assignSpeakerForSegment}
-            editorCommand={editorCommand}
-            // onChange={handleChange}
-            readOnly={readOnly}
-            onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-            updateCaretLocation={updateCaretLocation}
-            updateChange={updateChange}
-            updateSegment={updateSegment}
-            onCommandHandled={onCommandHandled}
-            findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-            getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-            removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
-            playingLocation={playingLocation} />
+            ready && segments.map( (segment: Segment, index: number) => {
+              return <MemoizedSegmentBlock key={`segment-block-${index}`}
+              segment={segment}
+              segmentIndex={index}
+              assignSpeakerForSegment={assignSpeakerForSegment}
+              editorCommand={editorCommand}
+               isAudioPlaying={isAudioPlaying}
+              // onChange={handleChange}
+              readOnly={readOnly}
+              onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+              updateCaretLocation={updateCaretLocation}
+              updateChange={updateChange}
+              updateSegment={updateSegment}
+              onCommandHandled={onCommandHandled}
+              findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+              getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+              removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+              playingLocation={playingLocation} />
           })
       }
         {/*{ready &&

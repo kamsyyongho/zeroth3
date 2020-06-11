@@ -952,6 +952,7 @@ export function EditorPage() {
                       playingLocation={currentPlayingLocation}
                       loading={saveSegmentsLoading}
                       isAudioPlaying={isAudioPlaying}
+                      isDiff={isDiff}
                       editorCommand={editorCommand}
                       onSpeakersUpdate={handleSpeakersUpdate}
                       onUpdateUndoRedoStack={onUpdateUndoRedoStack}

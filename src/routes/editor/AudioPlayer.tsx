@@ -307,7 +307,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (fatalError || !mediaElement) return;
     try {
       duration = PeaksPlayer?.player.getDuration() as number;
-      console.log('=====================duration : ', duration);
       if (isNaN(duration)) {
         duration = mediaElement.duration;
       }
@@ -327,7 +326,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handlePeaksReady = () => {
-    console.log('==============handlePeaksReady fataError, PeaksPlayer: ',fatalError, !PeaksPlayer?.player);
     if (fatalError || !PeaksPlayer?.player) return;
     setPeaksReady(true);
   };
@@ -1141,7 +1139,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
-    console.log('====================================audioUrl in initial render', audioUrl);
     /**
      * handle shortcut key presses
      */
@@ -1224,7 +1221,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       };
 
       PeaksPlayer = Peaks.init(options, function (error, peaksInstance) {
-        console.log('===============peaks init error and instance : ', error, peaksInstance);
         setReady(!error);
         if (error) {
           handleError(error);
@@ -1253,9 +1249,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer = videojs(WAVEFORM_DOM_IDS['audio-container'], options) as VideoJsPlayer;
       // load the content once ready
       StreamPlayer.on('ready', function (error) {
-        console.log('============videoJS error : ', error);
-        console.log('isStream player : ', audioUrl);
-
         if (StreamPlayer) {
           StreamPlayer.src({
             src: audioUrl,
