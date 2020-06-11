@@ -112,8 +112,8 @@ export function Admin() {
 
     const getAllVoiceData = async () => {
         if (api?.voiceData) {
-            // const response = await api.voiceData.getHistory();
-            const response = await api.voiceData.getDataToReview();
+            const response = await api.voiceData.getHistory();
+            // const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
                 setVoiceData(response.voiceData);
             } else {

@@ -51,6 +51,20 @@ const customTheme = {
     entityGradient: `linear-gradient(to right, #000 0%, ${grey[200]} 2.5%)`,
     changes: green[400],
   },
+  diffEditor: {
+    playing: '#077db5',
+    playingShadow: `0px 0px 0px 1px #077db5`,
+    highlight: pink.A200,
+    LowConfidence: '#ffe190',
+    LowConfidenceGradient: `linear-gradient(to right, #000 0%, #ffe190 2.5%)`,
+    entity: grey[200],
+    entityGradient: `linear-gradient(to right, #000 0%, ${grey[200]} 2.5%)`,
+    changes: green[400],
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+  },
   audioPlayer: {
     waveform: '#2f99cb',
     segmentRange: green[200],
@@ -78,6 +92,16 @@ export interface CustomTheme extends Theme {
     lightBlue: string;
   };
   editor: {
+    playing: string;
+    playingShadow: string;
+    highlight: string;
+    LowConfidence: string;
+    LowConfidenceGradient: string;
+    entity: string;
+    entityGradient: string;
+    changes: string;
+  };
+  diffEditor: {
     playing: string;
     playingShadow: string;
     highlight: string;

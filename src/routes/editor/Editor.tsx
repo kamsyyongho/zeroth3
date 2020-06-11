@@ -41,8 +41,20 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderTopRightRadius: 4,
     },
     editor: theme.editor,
+    diffEditor: theme.diffEditor,
+    diffTextArea: {
+      border: '2px solid #d8d8d8',
+      overflowY: 'auto',
+      alignItems: 'center',
+    },
+    diffTitle: {
+      height: '97px'
+    },
   }),
 );
+
+const AUDIO_PLAYER_HEIGHT = 384;
+
 
 interface WordPickerOptions {
   word: Word;
@@ -76,6 +88,7 @@ interface EditorProps {
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   loading?: boolean;
   isAudioPlaying: boolean;
+  isDiff?: boolean;
   segments: Segment[];
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
@@ -102,6 +115,7 @@ export function Editor(props: EditorProps) {
     onUpdateUndoRedoStack,
     loading,
     isAudioPlaying,
+    isDiff,
     segments,
     playingLocation,
     handleSegmentUpdate,
@@ -140,6 +154,7 @@ export function Editor(props: EditorProps) {
 
   const editorRef = React.useRef<DraftEditor | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const diffTextHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT - 97 - 25 - 64);
 
   const getIndexOfSegmentId = (segmentId: string): number | null => {
     const indexLocation = segments.map((segment: Segment, index: number) => {
@@ -206,7 +221,7 @@ export function Editor(props: EditorProps) {
 
   /**
    * gets the segment location from the cursor location
-   * - saves the current cursor selection so we can restore 
+   * - saves the current cursor selection so we can restore
    * it after the dialog is closed
    */
   const assignSpeakerFromShortcut = (incomingEditorState: EditorState) => {
@@ -485,7 +500,90 @@ export function Editor(props: EditorProps) {
         </Draggable>
       </Backdrop>
       {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
-        {ready &&
+      {
+        ready && !isDiff ?
+        <>
+          <div className={classes.diffTitle}>
+            <h1>hi</h1>
+          </div>
+          <div className={classes.diffEditor} >
+            {ready &&
+            <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'hidden' }}>
+              {
+                segments.map( (segment: Segment, index: number) => {
+                  return <MemoizedSegmentBlock key={`decoder-segment-block-${index}`}
+                                               segment={segment}
+                                               segmentIndex={index}
+                                               assignSpeakerForSegment={assignSpeakerForSegment}
+                                               editorCommand={editorCommand}
+                      // onChange={handleChange}
+                                               readOnly={true}
+                                               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                                               updateCaretLocation={updateCaretLocation}
+                                               updateChange={updateChange}
+                                               updateSegment={updateSegment}
+                                               onCommandHandled={onCommandHandled}
+                                               findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                                               getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                                               removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+                                               playingLocation={playingLocation} />
+                })
+              }
+
+            </div>
+
+            }
+            {ready &&
+            <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'scroll' }}>
+              {
+                segments.map( (segment: Segment, index: number) => {
+                  return <MemoizedSegmentBlock key={`segment-block-${index}`}
+                                               segment={segment}
+                                               segmentIndex={index}
+                                               assignSpeakerForSegment={assignSpeakerForSegment}
+                                               editorCommand={editorCommand}
+                      // onChange={handleChange}
+                                               readOnly={readOnly}
+                                               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                                               updateCaretLocation={updateCaretLocation}
+                                               updateChange={updateChange}
+                                               updateSegment={updateSegment}
+                                               onCommandHandled={onCommandHandled}
+                                               findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                                               getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                                               removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+                                               playingLocation={playingLocation} />
+                })
+              }
+            </div>
+            }
+
+          </div>
+          <div style={{ height: '64px' }}>
+            <h1>comment</h1>
+          </div>
+        </>
+          :
+            segments.map( (segment: Segment, index: number) => {
+            return <MemoizedSegmentBlock key={`segment-block-${index}`}
+            segment={segment}
+            segmentIndex={index}
+            assignSpeakerForSegment={assignSpeakerForSegment}
+            editorCommand={editorCommand}
+            // onChange={handleChange}
+            readOnly={readOnly}
+            onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+            updateCaretLocation={updateCaretLocation}
+            updateChange={updateChange}
+            updateSegment={updateSegment}
+            onCommandHandled={onCommandHandled}
+            findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+            getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+            removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
+            playingLocation={playingLocation} />
+          })
+      }
+        {/*{ready &&
         segments.map( (segment: Segment, index: number) => {
           return <MemoizedSegmentBlock key={`segment-block-${index}`}
                                        segment={segment}
@@ -504,8 +602,8 @@ export function Editor(props: EditorProps) {
                                        removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                                        playingLocation={playingLocation} />
         })
-        }
+        }*/}
 
     </div>
   );
-};
+}
