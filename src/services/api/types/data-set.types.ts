@@ -52,3 +52,8 @@ export type requestEvaluation =
 export type createTrainingSet =
   | { kind: 'ok' }
   | GeneralApiProblem;
+
+
+export type getEvaluationDownloadLink =
+  | { kind: 'ok', url: string }
+  | GeneralApiProblem;

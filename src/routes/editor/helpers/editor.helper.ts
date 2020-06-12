@@ -73,7 +73,7 @@ function getEntityStrategy(mutability: DraftEntityMutability) {
 export const getSegmentAndWordIndex = () => {
   const selectedBlock: any = window.getSelection();
   const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
-  const selectedBlockId: string = selectedBlockNode.id || selectedBlockNode.parentNode.id;
+  const selectedBlockId: string = selectedBlockNode?.id || selectedBlockNode?.parentNode?.id;
   if(!selectedBlockNode || !selectedBlockId) return;
 
   const segmentAndWordIndex = selectedBlockId.split('-');

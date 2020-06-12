@@ -50,6 +50,7 @@ export const ko: ResourceLanguage = {
       search: '검색',
       confirm: '승인하기',
       reject: '반려하기',
+      comment: '코멘트',
     },
     table: {
       page: '페이지',

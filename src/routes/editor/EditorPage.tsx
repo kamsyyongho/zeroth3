@@ -97,6 +97,12 @@ export interface SplitTimePickerRootProps {
   onSegmentSplitTimeDelete: () => void;
 }
 
+export interface NavigationPropsToGet {
+  voiceData?: VoiceData;
+  projectId?: string;
+  isDiff?: boolean;
+  readOnly: boolean
+}
 
 export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
@@ -145,16 +151,13 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
 
   // get the passed info if we got here via the details page
-  interface NavigationPropsToGet {
-    voiceData?: VoiceData;
-    projectId?: string;
-    isDiff?: boolean;
-  }
+
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
   const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
   const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
-  const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -772,6 +775,7 @@ export function EditorPage() {
       });
       const response = await api.voiceData.getAudio(processedUrl);
       if (response.kind === 'ok') {
+        console.log('===================audio url response : ', response);
         setAudioUrl(response.url);
       } else {
         log({
@@ -838,7 +842,7 @@ export function EditorPage() {
     setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
-    setNavigationProps({});
+    setNavigationProps({} as NavigationPropsToGet);
   };
 
   React.useEffect(() => {
@@ -921,7 +925,7 @@ export function EditorPage() {
 
   return (
       <>
-        {!readOnly && isDiff && <EditorControls
+        {!readOnly && !isDiff && <EditorControls
             onCommandClick={handleEditorCommand}
             onConfirm={onConfirmClick}
             disabledControls={disabledControls}
@@ -942,17 +946,17 @@ export function EditorPage() {
               {segmentsLoading ? <BulletList /> :
                   !!segments.length && (<Editor
                       key={voiceData.id}
-                      readOnly={readOnly}
                       responseFromParent={responseToPassToEditor}
                       onParentResponseHandled={handleEditorResponseHandled}
                       onCommandHandled={handleCommandHandled}
                       height={editorHeight}
                       segments={segments}
+                      voiceData={voiceData}
                       onReady={setEditorReady}
                       playingLocation={currentPlayingLocation}
                       loading={saveSegmentsLoading}
+                      setLoading={setSaveSegmentsLoading}
                       isAudioPlaying={isAudioPlaying}
-                      isDiff={isDiff}
                       editorCommand={editorCommand}
                       onSpeakersUpdate={handleSpeakersUpdate}
                       onUpdateUndoRedoStack={onUpdateUndoRedoStack}
@@ -981,94 +985,7 @@ export function EditorPage() {
                   />)
               }
             </div>
-            {/*{
-              !isDiff ?
-                  <div style={editorContainerStyle}>
-                    {segmentsLoading ? <BulletList /> :
-                        !!segments.length && (<Editor
-                            key={voiceData.id}
-                            readOnly={readOnly}
-                            responseFromParent={responseToPassToEditor}
-                            onParentResponseHandled={handleEditorResponseHandled}
-                            onCommandHandled={handleCommandHandled}
-                            height={editorHeight}
-                            segments={segments}
-                            onReady={setEditorReady}
-                            playingLocation={currentPlayingLocation}
-                            loading={saveSegmentsLoading}
-                            isAudioPlaying={isAudioPlaying}
-                            editorCommand={editorCommand}
-                            onSpeakersUpdate={handleSpeakersUpdate}
-                            onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                            onWordClick={handleWordClick}
-                            handleSegmentUpdate={handleSegmentUpdate}
-                            updateSegment={submitSegmentUpdate}
-                            updateSegmentTime={submitSegmentTimeUpdate}
-                            splitSegmentByTime={submitSegmentSplitByTime}
-                            assignSpeaker={openSpeakerAssignDialog}
-                            removeHighRiskFromSegment={removeHighRiskFromSegment}
-                            onWordTimeCreationClose={handleWordTimeCreationClose}
-                            timePickerRootProps={{
-                              setDisabledTimes: handleDisabledTimesSet,
-                              createTimeSection: createTimeSection,
-                              updateTimeSection: updateTimeSection,
-                              deleteTimeSection: deleteTimeSection,
-                              timeFromPlayer: timeFromPlayer,
-                            }}
-                            splitTimePickerRootProps={{
-                              segmentSplitTime,
-                              onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
-                              onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
-                              onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
-                              onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
-                            }}
-                        />)
-                    }
-                  </div>
-                  :
-                  <div style={editorContainerStyle}>
-                    {segmentsLoading ? <BulletList /> :
-                        !!segments.length && (<Editor
-                            key={voiceData.id}
-                            readOnly={readOnly}
-                            responseFromParent={responseToPassToEditor}
-                            onParentResponseHandled={handleEditorResponseHandled}
-                            onCommandHandled={handleCommandHandled}
-                            height={editorHeight}
-                            segments={segments}
-                            onReady={setEditorReady}
-                            playingLocation={currentPlayingLocation}
-                            loading={saveSegmentsLoading}
-                            isAudioPlaying={isAudioPlaying}
-                            editorCommand={editorCommand}
-                            onSpeakersUpdate={handleSpeakersUpdate}
-                            onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                            onWordClick={handleWordClick}
-                            handleSegmentUpdate={handleSegmentUpdate}
-                            updateSegment={submitSegmentUpdate}
-                            updateSegmentTime={submitSegmentTimeUpdate}
-                            splitSegmentByTime={submitSegmentSplitByTime}
-                            assignSpeaker={openSpeakerAssignDialog}
-                            removeHighRiskFromSegment={removeHighRiskFromSegment}
-                            onWordTimeCreationClose={handleWordTimeCreationClose}
-                            timePickerRootProps={{
-                              setDisabledTimes: handleDisabledTimesSet,
-                              createTimeSection: createTimeSection,
-                              updateTimeSection: updateTimeSection,
-                              deleteTimeSection: deleteTimeSection,
-                              timeFromPlayer: timeFromPlayer,
-                            }}
-                            splitTimePickerRootProps={{
-                              segmentSplitTime,
-                              onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
-                              onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
-                              onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
-                              onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
-                            }}
-                        />)
-                    }
-                  </div>
-            }*/}
+
             {!!voiceData.length && <ErrorBoundary
                 key={voiceData.id}
                 FallbackComponent={PageErrorFallback}

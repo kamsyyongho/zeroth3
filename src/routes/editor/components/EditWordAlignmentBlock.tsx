@@ -12,6 +12,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         segment: {
             display: 'flex',
             flexDirection: 'row',
+            flexFlow: 'column wrap',
+            maxWidth: '100%',
+            caretStyle: 'block',
+            caretColor: 'red',
         }
     }),
 );
@@ -19,24 +23,28 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface EditWordAlignmentBlockProps  {
     segment: Segment;
     segmentIndex: number;
+    isAbleToComment: boolean;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
+    handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
 }
 
 let isFocused = false;
 
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const classes = useStyles();
-    const {  segment, segmentIndex, updateCaretLocation } = props;
+    const {  segment, segmentIndex, isAbleToComment, updateCaretLocation, handleTextSelection } = props;
     const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
+    const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const element = useRef(null);
 
 
     const handleArrowKeyDown = () => {
-        console.log('', getSegmentAndWordIndex());
+        console.log('=====================caretlocation', getSegmentAndWordIndex());
         const playingLocation = getSegmentAndWordIndex();
         if(playingLocation) {
-            updateCaretLocation(playingLocation[0], playingLocation[1])
+            updateCaretLocation(playingLocation[0], playingLocation[1]);
+            return;
         }
     }
 
@@ -44,20 +52,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     }
 
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-        console.log('event keydown : ', event.key);
-        // switch (event.key) {
-        //     case "ArrowUp":
-        //     case "ArrowDown":
-        //     case "ArrowLeft":
-        //     case "ArrowRight":
-        //         break;
-        //     default:
-        //         return;
-        // }
-    };
+    const handleSelectionChange = (event: React.KeyboardEvent) => {
+        console.log(event);
+        return;
+    }
 
-    const handleKeyUp = (event: React.KeyboardEvent) => {
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if(isMouseDown) event.preventDefault();
+        console.log('event keydown : ', event.key);
         switch (event.key) {
             case "ArrowUp":
             case "ArrowDown":
@@ -69,15 +71,70 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
+    const handleMouseDown = (event: React.MouseEvent) => {
+        const selection = window.getSelection();
+        setIsMouseDown(true)
+        console.log('=========selection mouse Down : ', selection);
+    }
+
+    const handleMouseUp = (event: React.MouseEvent) => {
+        const selection = window.getSelection();
+        console.log('======-=======selectionMouseUP', selection);
+        let indexFrom;
+        let indexTo;
+        if(selection) {
+            if(selection?.anchorOffset === selection?.focusOffset) {
+                // setIsMouseDown(false);
+                return;
+            }
+            if(selection.anchorOffset > selection.focusOffset) {
+                indexFrom = selection.focusOffset;
+                indexTo = selection.anchorOffset;
+            } else {
+                indexFrom = selection.anchorOffset;
+                indexTo = selection.focusOffset;
+            }
+            handleTextSelection(segment.id, indexFrom, indexTo);
+        }
+    }
+
+
     React.useEffect(() => {
-        // element.addEventListener()
     }, [])
+
+    React.useEffect(() => {
+        if(!isAbleToComment && isMouseDown) {
+            setIsMouseDown(false);
+        }
+    }, [isAbleToComment])
 
     return (
         // <div dangerouslySetInnerHTML={{ __html: word }}>
         // </div>
-        <div contentEditable className={classes.segment} ref={element} onFocus={handleFocus} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+        <div
+            contentEditable
+            className={classes.segment}
+            ref={element}
+            onFocus={handleFocus}
+            onKeyDown={handleKeyDown}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}>
             {
+                isMouseDown ?
+                    <div>
+                        {segment.transcript}
+                    </div>
+                    :
+                    segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
+                        return (
+                            <div id={`word-${segmentIndex}-${index}`} onFocus={() => console.log('focus : ', wordAlignment)}>
+                                {wordAlignment.word}
+                            </div>
+                        )
+                    })
+
+            }
+            {/*{
                 segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
                     return (
                         <div id={`word-${segmentIndex}-${index}`} onFocus={() => console.log('focus : ', wordAlignment)}>
@@ -85,7 +142,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         </div>
                     )
                 })
-            }
+            }*/}
         </div>
     );
 };

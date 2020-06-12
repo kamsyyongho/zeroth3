@@ -45,7 +45,7 @@ interface TDPTableProps {
   deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
   handlePagination: (pageIndex: number, size: number) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
-  handleStatusChangesModalOpen: (statusChanges: any[]) => void;
+  handleStatusChangesModalOpen: (dataIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -154,7 +154,7 @@ export function TDPTable(props: TDPTableProps) {
    * @param voiceData
    */
   const handleRowClick = (voiceData: VoiceData) => {
-    setNavigationProps({ voiceData, projectId });
+    setNavigationProps({ voiceData, projectId, readOnly: true });
     PATHS.editor.to && history.push(PATHS.editor.to);
   };
 

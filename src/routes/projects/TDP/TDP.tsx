@@ -89,7 +89,7 @@ export function TDP(props: TDPProps) {
   const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
   const [setTypeTDP, setSetTypeTDP] = React.useState<string | undefined>(setType);
   const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = React.useState<boolean>(false);
-  const [selectedStatusChanges, setSelectedStatusChange] = React.useState<any[]>([]);
+  const [selectedData, setSelectedData] = React.useState<VoiceData>({} as VoiceData);
 
   const classes = useStyles();
 
@@ -125,15 +125,6 @@ export function TDP(props: TDPProps) {
       setPreviousSearchOptions(options);
       const response = await api.voiceData.searchData(projectId, options);
       if (response.kind === 'ok') {
-        const url = response.data.content[0].audioUrl;
-        const audioUrl = url.split('/')
-        audioUrl[4] = '1b3706dc-fc51-4bf2-b4d5-7f7b04ea565d';
-        let processedUrl = '';
-        audioUrl.forEach((url: string) => {
-          processedUrl += `${url}/`
-        })
-        const audio = await api.voiceData.getAudio(processedUrl);
-
         setVoiceDataResults(response.data);
       } else {
         log({
@@ -146,7 +137,7 @@ export function TDP(props: TDPProps) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [api, projectId]);
+  }, []);
 
   /**
    * Removes all data in given filter setting
@@ -221,6 +212,7 @@ export function TDP(props: TDPProps) {
   };
 
   const getSubSetVoiceData = async (parameter: any = {}) => {
+    console.log('============ subset');
     if (api?.dataSet && projectId && setId && setType) {
       const param = { ...parameter, types: setType }
       if(!parameter?.size && initialPageSize) {
@@ -252,8 +244,8 @@ export function TDP(props: TDPProps) {
     }
   };
 
-  const handleStatusChangesModalOpen = (statusChanges: any[]) => {
-    setSelectedStatusChange(statusChanges);
+  const handleStatusChangesModalOpen = (dataIndex: number) => {
+    setSelectedData(voiceDataResults.content[dataIndex]);
     setIsStatusChangeModalOpen(true);
   }
 
@@ -271,7 +263,8 @@ export function TDP(props: TDPProps) {
     }
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
-    } else {
+    } else if(!voiceDataResults?.content?.length) {
+      console.log('==========default', voiceDataResults);
       getVoiceDataWithDefaultOptions();
     }
   }, []);
@@ -283,6 +276,8 @@ export function TDP(props: TDPProps) {
       if(setTypeTDP?.length) {
         getSubSetVoiceData();
       } else {
+        console.log('==========watch projectTdpDataShouldRefresh');
+
         getVoiceDataWithDefaultOptions();
       }
     }
@@ -290,6 +285,7 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
+      console.log('================ getSubSetVoice')
       getSubSetVoiceData();
     }
   }, [setTypeTDP]);
@@ -399,10 +395,14 @@ export function TDP(props: TDPProps) {
         projectId={projectId}
         filterParams={filterParams as FilterParams}
       />
-      <StatusLogModal
-          open={isStatusChangeModalOpen}
-          onClose={() => setIsStatusChangeModalOpen(false)}
-          statusChanges={selectedStatusChanges} />
+      {
+        isStatusChangeModalOpen &&
+          <StatusLogModal
+              open={isStatusChangeModalOpen}
+              onClose={() => setIsStatusChangeModalOpen(false)}
+              projectId={projectId}
+              dataId={selectedData.id} />
+      }
       <ConfirmationDialog
           contentMsg={translate('SET.deleteAllMsg')}
           buttonMsg={translate('common.delete')}

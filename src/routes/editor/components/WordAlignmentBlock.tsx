@@ -22,7 +22,12 @@ const styles = (theme: CustomTheme) => ({
         padding: 0,
         fontSize: '14px',
         caretStyle: 'block',
-        caretColor: 'red',
+        caretColor: 'rgb(0, 200, 0)',
+    },
+    caret: {
+        borderLeft: '8px solid transparent',
+        borderRight: '8px solid transparent',
+        borderTop: '8px solid #000000',
     },
     PLAYING: {
         color: 'rgb(7, 125, 181)',

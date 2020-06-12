@@ -44,12 +44,14 @@ interface SegmentBlockProps  {
     segmentIndex: number;
     editorCommand?: EDITOR_CONTROLS;
     isAudioPlaying: boolean;
+    isDiff: boolean;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     onCommandHandled: () => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
+    handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
@@ -67,11 +69,13 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         assignSpeakerForSegment,
         editorCommand,
         isAudioPlaying,
+        isDiff,
         onUpdateUndoRedoStack,
         onCommandHandled,
         updateCaretLocation,
         updateChange,
         updateSegment,
+        handleTextSelection,
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
@@ -84,6 +88,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [isChanged, setIsChanged] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
     const [undoRedoData, setUndoRedoData] = React.useState<UndoRedoData | undefined>();
+    const [isAbleToComment, setIsAbleToComment] = React.useState<boolean>(false);
     const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
@@ -237,7 +242,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 segment={localSegment}
             />
             {
-                isAudioPlaying ?
+                !isDiff || isAudioPlaying ?
                     localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                             return (
                                 <WordAlignmentBlock
@@ -262,8 +267,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                         })
                     :
                     <div>
-                        {segment.transcript}
-                        <EditWordAlignmentBlock segment={localSegment} segmentIndex={segmentIndex} updateCaretLocation={updateCaretLocation}/>
+                        <EditWordAlignmentBlock
+                            segment={localSegment}
+                            segmentIndex={segmentIndex}
+                            isAbleToComment={isAbleToComment}
+                            updateCaretLocation={updateCaretLocation}
+                            handleTextSelection={handleTextSelection} />
                     </div>
             }
             {/*{localSegment.wordAlignments.map((word: WordAlignment, index: number) => {

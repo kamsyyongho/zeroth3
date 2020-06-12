@@ -12,6 +12,7 @@ import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper'
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import log from '../../../util/log/logger';
+import {DECODER_DIFF_CLASSNAME} from '../../../constants';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -117,7 +118,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
               }
           } else {
               const animatedText = (
-                  <span key={`decoder-diff-span-${i}`} className={classes.highlight}>{decoderTranscriptArray[i]}</span>
+                  <span key={`decoder-diff-span-${i}`} className={classes.highlight && DECODER_DIFF_CLASSNAME}>{decoderTranscriptArray[i]}</span>
               )
               animated.push(letterStack);
               letterStack = '';

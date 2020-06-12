@@ -117,6 +117,8 @@ export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
 
+export type updateRejectReasonResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type approveDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
@@ -125,6 +127,10 @@ export type searchDataResult =
 
 export type getAssignedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
+  | GeneralApiProblem;
+
+export type getVoiceDataStateChanges =
+  | { kind: 'ok', statusChanges: any[] }
   | GeneralApiProblem;
 
 export type fetchUnconfirmedDataResult =

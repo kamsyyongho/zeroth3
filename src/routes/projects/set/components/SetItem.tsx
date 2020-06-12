@@ -102,6 +102,32 @@ export function SetItem(props: SetItemProps) {
     setIsCreateTrainingSetLoading(false);
   };
 
+  const downloadEvaluation = async () => {
+    if (api?.dataSet && !downloadLinkPending) {
+      setDownloadLinkPending(true);
+      setDownloadLink('');
+      let serverError: ServerError | undefined;
+      const response = await api.dataSet.getEvaluationDownloadLink(projectId, dataSet.id);
+      if (response.kind === 'ok') {
+        startDownload(response.url);
+      } else {
+        log({
+          file: `SetItem.tsx`,
+          caller: `getDownloadLink - failed to get download link`,
+          value: response,
+          important: true,
+        });
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error');
+        if (serverError?.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
+      }
+      setDownloadLinkPending(false);
+    }
+  };
+
   const handleEvaluateClick = () => {
     if(dataSet?.evaluationUrl) {
       openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
@@ -161,7 +187,7 @@ export function SetItem(props: SetItemProps) {
                 title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
                 arrow={true}>
               <IconButton color='primary'
-                          onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>
+                          onClick={downloadEvaluation}>
                 <LaunchIcon />
               </IconButton>
             </Tooltip>

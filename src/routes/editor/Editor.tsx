@@ -1,18 +1,21 @@
-import {Backdrop} from '@material-ui/core';
+import {Backdrop, TextField, Typography, Grid, Button} from '@material-ui/core';
 import Card from '@material-ui/core/Card';
+import LaunchIcon from '@material-ui/icons/Launch';
+import IconButton from '@material-ui/core/IconButton';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import clsx from 'clsx';
-import {Editor as DraftEditor, EditorState, SelectionState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import {useSnackbar, VariantType} from 'notistack';
 import Draggable from 'react-draggable';
 import React, {useGlobal} from 'reactn';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
+import { ApiContext } from '../../hooks/api/ApiContext';
 import {useWindowSize} from '../../hooks/window/useWindowSize';
 import {CustomTheme} from '../../theme/index';
-import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time} from '../../types';
+import { useHistory } from 'react-router-dom';
+import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time, VoiceData, SnackbarError, PATHS} from '../../types';
 import {CursorContent, SegmentBlockData, Word, WordAlignmentEntityData} from '../../types/editor.types';
-import {UNDO_SEGMENT_STACK} from "../../common/constants";
+import {DECODER_DIFF_CLASSNAME} from "../../constants";
 import {EDITOR_CONTROLS} from './components/EditorControls';
 import {SegmentSplitPicker} from './components/SegmentSplitPicker';
 import {SegmentTimePicker} from './components/SegmentTimePicker';
@@ -21,12 +24,12 @@ import {PARENT_METHOD_TYPES, ParentMethodResponse, SplitTimePickerRootProps, Tim
 import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
 import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
-import localForage from 'localforage';
 import { getRandomColor } from '../../util/misc';
 import {
   buildStyleMap,
   getSegmentAndWordIndex } from './helpers/editor.helper';
-
+import log from '../../util/log/logger';
+import {NavigationPropsToGet} from  './EditorPage';
 let renderTimes = 0;
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
@@ -56,6 +59,32 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     diffTitle: {
       height: `${DIFF_TITLE_HEIGHT}px`
     },
+    commentField: {
+      height: '40px !important',
+      width: '750px',
+      borderColor: '#d8d8d8',
+    },
+    diffTitleContainer: {
+      margin: '5px 30px 5px',
+      flex: 4,
+    },
+    diffTitleText: {
+      color: '#909090',
+      fontSize: '20px',
+      fontWeight: 500,
+      padding: '0',
+    },
+    commentGridItem: {
+      marginTop: '16px',
+      marginBottom: '16px',
+      marginLeft: '10px',
+      maxWidth: '100%',
+      overflow: 'hidden',
+    },
+    diffTitleButton: {
+      flex: 1,
+      marginRight: '30px',
+    }
   }),
 );
 
@@ -78,7 +107,7 @@ interface SegmentSplitOptions {
 
 interface EditorProps {
   height?: number;
-  readOnly?: boolean;
+  // readOnly?: boolean;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -92,9 +121,10 @@ interface EditorProps {
   onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
   loading?: boolean;
+  setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
-  isDiff?: boolean;
   segments: Segment[];
+  voiceData: VoiceData;
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number) => void;
@@ -109,7 +139,7 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const {
     height,
-    readOnly,
+    // readOnly,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -119,9 +149,10 @@ export function Editor(props: EditorProps) {
     onSpeakersUpdate,
     onUpdateUndoRedoStack,
     loading,
+    setLoading,
     isAudioPlaying,
-    isDiff,
     segments,
+    voiceData,
     playingLocation,
     handleSegmentUpdate,
     updateSegment,
@@ -137,28 +168,29 @@ export function Editor(props: EditorProps) {
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
+  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
   const windowWidth = windowSize.width;
   const { translate } = React.useContext(I18nContext);
+  const api = React.useContext(ApiContext);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
-  const [editorState, setEditorState] = React.useState(
-    EditorState.createEmpty()
-  );
   const [ready, setReady] = React.useState(false);
   const [focussed, setFocussed] = React.useState(false);
-  const [editorStateBeforeBlur, setEditorStateBeforeBlur] = React.useState<EditorState | undefined>();
   const [overlayStyle, setOverlayStyle] = React.useState<React.CSSProperties | undefined>();
   const [wordTimePickerOptions, setWordTimePickerOptions] = React.useState<WordPickerOptions | undefined>();
   const [segmentPickerOptions, setSegmentPickerOptions] = React.useState<SegmentPickerOptions | undefined>();
   const [segmentSplitOptions, setSegmentSplitOptions] = React.useState<SegmentSplitOptions | undefined>();
   const [readOnlyEditorState, setReadOnlyEditorState] = React.useState(false);
-  const [previousSelectedCursorContent, setPreviousSelectedCursorContent] = React.useState<CursorContent<WordAlignmentEntityData, SegmentBlockData> | undefined>();
-  const [previousSelectionState, setPreviousSelectionState] = React.useState<SelectionState | undefined>();
   const [isCommentEnabled, setIsCommentEnabled] = React.useState<boolean>(false);
+  const [commentInfo, setCommentInfo] = React.useState<any>({});
+  const [reason, setReason] = React.useState<string>('');
 
-  const editorRef = React.useRef<DraftEditor | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const diffTextHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT - DIFF_TITLE_HEIGHT - EDITOR_MARGIN_TOP - COMMENT_HEIGHT - 13);
 
@@ -179,7 +211,6 @@ export function Editor(props: EditorProps) {
   };
 
   const updatePlayingLocation = () => {
-    console.log('=======huh?');
     if(playingLocation) {
       const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
       const selection = window.getSelection();
@@ -194,22 +225,7 @@ export function Editor(props: EditorProps) {
     }
   };
 
-  const initializeSegmentsStoredInLocal = async () => {
-    await localForage.setItem(UNDO_SEGMENT_STACK, []);
-
-    const savedState = await localForage.getItem(UNDO_SEGMENT_STACK);
-  };
-
-  const saveSegmentStateBeforeChange = async () => {
-    try {
-      const savedSegmentsState: Segment[] = await localForage.getItem(UNDO_SEGMENT_STACK);
-      await localForage.setItem(UNDO_SEGMENT_STACK, [...savedSegmentsState, segments]);
-    } catch(error) {
-    }
-  };
-
   const focusEditor = () => {
-    editorRef !== null && editorRef.current && editorRef.current.focus();
   };
 
   const displayMessage = (message: string, variant: VariantType = SNACKBAR_VARIANTS.info) => {
@@ -231,7 +247,7 @@ export function Editor(props: EditorProps) {
    * - saves the current cursor selection so we can restore
    * it after the dialog is closed
    */
-  const assignSpeakerFromShortcut = (incomingEditorState: EditorState) => {
+  const assignSpeakerFromShortcut = () => {
   };
 
   /**
@@ -314,8 +330,12 @@ export function Editor(props: EditorProps) {
   const handleWordTimeCreation = () => {
   };
 
+  const handleTextSelection = (segmentId:string, indexFrom: number, indexTo: number) => {
+    setIsCommentEnabled(true);
+    setCommentInfo({segmentId, indexFrom, indexTo})
+  };
+
   const updateChange = async (segmentIndex: number, wordIndex: number, word: string) => {
-    await saveSegmentStateBeforeChange();
     const updatedSegment = segments[segmentIndex];
     updatedSegment.wordAlignments[wordIndex].word = word;
     handleSegmentUpdate(updatedSegment, segmentIndex);
@@ -333,8 +353,8 @@ export function Editor(props: EditorProps) {
     for(let i = 0; i < prevSegmentWordAlignments.length + 1; i++) {
       if (wordCount < currentLocation) {
         if (i === prevSegmentWordAlignments.length) return prevSegmentWordAlignments.length - 1;
-
         const word = prevSegmentWordAlignments[i].word;
+
         wordCount += word.length;
       } else if (wordCount > currentLocation) {
         return i - 1;
@@ -373,6 +393,48 @@ export function Editor(props: EditorProps) {
       setSegmentPickerOptions(segmentPickerOptions);
       setReadOnlyEditorState(true);
     }
+  };
+
+  const handleComment = async () => {
+    if (api?.voiceData && voiceData && commentInfo) {
+      const {segmentId, indexFrom, indexTo} = commentInfo;
+      setLoading(true);
+      const response = await api.voiceData.updateRejectReason(voiceData.projectId, voiceData.id, segmentId, indexFrom, indexTo, reason);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `handleComment - failed to updateReason`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      setLoading(false);
+      setIsCommentEnabled(false);
+      setReason('');
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+    }
+  };
+
+  const handleCommentCancel = () => {
+    setCommentInfo({});
+    setReason('');
+    setIsCommentEnabled(false);
+  };
+
+  const handleGoToEditMode = () => {
+    setReadOnly(false);
+    setIsDiff(false);
+    // const projectId = voiceData.projectId;
+    // setNavigationProps({ voiceData, projectId, isDiff: false });
+    // PATHS.editor.to && history.push(PATHS.editor.to);
   };
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
@@ -425,11 +487,9 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     focusEditor();
-    initializeSegmentsStoredInLocal();
     onReady(true);
     return () => {
       onReady(false);
-      initializeSegmentsStoredInLocal();
       setEditorFocussed(false);
     };
   }, []);
@@ -512,10 +572,87 @@ export function Editor(props: EditorProps) {
       </Backdrop>
       {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
       {
-        !isDiff ?
+        isDiff ?
         <>
           <div className={classes.diffTitle}>
-            <h1>hi</h1>
+            <Grid container direction='row' justify='flex-start' >
+              <Grid container
+                    item
+                    className={classes.diffTitleContainer}
+                    direction='column'
+                    justify='flex-start'
+                    alignItems='flex-start'
+              >
+                <Grid
+                    container
+                    style={{ margin: '0' }}
+                    item
+                    direction='column'>
+                  <Typography className={classes.diffTitleText}>{voiceData.originalFilename}</Typography>
+                </Grid>
+                <Grid
+                    container
+                    item
+                    direction='row'
+                    style={{ marginTop: '5px' }}>
+                  <div style={{ backgroundColor: '#ffe190', width: '30px' }} />
+                  <Typography style={{  paddingLeft: '5px' }}>{'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'}</Typography>
+                </Grid>
+              </Grid>
+              <Grid
+                  container
+                  item
+                  className={classes.diffTitleButton}
+                  direction='row'
+                  justify='flex-end'
+                  alignItems='center'>
+                <Grid item>
+                  <Button
+                      color='primary'
+                      variant='contained'
+                      size='medium'
+                      startIcon={<LaunchIcon />}
+                      onClick={handleGoToEditMode}
+                      style={{ marginLeft: '10px', float: 'right' }}
+                  >
+                    {translate('editor.editor')}
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+            {/*<Grid container*/}
+            {/*      item*/}
+            {/*      className={classes.diffTitleContainer}*/}
+            {/*      direction='column'*/}
+            {/*      justify='flex-start'*/}
+            {/*      alignItems='flex-start'*/}
+            {/*>*/}
+            {/*  <Grid*/}
+            {/*      container*/}
+            {/*      style={{ margin: '0' }}*/}
+            {/*      item*/}
+            {/*      direction='column'>*/}
+            {/*    <Typography className={classes.diffTitleText}>{voiceData.originalFilename}</Typography>*/}
+            {/*  </Grid>*/}
+            {/*  <Grid*/}
+            {/*      container*/}
+            {/*      item*/}
+            {/*      direction='row'>*/}
+            {/*    <div style={{ backgroundColor: '#ffe190', width: '30px' }} />*/}
+            {/*    <Typography style={{  paddingLeft: '5px' }}>{'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'}</Typography>*/}
+            {/*  </Grid>*/}
+            {/*</Grid>*/}
+            {/*<div className={classes.diffTitleButton}>*/}
+            {/*  <Button*/}
+            {/*      color='primary'*/}
+            {/*      variant='contained'*/}
+            {/*      size='medium'*/}
+            {/*      onClick={handleComment}*/}
+            {/*      style={{ marginLeft: '10px', float: 'right' }}*/}
+            {/*  >*/}
+            {/*    {translate('common.comment')}*/}
+            {/*  </Button>*/}
+            {/*</div>*/}
           </div>
           <div className={classes.diffEditor} >
             {ready &&
@@ -543,8 +680,10 @@ export function Editor(props: EditorProps) {
                                                segment={segment}
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
+                                               isDiff={!!isDiff}
                                                editorCommand={editorCommand}
                                                isAudioPlaying={isAudioPlaying}
+                                               handleTextSelection={handleTextSelection}
                       // onChange={handleChange}
                                                readOnly={readOnly}
                                                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
@@ -562,7 +701,65 @@ export function Editor(props: EditorProps) {
             }
 
           </div>
-          <div style={{ height: `${COMMENT_HEIGHT}px` }}>
+          <div style={{ height: `${COMMENT_HEIGHT}px`, maxWidth: '100%' }}>
+            <Grid
+                container
+                direction='row'
+                justify='flex-start'
+                alignItems='flex-start'
+            >
+              <Grid
+                  item
+                  className={classes.commentGridItem}
+                  justify='flex-start'
+              >
+                <Typography style={{ fontWeight: 600, color: '#272727' }}>{'@Transcribers'}</Typography>
+              </Grid>
+              <Grid
+                  item
+                  className={classes.commentGridItem}
+                  justify='flex-start'
+              >
+                <TextField
+                    placeholder='Comment'
+                    disabled={!isCommentEnabled}
+                    variant="outlined"
+                    className={classes.commentField}
+                    value={reason}
+                    onChange={(event) => setReason(event.target.value)}
+                    inputProps={{
+                      style: {
+                        padding: '5px'
+                      }
+                    }}
+                />
+              </Grid>
+              <Grid
+                  item
+                  className={classes.commentGridItem}
+                  justify='flex-start'
+              >
+                <Button
+                    color='primary'
+                    variant='outlined'
+                    size='small'
+                    disabled={!isCommentEnabled}
+                    onClick={handleCommentCancel}
+                >
+                  {translate('common.cancel')}
+                </Button>
+                <Button
+                    color='primary'
+                    variant='contained'
+                    size='small'
+                    disabled={!isCommentEnabled}
+                    onClick={handleComment}
+                    style={{ marginLeft: '10px' }}
+                >
+                  {translate('common.comment')}
+                </Button>
+              </Grid>
+            </Grid>
           </div>
         </>
           :
@@ -573,6 +770,8 @@ export function Editor(props: EditorProps) {
               assignSpeakerForSegment={assignSpeakerForSegment}
               editorCommand={editorCommand}
                isAudioPlaying={isAudioPlaying}
+               isDiff={!!isDiff}
+               handleTextSelection={handleTextSelection}
               // onChange={handleChange}
               readOnly={readOnly}
               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
@@ -586,27 +785,6 @@ export function Editor(props: EditorProps) {
               playingLocation={playingLocation} />
           })
       }
-        {/*{ready &&
-        segments.map( (segment: Segment, index: number) => {
-          return <MemoizedSegmentBlock key={`segment-block-${index}`}
-                                       segment={segment}
-                                       segmentIndex={index}
-                                       assignSpeakerForSegment={assignSpeakerForSegment}
-                                       editorCommand={editorCommand}
-              // onChange={handleChange}
-                                       readOnly={readOnly}
-                                       onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                                       updateCaretLocation={updateCaretLocation}
-                                       updateChange={updateChange}
-                                       updateSegment={updateSegment}
-                                       onCommandHandled={onCommandHandled}
-                                       findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                                       getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                                       removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
-                                       playingLocation={playingLocation} />
-        })
-        }*/}
-
     </div>
   );
 }

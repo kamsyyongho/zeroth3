@@ -10,7 +10,8 @@ import DoneIcon from '@material-ui/icons/Done';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { ModelConfig, GenericById, DataSet } from '../../../../types';
+import { ApiContext } from '../../../../hooks/api/ApiContext';
+import { ModelConfig, GenericById, DataSet, SnackbarError, SNACKBAR_VARIANTS } from '../../../../types';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { Field } from 'formik';
 import Select from '@material-ui/core/Select';
@@ -24,11 +25,14 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
 import { ProgressBar } from '../../../shared/ProgressBar';
+import { useSnackbar } from 'notistack';
+import log from '../../../../util/log/logger';
 
 interface StatusLogModalProps {
     open: boolean;
     onClose: () => void;
-    statusChanges: any[];
+    projectId: string;
+    dataId: string;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -55,20 +59,55 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function StatusLogModal(props: StatusLogModalProps) {
-    const { open, onClose, statusChanges } = props;
+    const { open, onClose, projectId, dataId } = props;
     const { translate, formatDate } = React.useContext(I18nContext);
+    const { enqueueSnackbar } = useSnackbar();
+    const api = React.useContext(ApiContext);
     const [loading, setLoading] = React.useState(false);
     const [setType, setSetType] = React.useState("none");
+    const [statusChanges, setStatusChanges] = React.useState<any[]>([]);
     const classes = useStyles();
     const theme = useTheme();
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
+
+    const initStatusChanges = async () => {
+        if (api?.voiceData && !loading) {
+            setLoading(true);
+            const response = await api.voiceData.getStatusChange(projectId, dataId);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                setStatusChanges(response.statusChanges);
+            } else {
+                log({
+                    file: `CreateSetFormDialog.tsx`,
+                    caller: `handleSubmit - failed to create set`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setLoading(false);
+        }
+    };
 
     const handleClose = () => {
         setLoading(false);
         setSetType('none');
         onClose();
     };
+
+    React.useEffect(() => {
+        if(!statusChanges.length) {
+            initStatusChanges();
+        }
+    }, []);
+
     return (
         <Dialog
             fullScreen={fullScreen}

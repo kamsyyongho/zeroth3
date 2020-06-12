@@ -51,6 +51,7 @@ export const en: ResourceLanguage = {
       summary: 'Summary',
       confirm: 'Approve',
       reject: 'Reject',
+      comment: 'Comment',
     },
     table: {
       page: 'Page',

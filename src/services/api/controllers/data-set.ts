@@ -1,22 +1,23 @@
-import { ApisauceInstance } from 'apisauce';
-import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber, VoiceDataResults, SubSetCountResults} from '../../../types';
-import { getGeneralApiProblem } from '../api-problem';
+import {ApisauceInstance} from 'apisauce';
+import {DataSet as IDataSet, FilterParams, SubSetCountResults, Transcriber, VoiceDataResults} from '../../../types';
+import {getGeneralApiProblem} from '../api-problem';
 import {
   AssignTranscribersToDataSetRequest,
   assignTranscribersToDataSetResult,
+  createTrainingSet,
   getAllResult,
   getDownloadLinkResult,
+  getEvaluationDownloadLink,
   getSubSet,
-  createTrainingSet,
+  getSubSetCount,
   PostDataSetRequest,
   postDataSetResult,
   ProblemKind,
   removeTranscriberFromDataSetResult,
-  ServerError,
   requestEvaluation,
-  getSubSetCount,
+  ServerError,
 } from '../types';
-import { ParentApi } from './parent-api';
+import {ParentApi} from './parent-api';
 
 /**
  * Manages all data set requests to the API.
@@ -281,5 +282,28 @@ export class DataSet extends ParentApi {
       return {kind: ProblemKind['bad-data']};
     }
 
+  }
+
+  async getEvaluationDownloadLink (projectId: string, dataSetId: string): Promise<getEvaluationDownloadLink> {
+    const response = await this.apisauce.get<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data-sets/${dataSetId}/download-eval`,
+        )
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind == ProblemKind.unauthorized) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const data = response.data as any;
+      return { kind: 'ok', url: data.url }
+    } catch {
+      return { kind: ProblemKind['bad-data'] }
+    }
   }
 }
