@@ -16,9 +16,7 @@ import { TranscriptionTableItem } from './TranscriptionTableItem';
 const FULL_ROW_COL_SPAN = 7;
 
 interface TranscriptionTableProps {
-    voiceData: VoiceData[];
-    handleConfirmationClick: (voiceDataIndex: number) => void;
-    handleRejectClick: (voiceDataIndex: number) => void;
+    dataSet: DataSet[];
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,7 +46,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function TranscriptionTable(props: TranscriptionTableProps) {
-    const { voiceData, handleConfirmationClick, handleRejectClick } = props;
+    const { dataSet } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -56,15 +54,13 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
     </TableRow>);
 
-    const renderSets = () => voiceData.map((voiceData, index) => (<React.Fragment
-        key={voiceData.id}
+    const renderSets = () => dataSet.map((dataSet, index) => (<React.Fragment
+        key={dataSet.id}
     >
         {index > 0 && renderRowFiller}
         <TranscriptionTableItem
-            voiceData={voiceData}
-            voiceDataIndex={index}
-            handleConfirmationClick={handleConfirmationClick}
-            handleRejectClick={handleRejectClick}
+            dataSet={dataSet}
+            dataSetIndex={index}
             // openEvaluationDetail={openEvaluationDetail}
         />
     </React.Fragment>));
@@ -72,25 +68,24 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.transcript')}
-            </TableCell>
-            <TableCell>
-                {translate('forms.modelConfig')}
-            </TableCell>
-            <TableCell>
-                {translate('transcription.commentNumber')}
-            </TableCell>
-            <TableCell>
-                {translate('common.length')}
-            </TableCell>
-            <TableCell>
-                {translate('common.date')}
+                {translate('forms.name')}
             </TableCell>
             <TableCell>
                 {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
-                {translate('forms.status')}
+                {translate('SET.highRisk')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.rejected')}
+            </TableCell>
+            <TableCell>
+                {translate('common.date')}
+            </TableCell>
+            <TableCell>
+                {translate('SET.editProgress')}
+            </TableCell>
+            <TableCell>
             </TableCell>
         </TableRow>
     </TableHead>);
@@ -105,7 +100,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
         <Table className={classes.table}>
             {renderHeader()}
             <TableBody>
-                {(!voiceData.length) ? renderNoResults() : renderSets()}
+                {(!dataSet.length) ? renderNoResults() : renderSets()}
             </TableBody>
         </Table>
     );

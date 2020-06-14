@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/components/AdminCellStatusSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminCellStatusSelect.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/admin/components/AdminTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +83,7 @@
       <workItem from="1591667787158" duration="521000" />
       <workItem from="1591668616571" duration="119030000" />
       <workItem from="1591952035142" duration="4000" />
-      <workItem from="1592137087954" duration="5300000" />
+      <workItem from="1592137087954" duration="8041000" />
     </task>
     <servers />
   </component>

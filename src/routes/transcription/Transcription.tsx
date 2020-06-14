@@ -95,9 +95,9 @@ export function Transcription() {
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
-    const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
-    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number>(0);
+    const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
+    const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
+    const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number>(0);
     const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
     const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -107,20 +107,15 @@ export function Transcription() {
 
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
-    const getAllVoiceData = async () => {
-        if(api?.user) {
+    const getAllDataSet = async () => {
+        if (api?.user) {
             const response = await api.user.getDataSetsToFetchFrom();
-            console.log('============assigned datasets : ', response);
-        }
-
-        if (api?.voiceData) {
-            const response = await api.voiceData.getHistory();
             if (response.kind === 'ok') {
-                setVoiceData(response.voiceData);
+                setDataSet(response.dataSets);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getAllVoiceData - failed to get data sets`,
+                    caller: `getAllDataSet - failed to get data sets`,
                     value: response,
                     important: true,
                 });
@@ -129,88 +124,14 @@ export function Transcription() {
     };
 
     const setSelectionAndOpenDialog = (index: number) => {
-        setSelectedVoiceDataIndex(index);
-        setSelectedVoiceData(voiceData[index]);
+        setSelectedDataSetIndex(index);
+        setSelectedDataSet(dataSet[index]);
         setIsConfirmationOpen(true);
     }
 
-    const handleConfirmationClick = (voiceDataIndex: number) => {
-        setIsConfirm(true);
-        setSelectionAndOpenDialog(voiceDataIndex)
-    };
-
-    const handleRejectClick = (voiceDataIndex: number) => {
-        setIsConfirm(false);
-        setSelectionAndOpenDialog(voiceDataIndex)
-    };
-
-    const handleConfirmation = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
-            setIsLoading(true);
-            setIsConfirmationOpen(false);
-            const response = await api.voiceData.confirmData(selectedVoiceData.projectId, selectedVoiceData.id);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
-                snackbarError = undefined;
-                copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                // to trigger the `useEffect` to fetch more
-                // setVoiceData(undefined);
-            } else {
-                log({
-                    file: `EditorPage.tsx`,
-                    caller: `confirmData - failed to confirm segments`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-            }
-            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-            setIsLoading(false);
-        }
-    };
-
-    const handleRejection = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
-            setIsLoading(true);
-            setIsConfirmationOpen(false);
-            const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
-                snackbarError = undefined;
-                copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                // to trigger the `useEffect` to fetch more
-                // setVoiceData(undefined);
-            } else {
-                log({
-                    file: `EditorPage.tsx`,
-                    caller: `confirmData - failed to confirm segments`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-            }
-            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-            setIsLoading(false);
-        }
-    };
-
     React.useEffect(() => {
         setPageTitle(translate('transcription.pageTitle'));
-        getAllVoiceData();
+        getAllDataSet();
     }, []);
 
     const renderSummary = () => {
@@ -300,7 +221,7 @@ export function Transcription() {
                 }
             </CardContent>
         </Card>);
-        if (!voiceData) {
+        if (!dataSet) {
             return <NotFound text={translate('projects.notFound')} />;
         }
     };
@@ -315,11 +236,9 @@ export function Transcription() {
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
-                {voiceData &&
+                {dataSet &&
                 <TranscriptionTable
-                    voiceData={voiceData}
-                    handleConfirmationClick={handleConfirmationClick}
-                    handleRejectClick={handleRejectClick}
+                    dataSet={dataSet}
                 />
                 }
             </Paper>

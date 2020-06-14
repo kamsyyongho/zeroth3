@@ -30,10 +30,8 @@ import BackupIcon from '@material-ui/icons/Backup';
 import { ICONS } from '../../../theme/icons';
 
 interface TranscriptionTableItemProps {
-    voiceData: VoiceData;
-    voiceDataIndex: number;
-    handleConfirmationClick: (voiceDataIndex: number) => void;
-    handleRejectClick: (voiceDataIndex: number) => void;
+    dataSet: DataSet;
+    dataSetIndex: number;
     // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -62,10 +60,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
-    const { voiceData, voiceDataIndex, handleConfirmationClick, handleRejectClick } = props;
+    const { dataSet, dataSetIndex } = props;
+    const { transcribers, total, processed, name, wordCount, createdAt, rejected } = dataSet;
     // const { transcribers, total, processed, name } = dataSet;
     // const numberOfTranscribers = transcribers.length;
-    const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const history = useHistory();
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
@@ -75,35 +73,55 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const [expanded, setExpanded] = React.useState(false);
     const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
     const [setDetailLoading, setSetDetailLoading] = React.useState(false);
-    const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
+    const [subSets, setSubSets] = React.useState<DataSet[]>([]);
 
     const classes = useStyles();
     const theme: CustomTheme = useTheme();
+
+    // must be a number from 0 to 100
+    const progress = processed / total * 100;
+
+    let processedText = (
+        <Typography className={classes.processedText} >
+            {processed}
+            <Typography component='span' color='textPrimary' >
+                {` / ${total}`}
+            </Typography>
+        </Typography>
+    );
+
+    if (!total || isNaN(progress)) {
+        processedText = (<Typography color='textSecondary' >
+            {translate('common.noData')}
+        </Typography>);
+    }
 
     return (
         <TableRow
             className={classes.tableRow}
         >
             <TableCell>
-                <Typography>{voiceData.originalFilename}</Typography>
+                <Typography>{name}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.modelConfigId}</Typography>
+                <Typography>{wordCount}</Typography>
             </TableCell>
             <TableCell>
-                {voiceData.length}
+                {dataSet.highRiskRatio + '%'}
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.wordCount}</Typography>
+                <Typography>{rejected}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{formatDate(new Date(voiceData.decodedAt))}</Typography>
+                <Typography>{formatDate(new Date(createdAt))}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.wordCount}</Typography>
+                <Typography>
+                    {processedText}
+                    <ProgressBar value={progress} maxWidth={200} />
+                </Typography>
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.status}</Typography>
             </TableCell>
         </TableRow>
     );
