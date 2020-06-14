@@ -48,10 +48,16 @@ export class User extends ParentApi {
   /**
    * Gets a list of data sets assigned to the user
    */
-  async getDataSetsToFetchFrom(): Promise<getDataSetsToFetchFromResult> {
+  async getDataSetsToFetchFrom(completed?: boolean | null): Promise<getDataSetsToFetchFromResult> {
+    let path;
+    if(completed === null || completed === undefined) {
+      path = '/assigned-datasets';
+    } else {
+      path = `/assigned-datasets/completed=${completed}`
+    }
     // make the api call
     const response = await this.apisauce.get<DataSet[], ServerError>(
-      this.getPathWithOrganization(`/assigned-datasets`),
+      this.getPathWithOrganization(path),
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

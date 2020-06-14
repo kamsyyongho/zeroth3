@@ -96,10 +96,6 @@ export function Transcription() {
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
-    const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
-    const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number>(0);
-    const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
-    const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
     const theme: CustomTheme = useTheme();
@@ -107,15 +103,15 @@ export function Transcription() {
 
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
-    const getAllDataSet = async () => {
+    const getAssingedDataSets = async (status?: boolean | null) => {
         if (api?.user) {
-            const response = await api.user.getDataSetsToFetchFrom();
+            const response = await api.user.getDataSetsToFetchFrom(status);
             if (response.kind === 'ok') {
                 setDataSet(response.dataSets);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getAllDataSet - failed to get data sets`,
+                    caller: `getAssingedDataSets - failed to get data sets`,
                     value: response,
                     important: true,
                 });
@@ -123,15 +119,13 @@ export function Transcription() {
         }
     };
 
-    const setSelectionAndOpenDialog = (index: number) => {
-        setSelectedDataSetIndex(index);
-        setSelectedDataSet(dataSet[index]);
-        setIsConfirmationOpen(true);
-    }
+    const handleCompletedChange = (status: boolean | null) => {
+        getAssingedDataSets(status);
+    };
 
     React.useEffect(() => {
         setPageTitle(translate('transcription.pageTitle'));
-        getAllDataSet();
+        getAssingedDataSets();
     }, []);
 
     const renderSummary = () => {
@@ -239,6 +233,7 @@ export function Transcription() {
                 {dataSet &&
                 <TranscriptionTable
                     dataSet={dataSet}
+                    handleCompletedChange={handleCompletedChange}
                 />
                 }
             </Paper>

@@ -27,23 +27,23 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-const voiceDataStatus = {
-    all: 'all',
-    review: 'review',
+const isCompletedStatus = {
+    all: 'All',
+    completed: 'Completed',
+    inComplete: 'Incomplete',
 }
 
-interface AdminCellStatusSelectProps {
-    getVoiceDataInReview: () => void;
-    getAllVoiceData: () => void;
+interface TranscriptCellStatusSelectProps {
+    handleCompletedChange: (status: boolean | null) => void;
 }
 
-export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
-    const { getVoiceDataInReview, getAllVoiceData } = props;
+export function TranscriptCellStatusSelect(props: TranscriptCellStatusSelectProps) {
+    const { handleCompletedChange } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
 
-    const [status, setStatus] = React.useState<string>(voiceDataStatus.review);
+    const [status, setStatus] = React.useState<string>(isCompletedStatus.all);
 
     const classes = useStyles();
     const theme = useTheme();
@@ -51,8 +51,22 @@ export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
 
     const handleChange = (event: any) => {
         const value = event.target.value as string;
-        if(value === voiceDataStatus.all) getAllVoiceData();
-        if(value === voiceDataStatus.review) getVoiceDataInReview();
+        let status;
+        switch (value) {
+            case isCompletedStatus.all:
+                status = null;
+                break;
+            case isCompletedStatus.completed:
+                status = true;
+                break;
+            case isCompletedStatus.inComplete:
+                status = false;
+                break;
+            default:
+                status = null;
+                break;
+        }
+        handleCompletedChange(status);
         setStatus(value);
     };
 
@@ -70,11 +84,14 @@ export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
                     value={status}
                     onChange={handleChange}
                 >
-                    <MenuItem value={voiceDataStatus.all}>
-                        <ListItemText primary={`status: ${voiceDataStatus.all}`} />
+                    <MenuItem value={isCompletedStatus.all}>
+                        <ListItemText primary={`status: ${isCompletedStatus.all}`} />
                     </MenuItem>
-                    <MenuItem value={voiceDataStatus.review}>
-                        <ListItemText primary={`status: ${voiceDataStatus.review}`} />
+                    <MenuItem value={isCompletedStatus.inComplete}>
+                        <ListItemText primary={`status: ${isCompletedStatus.inComplete}`} />
+                    </MenuItem>
+                    <MenuItem value={isCompletedStatus.completed}>
+                        <ListItemText primary={`status: ${isCompletedStatus.completed}`} />
                     </MenuItem>
                 </Select>
             </FormControl>

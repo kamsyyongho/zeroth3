@@ -12,11 +12,13 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
 import { TranscriptionTableItem } from './TranscriptionTableItem';
+import { TranscriptCellStatusSelect } from './TranscriptCellStatusSelect'
 
 const FULL_ROW_COL_SPAN = 7;
 
 interface TranscriptionTableProps {
     dataSet: DataSet[];
+    handleCompletedChange: (status: boolean | null) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -46,7 +48,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function TranscriptionTable(props: TranscriptionTableProps) {
-    const { dataSet } = props;
+    const { dataSet, handleCompletedChange } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -86,6 +88,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('SET.editProgress')}
             </TableCell>
             <TableCell>
+                <TranscriptCellStatusSelect handleCompletedChange={handleCompletedChange}/>
             </TableCell>
         </TableRow>
     </TableHead>);
