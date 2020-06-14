@@ -1,33 +1,15 @@
-import { Grid, TableCell, Tooltip, Typography } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
+import {TableCell, Typography} from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
-import AddIcon from '@material-ui/icons/Add';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import LaunchIcon from '@material-ui/icons/Launch';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import EditIcon from '@material-ui/icons/Edit';
-import RateReviewIcon from '@material-ui/icons/RateReview'
-import { useSnackbar } from 'notistack';
-import MoonLoader from 'react-spinners/MoonLoader';
-import React, { useGlobal } from 'reactn';
-import { useHistory } from 'react-router-dom';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { ServerError } from '../../../services/api/types/api-problem.types';
-import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData, PATHS } from '../../../types';
-import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { ProgressBar } from '../../shared/ProgressBar';
-import { SetDetail } from "../../projects/set/components/SetDetail";
-import { EvaluationDetailModal } from '../../projects/set/components/EvaluationDetailModal';
-import { TrainingChip } from '../../shared/TrainingChip';
-import BackupIcon from '@material-ui/icons/Backup';
-import { ICONS } from '../../../theme/icons';
+import {useSnackbar} from 'notistack';
+import React, {useGlobal} from 'reactn';
+import {useHistory} from 'react-router-dom';
+import {ApiContext} from '../../../hooks/api/ApiContext';
+import {I18nContext} from '../../../hooks/i18n/I18nContext';
+import {CustomTheme} from '../../../theme';
+import {CONTENT_STATUS, PATHS, VoiceData} from '../../../types';
+import {ICONS} from '../../../theme/icons';
 
 interface AdminTableItemProps {
     voiceData: VoiceData;
@@ -110,22 +92,29 @@ export function AdminTableItem(props: AdminTableItemProps) {
                     onClick={handleDiffClick} />
             </TableCell>
             <TableCell style={{ minWidth: '250px' }}>
-                <Button
-                    className={classes.button}
-                    variant='contained'
-                    color="primary"
-                    size='small'
-                    onClick={() => handleConfirmationClick(voiceDataIndex)}>
-                    {translate('common.confirm')}
-                </Button>
-                <Button
-                    className={[classes.button, classes.buttonReject].join(' ')}
-                    color='secondary'
-                    variant='contained'
-                    size='small'
-                    onClick={() => handleRejectClick(voiceDataIndex)}>
-                    {translate('common.reject')}
-                </Button>
+                {
+                    voiceData.status !== CONTENT_STATUS.CONFIRMED &&
+                        <>
+                            <Button
+                                className={classes.button}
+                                variant='contained'
+                                color="primary"
+                                disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                                size='small'
+                                onClick={() => handleConfirmationClick(voiceDataIndex)}>
+                                {translate('common.confirm')}
+                            </Button>
+                            <Button
+                                className={[classes.button, classes.buttonReject].join(' ')}
+                                color='secondary'
+                                disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                                variant='contained'
+                                size='small'
+                                onClick={() => handleRejectClick(voiceDataIndex)}>
+                                {translate('common.reject')}
+                            </Button>
+                        </>
+                }
             </TableCell>
         </TableRow>
     );

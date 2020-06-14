@@ -80,12 +80,6 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const classes = useStyles();
     const theme: CustomTheme = useTheme();
 
-    const handleDiffClick = () => {
-        const projectId = voiceData.projectId;
-        setNavigationProps({ voiceData, projectId });
-        PATHS.editor.to && history.push(PATHS.editor.to);
-    };
-
     return (
         <TableRow
             className={classes.tableRow}

@@ -108,6 +108,11 @@ export function Transcription() {
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
     const getAllVoiceData = async () => {
+        if(api?.user) {
+            const response = await api.user.getDataSetsToFetchFrom();
+            console.log('============assigned datasets : ', response);
+        }
+
         if (api?.voiceData) {
             const response = await api.voiceData.getHistory();
             if (response.kind === 'ok') {

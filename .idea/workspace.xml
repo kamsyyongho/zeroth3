@@ -2,30 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/Comment.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminCellStatusSelect.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/editor.constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/editor.constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/permission.constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/permission.constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/Admin.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/admin/components/AdminTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/admin/components/AdminTableItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/voice-data.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +84,9 @@
       <workItem from="1591260853215" duration="192000" />
       <workItem from="1591577932315" duration="22275000" />
       <workItem from="1591667787158" duration="521000" />
-      <workItem from="1591668616571" duration="118920000" />
+      <workItem from="1591668616571" duration="119030000" />
+      <workItem from="1591952035142" duration="4000" />
+      <workItem from="1592137087954" duration="3206000" />
     </task>
     <servers />
   </component>
