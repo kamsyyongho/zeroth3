@@ -12,11 +12,14 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
 import { AdminTableItem } from './AdminTableItem';
+import { AdminCellStatusSelect } from './AdminCellStatusSelect';
 
 const FULL_ROW_COL_SPAN = 7;
 
 interface AdminTableProps {
     voiceData: VoiceData[];
+    getAllVoiceData: () => void;
+    getVoiceDataInReview: () => void;
     handleConfirmationClick: (voiceDataIndex: number) => void;
     handleRejectClick: (voiceDataIndex: number) => void;
 }
@@ -48,7 +51,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function AdminTable(props: AdminTableProps) {
-    const { voiceData, handleConfirmationClick, handleRejectClick } = props;
+    const { voiceData, getAllVoiceData, getVoiceDataInReview, handleConfirmationClick, handleRejectClick } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -90,6 +93,7 @@ export function AdminTable(props: AdminTableProps) {
                 {translate('admin.diff')}
             </TableCell>
             <TableCell>
+                <AdminCellStatusSelect getVoiceDataInReview={getVoiceDataInReview} getAllVoiceData={getAllVoiceData}/>
             </TableCell>
         </TableRow>
     </TableHead>);

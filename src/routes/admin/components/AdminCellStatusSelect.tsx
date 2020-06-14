@@ -27,80 +27,37 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-interface TDPCellStatusSelectProps {
-    cellData: CellProps<VoiceData>;
-    projectId: string;
-    onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+const voiceDataStatus = {
+    all: 'all',
+    review: 'review',
 }
 
-export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
-    const { cellData, projectId, onSuccess } = props;
+interface AdminCellStatusSelectProps {
+    getVoiceDataInReview: () => void;
+    getAllVoiceData: () => void;
+}
+
+export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
+    const { getVoiceDataInReview, getAllVoiceData } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
 
-    const initialStatus: VoiceData['status'] = cellData.cell.value;
-    const voiceData = cellData.cell.row.original;
-
-    const index = cellData.cell.row.index;
-    const key = `${index}-status`;
-
-    const [status, setStatus] = React.useState<CONTENT_STATUS>(initialStatus);
-    const [loading, setLoading] = React.useState(false);
+    const [status, setStatus] = React.useState<string>(voiceDataStatus.review);
 
     const classes = useStyles();
     const theme = useTheme();
 
-    // we cannot update the status to `FETCHED`
-    const statusChanged = status !== initialStatus && status !== CONTENT_STATUS.FETCHED;
 
-    const updateStatus = async () => {
-        if (api?.voiceData && statusChanged && !loading && status !== CONTENT_STATUS.FETCHED) {
-            setLoading(true);
-            const response = await api.voiceData.updateStatus(projectId, voiceData.id, status);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                snackbarError = undefined;
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                setLoading(false);
-                onSuccess(response.data, index);
-            } else {
-                log({
-                    file: `TDPCellStatusSelect.tsx`,
-                    caller: `updateStatus - failed to update status`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-                snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-                setLoading(false);
-            }
-        }
-    };
-
-    const handleChange = (event: React.ChangeEvent<{ value: unknown; }>) => {
-        const value = event.target.value as CONTENT_STATUS;
+    const handleChange = (event: any) => {
+        const value = event.target.value as string;
+        if(value === voiceDataStatus.all) getAllVoiceData();
+        if(value === voiceDataStatus.review) getVoiceDataInReview();
         setStatus(value);
     };
 
-    const renderMenuItems = () => {
-        return CONTENT_STATUS_VALUES.map((status, index) => {
-            return (
-                <MenuItem disabled={status === CONTENT_STATUS.FETCHED} key={index} value={status as CONTENT_STATUS}>
-                    <ListItemText primary={status} />
-                </MenuItem>
-            );
-        });
-    };
-
-
     return (
         <Grid
-            key={key}
             container
             wrap='nowrap'
             direction='row'
@@ -113,24 +70,14 @@ export function TDPCellStatusSelect(props: TDPCellStatusSelectProps) {
                     value={status}
                     onChange={handleChange}
                 >
-                    {renderMenuItems()}
+                    <MenuItem value={voiceDataStatus.all}>
+                        <ListItemText primary={`status: ${voiceDataStatus.all}`} />
+                    </MenuItem>
+                    <MenuItem value={voiceDataStatus.review}>
+                        <ListItemText primary={`status: ${voiceDataStatus.review}`} />
+                    </MenuItem>
                 </Select>
             </FormControl>
-            <IconButton
-                className={!statusChanged ? classes.hidden : undefined}
-                disabled={loading}
-                color='primary'
-                size='small'
-                aria-label="submit"
-                onClick={updateStatus}
-            >
-                {loading ? <MoonLoader
-                    sizeUnit={"px"}
-                    size={15}
-                    color={theme.palette.primary.main}
-                    loading={true}
-                /> : <CheckIcon />}
-            </IconButton>
         </Grid>
     );
 }

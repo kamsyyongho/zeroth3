@@ -110,7 +110,7 @@ export function Admin() {
     const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
     const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
-    const getAllVoiceData = async () => {
+    const getVoiceDataInReview = async () => {
         if (api?.voiceData) {
             // const response = await api.voiceData.getHistory();
             const response = await api.voiceData.getDataToReview();
@@ -119,7 +119,24 @@ export function Admin() {
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getAllVoiceData - failed to get data sets`,
+                    caller: `getVoiceDataInReview - failed to get data sets`,
+                    value: response,
+                    important: true,
+                });
+            }
+        }
+    };
+
+    const getAllVoiceData = async () => {
+        if (api?.voiceData) {
+            const response = await api.voiceData.getHistory();
+            // const response = await api.voiceData.getDataToReview();
+            if (response.kind === 'ok') {
+                setVoiceData(response.voiceData);
+            } else {
+                log({
+                    file: `ProjectDetails.tsx`,
+                    caller: `getVoiceDataInReview - failed to get data sets`,
                     value: response,
                     important: true,
                 });
@@ -209,7 +226,7 @@ export function Admin() {
 
     React.useEffect(() => {
         setPageTitle(translate('admin.pageTitle'));
-        getAllVoiceData();
+        getVoiceDataInReview();
     }, []);
 
     const renderSummary = () => {
@@ -325,6 +342,8 @@ export function Admin() {
                 {voiceData &&
                     <AdminTable
                         voiceData={voiceData}
+                        getAllVoiceData={getAllVoiceData}
+                        getVoiceDataInReview={getVoiceDataInReview}
                         handleConfirmationClick={handleConfirmationClick}
                         handleRejectClick={handleRejectClick}
                     />
