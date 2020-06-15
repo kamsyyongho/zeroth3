@@ -77,7 +77,7 @@ export function AdminTableItem(props: AdminTableItemProps) {
                 <Typography>{voiceData.modelConfigId}</Typography>
             </TableCell>
             <TableCell>
-                {voiceData.length}
+                {'-'}
             </TableCell>
             <TableCell>
                 <Typography>{voiceData.wordCount}</Typography>

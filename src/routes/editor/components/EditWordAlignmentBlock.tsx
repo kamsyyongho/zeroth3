@@ -47,14 +47,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
-    const [transcriptToRender, setTranscriptToReder] = React.useState();
+    const [transcriptToRender, setTranscriptToRender] = React.useState<any>();
     const element = useRef<HTMLDivElement>(null);
     const [wordAlignments, setWordAlignments] = React.useState<string[]>([]);
 
 
     const initTranscriptToRender = () => {
         const inititalTranscript = (<span>{segment.transcript}</span>)
-        setTranscriptToReder(inititalTranscript);
+        setTranscriptToRender(inititalTranscript);
     };
 
     const handleArrowKeyDown = () => {
@@ -75,7 +75,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
            : segment.transcript.slice(indexTo + 1, segment.transcript.length - 1);
        const selected: string = segment.transcript.slice(indexFrom, indexTo + 1);
        const highlightedSpan = (<span>{beforeSelected}<span className={classes.highlight}>{selected}</span>{afterSelected}</span>);
-       setTranscriptToReder(highlightedSpan);
+       setTranscriptToRender(highlightedSpan);
        if(element?.current) {element.current.blur();}
     };
 

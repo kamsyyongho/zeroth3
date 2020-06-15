@@ -75,7 +75,7 @@ export function AdminTable(props: AdminTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.transcript')}
+                {translate('forms.file')}
             </TableCell>
             <TableCell>
                 {translate('forms.modelConfig')}

@@ -41,7 +41,6 @@ import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
 import { EditorFetchButton } from './components/EditorFetchButton';
 import { StarRating } from './components/StarRating';
 import { Editor } from './Editor';
-import { Diff } from './Diff';
 import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
 import { getSegmentAndWordIndex, updatePlayingLocation } from './helpers/editor.helper';
 
@@ -775,7 +774,6 @@ export function EditorPage() {
       });
       const response = await api.voiceData.getAudio(processedUrl);
       if (response.kind === 'ok') {
-        console.log('===================audio url response : ', response);
         setAudioUrl(response.url);
       } else {
         log({
