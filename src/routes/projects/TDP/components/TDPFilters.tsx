@@ -15,10 +15,11 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, TranscriberStats, Transcriber } from '../../../../types';
+import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, TranscriberStats, Transcriber, StringById } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
+import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormField';
 
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
@@ -66,15 +67,16 @@ export function TDPFilters(props: TDPFiltersProps) {
     return tempFormSelectOptions;
   }, [modelConfigsById, translate]);
 
-  const dataSetFormSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(dataSetsById).map((id) => ({
-      label: dataSetsById[id].name,
-      value: dataSetsById[id].id,
-    }));
-    // add the placeholder
-    tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
-    return tempFormSelectOptions;
-  }, [modelConfigsById, translate]);
+  const dataSetNamesById: StringById = {};
+  const dataSetFormSelectOptions = Object.keys(dataSetsById).map((id) => {
+      const label = dataSetsById[id].name;
+      const value = dataSetsById[id].id;
+      dataSetNamesById[value] = label;
+    return {
+      label,
+      value,
+    };
+    });
 
     const transcriberFormSelectOptions = React.useMemo(() => {
       const tempFormSelectOptions: SelectFormFieldOptions = transcriberStats.map((transcriber) => ({
@@ -102,7 +104,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     transcript: yup.string().notRequired(),
     status: yup.mixed().oneOf(CONTENT_STATUS_VALUES.concat([''])).notRequired(),
     modelConfigId: yup.mixed<string | ''>().notRequired(),
-    dataSetId: yup.mixed<string | ''>().notRequired(),
+    dataSetId: yup.array().of(yup.string()).notRequired(),
     filename: yup.string().notRequired(),
     transcriber: yup.mixed<string | ''>().notRequired(),
   });
@@ -112,7 +114,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     endDate: null,
     status: '',
     modelConfigId: '',
-    dataSetId: '',
+    dataSetId: [],
   };
 
 
@@ -132,6 +134,16 @@ export function TDPFilters(props: TDPFiltersProps) {
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
     const till: Date | undefined = endDate === null ? undefined : endDate;
+    let dataSet: string = '';
+    if(dataSetId) {
+      dataSetId.forEach((dataSetId: string, index: number) => {
+        dataSet += dataSetId;
+        if(index < dataSetId.length - 1) {
+          dataSet += ','
+        }
+      });
+    }
+
     const options: SearchDataRequest = {
       from,
       till,
@@ -140,7 +152,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status: status === '' ? undefined : status,
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
-      'data-set': dataSetId === '' ? undefined : dataSetId,
+      'data-set': dataSet,
       filename,
       transcriber,
     };
@@ -343,9 +355,11 @@ export function TDPFilters(props: TDPFiltersProps) {
                         <Field
                           fullWidth
                           name='dataSetId'
-                          component={SelectFormField}
+                          component={ChipSelectFormField}
                           options={dataSetFormSelectOptions}
+                          labelsByValue={dataSetNamesById}
                           label={translate("SET.dataSet")}
+                          light
                         />
                       </Grid>
                     </Grid>

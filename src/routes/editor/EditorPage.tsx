@@ -148,6 +148,7 @@ export function EditorPage() {
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
   const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>({});
   const [audioUrl, setAudioUrl] = React.useState<string>('');
+  const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
 
   // get the passed info if we got here via the details page
 
@@ -273,6 +274,7 @@ export function EditorPage() {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to trigger the `useEffect` to fetch more
+        setIsSegmentUpdateError(false);
         setVoiceData(undefined);
       } else {
         log({
@@ -282,6 +284,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -307,6 +310,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
         log({
@@ -316,6 +320,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -336,6 +341,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
+        setIsSegmentUpdateError(false);
         const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
@@ -349,6 +355,7 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        setIsSegmentUpdateError(true);
         snackbarError.isError = true;
         const { serverError } = response;
         if (serverError) {
@@ -382,6 +389,7 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
         log({
@@ -391,6 +399,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -420,6 +429,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
+        setIsSegmentUpdateError(false);
         //cut out and replace the old segment
         const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
@@ -438,6 +448,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -458,6 +469,7 @@ export function EditorPage() {
       const response = await api.voiceData.splitSegmentByTime(projectId, voiceData.id, segmentId, time, wordStringSplitIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
+        setIsSegmentUpdateError(false);
         snackbarError = undefined;
         //cut out and replace the old segment
         const splitSegments = [...segments];
@@ -476,6 +488,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -930,6 +943,7 @@ export function EditorPage() {
             loading={saveSegmentsLoading || confirmSegmentsLoading}
             editorReady={editorReady}
             playingLocation={currentPlayingLocation}
+            isSegmentUpdateError={isSegmentUpdateError}
         />}
         <Container >
           {readOnly && <StarRating

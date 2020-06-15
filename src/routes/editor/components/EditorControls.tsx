@@ -72,6 +72,12 @@ export enum EDITOR_CONTROLS {
   debug,
 }
 
+const EDITOR_STATUS = {
+  loading: 'loading',
+  saved: 'saved',
+  error: 'error',
+}
+
 const primaryControlOrder = [
   EDITOR_CONTROLS.save,
   EDITOR_CONTROLS.undo,
@@ -101,6 +107,7 @@ interface EditorControlsProps {
   loading?: boolean;
   editorReady?: boolean;
   playingLocation: number[];
+  isSegmentUpdateError: boolean;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -111,6 +118,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     loading,
     editorReady,
     playingLocation,
+    isSegmentUpdateError,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -118,6 +126,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [statusEl, setStatusEl] = React.useState<any>();
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -307,6 +316,43 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
+  React.useEffect(() => {
+    const statusTextEl = (
+        <Typography>
+          'Status'
+        </Typography>
+    )
+    if(loading) {
+      const loadingEl = (<ScaleLoader
+          color={theme.palette.common.white}
+          loading={true}
+      />);
+      setStatusEl(loadingEl);
+    }
+    if(!isSegmentUpdateError) {
+      const successEl = (
+          <Typography>
+            'Success'
+          </Typography>
+      );
+      setStatusEl(successEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1000);
+    } else if (isSegmentUpdateError) {
+      const errorEl = (
+          <Typography>
+            'Error'
+          </Typography>
+      );
+      setStatusEl(errorEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1000);
+    }
+
+  }, [loading, isSegmentUpdateError])
+
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**
@@ -387,10 +433,11 @@ export const EditorControls = (props: EditorControlsProps) => {
       >
         {renderButtons(primaryControlOrder)}
       </ButtonGroup>
-      {loading && <ScaleLoader
+      {/*{loading && <ScaleLoader
         color={theme.palette.common.white}
         loading={true}
-      />}
+      />}*/}
+      {statusEl}
       <ButtonGroup
         variant="contained"
         aria-label="secondary editor buttons"
