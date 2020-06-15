@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             changes: green[400],
         },
         highlight: {
-            backgroundColor: '#ffe190',
+            backgroundColor: '#2f99cb',
         }
     }),
 );

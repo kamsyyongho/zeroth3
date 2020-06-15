@@ -16,14 +16,23 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             maxWidth: '100%',
             caretStyle: 'block',
             caretColor: 'red',
+        },
+        highlight: {
+            backgroundColor: '#a8d0e3'
         }
     }),
 );
+
+interface SelectedIndex {
+    indexFrom: number;
+    indexTo: number;
+}
 
 interface EditWordAlignmentBlockProps  {
     segment: Segment;
     segmentIndex: number;
     isAbleToComment: boolean;
+    isCommentEnabled: boolean;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
 }
@@ -32,34 +41,50 @@ let isFocused = false;
 
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const classes = useStyles();
-    const {  segment, segmentIndex, isAbleToComment, updateCaretLocation, handleTextSelection } = props;
+    const { segment, segmentIndex, isAbleToComment, isCommentEnabled, updateCaretLocation, handleTextSelection } = props;
     const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
-    const element = useRef(null);
+    const [isSelected, setIsSelected] = React.useState<boolean>(false);
+    const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
+    const [transcriptToRender, setTranscriptToReder] = React.useState();
+    const element = useRef<HTMLDivElement>(null);
+    const [wordAlignments, setWordAlignments] = React.useState<string[]>([]);
 
+
+    const initTranscriptToRender = () => {
+        const inititalTranscript = (<span>{segment.transcript}</span>)
+        setTranscriptToReder(inititalTranscript);
+    };
 
     const handleArrowKeyDown = () => {
-        console.log('=====================caretlocation', getSegmentAndWordIndex());
         const playingLocation = getSegmentAndWordIndex();
         if(playingLocation) {
             updateCaretLocation(playingLocation[0], playingLocation[1]);
             return;
         }
-    }
+    };
 
     const handleFocus = () => {
 
-    }
+    };
+
+    const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
+       const beforeSelected: string = indexFrom === 0 ? '' : segment.transcript.slice(0,indexFrom);
+       const afterSelected: string = indexTo === segment.transcript.length - 1 ? ''
+           : segment.transcript.slice(indexTo + 1, segment.transcript.length - 1);
+       const selected: string = segment.transcript.slice(indexFrom, indexTo + 1);
+       const highlightedSpan = (<span>{beforeSelected}<span className={classes.highlight}>{selected}</span>{afterSelected}</span>);
+       setTranscriptToReder(highlightedSpan);
+       if(element?.current) {element.current.blur();}
+    };
 
     const handleSelectionChange = (event: React.KeyboardEvent) => {
-        console.log(event);
         return;
-    }
+    };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         if(isMouseDown) event.preventDefault();
-        console.log('event keydown : ', event.key);
         switch (event.key) {
             case "ArrowUp":
             case "ArrowDown":
@@ -72,14 +97,17 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     };
 
     const handleMouseDown = (event: React.MouseEvent) => {
+        if(isSelected) {
+            event.preventDefault()
+            return;
+        }
         const selection = window.getSelection();
         setIsMouseDown(true)
-        console.log('=========selection mouse Down : ', selection);
     }
 
     const handleMouseUp = (event: React.MouseEvent) => {
         const selection = window.getSelection();
-        console.log('======-=======selectionMouseUP', selection);
+        const commentField = document.getElementById('comment-text-field');
         let indexFrom;
         let indexTo;
         if(selection) {
@@ -94,12 +122,16 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 indexFrom = selection.anchorOffset;
                 indexTo = selection.focusOffset;
             }
+            setIsSelected(true);
+            hightlightSelectionAfterBlur(indexFrom, indexTo);
             handleTextSelection(segment.id, indexFrom, indexTo);
         }
-    }
+    };
 
 
     React.useEffect(() => {
+
+        if(!isSelected) initTranscriptToRender();
     }, [])
 
     React.useEffect(() => {
@@ -108,9 +140,18 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     }, [isAbleToComment])
 
+    React.useEffect(() => {
+        if(!isCommentEnabled) {
+            if(isMouseDown) {
+                setIsMouseDown(false);
+                setIsSelected(false);
+                initTranscriptToRender();
+            }
+        }
+    }, [isCommentEnabled]);
+
     return (
-        // <div dangerouslySetInnerHTML={{ __html: word }}>
-        // </div>
+
         <div
             contentEditable
             className={classes.segment}
@@ -122,27 +163,19 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             {
                 isMouseDown ?
                     <div>
-                        {segment.transcript}
+                        {transcriptToRender}
                     </div>
                     :
-                    segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
+                    segment && segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
+                        const text = wordAlignment.word.replace('|', ' ');
                         return (
-                            <div id={`word-${segmentIndex}-${index}`} onFocus={() => console.log('focus : ', wordAlignment)}>
-                                {wordAlignment.word}
+                            <div id={`word-${segmentIndex}-${index}`}>
+                                {text}
                             </div>
                         )
                     })
 
             }
-            {/*{
-                segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
-                    return (
-                        <div id={`word-${segmentIndex}-${index}`} onFocus={() => console.log('focus : ', wordAlignment)}>
-                            {wordAlignment.word}
-                        </div>
-                    )
-                })
-            }*/}
         </div>
     );
 };

@@ -45,6 +45,7 @@ interface SegmentBlockProps  {
     editorCommand?: EDITOR_CONTROLS;
     isAudioPlaying: boolean;
     isDiff: boolean;
+    isCommentEnabled: boolean;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     onCommandHandled: () => void;
@@ -70,6 +71,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         editorCommand,
         isAudioPlaying,
         isDiff,
+        isCommentEnabled,
         onUpdateUndoRedoStack,
         onCommandHandled,
         updateCaretLocation,
@@ -212,7 +214,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }, []);
 
     React.useEffect(() => {
-        setLocalSegment(segment);
+        let copySegment = JSON.parse(JSON.stringify(segment));
+        for(let i = 0; i < copySegment.length -1; i++) {
+            const wordAlignment = copySegment.wordAlignments[i];
+            wordAlignment.word = wordAlignment.word.replace('|', ' ');
+        }
+        setLocalSegment(copySegment);
         setLengthBeforeEachBlockArray();
         return () => {
             resetState();
@@ -227,10 +234,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             setEditorCommandForWordBlock(editorCommand);
         }
     },[editorCommand]);
-
-    React.useEffect(() => {
-        console.log('======================isAudioPlaying : ', isAudioPlaying)
-    }, [isAudioPlaying]);
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
@@ -271,6 +274,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                             segment={localSegment}
                             segmentIndex={segmentIndex}
                             isAbleToComment={isAbleToComment}
+                            isCommentEnabled={isCommentEnabled}
                             updateCaretLocation={updateCaretLocation}
                             handleTextSelection={handleTextSelection} />
                     </div>

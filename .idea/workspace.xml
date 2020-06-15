@@ -3,9 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptCellStatusSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptCellStatusSelect.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/services/api/controllers/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/user.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -84,7 +86,8 @@
       <workItem from="1591667787158" duration="521000" />
       <workItem from="1591668616571" duration="119030000" />
       <workItem from="1591952035142" duration="4000" />
-      <workItem from="1592137087954" duration="10420000" />
+      <workItem from="1592137087954" duration="11115000" />
+      <workItem from="1592179144601" duration="7407000" />
     </task>
     <servers />
   </component>
@@ -140,13 +143,14 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="0" y="0" width="786" height="1120" key="dock-window-1" timestamp="1591951858240">
-      <screen x="0" y="23" width="1792" height="1097" />
+    <state x="1920" y="0" width="900" height="1080" key="dock-window-1" timestamp="1592183201586">
+      <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/-2560.-43.2560.1080/-3440.1037.3440.1440/0.0.1080.2560@-3440.1037.3440.1440" timestamp="1591868921574" />
     <state x="-2560" y="-43" width="1185" height="1080" key="dock-window-1/-2560.-43.2560.1080/-3440.1037.3440.1440/0.23.1080.2503@-3440.1037.3440.1440" timestamp="1591796579831" />
     <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@-3440.1037.3440.1440" timestamp="1591897500049" />
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
+    <state x="1920" y="0" width="900" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1592183201586" />
     <state x="1920" y="0" width="1142" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/69.1080.1792.1120@0.0.1920.1080" timestamp="1591260876052" />
     <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/0.23.1080.2504/-3440.1037.3440.1440/-2560.-20.2560.1057@-3440.1037.3440.1440" timestamp="1591892483656" />
     <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/0.23.1080.2504/-3440.1060.3440.1417/-2560.-20.2560.1057@-3440.1060.3440.1417" timestamp="1591880650235" />

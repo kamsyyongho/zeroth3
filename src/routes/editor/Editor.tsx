@@ -192,6 +192,7 @@ export function Editor(props: EditorProps) {
   const [reason, setReason] = React.useState<string>('');
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const commentRef = React.useRef<HTMLInputElement | null>(null);
   const diffTextHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT - DIFF_TITLE_HEIGHT - EDITOR_MARGIN_TOP - COMMENT_HEIGHT - 13);
 
   const getIndexOfSegmentId = (segmentId: string): number | null => {
@@ -332,7 +333,10 @@ export function Editor(props: EditorProps) {
 
   const handleTextSelection = (segmentId:string, indexFrom: number, indexTo: number) => {
     setIsCommentEnabled(true);
-    setCommentInfo({segmentId, indexFrom, indexTo})
+    setCommentInfo({segmentId, indexFrom, indexTo});
+    setTimeout(() => {
+      if(commentRef?.current) commentRef.current.focus();
+    }, 20);
   };
 
   const updateChange = async (segmentIndex: number, wordIndex: number, word: string) => {
@@ -509,10 +513,6 @@ export function Editor(props: EditorProps) {
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
 
-  React.useEffect(() => {
-    console.log('isDiffChanging : ', isDiff);
-  }, [isDiff]);
-
   return (
     <div
       id={'scroll-container'}
@@ -683,6 +683,7 @@ export function Editor(props: EditorProps) {
                                                isDiff={!!isDiff}
                                                editorCommand={editorCommand}
                                                isAudioPlaying={isAudioPlaying}
+                                               isCommentEnabled={isCommentEnabled}
                                                handleTextSelection={handleTextSelection}
                       // onChange={handleChange}
                                                readOnly={readOnly}
@@ -722,6 +723,8 @@ export function Editor(props: EditorProps) {
               >
                 <TextField
                     placeholder='Comment'
+                    id='comment-text-field'
+                    inputRef={commentRef}
                     disabled={!isCommentEnabled}
                     variant="outlined"
                     className={classes.commentField}
@@ -764,13 +767,15 @@ export function Editor(props: EditorProps) {
         </>
           :
             ready && segments.map( (segment: Segment, index: number) => {
-              return <MemoizedSegmentBlock key={`segment-block-${index}`}
+              return <MemoizedSegmentBlock
+              key={`segment-block-${index}`}
               segment={segment}
               segmentIndex={index}
               assignSpeakerForSegment={assignSpeakerForSegment}
               editorCommand={editorCommand}
-               isAudioPlaying={isAudioPlaying}
-               isDiff={!!isDiff}
+             isAudioPlaying={isAudioPlaying}
+             isDiff={!!isDiff}
+              isCommentEnabled={isCommentEnabled}
                handleTextSelection={handleTextSelection}
               // onChange={handleChange}
               readOnly={readOnly}

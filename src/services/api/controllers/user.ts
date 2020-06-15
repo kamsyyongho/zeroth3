@@ -53,7 +53,7 @@ export class User extends ParentApi {
     if(completed === null || completed === undefined) {
       path = '/assigned-datasets';
     } else {
-      path = `/assigned-datasets/completed=${completed}`
+      path = `/assigned-datasets?completed=${completed}`
     }
     // make the api call
     const response = await this.apisauce.get<DataSet[], ServerError>(

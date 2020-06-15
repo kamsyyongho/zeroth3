@@ -1252,7 +1252,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (StreamPlayer) {
           StreamPlayer.src({
             src: audioUrl,
-            type: 'application/x-mpegURL'
           });
           // load the waveform once ready
           peaksJsInit();
