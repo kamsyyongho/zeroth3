@@ -184,7 +184,7 @@ export function SetItem(props: SetItemProps) {
             :
             <Tooltip
                 placement='top'
-                title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}
+                title={<Typography>{translate('SET.downloadEvaluationDetail')}</Typography>}
                 arrow={true}>
               <IconButton color='primary'
                           onClick={downloadEvaluation}>

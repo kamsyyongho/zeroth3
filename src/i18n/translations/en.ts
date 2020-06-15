@@ -84,6 +84,8 @@ export const en: ResourceLanguage = {
       fullName: '{{given}} {{family}}',
       resetPassword: 'Reset password',
       changeOrganization: 'Change organization',
+      updatePhoneTitle: 'Update Phone Number',
+      updatePhoneText: 'Proceed to Update Phone Number',
     },
     organization: {
       rename: 'Rename',
@@ -240,6 +242,7 @@ export const en: ResourceLanguage = {
       requestEvaluationMsg: 'Do you wish to request evaluation?',
       requestEvaluationWarning: 'Existing evaluation will be deleted. Do you wish to proceed?',
       showEvaluationDetail: 'Show Evaluation Detail',
+      downloadEvaluationDetail: 'Download Evaluation Details',
       evaluationDetail: 'Evaluation Detail',
       evaluationStatus: 'Evaluation Progress',
       addTranscriber: 'Add transcriber',

@@ -212,7 +212,6 @@ export function TDP(props: TDPProps) {
   };
 
   const getSubSetVoiceData = async (parameter: any = {}) => {
-    console.log('============ subset');
     if (api?.dataSet && projectId && setId && setType) {
       const param = { ...parameter, types: setType }
       if(!parameter?.size && initialPageSize) {
@@ -264,7 +263,6 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
     } else if(!voiceDataResults?.content?.length) {
-      console.log('==========default', voiceDataResults);
       getVoiceDataWithDefaultOptions();
     }
   }, []);
@@ -276,8 +274,6 @@ export function TDP(props: TDPProps) {
       if(setTypeTDP?.length) {
         getSubSetVoiceData();
       } else {
-        console.log('==========watch projectTdpDataShouldRefresh');
-
         getVoiceDataWithDefaultOptions();
       }
     }
@@ -285,7 +281,6 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
-      console.log('================ getSubSetVoice')
       getSubSetVoiceData();
     }
   }, [setTypeTDP]);

@@ -72,7 +72,7 @@ export function Profile() {
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
+  const [resetConfirmationOpen, setResetConfirmationOpen] = React.useState(false);
   const [organizationsLoading, setOrganizationsLoading] = React.useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
@@ -82,8 +82,8 @@ export function Profile() {
   const [isNoteDisabled, setIsNoteDisabled] = React.useState(true);
   const [isPhoneDisabled, setIsPhoneDisabled] = React.useState(true);
   const [isChanged, setIsChanged] = React.useState(false);
-  const [note, setNote] = React.useState('');
   const [phone, setPhone] = React.useState('');
+  const [isUpdatePhoneConfirmationOpen, setIsUpdatePhoneConfirmationOpen] = React.useState<boolean>(false);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -100,8 +100,9 @@ export function Profile() {
   const hideOrganizationPicker = () => {
     setPickOrganizationOpen(false);
   };
-  const confirmReset = () => setConfirmationOpen(true);
-  const closeConfirmation = () => setConfirmationOpen(false);
+  const confirmReset = () => setResetConfirmationOpen(true);
+  const confirmUpdatePhone = () => setIsUpdatePhoneConfirmationOpen(true);
+  const closeResetConfirmation = () => setResetConfirmationOpen(false);
 
   const hasRenamePermissions = hasPermission(roles, PERMISSIONS.profile.renameOrganization);
 
@@ -132,7 +133,6 @@ export function Profile() {
       if (response.kind === 'ok') {
         setProfile(response.user);
         setPhone(response.user.phone);
-        setNote(response.user.note);
       } else {
         log({
           file: `Profile.tsx`,
@@ -145,13 +145,38 @@ export function Profile() {
     }
   };
 
-  const handleBlur = (callBack: any) => {
+  const updatePhone = async () => {
+    if (api?.user) {
+      closeResetConfirmation();
+      const response = await api.user.updatePhone(phone);
+      const snackbarError: SnackbarError = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        setProfile(response.user);
+      } else {
+        log({
+          file: `UserProfile.tsx`,
+          caller: `resetPassword - failed to reset password`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setIsUpdatePhoneConfirmationOpen(false);
+    }
+  };
+
+  const handleBlur = () => {
     const updatedProfile = profile;
-    const changedProfile = {phone, note}
+    const changedProfile = {phone}
     Object.assign(updatedProfile, changedProfile);
     setProfile(updatedProfile);
     setIsChanged(true);
-    callBack(true);
+    setIsPhoneDisabled(true)
   };
 
   const handleChange = (changedData: any) => {
@@ -163,7 +188,7 @@ export function Profile() {
 
   const resetPassword = async () => {
     if (api?.user) {
-      closeConfirmation();
+      closeResetConfirmation();
       setPasswordResetLoading(true);
       const response = await api.user.resetPassword();
       const snackbarError: SnackbarError = {} as SnackbarError;
@@ -266,20 +291,10 @@ export function Profile() {
                 value={phone ? phone : ''}
                 color="secondary"
                 onClick={() => setIsPhoneDisabled(false)}
-                onBlur={() => handleBlur(setIsPhoneDisabled)}
+                onBlur={handleBlur}
                 disabled={isPhoneDisabled}
                 label={translate("forms.phone")}
                 onChange={(event) => setPhone(event.target.value)} />
-            <Textfield
-                inputProps={{ style: {textAlign: 'center', width: 'fitContent'} }}
-                placeholder={note ? note : '-'}
-                value={note ? note : ''}
-                color="secondary"
-                onClick={() => setIsNoteDisabled(false)}
-                onBlur={() => handleBlur(setIsNoteDisabled)}
-                disabled={isNoteDisabled}
-                label={translate("TDP.memo")}
-                onChange={(event) => setNote(event.target.value)} />
           </Grid>
         </Grid>
       </Grid>
@@ -305,15 +320,9 @@ export function Profile() {
           variant='contained'
           color='secondary'
           size="small"
-          onClick={confirmReset}
+          onClick={() => setIsUpdatePhoneConfirmationOpen(true)}
           disabled={!isChanged}
-          startIcon={passwordResetLoading ?
-              <MoonLoader
-                  sizeUnit={"px"}
-                  size={15}
-                  color={theme.palette.secondary.main}
-                  loading={true}
-              /> : <CheckIcon />}
+          startIcon={<CheckIcon />}
       >
         {translate("common.submit")}
       </Button>
@@ -407,9 +416,17 @@ export function Profile() {
         destructive
         titleText={`${translate('profile.resetPassword')}?`}
         submitText={translate('common.reset')}
-        open={confirmationOpen}
+        open={resetConfirmationOpen}
         onSubmit={resetPassword}
-        onCancel={closeConfirmation}
+        onCancel={closeResetConfirmation}
+      />
+      <ConfirmationDialog
+          destructive
+          titleText={`${translate('profile.updatePhoneTitle')}`}
+          submitText={translate('profile.updatePhoneText')}
+          open={isUpdatePhoneConfirmationOpen}
+          onSubmit={updatePhone}
+          onCancel={() => setIsUpdatePhoneConfirmationOpen(false)}
       />
       {organizations && organizations.length > 1 &&
         <OrganizationPickerDialog

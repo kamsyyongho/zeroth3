@@ -83,6 +83,8 @@ export const ko: ResourceLanguage = {
       fullName: '{{family}} {{given}}',
       resetPassword: '비밀번호 재생성',
       changeOrganization: '기관명 변경',
+      updatePhoneTitle: '전화번호 수정',
+      updatePhoneText: '전화번호를 수정하시겠습니까?',
     },
     organization: {
       rename: '수정',
@@ -247,6 +249,7 @@ export const ko: ResourceLanguage = {
       requestEvaluationMsg: '평가 요청하시겠습니까?',
       requestEvaluationWarning: '이미 존재하는 평가가 삭제되고 새로운 평가가 진행됩니다. 진행하시겠습니까?',
       showEvaluationDetail: '평가 상세보기',
+      downloadEvaluationDetail: '평가 상세정보 다운로드',
       evaluationDetail: '평가 상세 정보',
       evaluationStatus: '평가상태',
       openToRate: '전사상태 평가',

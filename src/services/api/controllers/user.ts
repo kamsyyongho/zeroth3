@@ -7,6 +7,7 @@ import {
   resetPasswordResult,
   ServerError,
   getProfile,
+  updatePhone,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -99,6 +100,32 @@ export class User extends ParentApi {
       return { kind: 'ok', user };
     } catch {
       return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async updatePhone (phone: string): Promise<updatePhone> {
+    const params = {phone}
+    // make the api call
+    const response = await this.apisauce.patch<User, ServerError>(
+        `/profile/phone`,
+        params,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const user = response.data as UserType;
+      return { kind: 'ok', user };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+
     }
   }
 }

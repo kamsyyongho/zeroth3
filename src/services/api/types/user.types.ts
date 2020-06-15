@@ -7,10 +7,14 @@ import { GeneralApiProblem } from './api-problem.types';
 
 export type resetPasswordResult = { kind: 'ok' } | GeneralApiProblem;
 
-export type getProfile = 
+export type getProfile =
     | { kind: 'ok', user: User }
     | GeneralApiProblem;
 
 export type getDataSetsToFetchFromResult =
   | { kind: 'ok'; dataSets: DataSet[] }
   | GeneralApiProblem;
+
+export type updatePhone = 
+    | { kind: 'ok', user: User }
+    | GeneralApiProblem;
