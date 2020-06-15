@@ -116,12 +116,11 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
               if(i !== decoderTranscriptArray.length - 1) {
                   letterStack += ' ';
               }
+              animated.push(letterStack)
           } else {
               const animatedText = (
                   <span key={`decoder-diff-span-${i}`} className={classes.highlight && DECODER_DIFF_CLASSNAME}>{decoderTranscriptArray[i]}</span>
               )
-              animated.push(letterStack);
-              letterStack = '';
               animated.push(animatedText);
           }
       }
@@ -131,7 +130,6 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     React.useEffect(() => {
         setLocalSegment(segment);
         setLengthBeforeEachBlockArray();
-        console.log('decoderTranscript and transcript', segment.decoderTranscript, segment.transcript);
     }, [segment]);
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>

@@ -658,7 +658,7 @@ export function Editor(props: EditorProps) {
             {ready &&
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'hidden' }}>
               {
-                segments.map( (segment: Segment, index: number) => {
+                segments.map((segment: Segment, index: number) => {
                   return <MemoizedDecoderSegmentBlock key={`decoder-segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
@@ -680,7 +680,7 @@ export function Editor(props: EditorProps) {
                                                segment={segment}
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
-                                               isDiff={!!isDiff}
+                                               isDiff={isDiff}
                                                editorCommand={editorCommand}
                                                isAudioPlaying={isAudioPlaying}
                                                isCommentEnabled={isCommentEnabled}
