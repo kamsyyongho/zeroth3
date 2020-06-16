@@ -12,6 +12,7 @@ export const ko: ResourceLanguage = {
       create: '생성',
       edit: '수정',
       save: '저장',
+      saved: '저장됨',
       discard: '취소',
       dismiss: '닫기',
       error: '오류',

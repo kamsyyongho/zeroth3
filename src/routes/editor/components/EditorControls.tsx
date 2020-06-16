@@ -8,6 +8,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
 import MultilineChartIcon from '@material-ui/icons/MultilineChart';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -55,6 +56,11 @@ const useStyles = makeStyles((theme) =>
     popper: {
       zIndex: theme.zIndex.drawer,
     },
+    status: {
+      color: theme.palette.common.white,
+      display: 'flex',
+      flexDirection: 'column',
+    }
   }),
 );
 
@@ -319,8 +325,8 @@ export const EditorControls = (props: EditorControlsProps) => {
 
   React.useEffect(() => {
     const statusTextEl = (
-        <Typography>
-          'Status'
+        <Typography className={classes.status}>
+          {translate('forms.status')}
         </Typography>
     )
     if(loading) {
@@ -332,7 +338,12 @@ export const EditorControls = (props: EditorControlsProps) => {
     }
     if(!isSegmentUpdateError) {
       const successEl = (
-          <CheckCircleOutlineIcon></CheckCircleOutlineIcon>
+          <div className={classes.status}>
+            <CheckCircleOutlineIcon />
+            <Typography className={classes.status}>
+              {translate('common.saved')}
+            </Typography>
+          </div>
       );
       setStatusEl(successEl);
       setTimeout(() => {
@@ -340,9 +351,12 @@ export const EditorControls = (props: EditorControlsProps) => {
       }, 1000);
     } else if (isSegmentUpdateError) {
       const errorEl = (
-          <Typography>
-            'Error'
-          </Typography>
+          <div className={classes.status}>
+            <ErrorOutlineIcon />
+            <Typography className={classes.status}>
+              {translate('common.error')}
+            </Typography>
+          </div>
       );
       setStatusEl(errorEl);
       setTimeout(() => {
