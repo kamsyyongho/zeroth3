@@ -53,16 +53,19 @@ interface SetDetailProps {
     projectId: string;
     displaySubSetInTDP: (setId: string, subSetType: string) => void;
     dataSetId: string;
+    isTestSetCreated: boolean;
+    setIsTestSetCreated: (bool: boolean) => void;
 }
 
 export function SetDetail(props: SetDetailProps) {
     const classes = useStyles();
+    const { isTestSetCreated, setIsTestSetCreated } = props;
     const { translate, formatDate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const [testSet, setTestSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [validationSet, setValidationSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [trainingSet, setTrainingSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
-    const [subSetCount, setSubSetCount] = React.useState<SubSetCountResults>({} as SubSetCountResults);
+    const [subSetCount, setSubSetCount] = React.useState<SubSetCountResults>({testCount: 0, trainCount: 0, validationCount: 0} as SubSetCountResults);
 
     const {
         // row,
@@ -88,6 +91,13 @@ export function SetDetail(props: SetDetailProps) {
             setSubSetCount({} as SubSetCountResults);
         }
     }, []);
+
+    React.useEffect(() => {
+        if(isTestSetCreated) {
+            getSubSetCount();
+            setIsTestSetCreated(false);
+        }
+    }, [isTestSetCreated])
 
     return (<TableRow
         className={classes.row}

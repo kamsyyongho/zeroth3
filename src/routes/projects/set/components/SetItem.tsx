@@ -68,6 +68,7 @@ export function SetItem(props: SetItemProps) {
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
+  const [isTestSetCreated, setIsTestSetCreated] = React.useState<boolean>(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -84,6 +85,7 @@ export function SetItem(props: SetItemProps) {
 
       if(response.kind === 'ok') {
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        setIsTestSetCreated(true);
       } else {
         log({
           file: 'SetItem.tsx',
@@ -340,7 +342,9 @@ export function SetItem(props: SetItemProps) {
             setDetailLoading={setDetailLoading}
             displaySubSetInTDP={displaySubSetInTDP}
             projectId={projectId}
-            dataSetId={dataSet.id} />
+            dataSetId={dataSet.id}
+            isTestSetCreated={isTestSetCreated}
+            setIsTestSetCreated={setIsTestSetCreated} />
         }
       </React.Fragment>
   );
