@@ -348,7 +348,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       setStatusEl(successEl);
       setTimeout(() => {
         setStatusEl(statusTextEl);
-      }, 1000);
+      }, 1500);
     } else if (isSegmentUpdateError) {
       const errorEl = (
           <div className={classes.status}>
@@ -361,7 +361,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       setStatusEl(errorEl);
       setTimeout(() => {
         setStatusEl(statusTextEl);
-      }, 1000);
+      }, 1500);
     }
 
   }, [loading, isSegmentUpdateError])

@@ -73,6 +73,23 @@ export function SetDetail(props: SetDetailProps) {
     } = props;
 
 
+    const getSubSetCount = async () => {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSetCount(projectId, dataSetId);
+            if (response.kind === "ok") {
+                setSubSetCount(response.count);
+            }
+        }
+    };
+
+
+    React.useEffect(() => {
+        getSubSetCount();
+        return () => {
+            setSubSetCount({} as SubSetCountResults);
+        }
+    }, []);
+
     return (<TableRow
         className={classes.row}
     >
