@@ -235,7 +235,10 @@ export function TDP(props: TDPProps) {
   };
 
   const handlePagination = async (pageIndex: number, size: number) => {
-    const options = { page: pageIndex, size }
+    // const options = { page: pageIndex, size }
+    const options = {};
+    Object.assign(options, filterParams);
+    Object.assign(options, {page: pageIndex, size});
     if(setTypeTDP?.length) {
       getSubSetVoiceData(options)
     } else {

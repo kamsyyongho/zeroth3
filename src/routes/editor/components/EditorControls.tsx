@@ -7,6 +7,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
 import MultilineChartIcon from '@material-ui/icons/MultilineChart';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -331,9 +332,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     }
     if(!isSegmentUpdateError) {
       const successEl = (
-          <Typography>
-            'Success'
-          </Typography>
+          <CheckCircleOutlineIcon></CheckCircleOutlineIcon>
       );
       setStatusEl(successEl);
       setTimeout(() => {

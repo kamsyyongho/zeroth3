@@ -790,6 +790,7 @@ export function EditorPage() {
     return (
         <>
             {!readOnly && <EditorControls
+                isSegmentUpdateError={false}
                 playingLocation={currentPlayingLocation}
                 onCommandClick={setEditorCommand}
                 onConfirm={onConfirmClick}
