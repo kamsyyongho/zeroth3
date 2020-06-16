@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             changes: green[400],
         },
         highlight: {
-            backgroundColor: '#2f99cb',
+            backgroundColor: '#ffe190',
         }
     }),
 );
@@ -117,9 +117,10 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                   letterStack += ' ';
               }
               animated.push(letterStack)
+              letterStack = '';
           } else {
               const animatedText = (
-                  <span key={`decoder-diff-span-${i}`} className={classes.highlight && DECODER_DIFF_CLASSNAME}>{decoderTranscriptArray[i]}</span>
+                  <span key={`decoder-diff-span-${i}`} className={`${classes.highlight + ' ' +  DECODER_DIFF_CLASSNAME}`}>{decoderTranscriptArray[i]}</span>
               )
               animated.push(animatedText);
           }

@@ -72,7 +72,6 @@ export function SetDetail(props: SetDetailProps) {
         dataSetId,
     } = props;
 
-
     const getSubSetCount = async () => {
         if (api ?.dataSet) {
             const response = await api.dataSet ?.getSubSetCount(projectId, dataSetId);
