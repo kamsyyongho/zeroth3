@@ -88,12 +88,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     selectedTopGraphId: yup.string().typeError(numberText).nullable().required(requiredTranslationText),
     isPublic: yup.boolean(),
     isMutable: yup.boolean(),
-    shouldUploadFile: yup.boolean(),
-    uploadType: yup.string().when('shouldUploadFile',{
-      is: true,
-      then: yup.string(),
-      otherwise: yup.string().notRequired(),
-    }),
+    uploadType: yup.string().required(requiredTranslationText),
     files: yup.array<File>().when('uploadType', {
       is: (val) => val === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET,
       then: yup.array<File>().required(requiredTranslationText),
@@ -105,7 +100,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       otherwise: yup.string().notRequired(),
     }),
     text: yup.string().when('shouldUploadFile', {
-      is: false,
+      is: (val) => val === TRAINING_DATA_TYPE_SUB_GRAPH.TEXT,
       then: yup.string().required(requiredTranslationText).trim(),
       otherwise: yup.string().notRequired(),
     }),
@@ -118,7 +113,6 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
     isPublic: true,
     isMutable: true,
     uploadType: TRAINING_DATA_TYPE_SUB_GRAPH.PATH as string,
-    shouldUploadFile: false,
     path: "",
     files: [],
   };
@@ -141,6 +135,9 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
         case TRAINING_DATA_TYPE_SUB_GRAPH.PATH as string:
           label = translate('common.path');
           break;
+        case TRAINING_DATA_TYPE_SUB_GRAPH.TEXT as string:
+          label = translate('forms.text');
+          break;
       }
       return { label, value: uploadType };
     });
@@ -149,8 +146,8 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
 
   const handleSubmit = async (values: FormValues) => {
     if (values.selectedTopGraphId === null) return;
-    const { shouldUploadFile, uploadType, files } = values;
-    if (shouldUploadFile && values.uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET && !validFilesCheck(files)) {
+    const { uploadType, files } = values;
+    if (uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET && !validFilesCheck(files)) {
       return;
     }
     if (api?.models && !loading) {
@@ -161,15 +158,15 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       if (isEdit && subGraphToEdit) {
         response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
       } else {
-        if (shouldUploadFile) {
-          if(values.uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET) {
+        if (uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.TEXT) {
+          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
+        } else {
+          if(uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET) {
             // only send the first file, because our limit is 1 file only
             response = await api.models.uploadSubGraphFile(name.trim(), files[0], selectedTopGraphId, isPublic, !isMutable);
-          } else if (values.uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.PATH) {
+          } else if (uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.PATH) {
             response = await api.models.uploadSubGraphPath(name.trim(), path, selectedTopGraphId, isPublic, !isMutable);
           }
-        } else {
-          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
         }
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -223,14 +220,11 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                 <Field autoFocus name='name' component={TextFormField} label={translate("forms.name")} errorOverride={isError} />
                 <Field name='selectedTopGraphId' component={SelectFormField}
                   options={topGraphFormSelectOptions} label={translate("forms.top")} errorOverride={isError} />
-                {!isEdit &&
+{/*                {!isEdit &&
                 <Field name='shouldUploadFile'
                        component={SwitchFormField}
                        label={translate("forms.source")}
-                       text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />}
-
-                {
-                  formikProps.values.shouldUploadFile &&
+                       text={(value: boolean) => translate(value ? "forms.file" : "forms.text")} errorOverride={isError} />}*/}
                   <Field
                       fullWidth
                       name='uploadType'
@@ -238,11 +232,10 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                       options={uploadTypeFormSelectOptions}
                       label={translate("forms.source")}
                   />
-                }
 
                 <Field
                     className={clsx(isDataSet && classes.hiddenTextInput)}
-                    hidden={!formikProps.values.shouldUploadFile}
+                    hidden={formikProps.values.uploadType !== TRAINING_DATA_TYPE_SUB_GRAPH.PATH}
                     name='path'
                     component={TextFormField}
                     label={textInputLabel}
@@ -253,14 +246,20 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
                   showPreviews
                   filesLimit={1}
                   acceptedFiles={ACCEPTED_FILE_TYPES}
-                  hidden={!formikProps.values.shouldUploadFile || !isDataSet}
+                  hidden={formikProps.values.uploadType !== TRAINING_DATA_TYPE_SUB_GRAPH.DATASET}
                   name='files'
                   dropZoneText={translate('forms.dropZone.text')}
                   component={DropZoneFormField}
                   errorOverride={isError || !!formikProps.errors.files}
                   errorTextOverride={formikProps.errors.files}
                 />
-                <Field multiline hidden={formikProps.values.shouldUploadFile} name='text' component={TextFormField} label={translate("forms.text")} errorOverride={isError} />
+                <Field
+                    multiline
+                    hidden={formikProps.values.uploadType !== TRAINING_DATA_TYPE_SUB_GRAPH.TEXT}
+                    name='text'
+                    component={TextFormField}
+                    label={translate("forms.text")}
+                    errorOverride={isError} />
                 <Field name='isPublic' component={CheckboxFormField} text={translate("forms.private")} errorOverride={isError} />
                 <Field name='isMutable' component={CheckboxFormField} text={translate("forms.mutable")} errorOverride={isError} />
               </Form>

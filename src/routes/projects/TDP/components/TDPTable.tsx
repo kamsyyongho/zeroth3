@@ -353,14 +353,14 @@ export function TDPTable(props: TDPTableProps) {
 
 
   const setCreateSetFilterParams = (options: SearchDataRequest) => {
-    const { till, from, status, transcript, filename } = options;
+    const { till, from, status, transcript, filename, dataSetIds } = options;
     const filterParams: FilterParams = {
       till,
       from,
       status,
       filename,
       transcript,
-      dataSetId: options['data-set'],
+      dataSetIds,
       lengthMax: options['length-max'],
       lengthMin: options['length-min'],
       modelConfig: options['model-config'],

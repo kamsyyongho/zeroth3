@@ -95,14 +95,16 @@ export class VoiceData extends ParentApi {
   ): Promise<searchDataResult> {
     // set default values
     const { page = 0, size = 10 } = requestOptions;
-    const query: SearchDataRequest = {
+    const dataSetIds = `${requestOptions.dataSetIds}`
+    const filterParams = {
       ...requestOptions,
+      dataSetIds,
       page,
       size,
     };
     const response = await this.apisauce.get<VoiceDataResults, ServerError>(
       this.getPathWithOrganization(`/projects/${projectId}/data`),
-      query,
+        filterParams,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

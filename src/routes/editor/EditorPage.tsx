@@ -153,10 +153,10 @@ export function EditorPage() {
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps.voiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps.projectId);
+  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps.isDiff);
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps.readOnly);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -871,6 +871,8 @@ export function EditorPage() {
     if (!readOnly) {
       getSegments();
     }
+    console.log('===========voieData : ', voiceData);
+    console.log('============navigationProps : ', navigationProps);
   }, [voiceData, projectId, readOnly]);
 
   // once we've loaded new segments
@@ -884,7 +886,6 @@ export function EditorPage() {
   // subsequent fetches
   React.useEffect(() => {
     if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
-      console.log('===============conditionals for setting up state',!voiceDataLoading, !voiceData, initialFetchDone, !noRemainingContent, !noAssignedData)
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -908,6 +909,11 @@ export function EditorPage() {
     };
   }, []);
 
+  React.useEffect(() => {
+    setVoiceData(navigationProps.voiceData);
+    setProjectId(navigationProps.projectId);
+  }, [navigationProps])
+
   // if we don't have the correct permissions
   if ((readOnly && !canSeeReadOnlyEditor) ||
       (!readOnly && !canUseEditor)) {
@@ -918,11 +924,11 @@ export function EditorPage() {
     return <SiteLoadingIndicator />;
   }
 
-  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent) {
+  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent && !isDiff) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
-  if (noRemainingContent || !voiceData || !projectId) {
+  if (!isDiff && noRemainingContent || !voiceData || !projectId) {
     return <NotFound text={translate('editor.nothingToTranscribe')} />;
   }
 

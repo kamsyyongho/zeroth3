@@ -104,7 +104,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     transcript: yup.string().notRequired(),
     status: yup.mixed().oneOf(CONTENT_STATUS_VALUES.concat([''])).notRequired(),
     modelConfigId: yup.mixed<string | ''>().notRequired(),
-    dataSetId: yup.array().of(yup.string()).notRequired(),
+    dataSetIds: yup.array().of(yup.string()).notRequired(),
     filename: yup.string().notRequired(),
     transcriber: yup.mixed<string | ''>().notRequired(),
   });
@@ -114,7 +114,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     endDate: null,
     status: '',
     modelConfigId: '',
-    dataSetId: [],
+    dataSetIds: [],
   };
 
 
@@ -127,22 +127,14 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status,
       modelConfigId,
-      dataSetId,
+      dataSetIds,
       filename,
       transcriber,
     } = values;
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
     const till: Date | undefined = endDate === null ? undefined : endDate;
-    let dataSet: string = '';
-    if(dataSetId) {
-      dataSetId.forEach((dataSetId: string, index: number) => {
-        dataSet += dataSetId;
-        if(index < dataSetId.length - 1) {
-          dataSet += ','
-        }
-      });
-    }
+
 
     const options: SearchDataRequest = {
       from,
@@ -152,7 +144,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status: status === '' ? undefined : status,
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
-      'data-set': dataSet,
+      'dataSetIds': dataSetIds?.length ? dataSetIds : [],
       filename,
       transcriber,
     };
@@ -354,7 +346,7 @@ export function TDPFilters(props: TDPFiltersProps) {
                       >
                         <Field
                           fullWidth
-                          name='dataSetId'
+                          name='dataSetIds'
                           component={ChipSelectFormField}
                           options={dataSetFormSelectOptions}
                           labelsByValue={dataSetNamesById}

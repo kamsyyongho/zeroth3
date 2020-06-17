@@ -49,6 +49,7 @@ export enum TRAINING_DATA_TYPE_SUB_GRAPH {
   PATH = 'PATH',
   // URL = 'URL',
   DATASET = 'DATASET',
+  TEXT = 'TEXT',
 };
 
 export const TRAINING_DATA_TYPE_SUB_GRAPH_VALUES = Object.keys(
