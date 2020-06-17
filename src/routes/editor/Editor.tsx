@@ -434,10 +434,10 @@ export function Editor(props: EditorProps) {
   };
 
   const handleGoToEditMode = () => {
-    setReadOnly(false);
-    setIsDiff(false);
-    // const projectId = voiceData.projectId;
-    // setNavigationProps({ voiceData, projectId, isDiff: false });
+    // setReadOnly(false);
+    // setIsDiff(false);
+    const projectId = voiceData.projectId;
+    setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: false });
     // PATHS.editor.to && history.push(PATHS.editor.to);
   };
   // handle any api requests made by the parent
@@ -512,6 +512,14 @@ export function Editor(props: EditorProps) {
     }
     if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
+
+  React.useEffect(() => {
+    if(navigationProps) {
+      setProjectId(navigationProps.projectId);
+      setIsDiff(navigationProps.isDiff);
+      setReadOnly(navigationProps.readOnly);
+    }
+  }, [navigationProps]);
 
   return (
     <div

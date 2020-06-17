@@ -883,12 +883,22 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
+    console.log('============== voiceData : ', voiceData);
     if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
+
+  React.useEffect(() => {
+    if(navigationProps) {
+      setVoiceData(navigationProps.voiceData);
+      setProjectId(navigationProps.projectId);
+      setIsDiff(navigationProps.isDiff);
+      setReadOnly(navigationProps.readOnly);
+    }
+  }, [navigationProps])
 
   // initial fetch and dismount logic
   React.useEffect(() => {
