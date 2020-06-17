@@ -153,10 +153,10 @@ export function EditorPage() {
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps.voiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps.isDiff);
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps.readOnly);
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
+  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -864,15 +864,13 @@ export function EditorPage() {
     if(voiceData && !audioUrl.length) {
       getAudioUrl();
     }
-  }, [voiceData])
+  }, [voiceData]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
     if (!readOnly) {
       getSegments();
     }
-    console.log('===========voieData : ', voiceData);
-    console.log('============navigationProps : ', navigationProps);
   }, [voiceData, projectId, readOnly]);
 
   // once we've loaded new segments
@@ -885,7 +883,7 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -897,7 +895,7 @@ export function EditorPage() {
     setPageTitle(translate('path.editor'));
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
-    } else if (canUseEditor) {
+    } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
     }
@@ -908,11 +906,6 @@ export function EditorPage() {
       }
     };
   }, []);
-
-  React.useEffect(() => {
-    setVoiceData(navigationProps.voiceData);
-    setProjectId(navigationProps.projectId);
-  }, [navigationProps])
 
   // if we don't have the correct permissions
   if ((readOnly && !canSeeReadOnlyEditor) ||

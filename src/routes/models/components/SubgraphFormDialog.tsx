@@ -130,7 +130,7 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       let label = uploadType;
       switch (uploadType) {
         case TRAINING_DATA_TYPE_SUB_GRAPH.DATASET as string:
-          label = translate('SET.dataSet');
+          label = translate('forms.file');
           break;
         case TRAINING_DATA_TYPE_SUB_GRAPH.PATH as string:
           label = translate('common.path');
