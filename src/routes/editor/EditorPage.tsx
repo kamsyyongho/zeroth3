@@ -895,7 +895,8 @@ export function EditorPage() {
       setVoiceData(navigationProps.voiceData);
       setProjectId(navigationProps.projectId);
       setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly);
+      setReadOnly(navigationProps.readOnly)
+      setInitialFetchDone(true);
     }
   }, [navigationProps])
 
