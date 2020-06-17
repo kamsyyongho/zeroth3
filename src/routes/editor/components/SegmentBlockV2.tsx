@@ -214,13 +214,17 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }, []);
 
     React.useEffect(() => {
-        let copySegment = JSON.parse(JSON.stringify(segment));
-        for(let i = 0; i < copySegment.length -1; i++) {
-            const wordAlignment = copySegment.wordAlignments[i];
-            wordAlignment.word = wordAlignment.word.replace('|', ' ');
+        if(segment?.wordAlignments.length) {
+            let copySegment = {...segment};
+            for(let i = 0; i < copySegment.length -1; i++) {
+                const wordAlignment = copySegment.wordAlignments[i];
+                if(wordAlignment) {
+                    copySegment.wordAlignments[i]['word'] = segment.wordAlignments[i]['word'].replace('|', ' ');
+                }
+            }
+            setLocalSegment(copySegment);
+            setLengthBeforeEachBlockArray();
         }
-        setLocalSegment(copySegment);
-        setLengthBeforeEachBlockArray();
         return () => {
             resetState();
         }

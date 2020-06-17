@@ -60,6 +60,7 @@ const useStyles = makeStyles((theme) =>
       color: theme.palette.common.white,
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
     }
   }),
 );
@@ -335,6 +336,9 @@ export const EditorControls = (props: EditorControlsProps) => {
           loading={true}
       />);
       setStatusEl(loadingEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1500);
     }
     if(!isSegmentUpdateError) {
       const successEl = (

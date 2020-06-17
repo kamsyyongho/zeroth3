@@ -72,7 +72,7 @@ class WordAlignmentBlock extends React.Component<WordAlignmentProp, State>{
             element: React.createRef(),
             isChanged: false,
             isFocused: false,
-            text: props.word.replace('|', ' '),
+            text: props.word,
             undoStack: [],
             redoStack: [],
             wordAlignmentId: `word-${props.segmentIndex}-${props.wordAlignmentIndex}`
