@@ -883,7 +883,6 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    console.log('============== voiceData : ', voiceData);
     if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
