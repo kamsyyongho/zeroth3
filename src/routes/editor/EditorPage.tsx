@@ -916,13 +916,7 @@ export function EditorPage() {
     };
   }, []);
 
-  // if we don't have the correct permissions
-  if ((readOnly && !canSeeReadOnlyEditor) ||
-      (!readOnly && !canUseEditor)) {
-    return <Forbidden />;
-  }
-
-  if (voiceDataLoading) {
+  if (voiceDataLoading || !initialFetchDone) {
     return <SiteLoadingIndicator />;
   }
 
@@ -932,6 +926,12 @@ export function EditorPage() {
 
   if (!isDiff && noRemainingContent || !voiceData || !projectId) {
     return <NotFound text={translate('editor.nothingToTranscribe')} />;
+  }
+
+  // if we don't have the correct permissions
+  if ((readOnly && !canSeeReadOnlyEditor) ||
+      (!readOnly && !canUseEditor)) {
+    return <Forbidden />;
   }
 
   const disabledControls = getDisabledControls(segments, canUndo, canRedo, saveSegmentsLoading, confirmSegmentsLoading);
