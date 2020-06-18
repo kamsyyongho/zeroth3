@@ -73,7 +73,11 @@ export function HelperPage(props: HelperPageProps) {
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        if(api?.user) {
+            const response = await api.user.updateShortcuts(shortcuts);
+            console.log(response);
+        }
 
     };
 

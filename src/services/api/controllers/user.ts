@@ -1,5 +1,5 @@
 import { ApisauceInstance } from 'apisauce';
-import { DataSet, Role, User as UserType } from '../../../types';
+import { DataSet, Role, User as UserType, Shortcuts, } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getDataSetsToFetchFromResult,
@@ -7,6 +7,8 @@ import {
   resetPasswordResult,
   ServerError,
   getProfile,
+  getShortcuts,
+  updateShortcuts,
   updatePhone,
 } from '../types';
 import { ParentApi } from './parent-api';
@@ -81,7 +83,6 @@ export class User extends ParentApi {
 
   async getProfile (name: string): Promise<getProfile> {
     const params = {name};
-    const config = {params};
     const response = await this.apisauce.get<User, ServerError>(
         '/profile',
         params,
@@ -127,5 +128,49 @@ export class User extends ParentApi {
       return { kind: ProblemKind['bad-data'] };
 
     }
+  }
+
+  async getShortcuts (): Promise<getShortcuts> {
+    const response = await this.apisauce.get<any, ServerError>(
+        '/shortcuts',
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      const data = response.data;
+      const shortcuts = JSON.parse(data.shortcuts) as Shortcuts;
+      return { kind: 'ok', shortcuts }
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async updateShortcuts (shortcuts: any): Promise<updateShortcuts> {
+    const JSONShortcuts = JSON.stringify(shortcuts)
+    const params = {shortcuts: JSONShortcuts};
+    const response = await this.apisauce.post<undefined, ServerError>(
+        '/shortcuts',
+        params,
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
   }
 }

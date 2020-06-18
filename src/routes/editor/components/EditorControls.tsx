@@ -539,6 +539,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     };
   }, []);
 
+
   return (
     <Grid
       container

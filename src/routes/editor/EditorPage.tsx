@@ -112,6 +112,7 @@ export function EditorPage() {
   const { enqueueSnackbar } = useSnackbar();
   const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+  const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -238,6 +239,24 @@ export function EditorPage() {
       const response = await api.voiceData.getSegments(projectId, voiceData.id);
       if (response.kind === 'ok') {
         setSegments(response.segments);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
+      }
+      setSegmentsLoading(false);
+    }
+  };
+
+  const getShortcuts = async () => {
+    if (api?.user) {
+      setSegmentsLoading(true);
+      const response = await api.user.getShortcuts();
+      if (response.kind === 'ok') {
+        setShortcuts(response.shortcuts);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -930,6 +949,7 @@ export function EditorPage() {
       }
     };
   }, []);
+
 
   if (voiceDataLoading || !initialFetchDone) {
     return <SiteLoadingIndicator />;

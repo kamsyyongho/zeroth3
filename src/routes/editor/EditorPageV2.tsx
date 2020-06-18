@@ -761,6 +761,8 @@ export function EditorPage() {
         };
     }, []);
 
+
+
     // if we don't have the correct permissions
     if ((readOnly && !canSeeReadOnlyEditor) ||
         (!readOnly && !canUseEditor)) {
