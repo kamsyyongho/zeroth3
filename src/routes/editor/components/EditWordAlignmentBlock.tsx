@@ -122,6 +122,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 indexFrom = selection.anchorOffset;
                 indexTo = selection.focusOffset;
             }
+
             setIsSelected(true);
             hightlightSelectionAfterBlur(indexFrom, indexTo);
             handleTextSelection(segment.id, indexFrom, indexTo);

@@ -233,8 +233,8 @@ export class VoiceData extends ParentApi {
       projectId: string,
       dataId: string,
       segmentId: string,
-      indexTo: number,
       indexFrom: number,
+      indexTo: number,
       reason: string): Promise<updateRejectReasonResult> {
     const params = {indexTo, indexFrom, reason}
     const response = await this.apisauce.put<undefined, ServerError>(
