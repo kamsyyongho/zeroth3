@@ -28,7 +28,6 @@ import {
     SnackbarError,
     SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
-import {StatusLogModal} from './StatusLogModal'
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -47,14 +46,14 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-interface HelperPageProps {
+interface StatusLogModalProps {
     open: boolean;
     hideBackdrop?: boolean;
     onClose: () => void;
     onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
 }
 
-export function HelperPage(props: HelperPageProps) {
+export function StatusLogModal(props: StatusLogModalProps) {
     const { open, hideBackdrop, onClose, onSuccess } = props;
     const { enqueueSnackbar } = useSnackbar();
     const { translate } = React.useContext(I18nContext);
@@ -147,7 +146,6 @@ export function HelperPage(props: HelperPageProps) {
                     {translate(isEdit ? "common.edit" : "common.create")}
                 </Button>
             </DialogActions>
-            <StatusLogModal open={open} onClose={onClose} />
         </Dialog>
     );
 }

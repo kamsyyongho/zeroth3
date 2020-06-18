@@ -299,6 +299,9 @@ export const ko: ResourceLanguage = {
       calculating: '계산중',
       highRiskSegment: 'High Risk 세그먼트',
       confirmWarning: '제출하면 수정이 불가능합니다',
+      keyboardShortCuts: '키보드 단축키',
+      function: '기능',
+      input: '입력',
       validation: {
         missingTimes: '모든 어절의 시작시간과 종료시간을 정해야 합니다.',
         invalidSplitLocation: '유효하지 않은 나누기 위치입니다',
