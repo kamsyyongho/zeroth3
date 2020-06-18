@@ -3,32 +3,20 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
-import {
-    Grid,
-    TableCell,
-    TableBody,
-    TableHead,
-    Table,
-    TableRow,
-    Tooltip,
-    Typography} from '@material-ui/core';
+import {Table, TableBody, TableCell, TableHead, TableRow, Typography} from '@material-ui/core';
 import clsx from 'clsx';
-import { Field, Form, Formik } from 'formik';
-import { useSnackbar } from 'notistack';
+import {useSnackbar} from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
-import React from 'reactn';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { postSubGraphResult } from '../../../services/api/types';
-import {
-    SnackbarError,
-    SNACKBAR_VARIANTS } from '../../../types';
-import log from '../../../util/log/logger';
-import {StatusLogModal} from './StatusLogModal'
+import React, {useGlobal} from 'reactn';
+import {ApiContext} from '../../../hooks/api/ApiContext';
+import {I18nContext} from '../../../hooks/i18n/I18nContext';
+import {AssignShortCutDialog} from './AssignShortCutDialog';
+import {EDITOR_CONTROLS} from './EditorControls';
+import {renderInputCombination} from '../../../constants'
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -44,26 +32,35 @@ const useStyles = makeStyles((theme) =>
             alignItems: 'center',
             justifyContent: 'center',
         },
+        shortCutInput: {
+
+        },
     }),
 );
 
 interface HelperPageProps {
     open: boolean;
     hideBackdrop?: boolean;
+    onCommandClick: (newMode: EDITOR_CONTROLS) => void;
     onClose: () => void;
-    onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
 }
+let shortcutStack: string[] = [];
 
 export function HelperPage(props: HelperPageProps) {
-    const { open, hideBackdrop, onClose, onSuccess } = props;
+    const { open, hideBackdrop, onClose, onCommandClick } = props;
     const { enqueueSnackbar } = useSnackbar();
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
+    const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
     const [loading, setLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
     const [isEdit, setIsEdit] = React.useState(false);
+    const [isAssignShortCutOpen, setIsAssignShortCutOpen] = React.useState(false);
+    const [selectedShortcut, setSelectedShortCut] = React.useState<any>();
+    const [selectedFunction, setDialogTitle] = React.useState<string>('');
+    const functionArray = Object.keys(shortcuts);
+    const inputArray = Object.values(shortcuts);
 
-    const shortCuts = ['command', 'damn'];
 
     const theme = useTheme();
     const classes = useStyles();
@@ -79,6 +76,17 @@ export function HelperPage(props: HelperPageProps) {
     const handleSubmit = () => {
 
     };
+
+    const handleRowClick = (index: number) => {
+        setDialogTitle(functionArray[index]);
+        setSelectedShortCut(shortcuts[functionArray[index]]);
+        setIsAssignShortCutOpen(true);
+    }
+
+    const handleShortcutChanges = (input: string[]) => {
+
+    };
+
 
     return (
         <Dialog
@@ -108,15 +116,15 @@ export function HelperPage(props: HelperPageProps) {
                         </TableHead>
                         <TableBody>
                             {
-                                shortCuts.map((shortCut: any, index: number) => {
+                                inputArray.map((input: any, index: number) => {
                                     return (
-                                        <TableRow key={`status-change-row-${index}`}>
+                                        <TableRow key={`status-change-row-${index}`} hover onClick={() => handleRowClick(index)}>
                                             <TableCell>
-                                                <Typography>{'this is where the functionality is (EDITOR_CONTROLS) : '}</Typography>
+                                                <Typography>{translate(`editor.${functionArray[index]}`)}</Typography>
                                             </TableCell>
                                             <TableCell>
                                                 <Typography>
-                                                    {'This is where the goddamn combination is : ' + shortCut}
+                                                    {renderInputCombination(input)}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -147,7 +155,12 @@ export function HelperPage(props: HelperPageProps) {
                     {translate(isEdit ? "common.edit" : "common.create")}
                 </Button>
             </DialogActions>
-            <StatusLogModal open={open} onClose={onClose} />
+            <AssignShortCutDialog
+                open={isAssignShortCutOpen}
+                onClose={() => setIsAssignShortCutOpen(false)}
+                selectedShortCut={selectedShortcut}
+                selectedFunction={selectedFunction}
+                onConfirm={handleShortcutChanges} />
         </Dialog>
     );
 }

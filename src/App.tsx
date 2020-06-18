@@ -2,7 +2,7 @@
 import { createBrowserHistory } from 'history';
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router, Switch } from "react-router-dom";
-import React, { addCallback } from "reactn";
+import React, { addCallback, setGlobal } from "reactn";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';

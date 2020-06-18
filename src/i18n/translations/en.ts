@@ -275,6 +275,12 @@ export const en: ResourceLanguage = {
     editor: {
       editor: 'Editor',
       approvalRequest: 'Approval Request',
+      save: 'Save',
+      setThreshold: 'Set Threshold',
+      shortcuts: 'Shortcuts',
+      rewindAudio: 'Rewind Audio',
+      forwardAudio: 'Forward Audio',
+      audioPlayPause: 'Play/Pause',
       confirm: 'Confirm',
       merge: 'Merge',
       split: 'Split',

@@ -21,6 +21,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
+import { DEFAULT_SHORTCUTS } from '../../../constants'
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -67,19 +68,22 @@ const useStyles = makeStyles((theme) =>
 );
 
 export enum EDITOR_CONTROLS {
-  confirm,
+  approvalRequest,
   save,
   undo,
   redo,
   merge,
   split,
   toggleMore,
-  createWord,
+  // createWord,
   editSegmentTime,
   setThreshold,
   speaker,
-  debug,
-  shortCuts,
+  // debug,
+  shortcuts,
+  rewindAudio,
+  forwardAudio,
+  audioPlayPause,
 }
 
 const EDITOR_STATUS = {
@@ -99,17 +103,18 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
   // EDITOR_CONTROLS.debug,
-    EDITOR_CONTROLS.shortCuts,
+  EDITOR_CONTROLS.shortcuts,
 ];
 
 const secondaryControlOrder = [
-  EDITOR_CONTROLS.confirm,
+  EDITOR_CONTROLS.approvalRequest,
 ];
 
 /** keeps track of the editor state for the keyboard listener
  * - outside the component to keep it out of the react lifecycle
  */
 let editorInFocus = false;
+let shortcutsStack: string[] = [];
 
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
@@ -137,7 +142,9 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
+  // const [shortcutsStack, setShortcutStack] = React.useState<string[]>();
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -220,12 +227,12 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: disabledControls.includes(EDITOR_CONTROLS.save),
           };
           break;
-        case EDITOR_CONTROLS.confirm:
+        case EDITOR_CONTROLS.approvalRequest:
           label = translate('editor.approvalRequest');
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
-            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
           };
           break;
         case EDITOR_CONTROLS.undo:
@@ -278,14 +285,14 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
           };
           break;
-        case EDITOR_CONTROLS.createWord:
-          label = translate('editor.createWord');
-          icon = <AddIcon />;
-          props = {
-            onClick: () => handleClick(EDITOR_CONTROLS.createWord),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
-          };
-          break;
+        // case EDITOR_CONTROLS.createWord:
+        //   label = translate('editor.createWord');
+        //   icon = <AddIcon />;
+        //   props = {
+        //     onClick: () => handleClick(EDITOR_CONTROLS.createWord),
+        //     disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
+        //   };
+        //   break;
         case EDITOR_CONTROLS.editSegmentTime:
           label = translate('editor.editSegmentTime');
           icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;
@@ -307,27 +314,27 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold),
           };
           break;
-        case EDITOR_CONTROLS.debug:
-          label = 'DEBUG';
-          icon = <DeveloperModeIcon />;
-          selected = !!editorDebugMode;
-          props = {
-            onClick: () => {
-              setEditorDebugMode(!editorDebugMode);
-              handleClick(EDITOR_CONTROLS.debug);
-            },
-            disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
-          };
-          break;
-        case EDITOR_CONTROLS.shortCuts:
+        // case EDITOR_CONTROLS.debug:
+        //   label = 'DEBUG';
+        //   icon = <DeveloperModeIcon />;
+        //   selected = !!editorDebugMode;
+        //   props = {
+        //     onClick: () => {
+        //       setEditorDebugMode(!editorDebugMode);
+        //       handleClick(EDITOR_CONTROLS.debug);
+        //     },
+        //     disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
+        //   };
+        //   break;
+        case EDITOR_CONTROLS.shortcuts:
           label = 'SHORTCUTS';
           icon = <DescriptionIcon />;
           props = {
             onClick: () => {
               setEditorDebugMode(!editorDebugMode);
-              handleClick(EDITOR_CONTROLS.shortCuts);
+              handleClick(EDITOR_CONTROLS.shortcuts);
             },
-            disabled: disabledControls.includes(EDITOR_CONTROLS.shortCuts),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.shortcuts),
           };
           break;
       }
@@ -337,6 +344,89 @@ export const EditorControls = (props: EditorControlsProps) => {
       return renderButton(label, icon, tooltipText, props, selected);
     });
   };
+
+  const handleShortcut = () => {
+    const keyCombinationArray = Object.values(shortcuts);
+    const functionArray = Object.keys(shortcuts);
+    let resultIndex: number = -1;
+    keyCombinationArray.forEach((combination: any, index: number) => {
+      for(let i = 0; i < shortcutsStack.length; i++) {
+        if(!combination.includes(shortcutsStack[i])) {
+          return;
+        }
+      }
+      resultIndex = index;
+    });
+    const command = functionArray[resultIndex];
+
+    switch (command) {
+      case 'confirm':
+        onCommandClick(EDITOR_CONTROLS.approvalRequest);
+        break;
+      case 'save':
+        handleClick(EDITOR_CONTROLS.save);
+        break;
+      case 'undo':
+        onCommandClick(EDITOR_CONTROLS.undo);
+        break;
+      case 'redo':
+        onCommandClick(EDITOR_CONTROLS.redo);
+        break;
+      case 'merge':
+        onCommandClick(EDITOR_CONTROLS.merge);
+        break;
+      case 'split':
+        onCommandClick(EDITOR_CONTROLS.split);
+        break;
+      case 'toggleMore':
+        onCommandClick(EDITOR_CONTROLS.toggleMore);
+        break;
+      case 'editSegmentTime':
+        onCommandClick(EDITOR_CONTROLS.editSegmentTime);
+        break;
+      case 'setThreshold':
+        handleClick(EDITOR_CONTROLS.setThreshold);
+        break;
+      case 'shortcuts':
+        onCommandClick(EDITOR_CONTROLS.shortcuts);
+        break;
+      case 'speaker':
+        onCommandClick(EDITOR_CONTROLS.speaker);
+        break;
+      case 'rewindAudio':
+        onCommandClick(EDITOR_CONTROLS.rewindAudio);
+        break;
+      case 'forwardAudio':
+        onCommandClick(EDITOR_CONTROLS.forwardAudio);
+        break;
+      case 'audioPlayPause':
+        onCommandClick(EDITOR_CONTROLS.audioPlayPause);
+        break;
+    }
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if(shortcutsStack.length < 2) {
+      return;
+    } else {
+      handleShortcut();
+      shortcutsStack = [];
+      event.preventDefault();
+    }
+
+  }
+
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
+    const key = event.code === "Space" ? "Space" : event.key;
+    if(shortcutsStack?.length) {
+      shortcutsStack.push(key);
+    } else {
+      shortcutsStack.push(key);
+    }
+    event.preventDefault();
+  };
+
 
   React.useEffect(() => {
     const statusTextEl = (
@@ -382,14 +472,13 @@ export const EditorControls = (props: EditorControlsProps) => {
       }, 1500);
     }
 
-  }, [loading, isSegmentUpdateError])
-
+  }, [loading, isSegmentUpdateError]);
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**
     * handle shortcut key presses
     */
-    const handleKeyPress = (event: KeyboardEvent) => {
+    const handleKeyPress1 = (event: KeyboardEvent) => {
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
@@ -441,6 +530,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     };
 
     document.addEventListener('keydown', handleKeyPress);
+    document.addEventListener('keyup', handleKeyUp);
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
       setEditorDebugMode(false);

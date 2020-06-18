@@ -1,7 +1,7 @@
-import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import {Button, Grid, Tooltip, Typography} from '@material-ui/core';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
 import CenterFocusWeakIcon from '@material-ui/icons/CenterFocusWeak';
@@ -16,23 +16,29 @@ import WarningIcon from '@material-ui/icons/Warning';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
 import ToggleIcon from 'material-ui-toggle-icon';
-import { useSnackbar } from 'notistack';
-import Peaks, { PeaksInstance, PeaksOptions, Point, PointAddOptions, SegmentAddOptions, Segment } from 'peaks.js';
-import { TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline } from 'react-icons/ti';
+import {useSnackbar} from 'notistack';
+import Peaks, {PeaksInstance, PeaksOptions, Point, PointAddOptions, Segment, SegmentAddOptions} from 'peaks.js';
+import {TiArrowLoop, TiLockClosedOutline, TiLockOpenOutline} from 'react-icons/ti';
 import PropagateLoader from 'react-spinners/PropagateLoader';
 import ScaleLoader from 'react-spinners/ScaleLoader';
-import React, { useGlobal } from 'reactn';
-import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from 'video.js';
+import React, {useGlobal} from 'reactn';
+import videojs, {VideoJsPlayer, VideoJsPlayerOptions} from 'video.js';
 import 'video.js/dist/video-js.css';
-import { DEFAULT_EMPTY_TIME } from '../../constants';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { CustomTheme } from '../../theme';
-import { Segment as SegmentEditor, PLAYER_SEGMENT_IDS, Time, WAVEFORM_DOM_IDS, WordToCreateTimeFor, SegmentAndWordIndex, PlayingTimeData } from '../../types';
-import { PlayingWordAndSegment } from '../../types/editor.types';
+import {DEFAULT_EMPTY_TIME} from '../../constants';
+import {I18nContext} from '../../hooks/i18n/I18nContext';
+import {CustomTheme} from '../../theme';
+import {
+  PLAYER_SEGMENT_IDS,
+  PlayingTimeData,
+  Segment as SegmentEditor,
+  Time,
+  WAVEFORM_DOM_IDS,
+  WordToCreateTimeFor
+} from '../../types';
+import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
-import { formatSecondsDuration, isMacOs } from '../../util/misc';
-import { getSegmentAndWordIndex } from './helpers/editor.helper'
-import { calculateWordTime } from './helpers/editor-page.helper';
+import {formatSecondsDuration, isMacOs} from '../../util/misc';
+import {EDITOR_CONTROLS} from './components/EditorControls';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -123,6 +129,7 @@ interface AudioPlayerProps {
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
+  editorCommand?: EDITOR_CONTROLS;
   // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
   wordToUpdateTimeFor?: WordToCreateTimeFor;
@@ -148,6 +155,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     segments,
     audioUrl,
     waveformUrl,
+    editorCommand,
     onTimeChange,
     onAutoSeekToggle,
     onSectionChange,
@@ -1136,37 +1144,58 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [segmentSplitTimeBoundary]);
 
+  React.useEffect(() => {
+    console.log('=========audio editorcommand : ',editorCommand)
+    if(editorCommand) {
+      switch (editorCommand) {
+        case EDITOR_CONTROLS.rewindAudio:
+          handleSkip(true);
+          break;
+        case EDITOR_CONTROLS.forwardAudio:
+          handleSkip();
+          break;
+        case EDITOR_CONTROLS.audioPlayPause:
+          handlePlayPause();
+          break;
+        default:
+          break;
+      }
+    }
+  }, [editorCommand]);
 
   // initial mount and unmount logic
   React.useEffect(() => {
     /**
      * handle shortcut key presses
      */
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (!isReady) return;
-      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-      const { key, shiftKey } = event;
-      switch (key) {
-        case 'a':
-          if (event[keyName] && shiftKey) {
-            event.preventDefault();
-            handleSkip(true);
-          }
-          break;
-        case 'd':
-          if (event[keyName] && shiftKey) {
-            event.preventDefault();
-            handleSkip();
-          }
-          break;
-        case 's':
-          if (event[keyName] && shiftKey) {
-            event.preventDefault();
-            handlePlayPause();
-          }
-          break;
-      }
-    };
+    // const handleKeyPress = (event: KeyboardEvent) => {
+    //   if (!isReady) return;
+    //   const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
+    //   console.log('=============event in audioPlayer : ', event);
+    //   const { key, shiftKey } = event;
+    //   switch (key) {
+    //     case 'a':
+    //       if (event[keyName] && shiftKey) {
+    //         event.preventDefault();
+    //         handleSkip(true);
+    //       }
+    //       break;
+    //     case 'd':
+    //       if (event[keyName] && shiftKey) {
+    //         event.preventDefault();
+    //         handleSkip();
+    //       }
+    //       break;
+    //     case 's':
+    //       if (event[keyName] && shiftKey) {
+    //         event.preventDefault();
+    //         handlePlayPause();
+    //       }
+    //       break;
+    //   }
+    // };
+
+
     /**
      * start playing on double click
      * - there is no easy way to prevent selecting text
@@ -1233,7 +1262,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       PeaksPlayer.on('segments.dragend', handleSegmentChangeEnd);
       PeaksPlayer.on('points.enter', handlePointEnter);
       PeaksPlayer.on('points.dragend', handlePointChangeEnd);
-      document.addEventListener('keydown', handleKeyPress);
       audioPlayerContainer?.addEventListener('dblclick', handleDoubleClick);
     };
 
@@ -1289,7 +1317,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
-        document.removeEventListener('keydown', handleKeyPress);
         audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
         log({

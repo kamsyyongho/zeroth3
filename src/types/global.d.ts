@@ -1,5 +1,5 @@
 import 'reactn';
-import { Organization, Project } from '.';
+import { Organization, Project, Shortcuts } from '.';
 
 interface undoRedoData {
   undoRedoData: {
@@ -26,5 +26,6 @@ declare module 'reactn/default' {
     editorFocussed?: boolean;
     editorContentHeight?: number;
     editorAutoScrollDisabled?: boolean;
+    shortcuts: Shortcuts;
   }
 }

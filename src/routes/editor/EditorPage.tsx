@@ -816,9 +816,9 @@ export function EditorPage() {
       case EDITOR_CONTROLS.merge:
         handleSegmentMergeCommand();
         break;
-      case EDITOR_CONTROLS.createWord:
-        // createWordTime(editorState);
-        break;
+      // case EDITOR_CONTROLS.createWord:
+      //   // createWordTime(editorState);
+      //   break;
       case EDITOR_CONTROLS.editSegmentTime:
         setEditorCommand(command);
         // prepareSegmentTimePicker(editorState);
@@ -834,8 +834,17 @@ export function EditorPage() {
       case EDITOR_CONTROLS.speaker:
         // assignSpeakerFromShortcut(editorState);
         break;
-      case EDITOR_CONTROLS.shortCuts:
-        setIsShortCutPageOpen(true);
+      case EDITOR_CONTROLS.shortcuts:
+        setIsShortCutPageOpen(!isShortCutPageOpen);
+        break;
+      case EDITOR_CONTROLS.rewindAudio:
+        setEditorCommand(command);
+        break;
+      case EDITOR_CONTROLS.forwardAudio:
+        setEditorCommand(command);
+        break;
+      case EDITOR_CONTROLS.audioPlayPause:
+        setEditorCommand(command);
         break;
       default:
         break;
@@ -1021,6 +1030,7 @@ export function EditorPage() {
                   key={voiceData.id}
                   audioUrl={audioUrl}
                   waveformUrl={voiceData.waveformUrl}
+                  editorCommand={editorCommand}
                   // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
                   disabledTimes={disabledTimes}
                   segmentIdToDelete={segmentIdToDelete}
@@ -1066,7 +1076,7 @@ export function EditorPage() {
             onClose={closeSpeakerAssignDialog}
             onSuccess={handleSpeakerAssignSuccess}
         />
-        <HelperPage open={isShortCutPageOpen} onClose={() => setIsShortCutPageOpen(false)} onSuccess={() => {}} />
+        <HelperPage open={isShortCutPageOpen} onClose={() => setIsShortCutPageOpen(false)} onCommandClick={handleEditorCommand} />
       </>
   );
 }

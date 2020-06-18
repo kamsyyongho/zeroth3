@@ -278,6 +278,12 @@ export const ko: ResourceLanguage = {
     editor: {
       editor: '에디터',
       approvalRequest: '승인요청',
+      save: '저장하기',
+      setThreshold: 'Threshold 설정',
+      shortcuts: '단축키',
+      rewindAudio: '뒤로감기',
+      forwardAudio: '빨리감기',
+      audioPlayPause: '재생/일시정지',
       confirm: '확인',
       merge: '합치기',
       split: '나누기',

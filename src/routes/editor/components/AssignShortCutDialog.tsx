@@ -3,6 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import { TextField } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddIcon from '@material-ui/icons/Add';
@@ -23,11 +24,7 @@ import { SnackbarError,
     TRAINING_DATA_TYPE_SUB_GRAPH,
     TRAINING_DATA_TYPE_SUB_GRAPH_VALUES } from '../../../types';
 import log from '../../../util/log/logger';
-import { CheckboxFormField } from '../../shared/form-fields/CheckboxFormField';
-import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
-import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
-import { SwitchFormField } from '../../shared/form-fields/SwitchFormField';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
+import {renderInputCombination} from '../../../constants'
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -38,24 +35,36 @@ const useStyles = makeStyles((theme) =>
             height: 0,
             visibility: 'hidden',
         },
+        apiInfo: {
+            minWidth: 250,
+            backgroundColor: theme.palette.grey[200],
+        },
+        textField: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+        },
     }),
 );
 
 interface AssignShortCutDialogProps {
     open: boolean;
     hideBackdrop?: boolean;
+    selectedShortCut?: any;
+    selectedFunction: string;
     onClose: () => void;
-    onSuccess: (subGraph: SubGraph, isEdit?: boolean) => void;
+    onConfirm: (input: string[]) => void;
 }
 
 export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
-    const { open, hideBackdrop, onClose, onSuccess } = props;
+    const { open, hideBackdrop, onClose, selectedShortCut, selectedFunction, onConfirm } = props;
     const { enqueueSnackbar } = useSnackbar();
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const [loading, setLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
     const [isEdit, setIsEdit] = React.useState(false);
+    const [inputCombination, setInputCombination] = React.useState('');
+    const [localInput, setLocalInput] = React.useState<string[]>(selectedShortCut);
 
     const theme = useTheme();
     const classes = useStyles();
@@ -72,6 +81,46 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
 
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+        event.preventDefault();
+        console.log('event : ', localInput);
+        if(localInput?.length) {
+            const updateLocalInput = [...localInput];
+            if(event.key === 'Backspace') {
+                updateLocalInput.pop();
+            } else {
+                updateLocalInput.push(event.key);
+            }
+            setLocalInput(updateLocalInput);
+            setInputCombination(renderInputCombination(updateLocalInput));
+        }
+
+
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+
+    };
+
+    React.useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    },[]);
+
+    React.useEffect(() => {
+        console.log('==============localInput', localInput)
+    }, [localInput]);
+
+    React.useEffect(() => {
+        if(selectedShortCut?.length) {
+            console.log(selectedShortCut);
+            setLocalInput(selectedShortCut);
+            setInputCombination(renderInputCombination(selectedShortCut));
+        }
+    }, [selectedShortCut])
+
     return (
         <Dialog
             fullScreen={fullScreen}
@@ -84,30 +133,41 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                 className: clsx(hideBackdrop && classes.hidden),
             }}
         >
-            <DialogTitle id="sub-graph-dialog">{translate(`models.${isEdit ? 'editSubGraph' : 'createSubGraph'}`)}</DialogTitle>
-            <DialogContent>
-
-            </DialogContent>
-            <DialogActions>
-                <Button disabled={loading} onClick={handleClose} color="primary">
-                    {translate("common.cancel")}
-                </Button>
-                <Button
-                    disabled={loading}
-                    onClick={handleSubmit}
-                    color="primary"
-                    variant="outlined"
-                    startIcon={loading ?
-                        <MoonLoader
-                            sizeUnit={"px"}
-                            size={15}
-                            color={theme.palette.primary.main}
-                            loading={true}
-                        /> : (isEdit ? <EditIcon /> : <AddIcon />)}
-                >
-                    {translate(isEdit ? "common.edit" : "common.create")}
-                </Button>
-            </DialogActions>
+            {
+                selectedShortCut && selectedFunction &&
+                    <>
+                        <DialogTitle id="sub-graph-dialog">{translate(`editor.${selectedFunction}`)}</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                id="api-key"
+                                value={inputCombination}
+                                className={clsx(classes.textField, classes.apiInfo)}
+                                margin="normal"
+                                variant="outlined"
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button disabled={loading} onClick={handleClose} color="primary">
+                                {translate("common.cancel")}
+                            </Button>
+                            <Button
+                                disabled={loading}
+                                onClick={handleSubmit}
+                                color="primary"
+                                variant="outlined"
+                                startIcon={loading ?
+                                    <MoonLoader
+                                        sizeUnit={"px"}
+                                        size={15}
+                                        color={theme.palette.primary.main}
+                                        loading={true}
+                                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                            >
+                                {translate(isEdit ? "common.edit" : "common.create")}
+                            </Button>
+                        </DialogActions>
+                    </>
+            }
         </Dialog>
     );
 }
