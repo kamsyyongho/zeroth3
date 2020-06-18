@@ -1,48 +1,49 @@
-import { Container } from '@material-ui/core';
+import {Container} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-/* eslint import/no-webpack-loader-syntax: off */ // this lint rule is from create-react-app
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
+/* eslint import/no-webpack-loader-syntax: off */
+// this lint rule is from create-react-app
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import {useSnackbar, VariantType} from 'notistack';
-import { BulletList } from 'react-content-loader';
+import {BulletList} from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
-import React, { useGlobal } from "reactn";
-import { PERMISSIONS } from '../../constants';
-import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { CustomTheme } from '../../theme/index';
+import React, {useGlobal} from "reactn";
+import {PERMISSIONS} from '../../constants';
+import {ApiContext} from '../../hooks/api/ApiContext';
+import {I18nContext} from '../../hooks/i18n/I18nContext';
+import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
+import {useWindowSize} from '../../hooks/window/useWindowSize';
+import {CustomTheme} from '../../theme/index';
 import {
   CONTENT_STATUS,
   DataSet,
+  PlayingTimeData,
   Segment,
   SegmentAndWordIndex,
-  SnackbarError,
   SNACKBAR_VARIANTS,
+  SnackbarError,
   Time,
   VoiceData,
   Word,
   WordAlignment,
-  WordToCreateTimeFor,
-  PlayingWordAndSegment,
-  PlayingTimeData } from '../../types';
-import {  } from '../../types/editor.types';
+  WordToCreateTimeFor
+} from '../../types';
 import log from '../../util/log/logger';
-import { setPageTitle } from '../../util/misc';
-import { ConfirmationDialog } from '../shared/ConfirmationDialog';
-import { Forbidden } from '../shared/Forbidden';
-import { NotFound } from '../shared/NotFound';
-import { PageErrorFallback } from '../shared/PageErrorFallback';
-import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
-import { AudioPlayer } from './AudioPlayer';
-import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
-import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
-import { EditorFetchButton } from './components/EditorFetchButton';
-import { StarRating } from './components/StarRating';
-import { Editor } from './Editor';
-import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
-import { getSegmentAndWordIndex, updatePlayingLocation } from './helpers/editor.helper';
+import {setPageTitle} from '../../util/misc';
+import {ConfirmationDialog} from '../shared/ConfirmationDialog';
+import {Forbidden} from '../shared/Forbidden';
+import {NotFound} from '../shared/NotFound';
+import {PageErrorFallback} from '../shared/PageErrorFallback';
+import {SiteLoadingIndicator} from '../shared/SiteLoadingIndicator';
+import {AudioPlayer} from './AudioPlayer';
+import {AssignSpeakerDialog} from './components/AssignSpeakerDialog';
+import {EDITOR_CONTROLS, EditorControls} from './components/EditorControls';
+import {EditorFetchButton} from './components/EditorFetchButton';
+import {StarRating} from './components/StarRating';
+import {Editor} from './Editor';
+import {calculateWordTime, getDisabledControls} from './helpers/editor-page.helper';
+import {getSegmentAndWordIndex, updatePlayingLocation} from './helpers/editor.helper';
+import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -149,6 +150,7 @@ export function EditorPage() {
   const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>({});
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
+  const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
 
   // get the passed info if we got here via the details page
 
@@ -832,6 +834,9 @@ export function EditorPage() {
       case EDITOR_CONTROLS.speaker:
         // assignSpeakerFromShortcut(editorState);
         break;
+      case EDITOR_CONTROLS.shortCuts:
+        setIsShortCutPageOpen(true);
+        break;
       default:
         break;
     }
@@ -1061,6 +1066,7 @@ export function EditorPage() {
             onClose={closeSpeakerAssignDialog}
             onSuccess={handleSpeakerAssignSuccess}
         />
+        <HelperPage open={isShortCutPageOpen} onClose={() => setIsShortCutPageOpen(false)} onSuccess={() => {}} />
       </>
   );
 }

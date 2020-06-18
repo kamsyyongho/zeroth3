@@ -183,7 +183,6 @@ class WordAlignmentBlock extends React.Component<WordAlignmentProp, State>{
     handleKeyDown = (event: KeyboardEvent) => {
         switch (event.code) {
             case "ArrowUp":
-                event.preventDefault();
                 this.handleArrowUp();
                 break;
             case "ArrowDown":
@@ -199,7 +198,8 @@ class WordAlignmentBlock extends React.Component<WordAlignmentProp, State>{
                 this.handleArrowRight();
                 break;
             default:
-                return;
+                if(this.props.readOnly) event.preventDefault();
+                break;
         }
     };
 
@@ -254,8 +254,7 @@ class WordAlignmentBlock extends React.Component<WordAlignmentProp, State>{
                 onChange={this.handleChange}
                 onFocus={this.handleOnFocus}
                 onBlur={this.handleOnBlur}
-                html={text}
-                disabled={readOnly} />
+                html={text} />
         )
     }
 }

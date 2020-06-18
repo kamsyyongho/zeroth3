@@ -9,6 +9,7 @@ import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
 import MultilineChartIcon from '@material-ui/icons/MultilineChart';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import DescriptionIcon from '@material-ui/icons/Description';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -78,6 +79,7 @@ export enum EDITOR_CONTROLS {
   setThreshold,
   speaker,
   debug,
+  shortCuts,
 }
 
 const EDITOR_STATUS = {
@@ -97,6 +99,7 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
   // EDITOR_CONTROLS.debug,
+    EDITOR_CONTROLS.shortCuts,
 ];
 
 const secondaryControlOrder = [
@@ -314,6 +317,17 @@ export const EditorControls = (props: EditorControlsProps) => {
               handleClick(EDITOR_CONTROLS.debug);
             },
             disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
+          };
+          break;
+        case EDITOR_CONTROLS.shortCuts:
+          label = 'SHORTCUTS';
+          icon = <DescriptionIcon />;
+          props = {
+            onClick: () => {
+              setEditorDebugMode(!editorDebugMode);
+              handleClick(EDITOR_CONTROLS.shortCuts);
+            },
+            disabled: disabledControls.includes(EDITOR_CONTROLS.shortCuts),
           };
           break;
       }
