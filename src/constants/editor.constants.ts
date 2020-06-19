@@ -27,7 +27,7 @@ export const renderInputCombination = (input: string[]) => {
         if(index > 0) result += ' + '
         switch(input) {
             case 'Control':
-                result += 'Crl';
+                result += 'Ctrl';
                 break;
             case 'Shift':
                 result += '⇧ Shift';

@@ -1145,7 +1145,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [segmentSplitTimeBoundary]);
 
   React.useEffect(() => {
-    console.log('=========audio editorcommand : ',editorCommand)
     if(editorCommand) {
       switch (editorCommand) {
         case EDITOR_CONTROLS.rewindAudio:

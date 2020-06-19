@@ -569,6 +569,7 @@ export class Models extends ParentApi {
     };
     const request = new FormData();
     request.append('file', file);
+
     const config: AxiosRequestConfig = {
       headers: {
         'content-type': 'multipart/form-data',

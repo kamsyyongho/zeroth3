@@ -1657,49 +1657,49 @@ export function Editor(props: EditorProps) {
     }, [responseFromParent]);
 
     // used to call commands from the control bar's button presses
-    React.useEffect(() => {
-        if (editorCommand) {
-            onCommandHandled();
-            if (readOnlyEditorState || readOnly) {
-                return;
-            }
-            let updatedEditorState: EditorState | null = null;
-            switch (editorCommand) {
-                case EDITOR_CONTROLS.save:
-                    updateSegmentOnChange(editorState, undefined, true);
-                    break;
-                case EDITOR_CONTROLS.toggleMore:
-                    togglePopups();
-                    break;
-                case EDITOR_CONTROLS.split:
-                    handleSegmentSplitCommand(editorState);
-                    break;
-                case EDITOR_CONTROLS.merge:
-                    handleSegmentMergeCommand(editorState);
-                    break;
-                case EDITOR_CONTROLS.createWord:
-                    createWordTime(editorState);
-                    break;
-                case EDITOR_CONTROLS.editSegmentTime:
-                    prepareSegmentTimePicker(editorState);
-                    break;
-                case EDITOR_CONTROLS.undo:
-                    updatedEditorState = EditorState.undo(editorState);
-                    break;
-                case EDITOR_CONTROLS.redo:
-                    updatedEditorState = EditorState.redo(editorState);
-                    break;
-                case EDITOR_CONTROLS.speaker:
-                    assignSpeakerFromShortcut(editorState);
-                    break;
-                default:
-                    break;
-            }
-            if (updatedEditorState) {
-                handleChange(updatedEditorState);
-            }
-        }
-    }, [editorCommand]);
+    // React.useEffect(() => {
+    //     if (editorCommand) {
+    //         onCommandHandled();
+    //         if (readOnlyEditorState || readOnly) {
+    //             return;
+    //         }
+    //         let updatedEditorState: EditorState | null = null;
+    //         switch (editorCommand) {
+    //             case EDITOR_CONTROLS.save:
+    //                 updateSegmentOnChange(editorState, undefined, true);
+    //                 break;
+    //             case EDITOR_CONTROLS.toggleMore:
+    //                 togglePopups();
+    //                 break;
+    //             case EDITOR_CONTROLS.split:
+    //                 handleSegmentSplitCommand(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.merge:
+    //                 handleSegmentMergeCommand(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.createWord:
+    //                 createWordTime(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.editSegmentTime:
+    //                 prepareSegmentTimePicker(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.undo:
+    //                 updatedEditorState = EditorState.undo(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.redo:
+    //                 updatedEditorState = EditorState.redo(editorState);
+    //                 break;
+    //             case EDITOR_CONTROLS.speaker:
+    //                 assignSpeakerFromShortcut(editorState);
+    //                 break;
+    //             default:
+    //                 break;
+    //         }
+    //         if (updatedEditorState) {
+    //             handleChange(updatedEditorState);
+    //         }
+    //     }
+    // }, [editorCommand]);
 
     // used to calculate the exact dimensions of the root div
     // so we can make the overlay the exact same size

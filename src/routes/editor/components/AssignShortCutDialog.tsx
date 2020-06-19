@@ -12,7 +12,7 @@ import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
-import React from 'reactn';
+import React, { useRef } from 'reactn';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) =>
         },
         apiInfo: {
             minWidth: 250,
-            backgroundColor: theme.palette.grey[200],
+            borderColor: '#077db5'
         },
         textField: {
             marginLeft: theme.spacing(1),
@@ -55,6 +55,9 @@ interface AssignShortCutDialogProps {
     onConfirm: (input: string[]) => void;
 }
 
+let updateLocalInput: string[] = [];
+let allowKeyDown: boolean = false;
+
 export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     const { open, hideBackdrop, onClose, selectedShortCut, selectedFunction, onConfirm } = props;
     const { enqueueSnackbar } = useSnackbar();
@@ -62,40 +65,59 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     const api = React.useContext(ApiContext);
     const [loading, setLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
-    const [isEdit, setIsEdit] = React.useState(false);
+    const [isReset, setIsReset] = React.useState(false);
     const [inputCombination, setInputCombination] = React.useState('');
-    const [localInput, setLocalInput] = React.useState<string[]>(selectedShortCut);
+    const [localInput, setLocalInput] = React.useState<string[]>([]);
 
     const theme = useTheme();
     const classes = useStyles();
 
     const handleClose = () => {
-        setIsError(false);
+        init();
         onClose();
+    };
+
+    const init = () => {
+        allowKeyDown = false;
+        updateLocalInput = [];
+        setLocalInput([]);
+        setInputCombination('');
+        setIsError(false);
+        setIsReset(false);
     };
 
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
     const handleSubmit = () => {
-
+        if(!isReset) {
+            allowKeyDown = true;
+            setIsReset(true);
+            updateLocalInput = [];
+            setLocalInput([]);
+            setInputCombination('');
+        } else {
+            onConfirm(localInput);
+            handleClose();
+        }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleStateUpdate = () => {
+
+    }
+
+    const handleKeyDown = (event: any) => {
+        const key = event.code === "Space" ? "Space" : event.key;
         event.preventDefault();
-        console.log('event : ', localInput);
-        if(localInput?.length) {
-            const updateLocalInput = [...localInput];
-            if(event.key === 'Backspace') {
+        if(allowKeyDown) {
+            if(key === 'Backspace' && updateLocalInput.length) {
                 updateLocalInput.pop();
             } else {
-                updateLocalInput.push(event.key);
+                updateLocalInput.push(key);
             }
             setLocalInput(updateLocalInput);
             setInputCombination(renderInputCombination(updateLocalInput));
         }
-
-
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -103,23 +125,26 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     };
 
     React.useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keydown', handleKeyDown)
         return () => {
-            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keydown', handleKeyDown)
+
         }
     },[]);
 
     React.useEffect(() => {
-        console.log('==============localInput', localInput)
-    }, [localInput]);
-
-    React.useEffect(() => {
-        if(selectedShortCut?.length) {
-            console.log(selectedShortCut);
+        if(selectedShortCut?.length && !localInput?.length) {
             setLocalInput(selectedShortCut);
+            updateLocalInput = selectedShortCut;
             setInputCombination(renderInputCombination(selectedShortCut));
         }
-    }, [selectedShortCut])
+    }, [selectedShortCut]);
+
+    React.useEffect(() => {
+        if(!open) {
+            init()
+        }
+    }, [open]);
 
     return (
         <Dialog
@@ -136,11 +161,13 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
             {
                 selectedShortCut && selectedFunction &&
                     <>
-                        <DialogTitle id="sub-graph-dialog">{translate(`editor.${selectedFunction}`)}</DialogTitle>
+                        <DialogTitle id="assign-shortcut-dialog">{translate(`editor.${selectedFunction}`)}</DialogTitle>
                         <DialogContent>
                             <TextField
-                                id="api-key"
+                                id="shortcut-input"
+                                label={translate('editor.input')}
                                 value={inputCombination}
+                                // onKeyPress={handleKeyDown}
                                 className={clsx(classes.textField, classes.apiInfo)}
                                 margin="normal"
                                 variant="outlined"
@@ -151,7 +178,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                 {translate("common.cancel")}
                             </Button>
                             <Button
-                                disabled={loading}
+                                disabled={!localInput.length}
                                 onClick={handleSubmit}
                                 color="primary"
                                 variant="outlined"
@@ -161,9 +188,9 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                         size={15}
                                         color={theme.palette.primary.main}
                                         loading={true}
-                                    /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                                    /> : (isReset ? <AddIcon /> : <EditIcon />)}
                             >
-                                {translate(isEdit ? "common.edit" : "common.create")}
+                                {translate(isReset ? "common.edit" : "common.reset")}
                             </Button>
                         </DialogActions>
                     </>

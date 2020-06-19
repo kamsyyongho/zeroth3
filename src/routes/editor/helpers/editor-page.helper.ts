@@ -54,7 +54,7 @@ export const getDisabledControls = (
   }
   if (saveSegmentsLoading || confirmSegmentsLoading) {
     disabledControls.push(EDITOR_CONTROLS.save);
-    disabledControls.push(EDITOR_CONTROLS.confirm);
+    disabledControls.push(EDITOR_CONTROLS.approvalRequest);
   }
   return disabledControls;
 };

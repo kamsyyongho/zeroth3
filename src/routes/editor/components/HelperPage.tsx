@@ -5,8 +5,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import AddIcon from '@material-ui/icons/Add';
-import EditIcon from '@material-ui/icons/Edit';
+import SaveIcon from '@material-ui/icons/Save';
 import {Table, TableBody, TableCell, TableHead, TableRow, Typography} from '@material-ui/core';
 import clsx from 'clsx';
 import {useSnackbar} from 'notistack';
@@ -17,6 +16,8 @@ import {I18nContext} from '../../../hooks/i18n/I18nContext';
 import {AssignShortCutDialog} from './AssignShortCutDialog';
 import {EDITOR_CONTROLS} from './EditorControls';
 import {renderInputCombination} from '../../../constants'
+import {SnackbarError, Shortcuts, SNACKBAR_VARIANTS} from '../../../types';
+import log from '../../../util/log/logger';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -52,15 +53,18 @@ export function HelperPage(props: HelperPageProps) {
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
+    const [localShortcuts, setLocalShortcuts] = React.useState<Shortcuts>({} as Shortcuts);
     const [loading, setLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
-    const [isEdit, setIsEdit] = React.useState(false);
+    const [isChange, setIsChange] = React.useState(false);
     const [isAssignShortCutOpen, setIsAssignShortCutOpen] = React.useState(false);
     const [selectedShortcut, setSelectedShortCut] = React.useState<any>();
     const [selectedFunction, setDialogTitle] = React.useState<string>('');
-    const functionArray = Object.keys(shortcuts);
-    const inputArray = Object.values(shortcuts);
+    // const [functionArray, setFunctionArray] = React.useState(Object.keys(localShortcuts));
+    // const [inputArray, setInputArray] = React.useState(Object.values(localShortcuts));
 
+    const functionArray = React.useMemo(() => Object.keys(localShortcuts), [localShortcuts]);
+    const inputArray = React.useMemo(() => Object.values(localShortcuts), [localShortcuts])
 
     const theme = useTheme();
     const classes = useStyles();
@@ -87,9 +91,46 @@ export function HelperPage(props: HelperPageProps) {
         setIsAssignShortCutOpen(true);
     }
 
-    const handleShortcutChanges = (input: string[]) => {
+    const updateShortcuts = async () => {
+        if (api?.user) {
+            setLoading(true);
+            const response = await api.user.updateShortcuts(localShortcuts);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                setShortcuts(localShortcuts);
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                // setVoiceData(undefined);
+            } else {
+                log({
+                    file: `EditorPage.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setIsAssignShortCutOpen(false);
+            setIsChange(false);
+            setLoading(false);
+        }
+    }
 
+    const handleShortcutChanges = (input: string[]) => {
+        const updatedShortcuts = JSON.parse(JSON.stringify(shortcuts));
+        Object.assign(updatedShortcuts, {selectedFunction: input});
+        setLocalShortcuts(updatedShortcuts);
+        setIsChange(true);
     };
+
+    React.useEffect(() => {
+        setLocalShortcuts(shortcuts)
+    }, [shortcuts]);
 
 
     return (
@@ -120,7 +161,7 @@ export function HelperPage(props: HelperPageProps) {
                         </TableHead>
                         <TableBody>
                             {
-                                inputArray.map((input: any, index: number) => {
+                                inputArray && inputArray.map((input: any, index: number) => {
                                     return (
                                         <TableRow key={`status-change-row-${index}`} hover onClick={() => handleRowClick(index)}>
                                             <TableCell>
@@ -141,11 +182,11 @@ export function HelperPage(props: HelperPageProps) {
             </DialogContent>
             <DialogActions>
                 <Button disabled={loading} onClick={handleClose} color="primary">
-                    {translate("common.cancel")}
+                    {translate("common.close")}
                 </Button>
                 <Button
-                    disabled={loading}
-                    onClick={handleSubmit}
+                    disabled={!isChange}
+                    onClick={updateShortcuts}
                     color="primary"
                     variant="outlined"
                     startIcon={loading ?
@@ -154,9 +195,9 @@ export function HelperPage(props: HelperPageProps) {
                             size={15}
                             color={theme.palette.primary.main}
                             loading={true}
-                        /> : (isEdit ? <EditIcon /> : <AddIcon />)}
+                        /> : <SaveIcon />}
                 >
-                    {translate(isEdit ? "common.edit" : "common.create")}
+                    {translate("common.save")}
                 </Button>
             </DialogActions>
             <AssignShortCutDialog
