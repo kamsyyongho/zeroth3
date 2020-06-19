@@ -936,6 +936,7 @@ export function EditorPage() {
   // initial fetch and dismount logic
   React.useEffect(() => {
     setPageTitle(translate('path.editor'));
+    getShortcuts();
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
     } else if (canUseEditor && !isDiff) {

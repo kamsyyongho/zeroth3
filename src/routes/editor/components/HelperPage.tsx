@@ -123,7 +123,7 @@ export function HelperPage(props: HelperPageProps) {
 
     const handleShortcutChanges = (input: string[]) => {
         const updatedShortcuts = JSON.parse(JSON.stringify(shortcuts));
-        Object.assign(updatedShortcuts, {selectedFunction: input});
+        Object.assign(updatedShortcuts, {[selectedFunction]: input});
         setLocalShortcuts(updatedShortcuts);
         setIsChange(true);
     };

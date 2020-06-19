@@ -26,6 +26,9 @@ export const renderInputCombination = (input: string[]) => {
     input.forEach((input: string, index: number) => {
         if(index > 0) result += ' + '
         switch(input) {
+            case 'Meta' :
+                result += '⌘ Cmd';
+                break;
             case 'Control':
                 result += 'Ctrl';
                 break;
@@ -49,6 +52,12 @@ export const renderInputCombination = (input: string[]) => {
                 break;
             case 'ArrowRight':
                 result += '→ ArrowRight';
+                break;
+            case 'ArrowUp':
+                result += '↑ ArrowRight';
+                break;
+            case 'ArrowDown':
+                result += '↓ ArrowDown';
                 break;
             default:
                 result += input.toUpperCase();

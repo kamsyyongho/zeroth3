@@ -207,6 +207,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
 
+
     React.useEffect(() => {
         return () => {
             resetState();

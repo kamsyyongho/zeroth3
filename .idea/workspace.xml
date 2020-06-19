@@ -4,12 +4,10 @@
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/constants/editor.constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/editor.constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/AssignShortCutDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/AssignShortCutDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/HelperPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/HelperPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor-page.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor-page.helper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/models.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/models.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +86,7 @@
       <workItem from="1591668616571" duration="119030000" />
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
-      <workItem from="1592179144601" duration="115732000" />
+      <workItem from="1592179144601" duration="116760000" />
     </task>
     <servers />
   </component>
@@ -238,10 +236,11 @@
     </state>
     <state x="610" y="-805" width="700" height="530" key="recent.locations.popup/0.-1080.1920.1080/0.0.1792.1120@0.-1080.1920.1080" timestamp="1588750747602" />
     <state x="1093" y="367" width="1255" height="707" key="recent.locations.popup/880.-1057.2560.1057/0.0.3440.1440/3440.-1057.1080.2537@0.0.3440.1440" timestamp="1589474086823" />
-    <state x="418" y="-284" key="run.anything.popup" timestamp="1588919184262">
-      <screen x="-207" y="-1080" width="1920" height="1080" />
+    <state x="625" y="796" key="run.anything.popup" timestamp="1592551225494">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="418" y="-284" key="run.anything.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588919184262" />
+    <state x="625" y="796" key="run.anything.popup/1920.0.1920.1080/0.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1592551225494" />
     <state x="707" y="239" width="767" height="680" key="search.everywhere.popup" timestamp="1592545157251">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>

@@ -427,6 +427,8 @@ export const EditorControls = (props: EditorControlsProps) => {
     event.preventDefault();
   };
 
+  React.useEffect(() => {
+  }, [shortcuts]);
 
   React.useEffect(() => {
     const statusTextEl = (
