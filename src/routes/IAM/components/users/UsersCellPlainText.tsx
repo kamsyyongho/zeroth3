@@ -60,7 +60,6 @@ export function UsersCellPlainText(props: UsersCellCheckboxProps) {
                 onClick={() => setIsDisabled(false)}
                 onBlur={handleBlur}
                 disabled={isDisabled}
-                onChange={handleChange}
-            />
+                onChange={handleChange} />
 }
 

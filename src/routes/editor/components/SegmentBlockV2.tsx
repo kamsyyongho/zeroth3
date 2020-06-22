@@ -10,6 +10,9 @@ import { INLINE_STYLE_TYPE } from '../../../types';
 import { buildStyleMap } from '../helpers/editor.helper';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
+import { ApiContext } from '../../../hooks/api/ApiContext';
+import log from '../../../util/log/logger';
+import {EditWordAlignmentBlock} from './EditWordAlignmentBlock';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -40,12 +43,16 @@ interface SegmentBlockProps  {
     segment: Segment;
     segmentIndex: number;
     editorCommand?: EDITOR_CONTROLS;
+    isAudioPlaying: boolean;
+    isDiff: boolean;
+    isCommentEnabled: boolean;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     onCommandHandled: () => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
+    handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
     findWordAlignmentIndexToPrevSegment: (segmentIndex: number, currentLocation: number) => void;
     getLastAlignmentIndexInSegment: (segmentIndex: number) => void;
     readOnly?: boolean;
@@ -62,22 +69,28 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         segmentIndex,
         assignSpeakerForSegment,
         editorCommand,
+        isAudioPlaying,
+        isDiff,
+        isCommentEnabled,
         onUpdateUndoRedoStack,
         onCommandHandled,
         updateCaretLocation,
         updateChange,
         updateSegment,
+        handleTextSelection,
         readOnly,
         removeHighRiskValueFromSegment,
         findWordAlignmentIndexToPrevSegment,
         getLastAlignmentIndexInSegment,
         playingLocation } = props;
+    const api = React.useContext(ApiContext);
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const theme: CustomTheme = useTheme();
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
     const [undoRedoData, setUndoRedoData] = React.useState<UndoRedoData | undefined>();
+    const [isAbleToComment, setIsAbleToComment] = React.useState<boolean>(false);
     const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
@@ -100,9 +113,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         setLengthBeforeBlockArray(result);
     };
 
+
+
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
             const updatedSegment = localSegment;
-            updatedSegment.highRisk = false;
+            if(updatedSegment.highRisk) {
+                updatedSegment.highRisk = false;
+                removeHighRiskValueFromSegment(segment.id);
+            }
             setIsChanged(isChanged);
             updatedSegment.wordAlignments[wordIndex].word = word;
             setLocalSegment(updatedSegment);
@@ -123,7 +141,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             return undoRedoData.redoStack;
         }
     }
-    
+
     const handleUndoCommand = () => {
         const undoStack = getUndoStack();
         const redoStack = getRedoStack();
@@ -189,6 +207,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
 
+
     React.useEffect(() => {
         return () => {
             resetState();
@@ -196,8 +215,17 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }, []);
 
     React.useEffect(() => {
-        setLocalSegment(segment);
-        setLengthBeforeEachBlockArray();
+        if(segment?.wordAlignments.length) {
+            let copySegment = {...segment};
+            for(let i = 0; i < copySegment.length -1; i++) {
+                const wordAlignment = copySegment.wordAlignments[i];
+                if(wordAlignment) {
+                    copySegment.wordAlignments[i]['word'] = segment.wordAlignments[i]['word'].replace('|', ' ');
+                }
+            }
+            setLocalSegment(copySegment);
+            setLengthBeforeEachBlockArray();
+        }
         return () => {
             resetState();
         }
@@ -210,38 +238,52 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
             setEditorCommandForWordBlock(editorCommand);
         }
-    },[editorCommand])
+    },[editorCommand]);
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
+                isChanged={isChanged}
                 assignSpeakerForSegment={assignSpeakerForSegment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            {localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
-                return (
-                    <WordAlignmentBlock
-                        key={`word-alignment-${segmentIndex}-${index}`}
-                        findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                        setUndoRedoData={setUndoRedoData}
-                        getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                        onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                        updateCaretLocation={updateCaretLocation}
-                        updateChange={updateChange}
-                        updateWordAlignmentChange={updateWordAlignmentChange}
-                        segmentIndex={segmentIndex}
-                        wordAlignmentIndex={index}
-                        wordAlignmentsLength={segment.wordAlignments.length}
-                        lengthBeforeBlock={lengthBeforeBlockArray[index]}
-                        start={word.start}
-                        length={word.length}
-                        word={word.word}
-                        readOnly={readOnly}
-                        confidence={word.confidence} />
-                )
-            })}
+            {
+                !isDiff || isAudioPlaying ?
+                    localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
+                            return (
+                                <WordAlignmentBlock
+                                    key={`word-alignment-${segmentIndex}-${index}`}
+                                    findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                                    setUndoRedoData={setUndoRedoData}
+                                    getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
+                                    onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                                    updateCaretLocation={updateCaretLocation}
+                                    updateChange={updateChange}
+                                    updateWordAlignmentChange={updateWordAlignmentChange}
+                                    segmentIndex={segmentIndex}
+                                    wordAlignmentIndex={index}
+                                    wordAlignmentsLength={segment.wordAlignments.length}
+                                    lengthBeforeBlock={lengthBeforeBlockArray[index]}
+                                    start={word.start}
+                                    length={word.length}
+                                    word={word.word}
+                                    readOnly={readOnly}
+                                    confidence={word.confidence} />
+                            )
+                        })
+                    :
+                    <div>
+                        <EditWordAlignmentBlock
+                            segment={localSegment}
+                            segmentIndex={segmentIndex}
+                            isAbleToComment={isAbleToComment}
+                            isCommentEnabled={isCommentEnabled}
+                            updateCaretLocation={updateCaretLocation}
+                            handleTextSelection={handleTextSelection} />
+                    </div>
+            }
         </div>
     );
 };

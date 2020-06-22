@@ -82,6 +82,8 @@ export type updateLanguageModelResult =
 
 export type deleteLanguageModelResult = { kind: 'ok' } | GeneralApiProblem;
 
+export type deleteAcousticModelResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type getSubGraphsResult =
   | { kind: 'ok'; subGraphs: SubGraph[] }
   | GeneralApiProblem;

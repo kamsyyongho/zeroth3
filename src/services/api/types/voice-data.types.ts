@@ -4,6 +4,7 @@ import {
   VoiceData,
   VoiceDataResults,
   WordAlignment,
+  AudioUrlResponse,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -12,7 +13,7 @@ import { GeneralApiProblem } from './api-problem.types';
 //////////////
 
 export interface SearchDataRequest {
-  'data-set'?: string;
+  'dataSetIds'?: string[];
   filename?: string;
   from?: Date;
   till?: Date;
@@ -114,6 +115,10 @@ export type UpdateSegmentsRequest = Segment[];
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
+export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateRejectReasonResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type approveDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
@@ -122,6 +127,10 @@ export type searchDataResult =
 
 export type getAssignedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
+  | GeneralApiProblem;
+
+export type getVoiceDataStateChanges =
+  | { kind: 'ok', statusChanges: any[] }
   | GeneralApiProblem;
 
 export type fetchUnconfirmedDataResult =
@@ -173,3 +182,15 @@ export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;
 export type deleteUnconfirmedVoiceDataResult =
   | { kind: 'ok' }
   | GeneralApiProblem;
+
+export type getDataToReview =
+  | { kind: 'ok'; voiceData: VoiceData[] }
+  | GeneralApiProblem;
+
+export type getHistory =
+  | { kind: 'ok'; voiceData: VoiceData[] }
+  | GeneralApiProblem;
+
+export type getAudioUrl =
+    | { kind: 'ok'; url: string }
+    | GeneralApiProblem;

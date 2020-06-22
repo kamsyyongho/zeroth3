@@ -1,4 +1,4 @@
-import ENV from '../../services/env/index';
+import ENV from '../../services/env';
 
 /**
  * - just under 12 hours in minutes

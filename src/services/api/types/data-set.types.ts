@@ -1,5 +1,5 @@
-import {FilterParams, SubSet, Transcriber, VoiceData} from '../../../types';
-import { DataSet } from '../../../types/';
+import { FilterParams, SubSet, Transcriber, VoiceData, SubSetCountResults } from '../../../types';
+import { DataSet } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -37,10 +37,23 @@ export type removeTranscriberFromDataSetResult =
   | { kind: 'ok' }
   | GeneralApiProblem;
 
-export type getTrainingSet =
+export type getSubSet =
   | { kind: 'ok', subSets: SubSet }
+  | GeneralApiProblem;
+
+export type getSubSetCount =
+  | { kind: 'ok', count: SubSetCountResults }
+  | GeneralApiProblem;
+
+export type requestEvaluation =
+  | { kind: 'ok' }
   | GeneralApiProblem;
 
 export type createTrainingSet =
   | { kind: 'ok' }
+  | GeneralApiProblem;
+
+
+export type getEvaluationDownloadLink =
+  | { kind: 'ok', url: string }
   | GeneralApiProblem;

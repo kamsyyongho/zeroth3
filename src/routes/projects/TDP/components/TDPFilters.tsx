@@ -15,16 +15,17 @@ import { VALIDATION } from '../../../../constants/validation.constants';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme/index';
-import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, Transcriber } from '../../../../types';
+import { CONTENT_STATUS_VALUES, DataSet, GenericById, ModelConfig, TranscriberStats, Transcriber, StringById } from '../../../../types';
 import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePickerFormField';
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
+import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormField';
 
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
   modelConfigsById: GenericById<ModelConfig>;
   dataSetsById: any;
-  transcribersById: Transcriber[];
+  transcriberStats: Transcriber[];
   loading?: boolean;
 }
 
@@ -42,7 +43,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function TDPFilters(props: TDPFiltersProps) {
-  const { updateVoiceData, modelConfigsById, dataSetsById, transcribersById, loading } = props;
+  const { updateVoiceData, modelConfigsById, dataSetsById, transcriberStats, loading } = props;
   const { translate } = React.useContext(I18nContext);
   const [submitPressed, setSubmitPressed] = React.useState(false);
   const classes = useStyles();
@@ -66,25 +67,26 @@ export function TDPFilters(props: TDPFiltersProps) {
     return tempFormSelectOptions;
   }, [modelConfigsById, translate]);
 
-  const dataSetFormSelectOptions = React.useMemo(() => {
-    const tempFormSelectOptions: SelectFormFieldOptions = Object.keys(dataSetsById).map((id) => ({
-      label: dataSetsById[id].name,
-      value: dataSetsById[id].id,
-    }));
-    // add the placeholder
-    tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
-    return tempFormSelectOptions;
-  }, [modelConfigsById, translate]);
+  const dataSetNamesById: StringById = {};
+  const dataSetFormSelectOptions = Object.keys(dataSetsById).map((id) => {
+      const label = dataSetsById[id].name;
+      const value = dataSetsById[id].id;
+      dataSetNamesById[value] = label;
+    return {
+      label,
+      value,
+    };
+    });
 
     const transcriberFormSelectOptions = React.useMemo(() => {
-      const tempFormSelectOptions: SelectFormFieldOptions = transcribersById.map((transcriber) => ({
+      const tempFormSelectOptions: SelectFormFieldOptions = transcriberStats.map((transcriber) => ({
         label: transcriber.email,
         value: transcriber.id,
       }));
     // add the placeholder
     tempFormSelectOptions.unshift({ label: translate('forms.none'), value: '' });
     return tempFormSelectOptions;
-  }, [transcribersById, translate]);
+  }, [transcriberStats, translate]);
 
   const numberText = translate("forms.validation.number");
   const integerText = translate("forms.validation.integer");
@@ -102,7 +104,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     transcript: yup.string().notRequired(),
     status: yup.mixed().oneOf(CONTENT_STATUS_VALUES.concat([''])).notRequired(),
     modelConfigId: yup.mixed<string | ''>().notRequired(),
-    dataSetId: yup.mixed<string | ''>().notRequired(),
+    dataSetIds: yup.array().of(yup.string()).notRequired(),
     filename: yup.string().notRequired(),
     transcriber: yup.mixed<string | ''>().notRequired(),
   });
@@ -112,7 +114,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     endDate: null,
     status: '',
     modelConfigId: '',
-    dataSetId: '',
+    dataSetIds: [],
   };
 
 
@@ -125,13 +127,15 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status,
       modelConfigId,
-      dataSetId,
+      dataSetIds,
       filename,
       transcriber,
     } = values;
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
     const till: Date | undefined = endDate === null ? undefined : endDate;
+
+
     const options: SearchDataRequest = {
       from,
       till,
@@ -140,7 +144,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       transcript,
       status: status === '' ? undefined : status,
       'model-config': modelConfigId === '' ? undefined : modelConfigId,
-      'data-set': dataSetId === '' ? undefined : dataSetId,
+      'dataSetIds': dataSetIds?.length ? dataSetIds : [],
       filename,
       transcriber,
     };
@@ -342,10 +346,12 @@ export function TDPFilters(props: TDPFiltersProps) {
                       >
                         <Field
                           fullWidth
-                          name='dataSetId'
-                          component={SelectFormField}
+                          name='dataSetIds'
+                          component={ChipSelectFormField}
                           options={dataSetFormSelectOptions}
+                          labelsByValue={dataSetNamesById}
                           label={translate("SET.dataSet")}
+                          light
                         />
                       </Grid>
                     </Grid>

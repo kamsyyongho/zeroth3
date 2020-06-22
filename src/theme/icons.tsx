@@ -40,10 +40,11 @@ import { ReactComponent as Training } from './icons/training.svg';
 import { ReactComponent as Translate } from './icons/translate.svg';
 import { ReactComponent as Trash } from './icons/trash.svg';
 import { ReactComponent as Undo } from './icons/undo.svg';
+import { ReactComponent as Diff } from './icons/diff.svg';
 
 /**
  * used to get the color from the icon component and pass it to the custom svg
- * @param props 
+ * @param props
  */
 const getColor = (props: SvgIconProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -78,72 +79,76 @@ interface ICONS {
  * - icons accept `SvgIconProps`
  */
 export const ICONS = {
-  /**  
+  /**
    * Used in the menu dropdown
    */
   Account: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Account /></SvgIcon>,
-  /**  
+  /**
    * A downward pointing arrow / wedge `∨`
    */
   ArrowDown: (props: SvgIconProps) => <SvgIcon {...props}><ArrowDown /></SvgIcon>,
-  /**  
+  /**
    * A left pointing arrow / less-than symbol `＜`
    */
   ArrowLeft: (props: SvgIconProps) => <SvgIcon viewBox="0 0 25 24" {...props}><ArrowLeft /></SvgIcon>,
-  /**  
+  /**
    * Two left pointing arrows / less-than symbols `＜＜`
    */
   ArrowLeftDouble: (props: SvgIconProps) => <SvgIcon {...props}><ArrowLeftDouble /></SvgIcon>,
-  /**  
+  /**
    * A right pointing arrow / greater-than symbol `＞`
    */
   ArrowRight: (props: SvgIconProps) => <SvgIcon viewBox="0 0 25 24" {...props}><ArrowRight /></SvgIcon>,
-  /**  
+  /**
    * Two right pointing arrows / greater-than symbols `＞＞`
    */
   ArrowRightDouble: (props: SvgIconProps) => <SvgIcon {...props}><ArrowRightDouble /></SvgIcon>,
-  /**  
+  /**
    * A check mark `✓`.
    */
   Check: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Check /></SvgIcon>,
-  /**  
+  /**
    * A close / 'x' icon.
    */
   Close: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Close /></SvgIcon>,
-  /**  
+  /**
    * A line with a circle in the center / `-○-`
    */
   Commit: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Commit /></SvgIcon>,
-  /**  
+  /**
+   * Pencil icon
+   */
+  Diff: (props: SvgIconProps) => <SvgIcon {...props}><Diff /></SvgIcon>,
+  /**
    * Pencil icon
    */
   Edit: (props: SvgIconProps) => <SvgIcon {...props}><Edit /></SvgIcon>,
-  /**  
+  /**
    * Used in the drawer
    * - Pencil and paper icon
    */
   Editor: (props: SvgIconProps) => <SvgIcon {...props}><Editor /></SvgIcon>,
-  /**  
+  /**
    * A question mark inside a square
    */
   Faq: (props: SvgIconProps) => <SvgIcon {...props}><Faq /></SvgIcon>,
-  /**  
+  /**
    * Two solid right pointing triangles `▶▶`
    */
   FastForward: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><FastForward /></SvgIcon>,
-  /**  
+  /**
    * Two solid left pointing triangles `◀◀`
    */
   FastRewind: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><FastRewind /></SvgIcon>,
-  /**  
+  /**
    * A filter symbol
    */
   Filter: (props: SvgIconProps) => <SvgIcon {...props}><Filter /></SvgIcon>,
-  /**  
+  /**
    * A symbol of a house
    */
   Home: (props: SvgIconProps) => <SvgIcon {...props}><Home /></SvgIcon>,
-  /**  
+  /**
    * A symbol of a house
    */
   IAM: (props: SvgIconProps) => <SvgIcon {...props}><IAM /></SvgIcon>,
@@ -152,19 +157,19 @@ export const ICONS = {
    * - used between words to split segments
    */
   InlineSplit: (props: SvgIconProps) => <SvgIcon {...props}><InlineSplit /></SvgIcon>,
-  /**  
+  /**
    * A symbol of a door with an arrow left
    */
   Logout: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Logout /></SvgIcon>,
-  /**  
+  /**
    * A menu / hamburger symbol
    */
   Menu: (props: SvgIconProps) => <SvgIcon viewBox="0 0 32 33" {...props}><Menu /></SvgIcon>,
-  /**  
+  /**
    * The number 1 in a blue circle
    */
   Number1: (props: SvgIconProps) => <SvgIcon {...props}><Number1 /></SvgIcon>,
-  /**  
+  /**
    * The number 2 in a blue circle
    */
   Number2: (props: SvgIconProps) => <SvgIcon {...props}><Number2 /></SvgIcon>,
@@ -198,7 +203,7 @@ export const ICONS = {
    * Used in the the editor. An icon of an arrow that curves right.
    */
   Redo: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Redo /></SvgIcon>,
-  /**  
+  /**
    * A minus inside a cicle `⊖`
    */
   Remove: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Remove /></SvgIcon>,
@@ -206,7 +211,7 @@ export const ICONS = {
    * Used in the the editor. An icon of a floppy disk `💾`.
    */
   Save: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Save /></SvgIcon>,
-  /**  
+  /**
    * A magnifying glass `🔍`
    */
   Search: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Search /></SvgIcon>,
@@ -218,15 +223,15 @@ export const ICONS = {
    * Used in the the editor. An icon of one arrow splitting into two.
    */
   Split: (props: SvgIconProps) => <SvgIcon viewBox="0 0 36 36" {...props}><Split /></SvgIcon>,
-  /**  
+  /**
    * An icon of a soundwave.
    */
   Training: (props: SvgIconProps) => <SvgIcon {...props}><Training /></SvgIcon>,
-  /**  
+  /**
    * Used in the the header
    */
   Translate: (props: SvgIconProps) => <SvgIcon {...props}><Translate /></SvgIcon>,
-  /**  
+  /**
    * A trash can / wastebasket `🗑`
    */
   Trash: (props: SvgIconProps) => <SvgIcon viewBox="0 0 20 20" {...props}><Trash /></SvgIcon>,

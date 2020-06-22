@@ -19,10 +19,29 @@ export interface WordKeyStoreContent {
   wordKeyLocations: WordKeyLocation3DArray;
 }
 
+export interface Shortcuts {
+  approvalRequest: string[];
+  save: string[];
+  undo: string[];
+  redo: string[];
+  merge: string[];
+  split: string[];
+  toggleMore: string[];
+  editSegmentTime: string[];
+  setThreshold: string[];
+  shortCuts: string[];
+  speaker: string[];
+  rewindAudio: string[];
+  forwardAudio: string[];
+  audioPlayPause: string[];
+  //     createWord: ['Control', 'Enter'],
+  //     debug: [],
+}
+
 export interface PlayingTimeData {
   currentPlayingWordPlayerSegment?: any;
   timeToSeekTo?: number
-} 
+}
 
 export interface Range {
   start: number;

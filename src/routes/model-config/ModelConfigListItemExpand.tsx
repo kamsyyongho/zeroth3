@@ -139,12 +139,12 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
     thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
-      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
       return thresholdLr < thresholdHr;
     }),
     thresholdHr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('highRiskTest', translate('forms.validation.greaterThan', { target: thresholdHrText, value: thresholdLrText }), function (thresholdHr) {
       const { thresholdLr } = this.parent;
-      if (thresholdLr === 0 || thresholdHr === 0) return true;
+      if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),

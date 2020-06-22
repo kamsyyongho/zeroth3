@@ -10,7 +10,7 @@ import {
   SelectionState,
 } from 'draft-js';
 import { Map } from 'immutable';
-import { CustomTheme } from '../../../theme/index';
+import { CustomTheme } from '../../../theme';
 import {
   EDITOR_CHANGE_TYPE,
   HANDLE_VALUES,
@@ -73,7 +73,7 @@ function getEntityStrategy(mutability: DraftEntityMutability) {
 export const getSegmentAndWordIndex = () => {
   const selectedBlock: any = window.getSelection();
   const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
-  const selectedBlockId: string = selectedBlockNode.id || selectedBlockNode.parentNode.id;
+  const selectedBlockId: string = selectedBlockNode?.id || selectedBlockNode?.parentNode?.id;
   if(!selectedBlockNode || !selectedBlockId) return;
 
   const segmentAndWordIndex = selectedBlockId.split('-');

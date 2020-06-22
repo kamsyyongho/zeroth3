@@ -3,11 +3,16 @@ import {CONTENT_STATUS, VoiceData} from './voice-data.types';
 
 export interface DataSet {
   createdAt: Date;
+  evaluationProgress?: number;
+  evaluationUrl?: string;
+  highRiskRatio: number;
   id: string;
   name: string;
+  wordCount: number;
   /** the number of completed transcriptions */
   processed: number;
   total: number;
+  rejected: number;
   transcribers: Transcriber[];
 }
 
@@ -24,7 +29,7 @@ export interface FilterParams {
    * - from `0`
    */
   lengthMin?: number;
-  dataSetId?: string;
+  dataSetIds?: string[];
   modelConfig?: string;
   status?: CONTENT_STATUS;
   transcript?: string;
