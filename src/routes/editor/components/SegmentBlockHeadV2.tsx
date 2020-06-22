@@ -137,7 +137,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                 className={classes.timeButton}
             >
                     <Badge
-                        invisible={false}
+                        invisible={!isChanged}
                         variant="dot"
                         color='error'
                         contentEditable={false}
@@ -151,7 +151,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                     >
 
                         <Badge
-                            invisible={false}
+                            invisible={!highRisk}
                             variant="dot"
                             color='error'
                             contentEditable={false}

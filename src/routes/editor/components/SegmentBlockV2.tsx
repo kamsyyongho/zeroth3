@@ -249,7 +249,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            {
+            {/*{
                 !isDiff || isAudioPlaying ?
                     localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                             return (
@@ -280,10 +280,22 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                             segmentIndex={segmentIndex}
                             isAbleToComment={isAbleToComment}
                             isCommentEnabled={isCommentEnabled}
+                            readOnly={readOnly}
+                            playingLocation={playingLocation}
                             updateCaretLocation={updateCaretLocation}
                             handleTextSelection={handleTextSelection} />
                     </div>
-            }
+            }*/}
+            <EditWordAlignmentBlock
+                segment={localSegment}
+                segmentIndex={segmentIndex}
+                isAbleToComment={isAbleToComment}
+                isCommentEnabled={isCommentEnabled}
+                readOnly={readOnly}
+                playingLocation={playingLocation}
+                updateCaretLocation={updateCaretLocation}
+                updateSegment={updateSegment}
+                handleTextSelection={handleTextSelection} />
         </div>
     );
 };

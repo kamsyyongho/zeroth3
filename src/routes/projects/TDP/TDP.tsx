@@ -264,6 +264,7 @@ export function TDP(props: TDPProps) {
       setProjectTdpDataShouldRefresh(false);
     }
     if(setTypeTDP?.length) {
+      console.log('===================setTypeTdp?.length', setTypeTDP);
       getSubSetVoiceData();
     } else if(!voiceDataResults?.content?.length) {
       getVoiceDataWithDefaultOptions();

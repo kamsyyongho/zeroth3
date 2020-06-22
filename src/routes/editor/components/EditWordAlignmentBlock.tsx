@@ -1,6 +1,7 @@
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
-import React, { useGlobal, useRef } from 'reactn';
+import React, { useGlobal, useRef, useMemo } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
+import { green, grey, pink, red } from '@material-ui/core/colors';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment, UndoRedoData} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
@@ -13,13 +14,29 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             display: 'flex',
             flexDirection: 'row',
             flexFlow: 'column wrap',
+            width: 'fit-content',
             maxWidth: '100%',
             caretStyle: 'block',
-            caretColor: 'red',
+            caretColor: 'white',
+            textShadow: '0px 0px 0px #000',
+            WebkiTextFillColor: 'transparent',
+            whiteSpace: 'pre-wrap',
+            // -webkit-text-fill-color: 'transparent'
         },
         highlight: {
             backgroundColor: '#a8d0e3'
-        }
+        },
+        playingSegment: {
+          backgroundColor: green[200],
+        },
+        playingWord: {
+            backgroundColor: pink[200],
+        },
+        caret: {
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: '8px solid #000000',
+        },
     }),
 );
 
@@ -33,7 +50,10 @@ interface EditWordAlignmentBlockProps  {
     segmentIndex: number;
     isAbleToComment: boolean;
     isCommentEnabled: boolean;
+    readOnly?: boolean;
+    playingLocation: any;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
+    updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
     handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
 }
 
@@ -41,7 +61,16 @@ let isFocused = false;
 
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const classes = useStyles();
-    const { segment, segmentIndex, isAbleToComment, isCommentEnabled, updateCaretLocation, handleTextSelection } = props;
+    const {
+        segment,
+        segmentIndex,
+        isAbleToComment,
+        isCommentEnabled,
+        readOnly,
+        playingLocation,
+        updateSegment,
+        updateCaretLocation,
+        handleTextSelection } = props;
     const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
@@ -50,6 +79,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [transcriptToRender, setTranscriptToRender] = React.useState<any>();
     const element = useRef<HTMLDivElement>(null);
     const [wordAlignments, setWordAlignments] = React.useState<string[]>([]);
+    const [isChanged, setIsChanged] = React.useState<boolean>(false);
+
+    const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment, playingLocation)
+    const memoizedWordClassName = React.useMemo(() => playingLocation[1] === segmentIndex ? `${classes.playingWord}` : '', playingLocation)
 
 
     const initTranscriptToRender = () => {
@@ -84,25 +117,32 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        if(isMouseDown) event.preventDefault();
+        console.log('============ keyboard event: ', event);
         switch (event.key) {
             case "ArrowUp":
             case "ArrowDown":
             case "ArrowLeft":
             case "ArrowRight":
                 handleArrowKeyDown();
+                break;
             default:
+                if(readOnly || isMouseDown) {
+                    event.preventDefault();
+                } else {
+                    setIsChanged(true);
+                }
                 return;
         }
     };
 
     const handleMouseDown = (event: React.MouseEvent) => {
-        if(isSelected) {
-            event.preventDefault()
-            return;
-        }
-        const selection = window.getSelection();
-        setIsMouseDown(true)
+        // handleArrowKeyDown();
+        // if(isSelected) {
+        //     event.preventDefault();
+        //     return;
+        // }
+        // const selection = window.getSelection();
+        // setIsMouseDown(true);
     }
 
     const handleMouseUp = (event: React.MouseEvent) => {
@@ -127,6 +167,21 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             hightlightSelectionAfterBlur(indexFrom, indexTo);
             handleTextSelection(segment.id, indexFrom, indexTo);
         }
+    };
+
+    const handleBlur = () => {
+        const copySegment = JSON.parse(JSON.stringify(segment));
+        const wordsInSegment: HTMLCollection = document.getElementsByClassName(`segment-${segmentIndex}`);
+        let transcript = '';
+        if(isChanged) {
+            Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
+                transcript += wordEl.innerHTML;
+                copySegment.wordAlignments[index].word = wordEl.innerHTML;
+            });
+            updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
+            setIsChanged(false);
+        }
+        console.log('===========wordsInSegment : ', wordsInSegment);
     };
 
 
@@ -155,9 +210,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         <div
             contentEditable
-            className={classes.segment}
+            className={memoizedSegmentClassName}
             ref={element}
             onFocus={handleFocus}
+            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}>
@@ -170,7 +226,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     segment && segment.wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
                         const text = wordAlignment.word.replace('|', ' ');
                         return (
-                            <div id={`word-${segmentIndex}-${index}`}>
+                            <div id={`word-${segmentIndex}-${index}`}
+                                 className={playingLocation[0] === segmentIndex && playingLocation[1] === index
+                                     ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}
                             </div>
                         )
