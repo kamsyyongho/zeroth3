@@ -1,5 +1,6 @@
 import { Box, CardHeader, Grid } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
+import Checkbox from '@material-ui/core/Checkbox';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -10,7 +11,7 @@ import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
 import { AcousticModel } from '../../../../types';
 import { TrainingChip } from '../../../shared/TrainingChip';
-import { EditOpenByModelId } from '../language-model/LanguageModelGridList';
+import { EditOpenByModelId, CheckedModelById } from '../language-model/LanguageModelGridList';
 import { AcousticModelDialog } from './AcousticModelDialog';
 
 const MIN_CARD_WIDTH = 300;
@@ -42,26 +43,33 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface AcousticModelGridItemProps {
   model: AcousticModel;
   canModify: boolean;
+  checkedModels: CheckedModelById;
   editOpen: EditOpenByModelId;
   handleEditOpen: (modelId: string) => void;
   handleEditClose: (modelId: string) => void;
   handleEditSuccess: (updatedModel: AcousticModel, isEdit?: boolean) => void;
+  handleModelCheck: (modelId: string, value: boolean) => void;
 }
 
 export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
   const {
     model,
     canModify,
+    checkedModels,
     editOpen,
     handleEditOpen,
     handleEditClose,
     handleEditSuccess,
+    handleModelCheck,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
   const isOpen = !!editOpen[model.id];
-
+  let isChecked = false;
+  if (checkedModels && typeof checkedModels[model.id] === 'boolean') {
+    isChecked = checkedModels[model.id];
+  };
 
   return (<Box key={model.id} border={1} borderColor={theme.table.border} className={classes.root}>
     <Grid item xs component={Card} elevation={0} >
@@ -77,9 +85,18 @@ export function AcousticModelGridItem(props: AcousticModelGridItemProps) {
         titleTypographyProps={{ noWrap: true, style: { maxWidth: MAX_TITLE_WIDTH } }}
         subheader={model.description}
         subheaderTypographyProps={{ noWrap: true, style: { maxWidth: MAX_TITLE_WIDTH } }}
-        action={canModify && (<IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
-          <EditIcon />
-        </IconButton>)} />
+        action={canModify && (
+            <>
+              <Checkbox
+                  checked={isChecked}
+                  disabled={model.progress > -1 && model.progress < 100}
+                  value="checkedB"
+                  color="secondary"
+                  onChange={(event) => handleModelCheck(model.id, event.target.checked)} />
+              <IconButton aria-label="edit" onClick={() => handleEditOpen(model.id)}>
+                <EditIcon />
+              </IconButton>
+            </>)} />
       <CardContent>
         <Grid
           container

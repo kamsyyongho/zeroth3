@@ -6,7 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import React from 'reactn';
 import { SNACKBAR } from '../constants';
 import { Api } from '../services/api/api';
-import { theme } from '../theme/index';
+import { theme } from '../theme';
 import { ApiContext } from './api/ApiContext';
 import { I18nContext, ParsedI18n } from './i18n/I18nContext';
 import { KeycloakContext, ParsedKeycloak } from "./keycloak/KeycloakContext";

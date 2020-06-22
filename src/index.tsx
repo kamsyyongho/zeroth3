@@ -1,8 +1,13 @@
 import ReactDOM from 'react-dom';
-import React from 'reactn';
+import React, {setGlobal} from 'reactn';
 import App from './App';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
+import {DEFAULT_SHORTCUTS} from './constants';
+
+setGlobal({
+    shortcuts: DEFAULT_SHORTCUTS,
+});
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

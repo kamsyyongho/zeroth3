@@ -5,6 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import AddIcon from '@material-ui/icons/Add';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import LaunchIcon from '@material-ui/icons/Launch';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
@@ -16,18 +17,22 @@ import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ServerError } from '../../../../services/api/types/api-problem.types';
 import { CustomTheme } from '../../../../theme';
-import {DataSet, VoiceData} from '../../../../types';
+import {DataSet, VoiceDataResults, VoiceData} from '../../../../types';
 import { SNACKBAR_VARIANTS } from '../../../../types/snackbar.types';
 import log from '../../../../util/log/logger';
 import { ProgressBar } from '../../../shared/ProgressBar';
 import {SetDetail} from "./SetDetail";
+import { EvaluationDetailModal } from './EvaluationDetailModal';
+import { EvaluationChip } from './EvaluationChip';
 
 interface SetItemProps {
   projectId: string;
   dataSet: DataSet;
   dataSetIndex: number;
-  setType: string;
-  openTranscriberDialog: (dataSetToEdit: DataSet, dataSetIndex: number) => void;
+  openTranscriberDialog: (dataSetIndex: number) => void;
+  openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
+  displaySubSetInTDP: (setId: string, subSetType: string) => void;
+  // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -40,11 +45,18 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
-    }
+    },
+    btnCell: {
+      width: '500px'
+    },
+    inlineBlockProgressBar: {
+      display: 'inline-block',
+      borderTop: '5px',
+    },
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, setType } = props;
+  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, displaySubSetInTDP, openRequestEvaluationDialog } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -56,12 +68,12 @@ export function SetItem(props: SetItemProps) {
   const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
   const [setDetailLoading, setSetDetailLoading] = React.useState(false);
   const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
-  const [setTypeParam, setSetTypeParam] = React.useState(setType);
+  const [isTestSetCreated, setIsTestSetCreated] = React.useState<boolean>(false);
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const onClick = () => openTranscriberDialog(dataSet, dataSetIndex);
+  const onClickAssignTranscriber = () => openTranscriberDialog(dataSetIndex);
 
   const startDownload = (url: string) => window.open(url);
 
@@ -73,6 +85,7 @@ export function SetItem(props: SetItemProps) {
 
       if(response.kind === 'ok') {
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        setIsTestSetCreated(true);
       } else {
         log({
           file: 'SetItem.tsx',
@@ -89,11 +102,40 @@ export function SetItem(props: SetItemProps) {
       }
     }
     setIsCreateTrainingSetLoading(false);
+  };
 
+  const downloadEvaluation = async () => {
+    if (api?.dataSet && !downloadLinkPending) {
+      setDownloadLinkPending(true);
+      setDownloadLink('');
+      let serverError: ServerError | undefined;
+      const response = await api.dataSet.getEvaluationDownloadLink(projectId, dataSet.id);
+      if (response.kind === 'ok') {
+        startDownload(response.url);
+      } else {
+        log({
+          file: `SetItem.tsx`,
+          caller: `getDownloadLink - failed to get download link`,
+          value: response,
+          important: true,
+        });
+        serverError = response.serverError;
+        let errorMessageText = translate('common.error');
+        if (serverError?.message) {
+          errorMessageText = serverError.message;
+        }
+        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error });
+      }
+      setDownloadLinkPending(false);
+    }
   };
 
   const handleEvaluateClick = () => {
-
+    if(dataSet?.evaluationUrl) {
+      openRequestEvaluationDialog(translate('SET.requestEvaluationWarning'), dataSetIndex);
+    } else {
+      openRequestEvaluationDialog(translate('SET.requestEvaluationMsg'), dataSetIndex);
+    }
   };
 
   const getDownloadLink = async () => {
@@ -126,26 +168,32 @@ export function SetItem(props: SetItemProps) {
     }
   };
 
-  const getSetDetail = async () => {
-    if(api?.dataSet) {
-      const response = await api.dataSet?.getTrainingSet(projectId, dataSet.id, setType);
-      if(response.kind === "ok") {
-        setSubSets(response.subSets.content);
-        return true;
-      }
-    }
-  };
+  const renderEvaluationRequest = () => {
+    if(!dataSet.evaluationProgress) return;
 
-  const openSetDetail = async () => {
-    if(subSets.length) {
-      setExpanded(!expanded);
-      return;
-    }
-    const subSetsFromRequest = await getSetDetail();
-    if(subSetsFromRequest) {
-      setExpanded(!expanded);
-    }
-  };
+    return dataSet.evaluationProgress === -1
+        ?
+        <EvaluationChip progress={-1} />
+        :
+        dataSet?.evaluationProgress < 100
+            ?
+            <div className={classes.inlineBlockProgressBar}>
+              <Typography className={classes.processedText} >
+                {`${dataSet.evaluationProgress} %`}
+              </Typography>
+              <ProgressBar value={dataSet?.evaluationProgress || 0} maxWidth={50} />
+            </div>
+            :
+            <Tooltip
+                placement='top'
+                title={<Typography>{translate('SET.downloadEvaluationDetail')}</Typography>}
+                arrow={true}>
+              <IconButton color='primary'
+                          onClick={downloadEvaluation}>
+                <LaunchIcon />
+              </IconButton>
+            </Tooltip>
+  }
 
   // must be a number from 0 to 100
   const progress = processed / total * 100;
@@ -187,19 +235,13 @@ export function SetItem(props: SetItemProps) {
           size='small'
           edge='end'
           aria-label="submit"
-          onClick={onClick}
+          onClick={onClickAssignTranscriber}
         >
           {numberOfTranscribers ? <EditIcon /> : <AddIcon />}
         </IconButton>
       </Grid>
     );
   };
-
-  React.useEffect(() => {
-    if(expanded) {
-      getSetDetail();
-    }
-  },[setType]);
 
   return (
       <React.Fragment>
@@ -210,8 +252,17 @@ export function SetItem(props: SetItemProps) {
             <Typography>{name}</Typography>
           </TableCell>
           <TableCell>
+            <Typography>{dataSet.wordCount}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{dataSet.highRiskRatio + '%'}</Typography>
+          </TableCell>
+          <TableCell>
             {processedText}
             <ProgressBar value={progress} maxWidth={200} />
+          </TableCell>
+          <TableCell>
+            <Typography>{dataSet.rejected}</Typography>
           </TableCell>
           <TableCell>
             {renderTranscriberEdit()}
@@ -241,8 +292,7 @@ export function SetItem(props: SetItemProps) {
             >
               <IconButton
                   color='primary'
-                  onClick={createTrainingSet}
-              >
+                  onClick={createTrainingSet}>
                 {isCreateTrainingSetLoading ? <MoonLoader
                     sizeUnit={"px"}
                     size={15}
@@ -260,23 +310,41 @@ export function SetItem(props: SetItemProps) {
                 <RateReviewIcon />
               </IconButton>
             </Tooltip>
+            {renderEvaluationRequest()}
+            {/*{*/}
+            {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
+            {/*      ?*/}
+            {/*      <IconButton color='primary' disabled={true}>*/}
+            {/*        <LaunchIcon />*/}
+            {/*      </IconButton>*/}
+            {/*      :*/}
+            {/*      <Tooltip*/}
+            {/*          placement='top'*/}
+            {/*          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}*/}
+            {/*          arrow={true}>*/}
+            {/*        <IconButton color='primary'*/}
+            {/*                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>*/}
+            {/*          <LaunchIcon />*/}
+            {/*        </IconButton>*/}
+            {/*      </Tooltip>*/}
+            {/*}*/}
             <IconButton
                 color='primary'
                 size='medium'
                 aria-label="open"
-                onClick={openSetDetail}
-            >
+                onClick={() => setExpanded(!expanded)}>
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </TableCell>
         </TableRow>
         {expanded &&
-        subSets.map((voiceData: VoiceData) =>
-            <SetDetail key={`setDetail-${voiceData.id}`}
-                       row={voiceData}
-                       setDetailLoading={setDetailLoading}
-                       projectId={projectId} />
-          )
+        <SetDetail
+            setDetailLoading={setDetailLoading}
+            displaySubSetInTDP={displaySubSetInTDP}
+            projectId={projectId}
+            dataSetId={dataSet.id}
+            isTestSetCreated={isTestSetCreated}
+            setIsTestSetCreated={setIsTestSetCreated} />
         }
       </React.Fragment>
   );

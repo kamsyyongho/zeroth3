@@ -9,7 +9,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
-import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph, VoiceData } from '../../types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { ModelConfigDialog } from '../model-config/ModelConfigDialog';

@@ -2,7 +2,7 @@
 import { createBrowserHistory } from 'history';
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router, Switch } from "react-router-dom";
-import React, { addCallback } from "reactn";
+import React, { addCallback, setGlobal } from "reactn";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
@@ -20,6 +20,8 @@ import { Header } from './routes/shared/header/Header';
 import { NotFound } from './routes/shared/NotFound';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
+import { Admin } from './routes/admin/Admin';
+import { Transcription } from './routes/transcription/Transcription';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 
 const history = createBrowserHistory();
@@ -82,6 +84,8 @@ function App() {
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
+          <Route path={PATHS.admin.to} component={withErrorBoundary(Admin, PageErrorFallback)} />
+          <Route path={PATHS.transcription.to} component={withErrorBoundary(Transcription, PageErrorFallback)} />
           <Route component={NotFound} />
         </Switch>
       </Router>

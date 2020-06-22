@@ -52,7 +52,7 @@ export interface VoiceData {
   memo: string | null;
   modelConfigId: string;
   originalFilename: string | null
-  projectId: string | null;
+  projectId: string;
   sessionId: string;
   ip: string;
   stateChanges: any[];
@@ -64,7 +64,14 @@ export interface VoiceData {
   transcriber: string | null;
   transcript: string;
   transcriptionRating: number | null;
+  waveformUrl: string;
   wordCount: number;
+}
+
+export interface SubSetCountResults {
+  testCount: number;
+  trainCount: number;
+  validationCount: number;
 }
 
 export interface VoiceDataResults extends PaginatedResults {
@@ -80,6 +87,7 @@ export enum CONTENT_STATUS {
   TRAINABLE_SV = 'TRAINABLE_SV',
   TRAINABLE_USV = 'TRAINABLE_USV',
   IN_REVIEW = 'IN_REVIEW',
+  REJECTED = 'REJECTED',
 }
 
 export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
@@ -112,10 +120,18 @@ export interface WordAlignment {
 }
 
 export enum TDPTableColumns {
-  'transcript' = 'transcript',
+  'sessionId' = 'sessionId',
   'modelConfigId' = 'modelConfigId',
   'length' = 'length',
   'decodedAt' = 'decodedAt',
   'status' = 'status',
   'highRiskSegments' = 'highRiskSegments',
+}
+
+export interface AudioUrlResponse extends AudioUrlData {
+  data: AudioUrlData;
+}
+
+interface AudioUrlData {
+  url: string;
 }

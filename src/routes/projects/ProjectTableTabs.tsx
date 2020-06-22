@@ -6,10 +6,13 @@ import React from 'reactn';
 import { PERMISSIONS } from '../../constants';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { BooleanById, DataSet, ModelConfig, Project } from '../../types';
+import { ApiContext } from '../../hooks/api/ApiContext';
+import { ProblemKind } from '../../services/api/types';
+import { BooleanById, DataSet, ModelConfig, PaginatedResults, VoiceDataResults, Project, TranscriberStats, VoiceData } from '../../types';
 import { TabPanel } from '../shared/TabPanel';
 import SET from './set/SET';
 import { TDP } from './TDP/TDP';
+import log from '../../util/log/logger';
 
 const STARTING_TAB_INDEX = 0;
 enum TAB_INDEX {
@@ -47,8 +50,15 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
+  const api = React.useContext(ApiContext);
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
   const [refreshCounterForSet, setRefreshCounterForSet] = React.useState(0);
+  const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
+  const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
+  const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
+  const [isForbidden, setIsForbidden] = React.useState(false);
+  const [setId, setSetId] = React.useState<string>();
+  const [setType, setSetType] = React.useState<string>();
 
   const classes = useStyles();
   const hasSetPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.SET), [roles]);
@@ -70,6 +80,39 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
       setRefreshCounterForSet(refreshCounterForSet + 1);
     }
   };
+
+  const getTranscribersWithStats = async (page?: number, size = 10000) => {
+      if (api?.transcriber) {
+        setTranscriberStatDataLoading(true);
+        const response = await api.transcriber.getTranscribersWithStats(page, size);
+        if (response.kind === 'ok') {
+          setTranscribersStats(response.transcribersStats);
+          setPagination(response.pagination);
+        } else {
+          if (response.kind === ProblemKind['forbidden']) {
+            setIsForbidden(true);
+          }
+          log({
+            file: `SET.tsx`,
+            caller: `getTranscribersWithStats - failed to get transcribers stat data`,
+            value: response,
+            important: true,
+          });
+        }
+        setTranscriberStatDataLoading(false);
+      }
+    };
+
+  const displaySubSetInTDP = (setId: string, subSetType: string) => {
+    // setSubSetsToTDP(subSet);
+    setSetId(setId);
+    setSetType(subSetType);
+    handleChange({} as React.ChangeEvent, 0)
+  };
+
+  React.useEffect(() => {
+    getTranscribersWithStats();
+  }, []);
 
   return (
     <Paper square elevation={0} className={classes.root} >
@@ -93,6 +136,9 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             onSetCreate={handleSetCreate}
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}
+            transcriberStats={transcribersStats}
+            setId={setId}
+            setType={setType}
           />}
       </TabPanel>
       {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
@@ -100,6 +146,12 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
           <SET
             refreshCounter={refreshCounterForSet}
             projectId={projectId}
+            modelConfigs={modelConfigs}
+            getTranscribersWithStats={getTranscribersWithStats}
+            transcribersStats={transcribersStats}
+            pagination={pagination}
+            transcriberStatDataLoading={transcriberStatDataLoading}
+            displaySubSetInTDP={displaySubSetInTDP}
           />}
       </TabPanel>}
     </Paper>

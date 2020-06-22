@@ -22,13 +22,13 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, ModelConfig, ORDER, PATHS, TDPTableColumns, Transcriber, VoiceData, VoiceDataResults } from '../../../../types';
+import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, TranscriberStats, ModelConfig, ORDER, PATHS, TDPTableColumns, Transcriber, VoiceData, VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
 import { TDPFilters } from './TDPFilters';
 import { TDPRowDetails } from './TDPRowDetails';
-import { DeleteConfirmationDialog } from "./DeleteConfirmation";
+import { ConfirmationDialog } from "./Confirmation";
 
 const DOUBLE_HEIGHT_ROW = 2;
 const SINGLE_WIDTH_COLUMN = 1;
@@ -38,12 +38,14 @@ interface TDPTableProps {
   voiceDataResults: VoiceDataResults;
   modelConfigsById: GenericById<ModelConfig>;
   dataSetsById: GenericById<DataSet>;
-  transcribersById: Transcriber[];
+  transcriberStats: TranscriberStats[];
   loading: boolean;
   getVoiceData: (options?: SearchDataRequest) => Promise<void>;
   handleVoiceDataUpdate: (updatedVoiceData: VoiceData, dataIndex: number) => void;
   deleteUnconfirmedVoiceData: (voiceDataId: string, dataIndex: number, shoudRefresh: boolean) => void;
+  handlePagination: (pageIndex: number, size: number) => void;
   setFilterParams: (filterParams?: FilterParams) => void;
+  handleStatusChangesModalOpen: (dataIndex: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -92,14 +94,17 @@ export function TDPTable(props: TDPTableProps) {
     voiceDataResults,
     modelConfigsById,
     dataSetsById,
-    transcribersById,
+    transcriberStats,
     loading,
     getVoiceData,
     deleteUnconfirmedVoiceData,
     handleVoiceDataUpdate,
+    handlePagination,
+    handleStatusChangesModalOpen,
     setFilterParams,
   } = props;
-  const voiceData = voiceDataResults.content;
+  // const voiceData = voiceDataResults.content;
+  const [voiceData, setVoiceData] = React.useState<VoiceData[]>(voiceDataResults.content)
   const { translate, formatDate } = React.useContext(I18nContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const { width } = useWindowSize();
@@ -143,20 +148,20 @@ export function TDPTable(props: TDPTableProps) {
     setIsDeleteSetOpen(false);
   };
 
+  /**
+   * navigates to the the editor
+   * - passes required props to trigger read-only editor state
+   * @param voiceData
+   */
+  const handleRowClick = (voiceData: VoiceData) => {
+    setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: true });
+    PATHS.editor.to && history.push(PATHS.editor.to);
+  };
+
   const openDeleteConfirmation = (voiceDataId: string, dataIndex: number) => {
     const deleteSetInfo = {voiceDataId, dataIndex};
     setIsDeleteSetOpen(true);
     setDeleteSetInfo(deleteSetInfo)
-  };
-
-  /**
-   * navigates to the the editor
-   * - passes required props to trigger read-only editor state
-   * @param voiceData 
-   */
-  const handleRowClick = (voiceData: VoiceData) => {
-    setNavigationProps({ voiceData, projectId });
-    PATHS.editor.to && history.push(PATHS.editor.to);
   };
 
   const renderModelName = (cellData: CellProps<VoiceData>) => {
@@ -184,6 +189,27 @@ export function TDPTable(props: TDPTableProps) {
         <LaunchIcon />
       </IconButton>
     </Tooltip>);
+  };
+
+  const renderSessionId = (cellData: CellProps<VoiceData>) => {
+    const TWENTY_FIVE_PERCENT = 0.25;
+    // to keep a dynamic width of 25% based on the window
+    const dynamicWidth = width && width * TWENTY_FIVE_PERCENT;
+    // to prevent the width from expanding greater than 25% of the container
+    const containerWidth = theme.breakpoints.width('lg');
+    const maxWidth = containerWidth * TWENTY_FIVE_PERCENT;
+    const sessionIdStyle = dynamicWidth ? { width: dynamicWidth, maxWidth } : { minWidth: 250, maxWidth: 350 };
+
+    return <Grid
+        container
+        wrap='nowrap'
+        direction='row'
+        alignContent='center'
+        alignItems='center'
+        justify='flex-start'>
+      {renderLaunchIconButton(cellData)}
+        <Typography style={sessionIdStyle}>{cellData.cell.value}</Typography>
+    </Grid>;
   };
 
   const renderTranscript = (cellData: CellProps<VoiceData>) => {
@@ -214,7 +240,7 @@ export function TDPTable(props: TDPTableProps) {
   /**
    * The expand button should be rendered on the last item in the row
    * - `highRiskSegments` is the last item in the row
-   * @param cellData 
+   * @param cellData
    */
   const renderHighRiskSegmentsAndExpandButton = (cellData: CellProps<VoiceData>) => {
     const highRiskSegments: VoiceData['highRiskSegments'] = cellData.cell.value || 0;
@@ -263,9 +289,9 @@ export function TDPTable(props: TDPTableProps) {
   const columns = React.useMemo(
     () => [
       {
-        Header: translate('forms.transcript'),
-        accessor: TDPTableColumns['transcript'],
-        Cell: (cellData: CellProps<VoiceData>) => renderTranscript(cellData),
+        Header: translate('TDP.sessionId'),
+        accessor: TDPTableColumns['sessionId'],
+        Cell: (cellData: CellProps<VoiceData>) => renderSessionId(cellData),
       },
       {
         Header: translate('modelConfig.header'),
@@ -327,14 +353,14 @@ export function TDPTable(props: TDPTableProps) {
 
 
   const setCreateSetFilterParams = (options: SearchDataRequest) => {
-    const { till, from, status, transcript, filename } = options;
+    const { till, from, status, transcript, filename, dataSetIds } = options;
     const filterParams: FilterParams = {
       till,
       from,
       status,
       filename,
       transcript,
-      dataSetId: options['data-set'],
+      dataSetIds,
       lengthMax: options['length-max'],
       lengthMin: options['length-min'],
       modelConfig: options['model-config'],
@@ -364,13 +390,24 @@ export function TDPTable(props: TDPTableProps) {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
       setExpandedRowsByIndex({});
     }
-  }, [getVoiceData, pageIndex, pageSize, voiceDataOptions, sortBy]);
+  }, [getVoiceData, voiceDataOptions, sortBy]);
+
+  React.useEffect(() => {
+    handlePagination(pageIndex, pageSize);
+  }, [pageIndex, pageSize])
+
+  React.useEffect(() => {
+    if(!voiceDataResults?.content?.length) {
+      setVoiceData([]);
+    } else {
+      setVoiceData(voiceDataResults.content);
+    }
+  }, [voiceDataResults])
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {
     return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
       <TableSortLabel
-        disabled={column.id as TDPTableColumns === TDPTableColumns.transcript}
         active={orderBy === column.id as TDPTableColumns}
         direction={orderDirection}
         onClick={() => changeSort(column.id as TDPTableColumns)}
@@ -396,7 +433,7 @@ export function TDPTable(props: TDPTableProps) {
 
   const fullRowColSpan = flatColumns.length;
   // subtracting the transcript column
-  const detailsRowColSpan = fullRowColSpan - SINGLE_WIDTH_COLUMN;
+  const detailsRowColSpan = fullRowColSpan;
 
   const renderRows = () => rows.map(
     (row: Row<VoiceData>, rowIndex: number) => {
@@ -414,24 +451,17 @@ export function TDPTable(props: TDPTableProps) {
             className={classes.tableRow}
           >
             {row.cells.map((cell, cellIndex) => {
-              const isTranscript = cell.column.id === TDPTableColumns['transcript'];
-              const isExpandedTranscript = expanded && isTranscript;
               let className = classes.tableBorder;
               let style: React.CSSProperties = {};
-              if (isTranscript) {
-                style = { borderRightWidth: 2, borderRightColor: theme.table.highlight };
-              }
-              if (!isTranscript && expanded) {
+              if (expanded) {
                 className = classes.tableNoBorder;
               }
               return (
                 <TableCell
                   key={`cell-${cellIndex}`}
                   {...cell.getCellProps()}
-                  rowSpan={isExpandedTranscript ? DOUBLE_HEIGHT_ROW : undefined}
                   className={className}
-                  style={style}
-                >
+                  style={style}>
                   {cell.render('Cell')}
                 </TableCell>
               );
@@ -444,6 +474,7 @@ export function TDPTable(props: TDPTableProps) {
               projectId={projectId}
               onDelete={openDeleteConfirmation}
               onSuccess={handleVoiceDataUpdate}
+              handleStatusChangesModalOpen={handleStatusChangesModalOpen}
             />
           }
         </React.Fragment >
@@ -458,12 +489,12 @@ export function TDPTable(props: TDPTableProps) {
         loading={loading}
         modelConfigsById={modelConfigsById}
         dataSetsById={dataSetsById}
-        transcribersById={transcribersById}
+        transcriberStats={transcriberStats}
       />
     </div>
     <Table {...getTableProps()} className={classes.table} >
       {renderHeader()}
-      <TableBody >
+      <TableBody>
         {voiceData.length ? renderRows() : (
           <TableRow>
             <TableCell align='center' colSpan={fullRowColSpan} >
@@ -508,8 +539,9 @@ export function TDPTable(props: TDPTableProps) {
       labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
       ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
     />}
-    {isDeleteSetOpen && <DeleteConfirmationDialog
-        deleteMsg={'common.confirmDelete'}
+    {isDeleteSetOpen && <ConfirmationDialog
+        contentMsg={translate('common.confirmDelete')}
+        buttonMsg={translate('common.delete')}
         open={isDeleteSetOpen}
         onClose={() => setIsDeleteSetOpen(false)}
         onSuccess={handleDelete}

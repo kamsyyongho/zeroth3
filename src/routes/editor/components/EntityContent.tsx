@@ -7,7 +7,7 @@ import { ContentState, DraftEntityMutability } from 'draft-js';
 import VisibilitySensor from 'react-visibility-sensor';
 import React, { useGlobal } from 'reactn';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
-import { CustomTheme } from '../../../theme/index';
+import { CustomTheme } from '../../../theme';
 import { DEFAULT_OFFSET, ENTITY_TYPE, LOCAL_STORAGE_KEYS, MUTABILITY_TYPE, WordAlignmentEntityData } from '../../../types';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 

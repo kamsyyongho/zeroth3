@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
+import CheckIcon from '@material-ui/icons/Check';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { useSnackbar } from 'notistack';
@@ -18,12 +19,14 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
-import { Organization, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { Organization, SnackbarError, SNACKBAR_VARIANTS, User } from '../../types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 import { OrganizationPickerDialog } from './components/OrganizationPickerDialog';
+import { UsersCellPlainText } from '../IAM/components/users/UsersCellPlainText'
+import Textfield from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -69,12 +72,18 @@ export function Profile() {
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
+  const [resetConfirmationOpen, setResetConfirmationOpen] = React.useState(false);
   const [organizationsLoading, setOrganizationsLoading] = React.useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [pickOrganizationOpen, setPickOrganizationOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
+  const [profile, setProfile] = React.useState<User>();
+  const [isNoteDisabled, setIsNoteDisabled] = React.useState(true);
+  const [isPhoneDisabled, setIsPhoneDisabled] = React.useState(true);
+  const [isChanged, setIsChanged] = React.useState(false);
+  const [phone, setPhone] = React.useState('');
+  const [isUpdatePhoneConfirmationOpen, setIsUpdatePhoneConfirmationOpen] = React.useState<boolean>(false);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -91,8 +100,9 @@ export function Profile() {
   const hideOrganizationPicker = () => {
     setPickOrganizationOpen(false);
   };
-  const confirmReset = () => setConfirmationOpen(true);
-  const closeConfirmation = () => setConfirmationOpen(false);
+  const confirmReset = () => setResetConfirmationOpen(true);
+  const confirmUpdatePhone = () => setIsUpdatePhoneConfirmationOpen(true);
+  const closeResetConfirmation = () => setResetConfirmationOpen(false);
 
   const hasRenamePermissions = hasPermission(roles, PERMISSIONS.profile.renameOrganization);
 
@@ -116,9 +126,69 @@ export function Profile() {
     }
   };
 
+  const getUserProfile = async () => {
+    if (api?.user && user?.name) {
+      setPasswordResetLoading(true);
+      const response = await api.user.getProfile(user.name);
+      if (response.kind === 'ok') {
+        setProfile(response.user);
+        setPhone(response.user.phone);
+      } else {
+        log({
+          file: `Profile.tsx`,
+          caller: `getOrganizations - failed to get organizations`,
+          value: response,
+          important: true,
+        });
+      }
+      setPasswordResetLoading(false);
+    }
+  };
+
+  const updatePhone = async () => {
+    if (api?.user) {
+      closeResetConfirmation();
+      const response = await api.user.updatePhone(phone);
+      const snackbarError: SnackbarError = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        setProfile(response.user);
+      } else {
+        log({
+          file: `UserProfile.tsx`,
+          caller: `resetPassword - failed to reset password`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setIsUpdatePhoneConfirmationOpen(false);
+    }
+  };
+
+  const handleBlur = () => {
+    const updatedProfile = profile;
+    const changedProfile = {phone}
+    Object.assign(updatedProfile, changedProfile);
+    setProfile(updatedProfile);
+    setIsChanged(true);
+    setIsPhoneDisabled(true)
+  };
+
+  const handleChange = (changedData: any) => {
+    const updateProfile = profile;
+    Object.assign(updateProfile, changedData);
+    setProfile(updateProfile);
+    setIsChanged(true);
+  };
+
   const resetPassword = async () => {
     if (api?.user) {
-      closeConfirmation();
+      closeResetConfirmation();
       setPasswordResetLoading(true);
       const response = await api.user.resetPassword();
       const snackbarError: SnackbarError = {} as SnackbarError;
@@ -160,6 +230,9 @@ export function Profile() {
     if (currentOrganizationId && !organizations) {
       getOrganizations();
     }
+    if(!profile) {
+      getUserProfile();
+    }
   }, []);
 
   // to get the currently selected organization's info
@@ -197,11 +270,32 @@ export function Profile() {
         </Grid>
         <Grid item >
           <Typography color="textPrimary" gutterBottom >
-            {translate('profile.fullName', { family: familyName || '', given: givenName || '' })}
+            {translate('profile.fullName', { family: profile?.lastName || '', given: profile?.firstName || '' })}
           </Typography>
-          <Typography color="textSecondary" >
-            {`${preferredUsername}  •  ${email}`}
+          <Typography color="textSecondary" style={{ marginBottom: "15px" }} >
+            {`${preferredUsername}  •  ${profile?.email}`}
           </Typography>
+          <Grid
+              xs={8}
+              container
+              direction='column'
+              justify='flex-start'
+              alignItems='center'
+              alignContent='center'
+              spacing={2}
+              style={{ marginTop: '5px;'  }}
+          >
+            <Textfield
+                inputProps={{ style: {textAlign: 'center', width: 'fitContent'} }}
+                placeholder={phone ? phone : '-'}
+                value={phone ? phone : ''}
+                color="secondary"
+                onClick={() => setIsPhoneDisabled(false)}
+                onBlur={handleBlur}
+                disabled={isPhoneDisabled}
+                label={translate("forms.phone")}
+                onChange={(event) => setPhone(event.target.value)} />
+          </Grid>
         </Grid>
       </Grid>
     </CardContent>
@@ -221,6 +315,16 @@ export function Profile() {
           /> : <VpnKeyIcon />}
       >
         {translate('profile.resetPassword')}
+      </Button>
+      <Button
+          variant='contained'
+          color='secondary'
+          size="small"
+          onClick={() => setIsUpdatePhoneConfirmationOpen(true)}
+          disabled={!isChanged}
+          startIcon={<CheckIcon />}
+      >
+        {translate("common.submit")}
       </Button>
     </CardActions>
   </Grid>;
@@ -312,9 +416,17 @@ export function Profile() {
         destructive
         titleText={`${translate('profile.resetPassword')}?`}
         submitText={translate('common.reset')}
-        open={confirmationOpen}
+        open={resetConfirmationOpen}
         onSubmit={resetPassword}
-        onCancel={closeConfirmation}
+        onCancel={closeResetConfirmation}
+      />
+      <ConfirmationDialog
+          destructive
+          titleText={`${translate('profile.updatePhoneTitle')}`}
+          submitText={translate('profile.updatePhoneText')}
+          open={isUpdatePhoneConfirmationOpen}
+          onSubmit={updatePhone}
+          onCancel={() => setIsUpdatePhoneConfirmationOpen(false)}
       />
       {organizations && organizations.length > 1 &&
         <OrganizationPickerDialog

@@ -4,6 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DeleteIcon from '@material-ui/icons/Delete';
+import HistoryIcon from '@material-ui/icons/History';
 import { Row } from 'react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
@@ -20,6 +21,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
+      width: '100%',
     },
     cell: {
       backgroundColor: theme.palette.background.default,
@@ -44,6 +46,7 @@ interface TDPRowDetailsProps {
   projectId: string;
   onDelete: (voiceDataId: string, dataIndex: number) => void;
   onSuccess: (updatedVoiceData: VoiceData, dataIndex: number) => void;
+  handleStatusChangesModalOpen: (dataIndex: number) => void;
 }
 
 export function TDPRowDetails(props: TDPRowDetailsProps) {
@@ -55,6 +58,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     projectId,
     onDelete,
     onSuccess,
+    handleStatusChangesModalOpen,
   } = props;
   const {
     decodedAt,
@@ -67,6 +71,7 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
     ip,
     transcriber,
     wordCount,
+    stateChanges,
   } = row.original;
 
   const startDate = new Date(decodedAt);
@@ -132,57 +137,6 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
               {`${translate('common.startAt')}:`}
             </Typography>
             <Typography>{startDate ? formatDate(startDate) : '-'}</Typography>
-          </Grid>
-          {/*<Grid*/}
-          {/*  container*/}
-          {/*  item*/}
-          {/*  wrap='nowrap'*/}
-          {/*  direction='row'*/}
-          {/*  alignContent='center'*/}
-          {/*  alignItems='center'*/}
-          {/*  justify='flex-start'*/}
-          {/*>*/}
-          {/*  <Typography*/}
-          {/*    className={classes.category}*/}
-          {/*    variant='subtitle2'*/}
-          {/*  >*/}
-          {/*    {`${translate('common.endAt')}:`}*/}
-          {/*  </Typography>*/}
-          {/*  <Typography>{formatDate(endDate)}</Typography>*/}
-          {/*</Grid>*/}
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.sessionId')}:`}
-            </Typography>
-            <Typography>{sessionId ? sessionId : '-'}</Typography>
-          </Grid>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
-          >
-            <Typography
-              className={classes.category}
-              variant='subtitle2'
-            >
-              {`${translate('TDP.ip')}:`}
-            </Typography>
-            <Typography>{ip ? ip : '-'}</Typography>
           </Grid>
           <Grid
             container
@@ -299,24 +253,39 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
             <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
           </Grid>
           <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='row'
-            alignContent='center'
-            alignItems='center'
-            justify='flex-start'
+              container
+              item
+              wrap='nowrap'
+              direction='row'
+              alignContent='center'
+              alignItems='center'
+              justify='flex-start'
+              style={{ paddingTop: '5px' }}
           >
-            {!confirmed && <Button
-              color='secondary'
-              variant='contained'
-              size='small'
-              onClick={handleDeleteClick}
-              startIcon={<DeleteIcon />}
-            >
-              {translate('common.delete')}
-            </Button>}
+            <Grid item>
+              <Button
+                  color='secondary'
+                  variant='contained'
+                  size='small'
+                  onClick={() => handleStatusChangesModalOpen(row.index)}
+                  startIcon={<HistoryIcon />}
+              >
+                {translate('TDP.statusChange')}
+              </Button>
+            </Grid>
+            <Grid item style={{ marginLeft: '15px' }}>
+              {!confirmed && <Button
+                  color='secondary'
+                  variant='contained'
+                  size='small'
+                  onClick={handleDeleteClick}
+                  startIcon={<DeleteIcon />}
+              >
+                {translate('common.delete')}
+              </Button>}
+            </Grid>
           </Grid>
+
         </Grid>
         <Grid
           item
