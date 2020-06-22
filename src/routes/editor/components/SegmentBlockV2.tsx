@@ -284,28 +284,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                             handleTextSelection={handleTextSelection} />
                     </div>
             }
-            {/*{localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
-                return (
-                    <WordAlignmentBlock
-                        key={`word-alignment-${segmentIndex}-${index}`}
-                        findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                        setUndoRedoData={setUndoRedoData}
-                        getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                        onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                        updateCaretLocation={updateCaretLocation}
-                        updateChange={updateChange}
-                        updateWordAlignmentChange={updateWordAlignmentChange}
-                        segmentIndex={segmentIndex}
-                        wordAlignmentIndex={index}
-                        wordAlignmentsLength={segment.wordAlignments.length}
-                        lengthBeforeBlock={lengthBeforeBlockArray[index]}
-                        start={word.start}
-                        length={word.length}
-                        word={word.word}
-                        readOnly={readOnly}
-                        confidence={word.confidence} />
-                )
-            })}*/}
         </div>
     );
 };

@@ -41,9 +41,16 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         changedTextBadge: {
             backgroundColor: theme.editor.changes,
         },
+        commentBadge: {
+            backgroundColor: theme.palette.primary.main,
+            margin: 0,
+            padding: 0,
+            float: 'left',
+        },
         highRistkBadge: {
             caretColor: theme.audioPlayer.playhead,
             marginLeft: theme.spacing(1),
+            marginRight: 0,
         },
         timeButton: {
             padding: 0,
@@ -129,21 +136,8 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                 disabled
                 className={classes.timeButton}
             >
-                <Badge
-                    invisible={!displayTextChangedHover}
-                    variant="dot"
-                    color='error'
-                    contentEditable={false}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left',
-                    }}
-                    classes={{
-                        colorError: classes.changedTextBadge,
-                    }}
-                >
                     <Badge
-                        invisible={!highRisk}
+                        invisible={false}
                         variant="dot"
                         color='error'
                         contentEditable={false}
@@ -152,16 +146,45 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                             horizontal: 'left',
                         }}
                         classes={{
-                            colorError: classes.highRistkBadge,
+                            colorError: classes.changedTextBadge,
                         }}
                     >
-                        <Typography
-                            contentEditable={false} // prevents the editor from placing the cursor within the content
+
+                        <Badge
+                            invisible={false}
+                            variant="dot"
+                            color='error'
+                            contentEditable={false}
+                            badgeContent={'highrisk'}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                            }}
+                            classes={{
+                                colorError: classes.highRistkBadge,
+                            }}
                         >
-                            {displayTime}
-                        </Typography>
+
+                            <Typography
+                                contentEditable={false} // prevents the editor from placing the cursor within the content
+                            >
+                                {displayTime}
+                            </Typography>
+                        </Badge>
+                        <Badge
+                            invisible={false}
+                            variant='dot'
+                            color='primary'
+                            badgeContent={'comment'}
+                            contentEditable={false}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                            }}
+                            classes={{
+                                colorError: classes.commentBadge,
+                            }}></Badge>
                     </Badge>
-                </Badge>
             </Button>
             <VisibilitySensor
                 offset={DEFAULT_OFFSET}
