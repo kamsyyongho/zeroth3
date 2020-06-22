@@ -24,4 +24,6 @@ export const PERMISSIONS = {
   },
   modelConfig: [ROLES.root, ROLES.manager],
   modelTraining: [ROLES.root, ROLES.manager],
+  admin: [ROLES.root, ROLES.admin, ROLES.manager],
+  transcription: [ROLES.root, ROLES.admin, ROLES.transcriber],
 };

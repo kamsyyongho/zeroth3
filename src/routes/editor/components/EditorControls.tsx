@@ -115,6 +115,7 @@ const secondaryControlOrder = [
  */
 let editorInFocus = false;
 let shortcutsStack: string[] = [];
+let localShortcuts: any = {};
 
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
@@ -346,8 +347,8 @@ export const EditorControls = (props: EditorControlsProps) => {
   };
 
   const handleShortcut = () => {
-    const keyCombinationArray = Object.values(shortcuts);
-    const functionArray = Object.keys(shortcuts);
+    const keyCombinationArray = Object.values(localShortcuts);
+    const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
     keyCombinationArray.forEach((combination: any, index: number) => {
       for(let i = 0; i < shortcutsStack.length; i++) {
@@ -428,6 +429,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   };
 
   React.useEffect(() => {
+    localShortcuts = shortcuts;
   }, [shortcuts]);
 
   React.useEffect(() => {
