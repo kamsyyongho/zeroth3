@@ -137,7 +137,7 @@ export function TDP(props: TDPProps) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, []);
+  }, [projectId]);
 
   /**
    * Removes all data in given filter setting
@@ -256,32 +256,34 @@ export function TDP(props: TDPProps) {
     return () => {
       setSetTypeTDP(undefined);
     }
-  }, [setType])
+  }, [setType]);
 
   React.useEffect(() => {
-    // if the flag was already set when we first load the page
-    if (projectTdpDataShouldRefresh) {
-      setProjectTdpDataShouldRefresh(false);
-    }
     if(setTypeTDP?.length) {
-      console.log('===================setTypeTdp?.length', setTypeTDP);
       getSubSetVoiceData();
     } else if(!voiceDataResults?.content?.length) {
       getVoiceDataWithDefaultOptions();
     }
+    // if the flag was already set when we first load the page
+    if (projectTdpDataShouldRefresh) {
+      setProjectTdpDataShouldRefresh(false);
+    }
   }, []);
 
   React.useEffect(() => {
-    // if the flag triggers after we are already on the page
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+      getVoiceDataWithDefaultOptions();
       setProjectTdpDataShouldRefresh(false);
-      if(setTypeTDP?.length) {
-        getSubSetVoiceData();
-      } else {
-        getVoiceDataWithDefaultOptions();
-      }
     }
-  }, [projectTdpDataShouldRefresh]);
+  }, [projectId])
+
+  // React.useEffect(() => {
+  //   // if the flag triggers after we are already on the page
+  //   if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+  //     setProjectTdpDataShouldRefresh(false);
+  //     getVoiceDataWithDefaultOptions();
+  //   }
+  // }, [projectTdpDataShouldRefresh]);
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
