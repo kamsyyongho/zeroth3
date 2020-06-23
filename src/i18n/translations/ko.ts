@@ -279,6 +279,7 @@ export const ko: ResourceLanguage = {
       editor: '에디터',
       approvalRequest: '승인요청',
       save: '저장하기',
+      seeRejectReason: '반려사유 : {{rejectReason}}',
       setThreshold: 'Threshold 설정',
       shortcuts: '단축키',
       rewindAudio: '뒤로감기',

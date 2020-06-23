@@ -50,6 +50,7 @@ interface EditWordAlignmentBlockProps  {
     segmentIndex: number;
     isAbleToComment: boolean;
     isCommentEnabled: boolean;
+    isShowComment: boolean;
     readOnly?: boolean;
     playingLocation: any;
     updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
@@ -66,6 +67,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         segmentIndex,
         isAbleToComment,
         isCommentEnabled,
+        isShowComment,
         readOnly,
         playingLocation,
         updateSegment,
@@ -112,12 +114,25 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
        if(element?.current) {element.current.blur();}
     };
 
+    const highlightRejectReason = () => {
+        let styledWords: any[] = [];
+        segment.wordAlignments.forEach((word) => {
+            const processedWord = word.word.replace('|', ' ');
+            if(!word.rejectReason) {
+                styledWords.push(<span>{processedWord}</span>);
+            } else {
+                styledWords.push(<span className={classes.highlight}>{processedWord}</span>);
+            }
+        })
+        let transcript = <span>{styledWords.map(word => word)}</span>
+        setTranscriptToRender(transcript);
+    };
+
     const handleSelectionChange = (event: React.KeyboardEvent) => {
         return;
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        console.log('============ keyboard event: ', event);
         switch (event.key) {
             case "ArrowUp":
             case "ArrowDown":
@@ -181,7 +196,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        console.log('===========wordsInSegment : ', wordsInSegment);
     };
 
 
@@ -205,6 +219,16 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             }
         }
     }, [isCommentEnabled]);
+
+    React.useEffect(() => {
+        if(isShowComment) {
+            highlightRejectReason();
+            setIsMouseDown(true);
+        }
+        return () => {
+            setIsMouseDown(false);
+        }
+    }, [isShowComment]);
 
     return (
 

@@ -7,8 +7,9 @@ import VisibilitySensor from "react-visibility-sensor";
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DEFAULT_OFFSET, Segment } from '../../../types';
+import { DEFAULT_OFFSET, Segment, WordAlignment } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
+import MessageIcon from '@material-ui/icons/Message';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -79,6 +80,7 @@ interface SegmentBlockHeadPropsV2 {
     segment: Segment;
     assignSpeakerForSegment: (segmentIndex: string) => void;
     isChanged: boolean;
+    setIsShowComment: (isShowComment: boolean) => void;
     readOnly?: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
 }
@@ -88,8 +90,10 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     const classes = useStyles();
     const { translate, osText } = React.useContext(I18nContext);
     const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-    const { readOnly, assignSpeakerForSegment, isChanged, removeHighRiskValueFromSegment, segment } = props;
+    const { readOnly, assignSpeakerForSegment, isChanged, setIsShowComment, removeHighRiskValueFromSegment, segment } = props;
     const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
+    const [isRejectReason, setIsRejectReason] = React.useState<boolean>(false);
+    const [rejectReason, setRejectReason] = React.useState<string>('');
     const displayTextChangedHover = (!readOnly && isChanged && !!decoderTranscript?.trim());
     // const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
     const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
@@ -121,6 +125,19 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     </span>)
             : ('')}
     </Button>);
+
+    React.useEffect(() => {
+        segment.wordAlignments.forEach((word: WordAlignment) => {
+            if(word.rejectReason) {
+                setIsRejectReason(true);
+                setRejectReason(word.rejectReason)
+                return;
+            }
+        })
+        return () => {
+            setIsRejectReason(false);
+        }
+    }, [segment]);
 
     return (
         <Grid
@@ -171,21 +188,32 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                                 {displayTime}
                             </Typography>
                         </Badge>
-                        <Badge
-                            invisible={false}
-                            variant='dot'
-                            color='primary'
-                            badgeContent={'comment'}
-                            contentEditable={false}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            classes={{
-                                colorError: classes.commentBadge,
-                            }}></Badge>
                     </Badge>
             </Button>
+            {
+                isRejectReason &&
+                <Tooltip
+                    placement='right-start'
+                    title={translate('editor.seeRejectReason', {rejectReason})}
+                    onOpen={() => setIsShowComment(true)}
+                    onClose={() => setIsShowComment(false)}
+                    contentEditable={false}
+                    classes={{ tooltip: classes.tooltipContent }}
+                >
+                    <Button
+                        size='small'
+                        startIcon={<MessageIcon />}
+                        onClick={handleSpeakerPress}
+                        color={'primary'}
+                        variant='text'
+                        disabled={false}
+                        className={clsx(classes.button)}>
+                        {speaker ? (<span contentEditable={false} // prevents the editor from placing the cursor within the content
+                        >{speaker}</span>) : ('')}
+                    </Button>
+                </Tooltip>
+            }
+
             <VisibilitySensor
                 offset={DEFAULT_OFFSET}
                 scrollCheck

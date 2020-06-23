@@ -117,6 +117,7 @@ export interface WordAlignment {
   /** the starting time of the word within the segment */
   start: number;
   word: string;
+  rejectReason?: string;
 }
 
 export enum TDPTableColumns {
