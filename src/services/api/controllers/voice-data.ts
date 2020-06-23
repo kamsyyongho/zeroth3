@@ -95,7 +95,7 @@ export class VoiceData extends ParentApi {
   ): Promise<searchDataResult> {
     // set default values
     const { page = 0, size = 10 } = requestOptions;
-    const dataSetIds = `${requestOptions.dataSetIds}`
+    const dataSetIds = requestOptions.dataSetIds ? `${requestOptions.dataSetIds}` : null;
     const filterParams = {
       ...requestOptions,
       dataSetIds,

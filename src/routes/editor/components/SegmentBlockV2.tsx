@@ -95,6 +95,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+    const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
 
@@ -246,10 +247,11 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 readOnly={readOnly}
                 isChanged={isChanged}
                 assignSpeakerForSegment={assignSpeakerForSegment}
+                setIsShowComment={setIsShowComment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            {
+            {/*{
                 !isDiff || isAudioPlaying ?
                     localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
                             return (
@@ -280,10 +282,23 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                             segmentIndex={segmentIndex}
                             isAbleToComment={isAbleToComment}
                             isCommentEnabled={isCommentEnabled}
+                            readOnly={readOnly}
+                            playingLocation={playingLocation}
                             updateCaretLocation={updateCaretLocation}
                             handleTextSelection={handleTextSelection} />
                     </div>
-            }
+            }*/}
+            <EditWordAlignmentBlock
+                segment={localSegment}
+                segmentIndex={segmentIndex}
+                isAbleToComment={isAbleToComment}
+                isCommentEnabled={isCommentEnabled}
+                isShowComment={isShowComment}
+                readOnly={readOnly}
+                playingLocation={playingLocation}
+                updateCaretLocation={updateCaretLocation}
+                updateSegment={updateSegment}
+                handleTextSelection={handleTextSelection} />
         </div>
     );
 };

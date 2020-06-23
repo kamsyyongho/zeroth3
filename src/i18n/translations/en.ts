@@ -275,6 +275,7 @@ export const en: ResourceLanguage = {
     editor: {
       editor: 'Editor',
       approvalRequest: 'Approval Request',
+      seeRejectReason: 'Reject Reason : {{rejectReason}}',
       save: 'Save',
       setThreshold: 'Set Threshold',
       shortcuts: 'Shortcuts',
