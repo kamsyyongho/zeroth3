@@ -802,7 +802,7 @@ export function EditorPage() {
       const audioUrl = url.split('/');
       let processedUrl = '';
 
-      audioUrl[4] = voiceData.id;
+      audioUrl[audioUrl.length - 2] = voiceData.id;
       audioUrl.forEach((url: string) => {
         processedUrl += `${url}/`
       });

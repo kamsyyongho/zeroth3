@@ -64,6 +64,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
@@ -100,6 +101,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     if (project) {
       setSelectedProject(project);
       setCurrentProject(project);
+      setProjectTdpDataShouldRefresh(true);
       setTimeout(() => {
         history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
         handleClose();
