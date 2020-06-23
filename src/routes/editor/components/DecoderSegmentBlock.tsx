@@ -73,6 +73,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [decoderTranscriptAnimated, setDecoderTranscriptAnimated] = React.useState([]);
+    const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
 
@@ -138,6 +139,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                 readOnly={readOnly}
                 isChanged={false}
                 assignSpeakerForSegment={assignSpeakerForSegment}
+                setIsShowComment={setIsShowComment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
