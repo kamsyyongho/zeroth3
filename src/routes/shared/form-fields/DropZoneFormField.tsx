@@ -58,6 +58,7 @@ export const DropZoneFormField = ({
   ...props
 }: DropZoneFormFieldProps) => {
   const { translate } = React.useContext(I18nContext);
+  const [showPreview, setShowPreview] = React.useState(true);
 
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
@@ -94,6 +95,7 @@ export const DropZoneFormField = ({
     if (!invalidFiles) {
       form.setFieldValue(field.name, selectedFiles);
     }
+    setShowPreview(selectedFiles.length < 7);
   };
 
   const handleRejectText = (
@@ -127,8 +129,8 @@ export const DropZoneFormField = ({
           maxFileSize={maxFileSize || MAX_FILE_SIZE}
           onChange={handleChange}
           dropzoneText={dropZoneText || translate('forms.dropZone.main')}
-          showFileNamesInPreview={true}
-          showPreviews={showPreviews}
+          showFileNamesInPreview={showPreview}
+          showPreviews={showPreview}
           showPreviewsInDropzone={false}
           useChipsForPreview={true}
           getFileLimitExceedMessage={(filesLimit: number) => `File limit exeeded: ${filesLimit}`}

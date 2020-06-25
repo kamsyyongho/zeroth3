@@ -296,6 +296,9 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 isShowComment={isShowComment}
                 readOnly={readOnly}
                 playingLocation={playingLocation}
+                lengthBeforeBlock={lengthBeforeBlockArray}
+                isDiff={isDiff}
+                findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
                 updateCaretLocation={updateCaretLocation}
                 updateSegment={updateSegment}
                 handleTextSelection={handleTextSelection} />
