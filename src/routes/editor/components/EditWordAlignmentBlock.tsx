@@ -18,9 +18,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             maxWidth: '100%',
             caretStyle: 'block',
             caretColor: 'white',
-            textShadow: '0px 0px 0px #000',
+            textShadow: '0 0 4x #888',
             WebkiTextFillColor: 'transparent',
             whiteSpace: 'pre-wrap',
+
             // -webkit-text-fill-color: 'transparent'
         },
         highlight: {

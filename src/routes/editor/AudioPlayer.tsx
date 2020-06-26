@@ -263,6 +263,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleError = (error: Error) => {
+    console.log('=============error : ', error);
     displayError(error.toString());
     fatalError = true;
     log({

@@ -4,6 +4,8 @@ import { DropzoneArea, DropzoneAreaProps } from 'material-ui-dropzone';
 import React from "reactn";
 import { noop } from '../../../constants/misc.constants';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
+import { useSnackbar } from 'notistack';
+import { SNACKBAR_VARIANTS } from '../../../types';
 
 /**
  * max upload file size in bytes
@@ -58,7 +60,9 @@ export const DropZoneFormField = ({
   ...props
 }: DropZoneFormFieldProps) => {
   const { translate } = React.useContext(I18nContext);
-  const [showPreview, setShowPreview] = React.useState(true);
+  const { enqueueSnackbar } = useSnackbar();
+  const [selectedFilesLength, setSelectedFilesLength] = React.useState(0);
+  const [fileNames, setFileNames] = React.useState<string[]>([]);
 
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
@@ -75,6 +79,7 @@ export const DropZoneFormField = ({
     const uniqueFileNames: string[] = [];
     let totalSize = 0;
     let invalidFiles = false;
+    let snackBarMessage = selectedFiles.length < 7 ? 'Files Added : ' : `${selectedFiles.length} Files Added`;
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       totalSize += file.size;
@@ -85,6 +90,7 @@ export const DropZoneFormField = ({
         break;
       } else {
         uniqueFileNames.push(file.name);
+        setFileNames(uniqueFileNames);
       }
     }
     if (totalSize > fileSizeToCompare) {
@@ -95,7 +101,7 @@ export const DropZoneFormField = ({
     if (!invalidFiles) {
       form.setFieldValue(field.name, selectedFiles);
     }
-    setShowPreview(selectedFiles.length < 7);
+    setSelectedFilesLength(selectedFiles.length);
   };
 
   const handleRejectText = (
@@ -116,6 +122,15 @@ export const DropZoneFormField = ({
     return message;
   };
 
+  const getFileAddedMessage = (file: File) => {
+    // return selectedFilesLength < 7 ? `File added: ${fileName}` : `${selectedFilesLength} files added`
+    if(fileNames.includes(file.name)) {
+      enqueueSnackbar(translate('forms.dropZone.reject.duplicateFileNames'), { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 500, });
+    } else {
+      enqueueSnackbar(`File Added : ${file.name}`, { variant: SNACKBAR_VARIANTS.success, autoHideDuration: 500, });
+    }
+  };
+
   return (
     <FormControl
       style={{ display: hidden ? 'none' : undefined, minWidth: 300 }}
@@ -129,14 +144,15 @@ export const DropZoneFormField = ({
           maxFileSize={maxFileSize || MAX_FILE_SIZE}
           onChange={handleChange}
           dropzoneText={dropZoneText || translate('forms.dropZone.main')}
-          showFileNamesInPreview={showPreview}
-          showPreviews={showPreview}
+          showFileNamesInPreview={selectedFilesLength < 7}
+          showPreviews={selectedFilesLength  < 7}
           showPreviewsInDropzone={false}
           useChipsForPreview={true}
           getFileLimitExceedMessage={(filesLimit: number) => `File limit exeeded: ${filesLimit}`}
-          getFileAddedMessage={(fileName: string) => `File added: ${fileName}`}
           getFileRemovedMessage={(fileName: string) => `File removed: ${fileName}`}
+          getFileAddedMessage={() => ''}
           getDropRejectMessage={handleRejectText}
+          onDrop={(file: File) => getFileAddedMessage(file)}
           {...props}
         />
       </Box>
