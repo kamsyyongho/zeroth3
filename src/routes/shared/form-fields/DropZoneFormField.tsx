@@ -63,6 +63,7 @@ export const DropZoneFormField = ({
   const { enqueueSnackbar } = useSnackbar();
   const [selectedFilesLength, setSelectedFilesLength] = React.useState(0);
   const [fileNames, setFileNames] = React.useState<string[]>([]);
+  const [showAlerts, setShowAlerts] = React.useState<boolean>(true);
 
   if (fullWidth === undefined) fullWidth = true;
   const errorText =
@@ -74,6 +75,7 @@ export const DropZoneFormField = ({
     form.setFieldError(field.name, '');
     onDuplicateFileNames();
     onMaxFileSizeExceeded();
+
 
     const fileSizeToCompare = maxFileSize ? maxFileSize : MAX_FILE_SIZE;
     const uniqueFileNames: string[] = [];
@@ -122,13 +124,23 @@ export const DropZoneFormField = ({
     return message;
   };
 
-  const getFileAddedMessage = (file: File) => {
-    // return selectedFilesLength < 7 ? `File added: ${fileName}` : `${selectedFilesLength} files added`
-    if(fileNames.includes(file.name)) {
-      enqueueSnackbar(translate('forms.dropZone.reject.duplicateFileNames'), { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 500, });
-    } else {
-      enqueueSnackbar(`File Added : ${file.name}`, { variant: SNACKBAR_VARIANTS.success, autoHideDuration: 500, });
+  const handleRemoveFile = (fileName: string) => {
+    enqueueSnackbar(`File Removed : ${fileName}`, { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 3000, });
+    return '';
+  };
+
+  const handleFileAdded = (fileName: string) => {
+    if(fileNames.includes(fileName)) {
+      enqueueSnackbar(`[${fileName}] ${translate('forms.dropZone.reject.duplicateFileNames')}`,
+          { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
     }
+    return '';
+  };
+
+  const handleFileLimit = (fileLimit: number) => {
+    enqueueSnackbar(`File Limit Exceeded : ${fileLimit}`,
+        { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 3000, });
+    return '';
   };
 
   return (
@@ -148,11 +160,12 @@ export const DropZoneFormField = ({
           showPreviews={selectedFilesLength  < 7}
           showPreviewsInDropzone={false}
           useChipsForPreview={true}
-          getFileLimitExceedMessage={(filesLimit: number) => `File limit exeeded: ${filesLimit}`}
-          getFileRemovedMessage={(fileName: string) => `File removed: ${fileName}`}
-          getFileAddedMessage={() => ''}
+          getFileLimitExceedMessage={handleFileLimit}
+          getFileRemovedMessage={handleRemoveFile}
+          getFileAddedMessage={handleFileAdded}
           getDropRejectMessage={handleRejectText}
-          onDrop={(file: File) => getFileAddedMessage(file)}
+          //disable alerts for and handle alerts in onDrop API
+          showAlerts={false}
           {...props}
         />
       </Box>
