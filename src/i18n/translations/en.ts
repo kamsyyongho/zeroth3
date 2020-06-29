@@ -70,7 +70,7 @@ export const en: ResourceLanguage = {
       editor: 'Editor',
       modelTraining: 'Model Training',
       admin: 'Admin',
-      transcription: 'Manage Transcript',
+      history: 'History',
     },
     menu: {
       login: 'Login',

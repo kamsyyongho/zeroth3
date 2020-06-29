@@ -290,6 +290,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleStreamingError = () => {
+    console.log('====================mediaElement when error : ', mediaElement);
     if (mediaElement?.error instanceof Error) {
       handleError(mediaElement.error);
     }

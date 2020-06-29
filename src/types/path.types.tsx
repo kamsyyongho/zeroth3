@@ -71,7 +71,7 @@ export const PATHS: { [x: string]: Path; } = {
   },
   transcription: {
     to: '/transcription',
-    title: 'transcription',
+    title: 'history',
     Icon: props => <AssignmentIcon {...props} />,
   },
   editor: {

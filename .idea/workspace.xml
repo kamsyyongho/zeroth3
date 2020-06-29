@@ -3,7 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/Transcription.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptCellStatusSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/TranscriptCellStatusSelect.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/TranscriptionTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/TranscriptionTableItem.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/path.types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/path.types.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +89,7 @@
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
-      <workItem from="1593394113270" duration="7100000" />
+      <workItem from="1593394113270" duration="14394000" />
     </task>
     <servers />
   </component>
@@ -134,20 +140,23 @@
       <screen x="-1920" y="0" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
-    <state x="1920" y="0" width="901" height="1080" key="dock-window-1" timestamp="1593406078644">
-      <screen x="1920" y="23" width="1920" height="1057" />
+    <state x="1920" y="0" width="881" height="1080" key="dock-window-1" timestamp="1593471222422">
+      <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/-2560.-43.2560.1080/-3440.1037.3440.1440/0.0.1080.2560@-3440.1037.3440.1440" timestamp="1591868921574" />
+    <state x="-1260" y="1037" width="1260" height="1440" key="dock-window-1/-2560.-20.2560.1057/-3440.1037.3440.1440/0.23.1080.2504@-3440.1037.3440.1440" timestamp="1593418383499" />
+    <state x="-1356" y="1037" width="1356" height="1440" key="dock-window-1/-2560.-43.2560.1080/-3440.1037.3440.1440/0.0.1080.2560@-3440.1037.3440.1440" timestamp="1593418909022" />
     <state x="-2560" y="-43" width="1185" height="1080" key="dock-window-1/-2560.-43.2560.1080/-3440.1037.3440.1440/0.23.1080.2503@-3440.1037.3440.1440" timestamp="1591796579831" />
-    <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@-3440.1037.3440.1440" timestamp="1591897500049" />
+    <state x="-1094" y="1037" width="1094" height="1440" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@-3440.1037.3440.1440" timestamp="1593465183285" />
     <state x="-2560" y="-43" width="1272" height="1080" key="dock-window-1/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@0.0.1080.2560" timestamp="1591417680410" />
     <state x="1920" y="0" width="900" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1592183201586" />
     <state x="1920" y="0" width="1142" height="1080" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/69.1080.1792.1120@0.0.1920.1080" timestamp="1591260876052" />
     <state x="1920" y="0" width="900" height="1080" key="dock-window-1/0.0.1920.1080/1920.23.1920.1057/56.1103.1792.1047@0.0.1920.1080" timestamp="1592208131217" />
-    <state x="-2560" y="-43" width="1200" height="1080" key="dock-window-1/0.23.1080.2504/-3440.1037.3440.1440/-2560.-20.2560.1057@-3440.1037.3440.1440" timestamp="1592266331778" />
+    <state x="-1094" y="1037" width="1094" height="1440" key="dock-window-1/0.23.1080.2504/-3440.1037.3440.1440/-2560.-20.2560.1057@-3440.1037.3440.1440" timestamp="1593434929838" />
+    <state x="-811" y="-43" width="811" height="1080" key="dock-window-1/0.23.1080.2504/-3440.1060.3440.1417/-2560.-20.2560.1057@-2560.-20.2560.1057" timestamp="1593466719563" />
     <state x="-1268" y="1037" width="1268" height="1440" key="dock-window-1/0.23.1080.2504/-3440.1060.3440.1417/-2560.-20.2560.1057@-3440.1060.3440.1417" timestamp="1591880650235" />
     <state x="0" y="23" width="891" height="1044" key="dock-window-1/0.23.1792.1044@0.23.1792.1044" timestamp="1591578603251" />
     <state x="0" y="23" width="891" height="1040" key="dock-window-1/0.23.1792.1047@0.23.1792.1047" timestamp="1591579708723" />
+    <state x="1228" y="0" width="564" height="1120" key="dock-window-1/0.23.1792.1064@0.23.1792.1064" timestamp="1593470716871" />
     <state x="0" y="0" width="786" height="1120" key="dock-window-1/0.23.1792.1097@0.23.1792.1097" timestamp="1591951858240" />
     <state x="0" y="0" width="896" height="1080" key="dock-window-1/128.1080.1792.1120/0.0.1920.1080@0.0.1920.1080" timestamp="1591581425742" />
     <state x="0" y="0" width="896" height="1080" key="dock-window-1/128.1103.1792.1097/0.0.1920.1080@0.0.1920.1080" timestamp="1591582359919" />
@@ -159,11 +168,13 @@
     <state x="1840" y="-1080" width="954" height="1080" key="dock-window-1/1840.-1080.1920.1080/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589425367412" />
     <state x="1920" y="0" width="890" height="1120" key="dock-window-1/1920.0.1792.1120/0.0.1920.1080@0.0.1920.1080" timestamp="1591746973972" />
     <state x="3712" y="0" width="896" height="1080" key="dock-window-1/1920.0.1792.1120/3712.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1591581534094" />
-    <state x="1920" y="0" width="901" height="1080" key="dock-window-1/1920.0.1920.1080/0.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1593402165824" />
+    <state x="1920" y="0" width="881" height="1080" key="dock-window-1/1920.0.1920.1080/0.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1593471222422" />
     <state x="0" y="0" width="1110" height="1080" key="dock-window-1/1920.23.1792.1097/0.0.1920.1080@0.0.1920.1080" timestamp="1591580473414" />
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/1920.23.1792.1097/0.23.1920.1004@0.23.1920.1004" timestamp="1591578568224" />
     <state x="0" y="0" width="1110" height="1080" key="dock-window-1/1920.23.1792.1097/0.23.1920.1057@0.23.1920.1057" timestamp="1591580768863" />
-    <state x="1920" y="0" width="901" height="1080" key="dock-window-1/1920.23.1920.1057/0.0.1920.1080/56.1103.1792.1048@0.0.1920.1080" timestamp="1593406078644" />
+    <state x="1920" y="0" width="901" height="1080" key="dock-window-1/1920.23.1920.1057/0.0.1920.1080/56.1103.1792.1048@0.0.1920.1080" timestamp="1593409997370" />
+    <state x="1920" y="0" width="1920" height="1080" key="dock-window-1/1920.23.1920.1057/0.23.1920.1057/56.1103.1792.1048@0.23.1920.1057" timestamp="1593470797468" />
+    <state x="1284" y="1080" width="564" height="1120" key="dock-window-1/1920.23.1920.1057/0.23.1920.1057/56.1103.1792.1048@56.1103.1792.1048" timestamp="1593470766641" />
     <state x="0" y="23" width="891" height="1004" key="dock-window-1/214.1103.1792.1047/1920.23.1920.1057/0.23.1920.1057@0.23.1920.1057" timestamp="1591578078858" />
     <state x="880" y="-1080" width="1272" height="1080" key="dock-window-1/3440.-1057.1080.2537/0.0.3440.1383/880.-1057.2560.1057@0.0.3440.1383" timestamp="1589458417891" />
     <state x="1920" y="0" width="954" height="1080" key="dock-window-1/56.1080.1792.1120/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1591933615552" />
