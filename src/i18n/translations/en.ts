@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const en: ResourceLanguage = {
   translation: {
     common: {
+      all: 'All',
       okay: 'Okay',
       delete: 'Delete',
       submit: 'Submit',

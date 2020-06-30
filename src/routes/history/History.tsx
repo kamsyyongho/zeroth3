@@ -18,6 +18,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { ProblemKind } from '../../services/api/types';
 import {
     AcousticModel,
+    CONTENT_STATUS,
     DataSet,
     VoiceData,
     LanguageModel,
@@ -40,6 +41,7 @@ import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberD
 import { NotFound } from '../shared/NotFound';
 import { CustomTheme } from '../../theme';
 import ScaleLoader from 'react-spinners/ScaleLoader';
+import { allStatus } from './components/HistoryCellStatusSelect';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -97,21 +99,27 @@ export function History() {
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
+    const [voiceDataToTable, setVoiceDataToTable] = React.useState<VoiceData[]>([]);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
 
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
-    const getAssingedDataSets = async (status?: boolean | null) => {
-        if (api?.user) {
-            const response = await api.user.getDataSetsToFetchFrom(status);
+    const getHistory = async (status?: boolean | null) => {
+        if (api?.voiceData) {
+            // const response = await api.user.getDataSetsToFetchFrom(status);
+            const response = await api.voiceData.getHistory();
+
             if (response.kind === 'ok') {
-                setDataSet(response.dataSets);
+                // setDataSet(response.dataSets);
+                setVoiceData(response.voiceData);
+                setVoiceDataToTable(response.voiceData);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getAssingedDataSets - failed to get data sets`,
+                    caller: `getHistory - failed to get data sets`,
                     value: response,
                     important: true,
                 });
@@ -119,13 +127,14 @@ export function History() {
         }
     };
 
-    const handleCompletedChange = (status: boolean | null) => {
-        getAssingedDataSets(status);
+    const handleStatusChange = (status: any) => {
+        const filteredVoiceData = voiceData.filter((voiceData: VoiceData) => status === allStatus || voiceData.status === status)
+        setVoiceDataToTable(filteredVoiceData);
     };
 
     React.useEffect(() => {
         setPageTitle(translate('transcription.pageTitle'));
-        getAssingedDataSets();
+        getHistory();
     }, []);
 
     const renderSummary = () => {
@@ -232,8 +241,8 @@ export function History() {
                 }
                 {dataSet &&
                 <HistoryTable
-                    dataSet={dataSet}
-                    handleCompletedChange={handleCompletedChange}
+                    voiceData={voiceDataToTable}
+                    handleStatusChange={handleStatusChange}
                 />
                 }
             </Paper>

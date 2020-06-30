@@ -10,15 +10,15 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData } from '../../../types';
+import { DataSet, VoiceData, CONTENT_STATUS } from '../../../types';
 import { HistoryTableItem } from './HistoryTableItem';
 import { HistoryCellStatusSelect } from './HistoryCellStatusSelect'
 
-const FULL_ROW_COL_SPAN = 7;
+const FULL_ROW_COL_SPAN = 5;
 
 interface TranscriptionTableProps {
-    dataSet: DataSet[];
-    handleCompletedChange: (status: boolean | null) => void;
+    voiceData: VoiceData[];
+    handleStatusChange: (status: any) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function HistoryTable(props: TranscriptionTableProps) {
-    const { dataSet, handleCompletedChange } = props;
+    const { voiceData, handleStatusChange } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -56,13 +56,13 @@ export function HistoryTable(props: TranscriptionTableProps) {
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
     </TableRow>);
 
-    const renderSets = () => dataSet.map((dataSet, index) => (<React.Fragment
-        key={dataSet.id}
+    const renderSets = () => voiceData.map((voiceData, index) => (<React.Fragment
+        key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
         <HistoryTableItem
-            dataSet={dataSet}
-            dataSetIndex={index}
+            voiceData={voiceData}
+            voiceDataIndex={index}
             // openEvaluationDetail={openEvaluationDetail}
         />
     </React.Fragment>));
@@ -81,15 +81,12 @@ export function HistoryTable(props: TranscriptionTableProps) {
             <TableCell>
                 {translate('common.date')}
             </TableCell>
-            <TableCell>
-                {translate('forms.status')}
+            <TableCell style={{ minWidth: '250px', display: 'flex', flexDirection: 'row', }}>
+                <HistoryCellStatusSelect handleStatusChange={handleStatusChange}/>
             </TableCell>
-            <TableCell>
-                {translate('SET.editProgress')}
-            </TableCell>
-            <TableCell>
-                <HistoryCellStatusSelect handleCompletedChange={handleCompletedChange}/>
-            </TableCell>
+            {/*<TableCell>*/}
+            {/*    <HistoryCellStatusSelect handleStatusChange={handleStatusChange}/>*/}
+            {/*</TableCell>*/}
         </TableRow>
     </TableHead>);
 
@@ -103,7 +100,7 @@ export function HistoryTable(props: TranscriptionTableProps) {
         <Table className={classes.table}>
             {renderHeader()}
             <TableBody>
-                {(!dataSet.length) ? renderNoResults() : renderSets()}
+                {(!voiceData.length) ? renderNoResults() : renderSets()}
             </TableBody>
         </Table>
     );

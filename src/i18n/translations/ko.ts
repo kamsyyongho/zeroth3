@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const ko: ResourceLanguage = {
   translation: {
     common: {
+      all: '전체',
       okay: '확인',
       delete: '삭제',
       submit: '제출',
@@ -68,7 +69,7 @@ export const ko: ResourceLanguage = {
       models: '모델',
       editor: '에디터',
       modelTraining: '모델 학습',
-      history: '전사내역',
+     history: '전사내역',
       transcription: '전사관리',
     },
     menu: {

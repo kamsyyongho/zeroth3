@@ -2,6 +2,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemText from '@material-ui/core/ListItemText';
+import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -27,47 +28,28 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-const isCompletedStatus = {
-    all: 'All',
-    completed: 'Completed',
-    inComplete: 'Incomplete',
-}
+export const allStatus = 'all'
 
 interface HistoryCellStatusSelectProps {
-    handleCompletedChange: (status: boolean | null) => void;
+    handleStatusChange: (status: any) => void;
 }
 
 export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
-    const { handleCompletedChange } = props;
+    const { handleStatusChange } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
 
-    const [status, setStatus] = React.useState<string>(isCompletedStatus.all);
+    const [status, setStatus] = React.useState<string>(allStatus);
 
     const classes = useStyles();
     const theme = useTheme();
 
 
     const handleChange = (event: any) => {
-        const value = event.target.value as string;
-        let status;
-        switch (value) {
-            case isCompletedStatus.all:
-                status = null;
-                break;
-            case isCompletedStatus.completed:
-                status = true;
-                break;
-            case isCompletedStatus.inComplete:
-                status = false;
-                break;
-            default:
-                status = null;
-                break;
-        }
-        handleCompletedChange(status);
+        const value = event.target.value;
         setStatus(value);
+        handleStatusChange(value);
     };
 
     return (
@@ -80,19 +62,27 @@ export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
             justify='flex-start'
         >
             <FormControl className={classes.formControl} >
+                <InputLabel>{translate('forms.status')}</InputLabel>
                 <Select
                     value={status}
                     onChange={handleChange}
                 >
-                    <MenuItem value={isCompletedStatus.all}>
-                        <ListItemText primary={`status: ${isCompletedStatus.all}`} />
+                    <MenuItem value={allStatus}>
+                        <ListItemText primary={translate('common.all')} />
                     </MenuItem>
-                    <MenuItem value={isCompletedStatus.inComplete}>
-                        <ListItemText primary={`status: ${isCompletedStatus.inComplete}`} />
-                    </MenuItem>
-                    <MenuItem value={isCompletedStatus.completed}>
-                        <ListItemText primary={`status: ${isCompletedStatus.completed}`} />
-                    </MenuItem>
+                    {
+                        CONTENT_STATUS_VALUES.map((status) => {
+                            return (<MenuItem value={status}>
+                                <ListItemText primary={status} />
+                            </MenuItem>)
+                        })
+                    }
+                    {/*<MenuItem value={isCompletedStatus.inComplete}>*/}
+                    {/*    <ListItemText primary={`status: ${isCompletedStatus.inComplete}`} />*/}
+                    {/*</MenuItem>*/}
+                    {/*<MenuItem value={isCompletedStatus.completed}>*/}
+                    {/*    <ListItemText primary={`status: ${isCompletedStatus.completed}`} />*/}
+                    {/*</MenuItem>*/}
                 </Select>
             </FormControl>
         </Grid>
