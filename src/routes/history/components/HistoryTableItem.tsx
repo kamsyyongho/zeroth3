@@ -42,13 +42,18 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             color: theme.palette.primary.contrastText,
             fontWeight: 'bold',
         },
-        progress: {
+        confirmed: {
             backgroundColor: theme.editor.changes,
             color: theme.palette.primary.contrastText,
             fontWeight: 'bold',
         },
-        confirmed: {
+        review: {
             backgroundColor: theme.palette.primary.light,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        fetched: {
+            backgroundColor: theme.editor.LowConfidence,
             color: theme.palette.primary.contrastText,
             fontWeight: 'bold',
         },
@@ -67,11 +72,18 @@ export function HistoryTableItem(props: HistoryTableItemProps) {
     const theme: CustomTheme = useTheme();
 
     const statusChipClass = () => {
-        return voiceData.status === CONTENT_STATUS.REJECTED ?
-            classes.rejected
-            : voiceData.status === CONTENT_STATUS.CONFIRMED ?
-                classes.confirmed
-                : classes.progress;
+        switch(voiceData.status) {
+            case CONTENT_STATUS.REJECTED :
+                return classes.rejected;
+            case CONTENT_STATUS.CONFIRMED :
+                return classes.confirmed;
+            case CONTENT_STATUS.IN_REVIEW :
+                return classes.review;
+            case CONTENT_STATUS.FETCHED :
+                return classes.fetched
+            default :
+                return;
+        }
     };
 
     return (

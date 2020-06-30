@@ -77,12 +77,6 @@ export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
                             </MenuItem>)
                         })
                     }
-                    {/*<MenuItem value={isCompletedStatus.inComplete}>*/}
-                    {/*    <ListItemText primary={`status: ${isCompletedStatus.inComplete}`} />*/}
-                    {/*</MenuItem>*/}
-                    {/*<MenuItem value={isCompletedStatus.completed}>*/}
-                    {/*    <ListItemText primary={`status: ${isCompletedStatus.completed}`} />*/}
-                    {/*</MenuItem>*/}
                 </Select>
             </FormControl>
         </Grid>
