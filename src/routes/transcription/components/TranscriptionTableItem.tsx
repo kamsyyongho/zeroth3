@@ -74,13 +74,13 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
                 <Typography>{voiceData.originalFilename}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.modelConfigId}</Typography>
+                <Typography>{voiceData.transcriber}</Typography>
             </TableCell>
             <TableCell>
-                {'-'}
+                {voiceData.wordCount}
             </TableCell>
             <TableCell>
-                <Typography>{voiceData.wordCount}</Typography>
+                <Typography>{voiceData.length}</Typography>
             </TableCell>
             <TableCell>
                 <Typography>{formatDate(new Date(voiceData.decodedAt))}</Typography>

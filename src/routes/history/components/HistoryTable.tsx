@@ -70,19 +70,19 @@ export function HistoryTable(props: TranscriptionTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.name')}
+                {translate('forms.file')}
             </TableCell>
             <TableCell>
                 {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
-                {translate('SET.highRisk')}
-            </TableCell>
-            <TableCell>
-                {translate('SET.rejected')}
+                {translate('common.length')}
             </TableCell>
             <TableCell>
                 {translate('common.date')}
+            </TableCell>
+            <TableCell>
+                {translate('forms.status')}
             </TableCell>
             <TableCell>
                 {translate('SET.editProgress')}

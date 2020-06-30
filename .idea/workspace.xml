@@ -3,14 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/history/components/HistoryTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionCellStatusSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionCellStatusSelect.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/path.types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/path.types.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +88,7 @@
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
-      <workItem from="1593394113270" duration="16064000" />
+      <workItem from="1593394113270" duration="20770000" />
     </task>
     <servers />
   </component>

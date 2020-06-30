@@ -108,7 +108,7 @@ export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
-  const { hasPermission, roles } = React.useContext(KeycloakContext);
+  const { hasPermission, roles, user } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
@@ -803,6 +803,7 @@ export function EditorPage() {
       let processedUrl = '';
 
       audioUrl[audioUrl.length - 2] = voiceData.id;
+      audioUrl[audioUrl.length - 3] = `organizations/${user.currentOrganizationId}/data`
       audioUrl.forEach((url: string) => {
         processedUrl += `${url}/`
       });

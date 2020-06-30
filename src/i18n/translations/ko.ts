@@ -135,7 +135,7 @@ export const ko: ResourceLanguage = {
       speaker: '발화자',
       name: '이름',
       text: '텍스트 입력',
-      file: '파일 업로드',
+      file: '파일',
       thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       description: '설명',

@@ -78,10 +78,10 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('forms.file')}
             </TableCell>
             <TableCell>
-                {translate('forms.modelConfig')}
+                {translate('forms.transcriber')}
             </TableCell>
             <TableCell>
-                {translate('admin.commentNumber')}
+                {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
                 {translate('common.length')}

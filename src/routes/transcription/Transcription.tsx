@@ -275,42 +275,6 @@ export function Transcription() {
                                     variant="outlined"
                                 />
                             </Grid>
-                            <Grid container
-                                  item
-                                  direction='row'
-                                  justify='flex-start'
-                                  alignItems='center'
-                                  alignContent='center'>
-                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
-                                <TextField
-                                    id="api-key"
-                                    value={""}
-                                    className={clsx(classes.textField, classes.apiInfo)}
-                                    margin="normal"
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    variant="outlined"
-                                />
-                            </Grid>
-                            <Grid container
-                                  item
-                                  direction='row'
-                                  justify='flex-start'
-                                  alignItems='center'
-                                  alignContent='center'>
-                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
-                                <TextField
-                                    id="api-key"
-                                    value={""}
-                                    className={clsx(classes.textField, classes.apiInfo)}
-                                    margin="normal"
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    variant="outlined"
-                                />
-                            </Grid>
                         </Grid>
                     </Grid>
                 }
