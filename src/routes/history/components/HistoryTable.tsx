@@ -11,8 +11,8 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { TranscriptionTableItem } from './TranscriptionTableItem';
-import { TranscriptCellStatusSelect } from './TranscriptCellStatusSelect'
+import { HistoryTableItem } from './HistoryTableItem';
+import { HistoryCellStatusSelect } from './HistoryCellStatusSelect'
 
 const FULL_ROW_COL_SPAN = 7;
 
@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function TranscriptionTable(props: TranscriptionTableProps) {
+export function HistoryTable(props: TranscriptionTableProps) {
     const { dataSet, handleCompletedChange } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
@@ -60,7 +60,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
         key={dataSet.id}
     >
         {index > 0 && renderRowFiller}
-        <TranscriptionTableItem
+        <HistoryTableItem
             dataSet={dataSet}
             dataSetIndex={index}
             // openEvaluationDetail={openEvaluationDetail}
@@ -88,7 +88,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('SET.editProgress')}
             </TableCell>
             <TableCell>
-                <TranscriptCellStatusSelect handleCompletedChange={handleCompletedChange}/>
+                <HistoryCellStatusSelect handleCompletedChange={handleCompletedChange}/>
             </TableCell>
         </TableRow>
     </TableHead>);

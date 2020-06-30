@@ -33,11 +33,11 @@ const isCompletedStatus = {
     inComplete: 'Incomplete',
 }
 
-interface TranscriptCellStatusSelectProps {
+interface HistoryCellStatusSelectProps {
     handleCompletedChange: (status: boolean | null) => void;
 }
 
-export function TranscriptCellStatusSelect(props: TranscriptCellStatusSelectProps) {
+export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
     const { handleCompletedChange } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);

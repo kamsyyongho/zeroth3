@@ -70,7 +70,7 @@ export const PATHS: { [x: string]: Path; } = {
     Icon: props => <SupervisorAccountIcon {...props} />,
   },
   transcription: {
-    to: '/transcription',
+    to: '/history',
     title: 'history',
     Icon: props => <AssignmentIcon {...props} />,
   },

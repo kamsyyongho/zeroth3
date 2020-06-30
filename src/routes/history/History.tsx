@@ -33,7 +33,7 @@ import {
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { TranscriptionTable } from './components/TranscriptionTable';
+import { HistoryTable } from './components/HistoryTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function Transcription() {
+export function History() {
     //temporary hardcoded projectId for setting up dummy component
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
@@ -231,7 +231,7 @@ export function Transcription() {
                     isLoading ? <BulletList /> : renderSummary()
                 }
                 {dataSet &&
-                <TranscriptionTable
+                <HistoryTable
                     dataSet={dataSet}
                     handleCompletedChange={handleCompletedChange}
                 />

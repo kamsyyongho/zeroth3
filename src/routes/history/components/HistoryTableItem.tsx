@@ -29,7 +29,7 @@ import { TrainingChip } from '../../shared/TrainingChip';
 import BackupIcon from '@material-ui/icons/Backup';
 import { ICONS } from '../../../theme/icons';
 
-interface TranscriptionTableItemProps {
+interface HistoryTableItemProps {
     dataSet: DataSet;
     dataSetIndex: number;
     // openEvaluationDetail: (dataSetIndex: number) => void;
@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
+export function HistoryTableItem(props: HistoryTableItemProps) {
     const { dataSet, dataSetIndex } = props;
     const { transcribers, total, processed, name, wordCount, createdAt, rejected } = dataSet;
     // const { transcribers, total, processed, name } = dataSet;
