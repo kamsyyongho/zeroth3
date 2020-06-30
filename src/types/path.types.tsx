@@ -64,12 +64,12 @@ export const PATHS: { [x: string]: Path; } = {
     title: 'modelTraining',
     Icon: props => <ICONS.Training {...props} />,
   },
-  admin: {
-    to: '/admin',
-    title: 'admin',
+  transcription: {
+    to: '/transcription',
+    title: 'transcription',
     Icon: props => <SupervisorAccountIcon {...props} />,
   },
-  transcription: {
+  history: {
     to: '/history',
     title: 'history',
     Icon: props => <AssignmentIcon {...props} />,

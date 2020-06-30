@@ -33,7 +33,7 @@ import {
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { AdminTable } from './components/AdminTable';
+import { TranscriptionTable } from './components/TranscriptionTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
@@ -85,7 +85,7 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function Admin() {
+export function Transcription() {
     //temporary hardcoded projectId for setting up dummy component
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
@@ -340,7 +340,7 @@ export function Admin() {
                     isLoading ? <BulletList /> : renderSummary()
                 }
                 {voiceData &&
-                    <AdminTable
+                    <TranscriptionTable
                         voiceData={voiceData}
                         getAllVoiceData={getAllVoiceData}
                         getVoiceDataInReview={getVoiceDataInReview}

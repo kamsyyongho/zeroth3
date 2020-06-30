@@ -11,7 +11,7 @@ import {CustomTheme} from '../../../theme';
 import {CONTENT_STATUS, PATHS, VoiceData} from '../../../types';
 import {ICONS} from '../../../theme/icons';
 
-interface AdminTableItemProps {
+interface TranscriptionTableItemProps {
     voiceData: VoiceData;
     voiceDataIndex: number;
     handleConfirmationClick: (voiceDataIndex: number) => void;
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTableItem(props: AdminTableItemProps) {
+export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const { voiceData, voiceDataIndex, handleConfirmationClick, handleRejectClick } = props;
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const history = useHistory();

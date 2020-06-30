@@ -32,12 +32,12 @@ const voiceDataStatus = {
     review: 'review',
 }
 
-interface AdminCellStatusSelectProps {
+interface TranscriptionCellStatusSelectProps {
     getVoiceDataInReview: () => void;
     getAllVoiceData: () => void;
 }
 
-export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
+export function TranscriptionCellStatusSelect(props: TranscriptionCellStatusSelectProps) {
     const { getVoiceDataInReview, getAllVoiceData } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);

@@ -11,12 +11,12 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
-import { AdminTableItem } from './AdminTableItem';
-import { AdminCellStatusSelect } from './AdminCellStatusSelect';
+import { TranscriptionTableItem } from './TranscriptionTableItem';
+import { TranscriptionCellStatusSelect } from './TranscriptionCellStatusSelect';
 
 const FULL_ROW_COL_SPAN = 7;
 
-interface AdminTableProps {
+interface TranscriptionTableProps {
     voiceData: VoiceData[];
     getAllVoiceData: () => void;
     getVoiceDataInReview: () => void;
@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         }
     }));
 
-export function AdminTable(props: AdminTableProps) {
+export function TranscriptionTable(props: TranscriptionTableProps) {
     const { voiceData, getAllVoiceData, getVoiceDataInReview, handleConfirmationClick, handleRejectClick } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
@@ -63,7 +63,7 @@ export function AdminTable(props: AdminTableProps) {
         key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
-        <AdminTableItem
+        <TranscriptionTableItem
             voiceData={voiceData}
             voiceDataIndex={index}
             handleConfirmationClick={handleConfirmationClick}
@@ -93,7 +93,7 @@ export function AdminTable(props: AdminTableProps) {
                 {translate('admin.diff')}
             </TableCell>
             <TableCell>
-                <AdminCellStatusSelect getVoiceDataInReview={getVoiceDataInReview} getAllVoiceData={getAllVoiceData}/>
+                <TranscriptionCellStatusSelect getVoiceDataInReview={getVoiceDataInReview} getAllVoiceData={getAllVoiceData}/>
             </TableCell>
         </TableRow>
     </TableHead>);

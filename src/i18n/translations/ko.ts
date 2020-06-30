@@ -68,7 +68,7 @@ export const ko: ResourceLanguage = {
       models: '모델',
       editor: '에디터',
       modelTraining: '모델 학습',
-      admin: '관리자',
+      history: '전사내역',
       transcription: '전사관리',
     },
     menu: {
