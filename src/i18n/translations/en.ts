@@ -227,6 +227,7 @@ export const en: ResourceLanguage = {
       originalFilename: 'Filename',
       wordCount: 'Word Count',
       statusChange: 'Status Changes',
+      deleteFailMsg: '삭제요청 실패',
     },
     SET: {
       SET: 'SET',

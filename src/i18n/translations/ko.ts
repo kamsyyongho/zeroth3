@@ -227,6 +227,7 @@ export const ko: ResourceLanguage = {
       originalFilename: '파일 이름',
       wordCount: '글자 수',
       statusChange: '상태변화 내역',
+      deleteFailMsg: '삭제요청 실패',
     },
     transcribingSet: {
       transcribingSet: 'TDP 세트',

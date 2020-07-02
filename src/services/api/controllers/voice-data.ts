@@ -11,6 +11,7 @@ import {getGeneralApiProblem} from '../api-problem';
 import {
   approveDataResult,
   confirmDataResult,
+  deleteAllDataSet,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
   getAudioUrl,
@@ -936,7 +937,7 @@ export class VoiceData extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async deleteAllDataSet(projectId: string, filterParams: any = {}) {
+  async deleteAllDataSet(projectId: string, filterParams: any = {}): Promise<deleteAllDataSet> {
     //over ride no request body in delete request in axios
     const response = await this.apisauce.delete<undefined, ServerError>(
         this.getPathWithOrganization(`/projects/${projectId}/data`),
@@ -946,16 +947,17 @@ export class VoiceData extends ParentApi {
         }
     );
 
-    if(!response.ok) {
+    if (!response.ok) {
       const problem = getGeneralApiProblem(response);
-      if(problem) {
-        if(problem.kind === ProblemKind['unauthorized']) {
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
       }
     }
     return { kind: 'ok' };
+
   }
   async getDataToReview(): Promise<getDataToReview> {
     const response = await this.apisauce.get<IVoiceData, ServerError>(

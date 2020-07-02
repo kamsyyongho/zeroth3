@@ -115,6 +115,9 @@ export type UpdateSegmentsRequest = Segment[];
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
+
+export type deleteAllDataSet = { kind: 'ok' } | GeneralApiProblem;
+
 export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateRejectReasonResult = { kind: 'ok' } | GeneralApiProblem;
