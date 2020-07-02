@@ -22,6 +22,10 @@ export interface SelectFormFieldOption {
   disabled?: boolean;
 }
 
+const mainMenu = {
+    height: 'fit-content'
+}
+
 export type SelectFormFieldOptions = Array<SelectFormFieldOption>;
 
 interface SelectFormFieldProps extends FieldProps, SelectProps {

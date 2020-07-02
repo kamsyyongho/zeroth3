@@ -191,7 +191,7 @@ export type getDataToReview =
   | GeneralApiProblem;
 
 export type getHistory =
-  | { kind: 'ok'; voiceData: VoiceData[] }
+  | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
 export type getAudioUrl =

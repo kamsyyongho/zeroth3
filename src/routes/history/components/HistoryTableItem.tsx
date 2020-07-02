@@ -7,7 +7,7 @@ import {useHistory} from 'react-router-dom';
 import {ApiContext} from '../../../hooks/api/ApiContext';
 import {I18nContext} from '../../../hooks/i18n/I18nContext';
 import {CustomTheme} from '../../../theme';
-import {CONTENT_STATUS, VoiceData} from '../../../types';
+import {CONTENT_STATUS, VoiceData } from '../../../types';
 import Chip from '@material-ui/core/Chip';
 
 interface HistoryTableItemProps {
@@ -82,14 +82,12 @@ export function HistoryTableItem(props: HistoryTableItemProps) {
             case CONTENT_STATUS.FETCHED :
                 return classes.fetched
             default :
-                return;
+                return '';
         }
     };
 
     return (
-        <TableRow
-            className={classes.tableRow}
-        >
+        <TableRow className={classes.tableRow}>
             <TableCell>
                 <Typography>{voiceData.originalFilename}</Typography>
             </TableCell>

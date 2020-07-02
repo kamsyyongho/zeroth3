@@ -114,8 +114,8 @@ export function History() {
 
             if (response.kind === 'ok') {
                 // setDataSet(response.dataSets);
-                setVoiceData(response.voiceData);
-                setVoiceDataToTable(response.voiceData);
+                setVoiceData(response.data.content);
+                setVoiceDataToTable(response.data.content);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
