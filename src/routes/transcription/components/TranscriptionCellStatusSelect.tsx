@@ -47,8 +47,7 @@ export function TranscriptionCellStatusSelect(props: TranscriptionCellStatusSele
 
     const classes = useStyles();
     const theme = useTheme();
-
-
+    
     const handleChange = (event: any) => {
         const value = event.target.value as string;
         if(value === voiceDataStatus.all) getAllVoiceData();
@@ -63,8 +62,7 @@ export function TranscriptionCellStatusSelect(props: TranscriptionCellStatusSele
             direction='row'
             alignContent='center'
             alignItems='center'
-            justify='flex-start'
-        >
+            justify='flex-start'>
             <FormControl className={classes.formControl} >
                 <Select
                     value={status}

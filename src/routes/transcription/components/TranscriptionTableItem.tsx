@@ -7,8 +7,9 @@ import React, {useGlobal} from 'reactn';
 import {useHistory} from 'react-router-dom';
 import {ApiContext} from '../../../hooks/api/ApiContext';
 import {I18nContext} from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import {CustomTheme} from '../../../theme';
-import {CONTENT_STATUS, PATHS, VoiceData} from '../../../types';
+import {CONTENT_STATUS, PATHS, VoiceData, ROLES} from '../../../types';
 import {ICONS} from '../../../theme/icons';
 
 interface TranscriptionTableItemProps {
@@ -50,6 +51,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
     const { translate, formatDate } = React.useContext(I18nContext);
+    const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
     const [downloadLink, setDownloadLink] = React.useState('');
     const [expanded, setExpanded] = React.useState(false);
@@ -93,7 +95,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
             </TableCell>
             <TableCell style={{ minWidth: '250px' }}>
                 {
-                    voiceData.status !== CONTENT_STATUS.CONFIRMED &&
+                    roles.includes(ROLES.manager) && voiceData.status !== CONTENT_STATUS.CONFIRMED &&
                         <>
                             <Button
                                 className={classes.button}

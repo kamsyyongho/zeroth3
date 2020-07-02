@@ -132,7 +132,7 @@ export function Transcription() {
             const response = await api.voiceData.getHistory();
             // const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
-                setVoiceData(response.voiceData);
+                setVoiceData(response.data.content);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,

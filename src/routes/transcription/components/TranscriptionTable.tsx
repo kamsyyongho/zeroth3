@@ -11,6 +11,7 @@ import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData } from '../../../types';
+import { PERMISSIONS } from '../../../constants';
 import { TranscriptionTableItem } from './TranscriptionTableItem';
 import { TranscriptionCellStatusSelect } from './TranscriptionCellStatusSelect';
 

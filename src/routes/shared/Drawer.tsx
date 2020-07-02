@@ -62,7 +62,6 @@ export const AppDrawer = (props: AppDrawerProps) => {
   const canSeeUsers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.users), [roles]);
   const canSeeTranscribers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
   const canSeeTranscription = React.useMemo(() => hasPermission(roles, PERMISSIONS.transcription), [roles]);
-  const canSeeHistory = React.useMemo(() => hasPermission(roles, PERMISSIONS.history), [roles]);
 
   const drawerItems: JSX.Element[] = [];
   Object.keys(PATHS).forEach((key, index) => {
@@ -71,8 +70,7 @@ export const AppDrawer = (props: AppDrawerProps) => {
     if ((key === 'models' && !canSeeModels) ||
       (key === 'modelTraning' && !canSeeModels) ||
       (key === 'IAM' && !canSeeTranscribers && !canSeeUsers) ||
-        (key === 'transcription' && !canSeeTranscription) ||
-        (key === 'history' && !canSeeHistory)) {
+        (key === 'transcription' && !canSeeTranscription)) {
       shouldRender = false;
     }
 

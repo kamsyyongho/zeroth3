@@ -21,6 +21,7 @@ import {
     CONTENT_STATUS,
     DataSet,
     VoiceData,
+    VoiceDataResults,
     LanguageModel,
     ModelConfig,
     PATHS,
@@ -101,6 +102,7 @@ export function History() {
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [voiceDataToTable, setVoiceDataToTable] = React.useState<VoiceData[]>([]);
+    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>();
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
@@ -115,6 +117,7 @@ export function History() {
             if (response.kind === 'ok') {
                 // setDataSet(response.dataSets);
                 setVoiceData(response.data.content);
+                setVoiceDataResults(response.data);
                 setVoiceDataToTable(response.data.content);
             } else {
                 log({
@@ -242,6 +245,7 @@ export function History() {
                 {dataSet &&
                 <HistoryTable
                     voiceData={voiceDataToTable}
+                    voiceDataResults={voiceDataResults}
                     handleStatusChange={handleStatusChange}
                 />
                 }

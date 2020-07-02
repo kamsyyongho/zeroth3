@@ -19,7 +19,7 @@ const FULL_ROW_COL_SPAN = 5;
 
 interface TranscriptionTableProps {
     voiceData: VoiceData[];
-    voiceDataResults: VoiceDataResults;
+    voiceDataResults?: VoiceDataResults;
     handleStatusChange: (status: any) => void;
 }
 
@@ -106,34 +106,34 @@ export function HistoryTable(props: TranscriptionTableProps) {
                     {(!voiceData.length) ? renderNoResults() : renderSets()}
                 </TableBody>
             </Table>
-            {
-                voiceData.length &&
-                <TablePagination
-                    className={classes.tableHeader}
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    component="div"
-                    count={voiceDataResults.totalElements}
-                    rowsPerPage={pageSize}
-                    page={pageIndex}
-                    backIconButtonProps={{
-                        'aria-label': 'previous page',
-                    }}
-                    nextIconButtonProps={{
-                        'aria-label': 'next page',
-                    }}
-                    onChangePage={(event, newPage) => {
-                        gotoPage(newPage);
-                    }}
-                    onChangeRowsPerPage={e => {
-                        const numberOfRows: string = e.target.value;
-                        localStorage.setItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE, numberOfRows);
-                        setPageSize(Number(numberOfRows));
-                    }}
-                    labelRowsPerPage={translate('table.labelRowsPerPage')}
-                    labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
-                    ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}
-                />
-            }
+            {/*{*/}
+            {/*    voiceData.length &&*/}
+            {/*    <TablePagination*/}
+            {/*        className={classes.tableHeader}*/}
+            {/*        rowsPerPageOptions={[5, 10, 25, 50]}*/}
+            {/*        component="div"*/}
+            {/*        count={voiceDataResults.totalElements}*/}
+            {/*        rowsPerPage={pageSize}*/}
+            {/*        page={pageIndex}*/}
+            {/*        backIconButtonProps={{*/}
+            {/*            'aria-label': 'previous page',*/}
+            {/*        }}*/}
+            {/*        nextIconButtonProps={{*/}
+            {/*            'aria-label': 'next page',*/}
+            {/*        }}*/}
+            {/*        onChangePage={(event, newPage) => {*/}
+            {/*            gotoPage(newPage);*/}
+            {/*        }}*/}
+            {/*        onChangeRowsPerPage={e => {*/}
+            {/*            const numberOfRows: string = e.target.value;*/}
+            {/*            localStorage.setItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE, numberOfRows);*/}
+            {/*            setPageSize(Number(numberOfRows));*/}
+            {/*        }}*/}
+            {/*        labelRowsPerPage={translate('table.labelRowsPerPage')}*/}
+            {/*        labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}*/}
+            {/*        ActionsComponent={(paginationProps) => Pagination({ ...paginationProps, pageCount })}*/}
+            {/*    />*/}
+            {/*}*/}
         </>
     );
 }
