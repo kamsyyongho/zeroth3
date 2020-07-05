@@ -17,6 +17,7 @@ import {
   getAudioUrl,
   getDataToReview,
   getHistory,
+  GetHistoryRequest,
   getSegmentsDataResult,
   getVoiceDataStateChanges,
   MergeTwoSegmentsRequest,
@@ -981,9 +982,16 @@ export class VoiceData extends ParentApi {
     }
   }
 
-  async getHistory(): Promise<getHistory> {
+  async getHistory(options: GetHistoryRequest = {}): Promise<getHistory> {
+    const {page = 0, size = 10} = options;
+    const params = {
+      ...options,
+      page,
+      size,
+    };
     const response = await this.apisauce.get<IVoiceData, ServerError>(
-        this.getPathWithOrganization('/history')
+        this.getPathWithOrganization('/history'),
+        params,
     );
 
     if(!response.ok) {

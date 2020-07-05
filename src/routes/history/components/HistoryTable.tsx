@@ -20,6 +20,7 @@ const FULL_ROW_COL_SPAN = 5;
 interface TranscriptionTableProps {
     voiceDataResults: VoiceDataResults;
     handleStatusChange: (status: any) => void;
+    handlePagination: (pageIndex: number, size: number) => void;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -49,9 +50,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function HistoryTable(props: TranscriptionTableProps) {
-    const { voiceDataResults, handleStatusChange } = props;
+    const { voiceDataResults, handleStatusChange, handlePagination } = props;
     const { translate } = React.useContext(I18nContext);
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>(voiceDataResults.content)
+    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [pageSize, setPageSize] = React.useState<number>(10);
     const [pageIndex, setPageIndex] = React.useState<number>(0);
     const classes = useStyles();
@@ -101,7 +102,9 @@ export function HistoryTable(props: TranscriptionTableProps) {
     </TableRow>);
 
     React.useEffect(() => {
-        setVoiceData(voiceDataResults.content);
+        if(voiceDataResults?.content) {
+            setVoiceData(voiceDataResults.content);
+        }
     }, [voiceDataResults]);
 
     return (
@@ -109,7 +112,7 @@ export function HistoryTable(props: TranscriptionTableProps) {
             <Table className={classes.table}>
                 {renderHeader()}
                 <TableBody>
-                    {!voiceData?.length ? renderNoResults() : renderSets()}
+                    {!voiceData.length ? renderNoResults() : renderSets()}
                 </TableBody>
             </Table>
             {
@@ -129,11 +132,13 @@ export function HistoryTable(props: TranscriptionTableProps) {
                     }}
                     onChangePage={(event, newPage) => {
                         setPageIndex(newPage);
+                        handlePagination(newPage, pageSize);
                     }}
                     onChangeRowsPerPage={e => {
                         const numberOfRows: string = e.target.value;
-                        localStorage.setItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE, numberOfRows);
+                        localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE, numberOfRows);
                         setPageSize(Number(numberOfRows));
+                        handlePagination(0, Number(numberOfRows));
                     }}
                     labelRowsPerPage={translate('table.labelRowsPerPage')}
                     labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}

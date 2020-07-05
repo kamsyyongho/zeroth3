@@ -52,6 +52,11 @@ export interface SearchDataRequest {
   'sort-by'?: string;
 }
 
+export interface GetHistoryRequest {
+  page?: number;
+  size?: number;
+}
+
 export interface SplitSegmentQuery {
   'split-index': number;
 }

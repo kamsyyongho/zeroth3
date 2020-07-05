@@ -23,6 +23,7 @@ import {
     VoiceData,
     VoiceDataResults,
     LanguageModel,
+    LOCAL_STORAGE_KEYS,
     ModelConfig,
     PATHS,
     Project,
@@ -103,15 +104,26 @@ export function History() {
     const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [filterParams, setFilterParams] = React.useState<any>({});
 
+    const initialPageSize = React.useMemo(() => {
+        const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE);
+        if (rowsPerPageString) {
+            const rowsPerPage = Number(rowsPerPageString);
+            if (!isNaN(rowsPerPage)) {
+                return rowsPerPage;
+            }
+        }
+        return null;
+    }, []);
+
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
 
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
-    const getHistory = async (status?: boolean | null) => {
+    const getHistory = async (options: any = {}) => {
         if (api?.voiceData) {
             // const response = await api.user.getDataSetsToFetchFrom(status);
-            const response = await api.voiceData.getHistory();
+            const response = await api.voiceData.getHistory(options);
 
             if (response.kind === 'ok') {
                 // setDataSet(response.dataSets);
@@ -136,8 +148,7 @@ export function History() {
         const options = {};
         Object.assign(options, filterParams);
         Object.assign(options, {page: pageIndex, size});
-        getHistory();
-
+        getHistory(options);
     };
 
     React.useEffect(() => {
@@ -251,6 +262,7 @@ export function History() {
                 <HistoryTable
                     voiceDataResults={voiceDataResults}
                     handleStatusChange={handleStatusChange}
+                    handlePagination={handlePagination}
                 />
                 }
             </Paper>
