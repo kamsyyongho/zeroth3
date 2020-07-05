@@ -103,6 +103,7 @@ export function History() {
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [filterParams, setFilterParams] = React.useState<any>({});
+    const [voiceDataLoading, setVoiceDataLoading] = React.useState<boolean>(false);
 
     const initialPageSize = React.useMemo(() => {
         const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE);
@@ -123,6 +124,7 @@ export function History() {
     const getHistory = async (options: any = {}) => {
         if (api?.voiceData) {
             // const response = await api.user.getDataSetsToFetchFrom(status);
+            setVoiceDataLoading(true);
             const response = await api.voiceData.getHistory(options);
 
             if (response.kind === 'ok') {
@@ -136,6 +138,7 @@ export function History() {
                     important: true,
                 });
             }
+            setVoiceDataLoading(false);
         }
     };
 
@@ -263,6 +266,7 @@ export function History() {
                     voiceDataResults={voiceDataResults}
                     handleStatusChange={handleStatusChange}
                     handlePagination={handlePagination}
+                    loading={voiceDataLoading}
                 />
                 }
             </Paper>

@@ -1,5 +1,5 @@
-import {Button, TablePagination, TableSortLabel, TableBody, TableCell, Typography} from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import {Backdrop, Button, TablePagination, TableSortLabel, TableBody, TableCell, Typography} from '@material-ui/core';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
@@ -14,6 +14,7 @@ import { CustomTheme } from '../../../theme';
 import { DataSet, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS, CONTENT_STATUS } from '../../../types';
 import { HistoryTableItem } from './HistoryTableItem';
 import { HistoryCellStatusSelect } from './HistoryCellStatusSelect'
+import PulseLoader from 'react-spinners/PulseLoader';
 
 const FULL_ROW_COL_SPAN = 5;
 
@@ -21,6 +22,7 @@ interface TranscriptionTableProps {
     voiceDataResults: VoiceDataResults;
     handleStatusChange: (status: any) => void;
     handlePagination: (pageIndex: number, size: number) => void;
+    loading: boolean;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -46,16 +48,22 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         filterBtn: {
             height: 45,
-        }
+        },
+        backdrop: {
+            zIndex: theme.zIndex.drawer + 1,
+            color: theme.shadows[1],
+        },
     }));
 
 export function HistoryTable(props: TranscriptionTableProps) {
-    const { voiceDataResults, handleStatusChange, handlePagination } = props;
+    const { voiceDataResults, handleStatusChange, handlePagination, loading } = props;
     const { translate } = React.useContext(I18nContext);
     const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [pageSize, setPageSize] = React.useState<number>(10);
     const [pageIndex, setPageIndex] = React.useState<number>(0);
     const classes = useStyles();
+
+    const theme: CustomTheme = useTheme();
 
     const renderRowFiller = (<TableRow >
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
@@ -115,6 +123,16 @@ export function HistoryTable(props: TranscriptionTableProps) {
                     {!voiceData.length ? renderNoResults() : renderSets()}
                 </TableBody>
             </Table>
+            {loading && (
+                <Backdrop className={classes.backdrop} open={loading}>
+                    <PulseLoader
+                        sizeUnit={"px"}
+                        size={25}
+                        color={theme.palette.primary.light}
+                        loading={true}
+                    />
+                </Backdrop>
+            )}
             {
                 voiceData.length &&
                 <TablePagination
