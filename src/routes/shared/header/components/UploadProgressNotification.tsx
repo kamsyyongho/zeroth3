@@ -109,6 +109,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
         setText(translate('common.decoded'));
         clearNotificationTimeout();
         if (typeof onComplete === 'function') {
+            console.log('============ onComplete should be triggered');
           onComplete();
         }
         setProjectTdpDataShouldRefresh(true);

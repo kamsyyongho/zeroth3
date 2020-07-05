@@ -119,6 +119,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const onComplete = () => {
+    console.log('==========uploadAudio is complete : ', projectTdpDataShouldRefresh);
     setUploadQueueEmpty(true);
     setProjectTdpDataShouldRefresh(true);
   };
