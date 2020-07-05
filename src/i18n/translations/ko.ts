@@ -216,7 +216,7 @@ export const ko: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      decodeData: '데이터 디코딩',
+      audioUpload: '오디오 업로드',
       highRiskSegments: 'High Risk 세그먼트',
       memo: '메모',
       sessionId: '세션 ID',

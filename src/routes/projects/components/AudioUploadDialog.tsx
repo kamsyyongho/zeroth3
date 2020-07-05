@@ -244,7 +244,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
         container: clsx(modelConfigDialogOpen && classes.hidden)
       }}
     >
-      <DialogTitle id="audio-upload-dialog">{translate(`TDP.decodeData`)}</DialogTitle>
+      <DialogTitle id="audio-upload-dialog">{translate(`TDP.audioUpload`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => {
           const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.FILE as string;

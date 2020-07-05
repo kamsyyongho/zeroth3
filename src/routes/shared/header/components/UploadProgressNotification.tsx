@@ -14,6 +14,7 @@ import { useSnackbar } from 'notistack';
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { ProgressBar } from '../../ProgressBar';
+import {useHistory} from 'react-router-dom';
 
 const useStyles = makeStyles((theme) =>
   createStyles({

@@ -292,6 +292,19 @@ export function TDP(props: TDPProps) {
     }
   }, []);
 
+  // React.useEffect(() => {
+  //   console.log('=========== projectTdpSouldRefresh : ', projectTdpDataShouldRefresh);
+  //   if(setTypeTDP?.length) {
+  //     getSubSetVoiceData();
+  //   } else if(!voiceDataResults?.content?.length) {
+  //     getVoiceDataWithDefaultOptions();
+  //   }
+  //   // if the flag was already set when we first load the page
+  //   if (projectTdpDataShouldRefresh) {
+  //     setProjectTdpDataShouldRefresh(false);
+  //   }
+  // }, [projectTdpDataShouldRefresh])
+
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
       getVoiceDataWithDefaultOptions();
@@ -299,13 +312,13 @@ export function TDP(props: TDPProps) {
     }
   }, [projectId])
 
-  // React.useEffect(() => {
-  //   // if the flag triggers after we are already on the page
-  //   if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-  //     setProjectTdpDataShouldRefresh(false);
-  //     getVoiceDataWithDefaultOptions();
-  //   }
-  // }, [projectTdpDataShouldRefresh]);
+  React.useEffect(() => {
+    // if the flag triggers after we are already on the page
+    if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+      setProjectTdpDataShouldRefresh(false);
+      getVoiceDataWithDefaultOptions();
+    }
+  }, [projectTdpDataShouldRefresh]);
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
@@ -336,8 +349,6 @@ export function TDP(props: TDPProps) {
 
   const openCreateSetDialog = () => setIsCreateSetOpen(true);
   const closeCreateSetDialog = () => setIsCreateSetOpen(false);
-
-
 
   const renderContent = () => {
     return (<Card elevation={0} className={classes.card} >
