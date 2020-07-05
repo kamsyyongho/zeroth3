@@ -164,6 +164,7 @@ export const DropZoneFormField = ({
           getFileRemovedMessage={handleRemoveFile}
           getFileAddedMessage={handleFileAdded}
           getDropRejectMessage={handleRejectText}
+          clearOnUnmount={true}
           //disable alerts for and handle alerts in onDrop API
           showAlerts={false}
           {...props}

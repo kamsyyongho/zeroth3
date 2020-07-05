@@ -413,15 +413,18 @@ export function TDP(props: TDPProps) {
       {!project ? <BulletList /> :
         renderContent()
       }
-      <AudioUploadDialog
-        open={isUploadOpen}
-        onClose={closeUploadDialog}
-        onSuccess={closeUploadDialog}
-        projectId={projectId}
-        modelConfigs={modelConfigs}
-        openModelConfigDialog={openModelConfigDialog}
-        modelConfigDialogOpen={modelConfigDialogOpen}
-      />
+      {
+        isUploadOpen &&
+        <AudioUploadDialog
+            open={isUploadOpen}
+            onClose={closeUploadDialog}
+            onSuccess={closeUploadDialog}
+            projectId={projectId}
+            modelConfigs={modelConfigs}
+            openModelConfigDialog={openModelConfigDialog}
+            modelConfigDialogOpen={modelConfigDialogOpen}
+        />
+      }
       <CreateSetFormDialog
         open={isCreateSetOpen}
         onClose={closeCreateSetDialog}
