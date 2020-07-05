@@ -100,9 +100,8 @@ export function History() {
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
-    const [voiceDataToTable, setVoiceDataToTable] = React.useState<VoiceData[]>([]);
-    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>();
+    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [filterParams, setFilterParams] = React.useState<any>({});
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
@@ -116,9 +115,7 @@ export function History() {
 
             if (response.kind === 'ok') {
                 // setDataSet(response.dataSets);
-                setVoiceData(response.data.content);
                 setVoiceDataResults(response.data);
-                setVoiceDataToTable(response.data.content);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
@@ -131,8 +128,16 @@ export function History() {
     };
 
     const handleStatusChange = (status: any) => {
-        const filteredVoiceData = voiceData.filter((voiceData: VoiceData) => status === allStatus || voiceData.status === status)
-        setVoiceDataToTable(filteredVoiceData);
+        // const filteredVoiceData = voiceData.filter((voiceData: VoiceData) => status === allStatus || voiceData.status === status)
+        // setVoiceDataToTable(filteredVoiceData);
+    };
+
+    const handlePagination = (pageIndex: number, size: number) => {
+        const options = {};
+        Object.assign(options, filterParams);
+        Object.assign(options, {page: pageIndex, size});
+        getHistory();
+
     };
 
     React.useEffect(() => {
@@ -244,7 +249,6 @@ export function History() {
                 }
                 {dataSet &&
                 <HistoryTable
-                    voiceData={voiceDataToTable}
                     voiceDataResults={voiceDataResults}
                     handleStatusChange={handleStatusChange}
                 />

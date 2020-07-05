@@ -22,7 +22,21 @@ import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { useWindowSize } from '../../../../hooks/window/useWindowSize';
 import { SearchDataRequest } from '../../../../services/api/types';
 import { CustomTheme } from '../../../../theme';
-import { BooleanById, CONTENT_STATUS, DataSet, FilterParams, GenericById, LOCAL_STORAGE_KEYS, TranscriberStats, ModelConfig, ORDER, PATHS, TDPTableColumns, Transcriber, VoiceData, VoiceDataResults } from '../../../../types';
+import {
+  BooleanById,
+  CONTENT_STATUS,
+  DataSet,
+  FilterParams,
+  GenericById,
+  LOCAL_STORAGE_KEYS,
+  TranscriberStats,
+  ModelConfig,
+  ORDER,
+  PATHS,
+  TDPTableColumns,
+  Transcriber,
+  VoiceData,
+  VoiceDataResults } from '../../../../types';
 import { formatSecondsDuration } from '../../../../util/misc';
 import { Pagination } from '../../../shared/Pagination';
 import { TDPCellStatusSelect } from './TDPCellStatusSelect';
@@ -394,7 +408,7 @@ export function TDPTable(props: TDPTableProps) {
 
   React.useEffect(() => {
     handlePagination(pageIndex, pageSize);
-  }, [pageIndex, pageSize])
+  }, [pageIndex, pageSize]);
 
   React.useEffect(() => {
     if(!voiceDataResults?.content?.length) {
@@ -402,7 +416,7 @@ export function TDPTable(props: TDPTableProps) {
     } else {
       setVoiceData(voiceDataResults.content);
     }
-  }, [voiceDataResults])
+  }, [voiceDataResults]);
 
   // Render the UI for your table
   const renderHeaderCell = (column: ColumnInstance<VoiceData>, idx: number) => {
