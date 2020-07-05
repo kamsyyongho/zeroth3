@@ -382,7 +382,7 @@ export function TDP(props: TDPProps) {
               size='small'
               onClick={openUploadDialog}
               startIcon={<BackupIcon />}>
-              {translate('TDP.uploadAudio')}
+              {translate('TDP.audioUpload')}
             </Button>
           </Grid>}
         </Grid>}
