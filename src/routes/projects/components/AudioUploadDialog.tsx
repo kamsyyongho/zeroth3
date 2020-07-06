@@ -48,7 +48,7 @@ interface AudioUploadDialogProps {
 const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
 const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 
-const ACCEPTED_FILE_TYPES = ['audio/*'];
+const ACCEPTED_FILE_TYPES = ['audio/*', '.mp4', '.MP4'];
 
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const {

@@ -59,6 +59,9 @@ export const renderInputCombination = (input: string[]) => {
             case 'ArrowDown':
                 result += '↓ ArrowDown';
                 break;
+            case ' ':
+                result += 'Space';
+                break;
             default:
                 result += input.toUpperCase();
         }
