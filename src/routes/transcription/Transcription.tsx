@@ -208,7 +208,7 @@ export function Transcription() {
                 // setVoiceData(undefined);
             } else {
                 log({
-                    file: `EditorPage.tsx`,
+                    file: `Transcription.tsx`,
                     caller: `confirmData - failed to confirm segments`,
                     value: response,
                     important: true,

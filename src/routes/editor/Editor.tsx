@@ -13,7 +13,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import {useWindowSize} from '../../hooks/window/useWindowSize';
 import {CustomTheme} from '../../theme/index';
 import { useHistory } from 'react-router-dom';
-import {Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time, VoiceData, SnackbarError, PATHS} from '../../types';
+import {CONTENT_STATUS, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time, VoiceData, SnackbarError, PATHS} from '../../types';
 import {CursorContent, SegmentBlockData, Word, WordAlignmentEntityData} from '../../types/editor.types';
 import {DECODER_DIFF_CLASSNAME} from "../../constants";
 import {EDITOR_CONTROLS} from './components/EditorControls';
@@ -30,11 +30,13 @@ import {
   getSegmentAndWordIndex } from './helpers/editor.helper';
 import log from '../../util/log/logger';
 import {NavigationPropsToGet} from  './EditorPage';
+
 let renderTimes = 0;
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
 const COMMENT_HEIGHT = 40;
 const EDITOR_MARGIN_TOP = 25;
+
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
     draggable: {
@@ -82,9 +84,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       overflow: 'hidden',
     },
     diffTitleButton: {
-      flex: 1,
+      flex: 2,
       marginRight: '30px',
-    }
+    },
+    button: {
+      marginLeft: '10px',
+    },
+    buttonReject: {
+      backgroundColor: '#c33636',
+    },
   }),
 );
 
@@ -427,6 +435,62 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  const handleConfirmation = async () => {
+    if(api?.voiceData && voiceData) {
+      setLoading(true);
+      const response = await api.voiceData.confirmData(voiceData.projectId, voiceData.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        //redirect to transcript management
+        PATHS.transcription.to && history.push(PATHS.transcription.to);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `confirmData - failed to confirm segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if(api?.voiceData && voiceData) {
+      setLoading(true);
+      const response = await api.voiceData.rejectData(voiceData.projectId, voiceData.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        //redirect to transcript management
+        PATHS.transcription.to && history.push(PATHS.transcription.to);
+      } else {
+        log({
+          file: `Editor.tsx`,
+          caller: `confirmData - failed to confirm segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setLoading(false);
+    }
+  };
+
   const handleCommentCancel = () => {
     setCommentInfo({});
     setReason('');
@@ -616,53 +680,37 @@ export function Editor(props: EditorProps) {
                   alignItems='center'>
                 <Grid item>
                   <Button
+                      className={classes.button}
+                      variant='contained'
+                      color="primary"
+                      disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                      size='medium'
+                      onClick={handleConfirmation}>
+                    {translate('common.confirm')}
+                  </Button>
+                  <Button
+                      className={[classes.button, classes.buttonReject].join(' ')}
+                      color='secondary'
+                      disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                      variant='contained'
+                      size='medium'
+                      onClick={handleReject}>
+                    {translate('common.reject')}
+                  </Button>
+                  <Button
                       color='primary'
                       variant='contained'
                       size='medium'
                       startIcon={<LaunchIcon />}
                       onClick={handleGoToEditMode}
-                      style={{ marginLeft: '10px', float: 'right' }}
-                  >
+                      style={{ marginLeft: '10px', float: 'right' }}>
                     {translate('editor.editor')}
                   </Button>
                 </Grid>
               </Grid>
             </Grid>
-            {/*<Grid container*/}
-            {/*      item*/}
-            {/*      className={classes.diffTitleContainer}*/}
-            {/*      direction='column'*/}
-            {/*      justify='flex-start'*/}
-            {/*      alignItems='flex-start'*/}
-            {/*>*/}
-            {/*  <Grid*/}
-            {/*      container*/}
-            {/*      style={{ margin: '0' }}*/}
-            {/*      item*/}
-            {/*      direction='column'>*/}
-            {/*    <Typography className={classes.diffTitleText}>{voiceData.originalFilename}</Typography>*/}
-            {/*  </Grid>*/}
-            {/*  <Grid*/}
-            {/*      container*/}
-            {/*      item*/}
-            {/*      direction='row'>*/}
-            {/*    <div style={{ backgroundColor: '#ffe190', width: '30px' }} />*/}
-            {/*    <Typography style={{  paddingLeft: '5px' }}>{'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'}</Typography>*/}
-            {/*  </Grid>*/}
-            {/*</Grid>*/}
-            {/*<div className={classes.diffTitleButton}>*/}
-            {/*  <Button*/}
-            {/*      color='primary'*/}
-            {/*      variant='contained'*/}
-            {/*      size='medium'*/}
-            {/*      onClick={handleComment}*/}
-            {/*      style={{ marginLeft: '10px', float: 'right' }}*/}
-            {/*  >*/}
-            {/*    {translate('common.comment')}*/}
-            {/*  </Button>*/}
-            {/*</div>*/}
           </div>
-          <div className={classes.diffEditor} >
+          <div className={classes.diffEditor}>
             {ready &&
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'hidden' }}>
               {

@@ -147,8 +147,7 @@ export const DropZoneFormField = ({
     <FormControl
       style={{ display: hidden ? 'none' : undefined, minWidth: 300 }}
       fullWidth={fullWidth}
-      error={isError}
-    >
+      error={isError}>
       <Box border={isError ? 1 : 0} borderColor={isError ? 'error.main' : undefined} >
         <DropzoneArea
           filesLimit={filesLimit || 100}

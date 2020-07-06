@@ -215,7 +215,7 @@ export const en: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      audioUpload: 'Audio Upload',
+      dataUpload: 'Data Upload',
       highRiskSegments: 'High Risk Segments',
       memo: 'Memo',
       sessionId: 'Session ID',
