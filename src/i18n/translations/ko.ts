@@ -174,7 +174,7 @@ export const ko: ResourceLanguage = {
       fileUrl: '파일 URL',
     },
     admin: {
-      pageTitle: '관리자',
+      pageTitle: '전사 관리',
       diff: 'Diff',
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',
@@ -182,7 +182,7 @@ export const ko: ResourceLanguage = {
       reason: '이유',
     },
     transcription: {
-      pageTitle: '전사 관리',
+      pageTitle: '전사 내역',
       diff: 'Diff',
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',

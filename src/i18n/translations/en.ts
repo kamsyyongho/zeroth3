@@ -173,7 +173,7 @@ export const en: ResourceLanguage = {
       fileUrl: 'File URL',
     },
     admin: {
-      pageTitle: 'Admin',
+      pageTitle: 'Manage Transcript',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',
@@ -181,7 +181,7 @@ export const en: ResourceLanguage = {
       reason: 'Reason',
     },
     transcription: {
-      pageTitle: 'Manage Transcripts',
+      pageTitle: 'Transcript History',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',

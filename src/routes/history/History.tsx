@@ -147,7 +147,7 @@ export function History() {
         const statusForOption = status === allStatus ? null : status;
         const options = {};
         const size = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE) || 10;
-        Object.assign(options, {page: 0, size, satus: statusForOption})
+        Object.assign(options, {page: 0, size, status: statusForOption})
         getHistory(options);
     };
 
