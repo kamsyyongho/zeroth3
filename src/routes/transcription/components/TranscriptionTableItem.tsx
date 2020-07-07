@@ -11,6 +11,7 @@ import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import {CustomTheme} from '../../../theme';
 import {CONTENT_STATUS, PATHS, VoiceData, ROLES} from '../../../types';
 import {ICONS} from '../../../theme/icons';
+import Chip from '@material-ui/core/Chip';
 
 interface TranscriptionTableItemProps {
     voiceData: VoiceData;
@@ -41,7 +42,27 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         buttonReject: {
             backgroundColor: '#c33636',
-        }
+        },
+        rejected: {
+            backgroundColor: theme.error,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        confirmed: {
+            backgroundColor: theme.editor.changes,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        review: {
+            backgroundColor: theme.palette.primary.light,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        fetched: {
+            backgroundColor: theme.editor.LowConfidence,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
     }));
 
 export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
@@ -66,6 +87,21 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
         const projectId = voiceData.projectId;
         setNavigationProps({ voiceData: voiceData, projectId: projectId, isDiff: true, readOnly: false });
         PATHS.editor.to && history.push(PATHS.editor.to);
+    };
+
+    const statusChipClass = () => {
+        switch(voiceData.status) {
+            case CONTENT_STATUS.REJECTED :
+                return classes.rejected;
+            case CONTENT_STATUS.CONFIRMED :
+                return classes.confirmed;
+            // case CONTENT_STATUS.IN_REVIEW :
+            //     return classes.review;
+            // case CONTENT_STATUS.FETCHED :
+            //     return classes.fetched
+            default :
+                return '';
+        }
     };
 
     return (
@@ -101,7 +137,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
                                 className={classes.button}
                                 variant='contained'
                                 color="primary"
-                                disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                                disabled={voiceData.status !== CONTENT_STATUS.IN_REVIEW}
                                 size='small'
                                 onClick={() => handleConfirmationClick(voiceDataIndex)}>
                                 {translate('common.confirm')}
@@ -109,7 +145,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
                             <Button
                                 className={[classes.button, classes.buttonReject].join(' ')}
                                 color='secondary'
-                                disabled={voiceData.status === CONTENT_STATUS.REJECTED}
+                                disabled={voiceData.status !== CONTENT_STATUS.IN_REVIEW}
                                 variant='contained'
                                 size='small'
                                 onClick={() => handleRejectClick(voiceDataIndex)}>

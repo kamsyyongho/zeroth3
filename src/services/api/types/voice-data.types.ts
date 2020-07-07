@@ -1,5 +1,6 @@
 import {
   CONTENT_STATUS,
+  HistoryDataResults,
   Segment,
   VoiceData,
   VoiceDataResults,
@@ -196,7 +197,7 @@ export type getDataToReview =
   | GeneralApiProblem;
 
 export type getHistory =
-  | { kind: 'ok'; data: VoiceDataResults }
+  | { kind: 'ok'; data: HistoryDataResults }
   | GeneralApiProblem;
 
 export type getAudioUrl =

@@ -13,6 +13,7 @@ import Chip from '@material-ui/core/Chip';
 interface HistoryTableItemProps {
     voiceData: VoiceData;
     voiceDataIndex: number;
+    status?: CONTENT_STATUS;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -60,7 +61,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function HistoryTableItem(props: HistoryTableItemProps) {
-    const { voiceData, voiceDataIndex } = props;
+    const { voiceData, voiceDataIndex, status } = props;
     // const { transcribers, total, processed, name } = voiceData;
     // const numberOfTranscribers = transcribers.length;
     const history = useHistory();

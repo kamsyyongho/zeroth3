@@ -2,6 +2,7 @@ import {ApisauceInstance} from 'apisauce';
 import {
   AudioUrlResponse,
   CONTENT_STATUS,
+  HistoryDataResults,
   Segment,
   VoiceData as IVoiceData,
   VoiceDataResults,
@@ -1004,7 +1005,7 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const data = response.data as VoiceDataResults;
+      const data = response.data as HistoryDataResults;
       return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };

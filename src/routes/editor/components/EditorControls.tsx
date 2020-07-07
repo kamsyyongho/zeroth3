@@ -347,7 +347,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
-  const handleShortcut = () => {
+  const handleShortcut = (event: KeyboardEvent) => {
     const keyCombinationArray = Object.values(localShortcuts);
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
@@ -405,17 +405,16 @@ export const EditorControls = (props: EditorControlsProps) => {
         onCommandClick(EDITOR_CONTROLS.audioPlayPause);
         break;
     }
+    event.preventDefault();
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
     if(shortcutsStack.length < 2) {
       return;
     } else {
-      handleShortcut();
+      handleShortcut(event);
       shortcutsStack = [];
-      event.preventDefault();
     }
-
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {

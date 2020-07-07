@@ -78,6 +78,11 @@ export interface VoiceDataResults extends PaginatedResults {
   content: VoiceData[];
 }
 
+export interface HistoryDataResults extends PaginatedResults {
+  content: VoiceData[];
+  status?: CONTENT_STATUS;
+}
+
 export enum CONTENT_STATUS {
   DECODED = 'DECODED',
   UNCONFIRMED_HR = 'UNCONFIRMED_HR',

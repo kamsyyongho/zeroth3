@@ -11,7 +11,7 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS, CONTENT_STATUS } from '../../../types';
+import { DataSet, HistoryDataResults, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS, CONTENT_STATUS } from '../../../types';
 import { HistoryTableItem } from './HistoryTableItem';
 import { HistoryCellStatusSelect } from './HistoryCellStatusSelect'
 import PulseLoader from 'react-spinners/PulseLoader';
@@ -19,7 +19,7 @@ import PulseLoader from 'react-spinners/PulseLoader';
 const FULL_ROW_COL_SPAN = 5;
 
 interface TranscriptionTableProps {
-    voiceDataResults: VoiceDataResults;
+    voiceDataResults: HistoryDataResults;
     handleStatusChange: (status: any) => void;
     handlePagination: (pageIndex: number, size: number) => void;
     loading: boolean;
@@ -76,6 +76,7 @@ export function HistoryTable(props: TranscriptionTableProps) {
         <HistoryTableItem
             voiceData={voiceData}
             voiceDataIndex={index}
+            status={voiceDataResults?.status}
             // openEvaluationDetail={openEvaluationDetail}
         />
     </React.Fragment>));
@@ -134,7 +135,7 @@ export function HistoryTable(props: TranscriptionTableProps) {
                 </Backdrop>
             )}
             {
-                voiceData.length &&
+                voiceData.length > 0 &&
                 <TablePagination
                     className={classes.tableHeader}
                     rowsPerPageOptions={[5, 10, 25, 50]}

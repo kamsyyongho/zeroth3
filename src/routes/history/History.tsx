@@ -20,6 +20,7 @@ import {
     AcousticModel,
     CONTENT_STATUS,
     DataSet,
+    HistoryDataResults,
     VoiceData,
     VoiceDataResults,
     LanguageModel,
@@ -101,7 +102,7 @@ export function History() {
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
-    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [voiceDataResults, setVoiceDataResults] = React.useState<HistoryDataResults>({} as HistoryDataResults);
     const [filterParams, setFilterParams] = React.useState<any>({});
     const [voiceDataLoading, setVoiceDataLoading] = React.useState<boolean>(false);
 
@@ -143,8 +144,11 @@ export function History() {
     };
 
     const handleStatusChange = (status: any) => {
-        // const filteredVoiceData = voiceData.filter((voiceData: VoiceData) => status === allStatus || voiceData.status === status)
-        // setVoiceDataToTable(filteredVoiceData);
+        const statusForOption = status === allStatus ? null : status;
+        const options = {};
+        const size = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE) || 10;
+        Object.assign(options, {page: 0, size, satus: statusForOption})
+        getHistory(options);
     };
 
     const handlePagination = (pageIndex: number, size: number) => {

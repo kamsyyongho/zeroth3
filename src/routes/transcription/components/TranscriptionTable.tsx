@@ -23,6 +23,7 @@ interface TranscriptionTableProps {
     getVoiceDataInReview: () => void;
     handleConfirmationClick: (voiceDataIndex: number) => void;
     handleRejectClick: (voiceDataIndex: number) => void;
+    showStatus: boolean;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function TranscriptionTable(props: TranscriptionTableProps) {
-    const { voiceData, getAllVoiceData, getVoiceDataInReview, handleConfirmationClick, handleRejectClick } = props;
+    const { voiceData, getAllVoiceData, getVoiceDataInReview, handleConfirmationClick, handleRejectClick, showStatus } = props;
     const { translate } = React.useContext(I18nContext);
     const classes = useStyles();
 
@@ -94,7 +95,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('admin.diff')}
             </TableCell>
             <TableCell>
-                <TranscriptionCellStatusSelect getVoiceDataInReview={getVoiceDataInReview} getAllVoiceData={getAllVoiceData}/>
+                {translate('common.confirm') + ' / ' + translate('common.reject')}
             </TableCell>
         </TableRow>
     </TableHead>);

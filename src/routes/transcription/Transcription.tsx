@@ -102,6 +102,7 @@ export function Transcription() {
     const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
     const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [showStatus, setShowStatus] = React.useState<boolean>(false);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
@@ -115,6 +116,7 @@ export function Transcription() {
             // const response = await api.voiceData.getHistory();
             const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
+                setShowStatus(false);
                 setVoiceData(response.voiceData);
             } else {
                 log({
@@ -132,6 +134,7 @@ export function Transcription() {
             const response = await api.voiceData.getHistory();
             // const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
+                setShowStatus(true);
                 setVoiceData(response.data.content);
             } else {
                 log({
@@ -310,6 +313,7 @@ export function Transcription() {
                         getVoiceDataInReview={getVoiceDataInReview}
                         handleConfirmationClick={handleConfirmationClick}
                         handleRejectClick={handleRejectClick}
+                        showStatus={showStatus}
                     />
                 }
             </Paper>
