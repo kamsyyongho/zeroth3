@@ -712,7 +712,7 @@ export function Editor(props: EditorProps) {
           </div>
           <div className={classes.diffEditor}>
             {ready &&
-            <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'hidden' }}>
+            <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'scroll' }}>
               {
                 segments.map((segment: Segment, index: number) => {
                   return <MemoizedDecoderSegmentBlock key={`decoder-segment-block-${index}`}

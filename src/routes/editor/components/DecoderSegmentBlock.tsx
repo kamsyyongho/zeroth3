@@ -117,11 +117,13 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
               if(i !== decoderTranscriptArray.length - 1) {
                   letterStack += ' ';
               }
-              animated.push(letterStack)
+              animated.push(letterStack);
               letterStack = '';
           } else {
               const animatedText = (
-                  <span key={`decoder-diff-span-${i}`} className={`${classes.highlight + ' ' +  DECODER_DIFF_CLASSNAME}`}>{decoderTranscriptArray[i]}</span>
+                  <span key={`decoder-diff-span-${i}`} className={`${classes.highlight + ' ' +  DECODER_DIFF_CLASSNAME}`}>
+                      {decoderTranscriptArray[i]}
+                  </span>
               )
               animated.push(animatedText);
           }
@@ -133,6 +135,17 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
         setLocalSegment(segment);
         setLengthBeforeEachBlockArray();
     }, [segment]);
+
+    React.useEffect(() => {
+        if(playingLocation[0] === segmentIndex) {
+            checkLocationOnScreenAndScroll(
+                segmentRef.current,
+                editorElement,
+                editorContentHeight,
+                windowHeight,
+                editorAutoScrollDisabled);
+        }
+    }, [playingLocation])
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2

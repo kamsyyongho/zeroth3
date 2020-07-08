@@ -100,7 +100,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
         </TableRow>
     </TableHead>);
 
-    const renderNoResults = () => (<TableRow >
+    const renderNoResults = () => (<TableRow>
         <TableCell colSpan={FULL_ROW_COL_SPAN}>
             <Typography align='center' >{translate('table.noResults')}</Typography>
         </TableCell>
