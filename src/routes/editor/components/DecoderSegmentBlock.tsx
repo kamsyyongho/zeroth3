@@ -38,6 +38,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         highlight: {
             backgroundColor: '#ffe190',
+        },
+        playingSegment: {
+            borderStyle: 'solid',
+            borderColor: green[200],
         }
     }),
 );
@@ -80,6 +84,8 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const styleMap = React.useMemo(() => {
         return buildStyleMap(theme);
     }, []);
+    const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? classes.playingSegment : '', playingLocation)
+
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
@@ -156,7 +162,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            <span>{renderAnimatedTranscript()}</span>
+            <span className={memoizedSegmentClassName}>{renderAnimatedTranscript()}</span>
         </div>
     );
 };
