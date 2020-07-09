@@ -20,6 +20,7 @@
       <change beforePath="$PROJECT_DIR$/src/routes/history/components/HistoryTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryTableItem.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" afterDir="false" />
@@ -115,7 +116,7 @@
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
-      <workItem from="1593394113270" duration="145705000" />
+      <workItem from="1593394113270" duration="146300000" />
     </task>
     <servers />
   </component>

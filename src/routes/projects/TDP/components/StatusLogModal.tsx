@@ -130,6 +130,9 @@ export function StatusLogModal(props: StatusLogModalProps) {
                             <TableCell>
                                 {translate('common.date')}
                             </TableCell>
+                            <TableCell>
+                                {translate('IAM.user')}
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -144,6 +147,9 @@ export function StatusLogModal(props: StatusLogModalProps) {
                                             <Typography>
                                                 {formatDate(new Date(change.changedAt))}
                                             </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography>{change.user || '-'}</Typography>
                                         </TableCell>
                                     </TableRow>
                                 )

@@ -207,7 +207,7 @@ export function Transcription() {
             const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
             let snackbarError: SnackbarError | undefined = {} as SnackbarError;
             if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
+                const copyData = voiceDataResults.content.slice();
                 snackbarError = undefined;
                 copyData.splice(selectedVoiceDataIndex, 1);
                 const updateVoiceDataResults = JSON.parse(JSON.stringify(voiceDataResults));
@@ -290,7 +290,7 @@ export function Transcription() {
                 }
             </CardContent>
         </Card>);
-        if (!voiceData) {
+        if (!voiceDataResults) {
             return <NotFound text={translate('projects.notFound')} />;
         }
     };
