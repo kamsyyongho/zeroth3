@@ -265,7 +265,7 @@ export function History() {
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
-                {dataSet &&
+                {voiceDataResults &&
                 <HistoryTable
                     voiceDataResults={voiceDataResults}
                     handleStatusChange={handleStatusChange}

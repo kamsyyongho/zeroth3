@@ -24,6 +24,7 @@
       <change beforePath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/shared/header/components/UploadProgressNotification.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/header/components/UploadProgressNotification.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/services/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/api.ts" afterDir="false" />
@@ -114,7 +115,7 @@
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
-      <workItem from="1593394113270" duration="142740000" />
+      <workItem from="1593394113270" duration="145705000" />
     </task>
     <servers />
   </component>

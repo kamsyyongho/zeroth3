@@ -21,6 +21,7 @@ import {
   GetHistoryRequest,
   getSegmentsDataResult,
   getVoiceDataStateChanges,
+  GetVoiceDataToReviewRequest,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
   MergeWordsInSegmentRequest,
@@ -961,9 +962,17 @@ export class VoiceData extends ParentApi {
     return { kind: 'ok' };
 
   }
-  async getDataToReview(): Promise<getDataToReview> {
-    const response = await this.apisauce.get<IVoiceData, ServerError>(
-        this.getPathWithOrganization('/reviews')
+  async getDataToReview(options: GetVoiceDataToReviewRequest = {}): Promise<getDataToReview> {
+    const {page = 0, size = 10} = options;
+    const params = {
+      ...options,
+      page,
+      size,
+    };
+
+    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
+        this.getPathWithOrganization('/reviews'),
+        params,
     );
 
     if(!response.ok) {
@@ -976,8 +985,8 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const voiceData = response.data as IVoiceData[];
-      return { kind: 'ok', voiceData };
+      const data = response.data as VoiceDataResults;
+      return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

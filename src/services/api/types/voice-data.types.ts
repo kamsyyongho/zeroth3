@@ -53,9 +53,15 @@ export interface SearchDataRequest {
   'sort-by'?: string;
 }
 
+export interface GetVoiceDataToReviewRequest {
+  page?: number;
+  size?: number;
+}
+
 export interface GetHistoryRequest {
   page?: number;
   size?: number;
+  status?: CONTENT_STATUS;
 }
 
 export interface SplitSegmentQuery {
@@ -193,7 +199,7 @@ export type deleteUnconfirmedVoiceDataResult =
   | GeneralApiProblem;
 
 export type getDataToReview =
-  | { kind: 'ok'; voiceData: VoiceData[] }
+  | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
 export type getHistory =

@@ -20,6 +20,7 @@ import {
     AcousticModel,
     DataSet,
     VoiceData,
+    VoiceDataResults,
     LanguageModel,
     ModelConfig,
     PATHS,
@@ -96,7 +97,7 @@ export function Transcription() {
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
+    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
     const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number>(0);
     const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
@@ -111,13 +112,13 @@ export function Transcription() {
     const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
     const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
-    const getVoiceDataInReview = async () => {
+    const getVoiceDataInReview = async (options: any = {}) => {
         if (api?.voiceData) {
             // const response = await api.voiceData.getHistory();
-            const response = await api.voiceData.getDataToReview();
+            const response = await api.voiceData.getDataToReview(options);
             if (response.kind === 'ok') {
                 setShowStatus(false);
-                setVoiceData(response.voiceData);
+                setVoiceDataResults(response.data);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
@@ -135,7 +136,6 @@ export function Transcription() {
             // const response = await api.voiceData.getDataToReview();
             if (response.kind === 'ok') {
                 setShowStatus(true);
-                setVoiceData(response.data.content);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
@@ -147,9 +147,11 @@ export function Transcription() {
         }
     };
 
+    const handlePagination = (pageIndex: number, size: number) => getVoiceDataInReview({page: pageIndex, size});
+
     const setSelectionAndOpenDialog = (index: number) => {
         setSelectedVoiceDataIndex(index);
-        setSelectedVoiceData(voiceData[index]);
+        setSelectedVoiceData(voiceDataResults.content[index]);
         setIsConfirmationOpen(true);
     }
 
@@ -164,16 +166,19 @@ export function Transcription() {
     };
 
     const handleConfirmation = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
+        if (api?.voiceData && voiceDataResults && selectedVoiceData) {
             setIsLoading(true);
             setIsConfirmationOpen(false);
             const response = await api.voiceData.confirmData(selectedVoiceData.projectId, selectedVoiceData.id);
             let snackbarError: SnackbarError | undefined = {} as SnackbarError;
             if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
+                const copyData = voiceDataResults.content.slice();
                 snackbarError = undefined;
                 copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
+                const updateVoiceDataResults = JSON.parse(JSON.stringify(voiceDataResults));
+                Object.assign(updateVoiceDataResults, {content: copyData});
+                setVoiceDataResults(updateVoiceDataResults)
+                // setVoiceData(copyData);
                 enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
                 // to trigger the `useEffect` to fetch more
                 // setVoiceData(undefined);
@@ -196,7 +201,7 @@ export function Transcription() {
     };
 
     const handleRejection = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
+        if (api?.voiceData && voiceDataResults && selectedVoiceData) {
             setIsLoading(true);
             setIsConfirmationOpen(false);
             const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
@@ -205,7 +210,9 @@ export function Transcription() {
                 const copyData = voiceData.slice();
                 snackbarError = undefined;
                 copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
+                const updateVoiceDataResults = JSON.parse(JSON.stringify(voiceDataResults));
+                Object.assign(updateVoiceDataResults, {content: copyData});
+                setVoiceDataResults(updateVoiceDataResults)
                 enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
                 // to trigger the `useEffect` to fetch more
                 // setVoiceData(undefined);
@@ -306,9 +313,10 @@ export function Transcription() {
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
-                {voiceData &&
+                {voiceDataResults &&
                     <TranscriptionTable
-                        voiceData={voiceData}
+                        voiceDataResults={voiceDataResults}
+                        handlePagination={handlePagination}
                         getAllVoiceData={getAllVoiceData}
                         getVoiceDataInReview={getVoiceDataInReview}
                         handleConfirmationClick={handleConfirmationClick}

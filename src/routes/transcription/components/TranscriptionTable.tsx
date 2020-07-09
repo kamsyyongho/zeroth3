@@ -1,4 +1,4 @@
-import {Button, TableBody, TableCell, Typography} from '@material-ui/core';
+import {Button, TableBody, TablePagination, TableCell, Typography} from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
@@ -10,7 +10,7 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData } from '../../../types';
+import { DataSet, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS } from '../../../types';
 import { PERMISSIONS } from '../../../constants';
 import { TranscriptionTableItem } from './TranscriptionTableItem';
 import { TranscriptionCellStatusSelect } from './TranscriptionCellStatusSelect';
@@ -18,8 +18,9 @@ import { TranscriptionCellStatusSelect } from './TranscriptionCellStatusSelect';
 const FULL_ROW_COL_SPAN = 7;
 
 interface TranscriptionTableProps {
-    voiceData: VoiceData[];
+    voiceDataResults: VoiceDataResults;
     getAllVoiceData: () => void;
+    handlePagination: (pageIndex: number, size: number) => void;
     getVoiceDataInReview: () => void;
     handleConfirmationClick: (voiceDataIndex: number) => void;
     handleRejectClick: (voiceDataIndex: number) => void;
@@ -53,9 +54,18 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     }));
 
 export function TranscriptionTable(props: TranscriptionTableProps) {
-    const { voiceData, getAllVoiceData, getVoiceDataInReview, handleConfirmationClick, handleRejectClick, showStatus } = props;
+    const { voiceDataResults, getAllVoiceData, getVoiceDataInReview, handlePagination, handleConfirmationClick, handleRejectClick, showStatus } = props;
     const { translate } = React.useContext(I18nContext);
+    const [pageSize, setPageSize] = React.useState<number>(10);
+    const [pageIndex, setPageIndex] = React.useState<number>(0);
+    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const classes = useStyles();
+
+    React.useEffect(() => {
+        if(voiceDataResults?.content) {
+            setVoiceData(voiceDataResults.content);
+        }
+    }, [voiceDataResults]);
 
     const renderRowFiller = (<TableRow >
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
@@ -107,11 +117,43 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
     </TableRow>);
 
     return (
-        <Table className={classes.table}>
-            {renderHeader()}
-            <TableBody>
-                {(!voiceData.length) ? renderNoResults() : renderSets()}
-            </TableBody>
-        </Table>
+        <>
+            <Table className={classes.table}>
+                {renderHeader()}
+                <TableBody>
+                    {!voiceData.length ? renderNoResults() : renderSets()}
+                </TableBody>
+            </Table>
+            {
+                voiceData.length > 0 &&
+                <TablePagination
+                    className={classes.tableHeader}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    component="div"
+                    count={voiceDataResults.totalElements}
+                    rowsPerPage={pageSize}
+                    page={pageIndex}
+                    backIconButtonProps={{
+                        'aria-label': 'previous page',
+                    }}
+                    nextIconButtonProps={{
+                        'aria-label': 'next page',
+                    }}
+                    onChangePage={(event, newPage) => {
+                        setPageIndex(newPage);
+                        handlePagination(newPage, pageSize);
+                    }}
+                    onChangeRowsPerPage={e => {
+                        const numberOfRows: string = e.target.value;
+                        localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE, numberOfRows);
+                        setPageSize(Number(numberOfRows));
+                        handlePagination(0, Number(numberOfRows));
+                    }}
+                    labelRowsPerPage={translate('table.labelRowsPerPage')}
+                    labelDisplayedRows={({ from, to, count }) => translate('table.labelDisplayedRows', { from, count, to: to === -1 ? count : to })}
+                />
+            }
+        </>
+
     );
 }
