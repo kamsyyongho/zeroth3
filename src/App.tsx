@@ -32,7 +32,6 @@ function App() {
   const i18n = useI18n();
 
   React.useEffect(() => {
-    console.log('========= App,,,,,, ');
     initKeycloak();
     initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
@@ -60,12 +59,12 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  //
-  // React.useEffect(() => {
-  //   if (keycloakInitialized) {
-  //     initApi(keycloak.keycloak, keycloak.logout);
-  //   }
-  // }, [keycloakInitialized]);
+
+  React.useEffect(() => {
+    if (keycloakInitialized) {
+      initApi(keycloak.keycloak, keycloak.logout);
+    }
+  }, [keycloakInitialized]);
 
   if (!keycloakInitialized || !apiInitialized) {
     return (<SiteLoadingIndicator />);

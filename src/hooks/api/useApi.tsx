@@ -8,7 +8,6 @@ export const useApi = () => {
   const [api, setApi] = useState(rawApi);
 
   const initApi = (keycloak: KeycloakInstance, logout: () => void) => {
-    console.log('=======initApi : ', keycloak);
     if (apiInitialized) setApiInitialized(false); // handle re-login
     const apiResponse = api.setup(keycloak, logout);
     setApiInitialized(apiResponse);
