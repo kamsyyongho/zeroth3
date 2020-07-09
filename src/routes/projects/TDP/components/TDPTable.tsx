@@ -407,7 +407,9 @@ export function TDPTable(props: TDPTableProps) {
   }, [getVoiceData, voiceDataOptions, sortBy]);
 
   React.useEffect(() => {
-    handlePagination(pageIndex, pageSize);
+    if(!loading) {
+      // handlePagination(pageIndex, pageSize);
+    }
   }, [pageIndex, pageSize]);
 
   React.useEffect(() => {

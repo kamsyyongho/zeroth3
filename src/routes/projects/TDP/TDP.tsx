@@ -99,6 +99,7 @@ export function TDP(props: TDPProps) {
 
   const canUpload = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
   const hasTdpPermission = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
+  const memoizedProjectId = React.useMemo(() => projectId, [projectId]);
   const initialPageSize = React.useMemo(() => {
     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.TDP_TABLE_ROWS_PER_PAGE);
     if (rowsPerPageString) {
@@ -121,7 +122,12 @@ export function TDP(props: TDPProps) {
     });
   };
 
+  React.useEffect(() => {
+    console.log('=============== projectId: ', memoizedProjectId);
+  }, [memoizedProjectId]);
+
   const getVoiceData = React.useCallback(async (options: SearchDataRequest = {}) => {
+    console.log('=========getVoiceData');
     if (api?.voiceData && projectId) {
       setVoiceDataLoading(true);
       //save the options to allow us to redo a search
@@ -141,7 +147,7 @@ export function TDP(props: TDPProps) {
       setVoiceDataLoading(false);
       setInitialVoiceDataLoading(false);
     }
-  }, [projectId]);
+  }, [memoizedProjectId]);
 
   /**
    * Removes all data in given filter setting
@@ -264,6 +270,8 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData(options)
     } else {
+      console.log(' ======== handlePagination? ')
+
       getVoiceData(options);
     }
   };
@@ -284,6 +292,8 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
     } else if(!voiceDataResults?.content?.length) {
+      console.log(' ======== initial render');
+
       getVoiceDataWithDefaultOptions();
     }
     // if the flag was already set when we first load the page
@@ -307,18 +317,12 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-      getVoiceDataWithDefaultOptions();
-      setProjectTdpDataShouldRefresh(false);
-    }
-  }, [projectId])
+      console.log(' ======== projectId, projectTDPSHOUldRefresh watcher : ', projectTdpDataShouldRefresh);
 
-  React.useEffect(() => {
-    // if the flag triggers after we are already on the page
-    if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-      setProjectTdpDataShouldRefresh(false);
       getVoiceDataWithDefaultOptions();
+      setProjectTdpDataShouldRefresh(false);
     }
-  }, [projectTdpDataShouldRefresh]);
+  }, [projectId, projectTdpDataShouldRefresh])
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {

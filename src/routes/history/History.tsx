@@ -6,7 +6,6 @@ import {useSnackbar, VariantType} from 'notistack';
 import { SNACKBAR_VARIANTS } from '../../types/snackbar.types';
 import clsx from 'clsx';
 import { RouteComponentProps } from "react-router";
-import { useHistory } from 'react-router-dom';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import React, { useGlobal } from "reactn";
@@ -90,13 +89,10 @@ const useStyles = makeStyles((theme) =>
 );
 
 export function History() {
-    //temporary hardcoded projectId for setting up dummy component
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
-    // const { projectId } = match.params;
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
-    const history = useHistory();
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');

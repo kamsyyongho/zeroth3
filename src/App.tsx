@@ -33,6 +33,7 @@ function App() {
 
   React.useEffect(() => {
     initKeycloak();
+    initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
     const globalCallback = addCallback(globalState => {
       if (globalState.currentProject?.id) {

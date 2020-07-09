@@ -150,6 +150,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       }
     };
     const getModelConfigs = async () => {
+      console.log('-======== getModelConfig modelConfigPage : ')
       if (api?.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {
@@ -240,17 +241,17 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       });
     } else {
       // only get if we weren't passed anything from the previous page
-      if (!modelConfigs.length) {
-        getModelConfigs();
-      } else {
-        setModelConfigsLoading(false);
-      }
-      if (!project) {
-        getProject();
-      } else {
-        setProjectLoading(false);
-      }
       if (hasModelConfigPermission) {
+        if (!modelConfigs.length) {
+          getModelConfigs();
+        } else {
+          setModelConfigsLoading(false);
+        }
+        if (!project) {
+          getProject();
+        } else {
+          setProjectLoading(false);
+        }
         if (!topGraphs.length) {
           getTopGraphs();
         } else {

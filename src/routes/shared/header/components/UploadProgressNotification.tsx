@@ -110,8 +110,8 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
         clearNotificationTimeout();
         if (typeof onComplete === 'function') {
           onComplete();
+          setProjectTdpDataShouldRefresh(true);
         }
-        setProjectTdpDataShouldRefresh(true);
       } else {
         setText(`${translate('common.decoding')}: ${progress}%`);
         uploadQueueCheckTimeoutId = setTimeout(() => {
