@@ -317,7 +317,6 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-      console.log(' ======== projectId, projectTDPSHOUldRefresh watcher : ', projectTdpDataShouldRefresh);
 
       getVoiceDataWithDefaultOptions();
       setProjectTdpDataShouldRefresh(false);

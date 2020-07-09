@@ -101,7 +101,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     if (project) {
       setSelectedProject(project);
       setCurrentProject(project);
-      // setProjectTdpDataShouldRefresh(true);
+      setProjectTdpDataShouldRefresh(true);
       setTimeout(() => {
         history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
         handleClose();
