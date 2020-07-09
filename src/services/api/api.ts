@@ -165,7 +165,7 @@ export class Api {
     };
     if (this.keycloak) {
       try {
-        const { token } = this.keycloak;
+        const token = this.keycloak.token || localStorage.getItem(LOCAL_STORAGE_KEYS.KEY_CLOAK_TOKEN);
         header.Authorization = `Bearer ${token}`;
         if (!token) {
           log({

@@ -71,8 +71,8 @@ export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
                         <ListItemText primary={translate('common.all')} />
                     </MenuItem>
                     {
-                        CONTENT_STATUS_VALUES.map((status) => {
-                            return (<MenuItem value={status}>
+                        CONTENT_STATUS_VALUES.map((status, index) => {
+                            return (<MenuItem value={status} key={`history-select-${index}`} >
                                 <ListItemText primary={status} />
                             </MenuItem>)
                         })

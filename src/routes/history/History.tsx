@@ -95,23 +95,23 @@ export function History() {
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
-    const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const [voiceDataResults, setVoiceDataResults] = React.useState<HistoryDataResults>({} as HistoryDataResults);
     const [filterParams, setFilterParams] = React.useState<any>({});
     const [voiceDataLoading, setVoiceDataLoading] = React.useState<boolean>(false);
+    const [initialLoad, setInitialLoad] = React.useState<boolean>(false);
 
-    const initialPageSize = React.useMemo(() => {
-        const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE);
-        if (rowsPerPageString) {
-            const rowsPerPage = Number(rowsPerPageString);
-            if (!isNaN(rowsPerPage)) {
-                return rowsPerPage;
-            }
-        }
-        return null;
-    }, []);
+    // const initialPageSize = React.useMemo(() => {
+    //     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE);
+    //     if (rowsPerPageString) {
+    //         const rowsPerPage = Number(rowsPerPageString);
+    //         if (!isNaN(rowsPerPage)) {
+    //             return rowsPerPage;
+    //         }
+    //     }
+    //     return null;
+    // }, []);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
@@ -119,13 +119,11 @@ export function History() {
     // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
     const getHistory = async (options: any = {}) => {
+        setVoiceDataLoading(true);
         if (api?.voiceData) {
-            // const response = await api.user.getDataSetsToFetchFrom(status);
-            setVoiceDataLoading(true);
             const response = await api.voiceData.getHistory(options);
 
             if (response.kind === 'ok') {
-                // setDataSet(response.dataSets);
                 setVoiceDataResults(response.data);
             } else {
                 log({
@@ -156,7 +154,13 @@ export function History() {
 
     React.useEffect(() => {
         setPageTitle(translate('transcription.pageTitle'));
-        getHistory();
+        setInitialLoad(true);
+        if(!initialLoad) {
+            getHistory();
+        }
+        return () => {
+            setVoiceDataResults({} as VoiceDataResults);
+        }
     }, []);
 
     const renderSummary = () => {

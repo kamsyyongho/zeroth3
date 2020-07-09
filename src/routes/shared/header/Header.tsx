@@ -120,6 +120,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   const onComplete = () => {
     setUploadQueueEmpty(true);
+    setProjectTdpDataShouldRefresh(true);
   };
 
   const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>, progress: number) => {
@@ -328,10 +329,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         onSuccess={getOrganizations}
         onClose={hideRenameDialog}
       />
-      <ProjectsDialog
+      {
+        isProjectsOpen &&
+        <ProjectsDialog
         open={isProjectsOpen}
         onClose={hideProjectsDialog}
-      />
+        />
+      }
     </AppBar>
   );
 };

@@ -32,6 +32,7 @@ function App() {
   const i18n = useI18n();
 
   React.useEffect(() => {
+    console.log('========= App,,,,,, ');
     initKeycloak();
     initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
@@ -59,11 +60,12 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  React.useEffect(() => {
-    if (keycloakInitialized) {
-      initApi(keycloak.keycloak, keycloak.logout);
-    }
-  }, [keycloakInitialized]);
+  //
+  // React.useEffect(() => {
+  //   if (keycloakInitialized) {
+  //     initApi(keycloak.keycloak, keycloak.logout);
+  //   }
+  // }, [keycloakInitialized]);
 
   if (!keycloakInitialized || !apiInitialized) {
     return (<SiteLoadingIndicator />);
@@ -85,8 +87,9 @@ function App() {
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
-          <Route path={PATHS.transcription.to} component={withErrorBoundary(Transcription, PageErrorFallback)} />
-          <Route path={PATHS.history.to} component={withErrorBoundary(History, PageErrorFallback)} />
+          //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
+          <Route path={PATHS.transcription.to} component={Transcription} />
+          <Route path={PATHS.history.to} component={History} />
           <Route component={NotFound} />
         </Switch>
       </Router>

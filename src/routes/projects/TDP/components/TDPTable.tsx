@@ -406,11 +406,11 @@ export function TDPTable(props: TDPTableProps) {
     }
   }, [getVoiceData, voiceDataOptions, sortBy]);
 
-  React.useEffect(() => {
-    if(!loading) {
-      // handlePagination(pageIndex, pageSize);
-    }
-  }, [pageIndex, pageSize]);
+  // React.useEffect(() => {
+  //   if(!loading) {
+  //     handlePagination(pageIndex, pageSize);
+  //   }
+  // }, [pageIndex, pageSize]);
 
   React.useEffect(() => {
     if(!voiceDataResults?.content?.length) {
@@ -545,6 +545,7 @@ export function TDPTable(props: TDPTableProps) {
       }}
       onChangePage={(event, newPage) => {
         gotoPage(newPage);
+        handlePagination(newPage, pageSize);
       }}
       onChangeRowsPerPage={e => {
         const numberOfRows: string = e.target.value;

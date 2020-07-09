@@ -80,6 +80,7 @@ export const useKeycloak = () => {
     const redirectUri = ENV.NODE_ENV === 'staging' || ENV.NODE_ENV === 'dev' || ENV.NODE_ENV === 'docker' ? ENV.HOME_URL : 'http://localhost:3000/';
     const logoutOptions = { redirectUri };
     setkeycloakInitialized(false);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.KEY_CLOAK_TOKEN);
     keycloak.logout(logoutOptions);
   };
 
@@ -94,6 +95,7 @@ export const useKeycloak = () => {
         name: keycloak.tokenParsed.name,
         preferredUsername: keycloak.tokenParsed.preferred_username,
       };
+      localStorage.setItem(LOCAL_STORAGE_KEYS.KEY_CLOAK_TOKEN, keycloak.token || '');
     }
 
   } catch (error) {
