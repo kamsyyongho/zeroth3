@@ -291,7 +291,7 @@ export function TDP(props: TDPProps) {
   React.useEffect(() => {
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
-    } else if(!voiceDataResults?.content?.length) {
+    } else if(!(voiceDataResults?.content?.length > 0)) {
       console.log(' ======== initial render');
 
       getVoiceDataWithDefaultOptions();
