@@ -289,6 +289,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     </div>
             }*/}
             <EditWordAlignmentBlock
+                editorCommand={editorCommand}
                 segment={localSegment}
                 segmentIndex={segmentIndex}
                 isAbleToComment={isAbleToComment}

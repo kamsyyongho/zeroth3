@@ -3,7 +3,7 @@ import React, { useGlobal, useRef, useMemo } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import { green, grey, pink, red } from '@material-ui/core/colors';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
-import {Segment, WordAlignment, UndoRedoData} from "../../../types";
+import {Segment, WordAlignment, UndoRedoStack, EDITOR_CONTROLS} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import log from '../../../util/log/logger';
@@ -47,6 +47,7 @@ interface SelectedIndex {
 }
 
 interface EditWordAlignmentBlockProps  {
+    editorCommand?: EDITOR_CONTROLS;
     segment: Segment;
     segmentIndex: number;
     isAbleToComment: boolean;
@@ -67,6 +68,7 @@ let isFocused = false;
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const classes = useStyles();
     const {
+        editorCommand,
         segment,
         segmentIndex,
         isAbleToComment,
@@ -88,6 +90,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const element = useRef<HTMLDivElement>(null);
     const [wordAlignments, setWordAlignments] = React.useState<string[]>([]);
     const [isChanged, setIsChanged] = React.useState<boolean>(false);
+    const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
+    const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
+
 
     const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment, playingLocation)
     const memoizedWordClassName = React.useMemo(() => playingLocation[1] === segmentIndex ? `${classes.playingWord}` : '', playingLocation)
@@ -112,8 +117,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         range.selectNodeContents(node);
         range.collapse(collapse);
-        selection ?.removeAllRanges();
-        selection ?.addRange(range);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
         node.focus();
     };
 
@@ -133,10 +138,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         updateCaretLocation(segmentIndex - 1, wordAlignmentIndex);
     };
 
+    const handleArrowUpInSegment = () => {
+
+    };
+
     const handleArrowDown = () => {
         const selection = window.getSelection();
         if (!selection) return;
-        const currentLocation = selection ?.anchorOffset;
+        const currentLocation = selection?.anchorOffset;
         const playingLocation = getSegmentAndWordIndex() || [0,0];
         const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
         (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation[1]]);
@@ -151,6 +160,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         // currentNode.current.blur();
         setRange(nextSegmentNode, false);
         updateCaretLocation(segmentIndex + 1, wordAlignmentIndex);
+    };
+
+    const handleArrowDownInSegment = () => {
+
     };
 
     const handleFocus = () => {
@@ -254,9 +267,16 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
+    React.useEffect(() => {
+        if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
+            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
+            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
+            onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
+            setEditorCommandForWordBlock(editorCommand);
+        }
+    },[editorCommand]);
 
     React.useEffect(() => {
-
         if(!isSelected) initTranscriptToRender();
     }, [])
 
@@ -277,6 +297,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     }, [isCommentEnabled]);
 
     React.useEffect(() => {
+        const segmentNode = document.getElementById((`segment-${segmentIndex}`));
+        console.log('=============== segment innerText  :', segmentNode?.textContent);
+
         if(isShowComment) {
             highlightRejectReason();
             setIsMouseDown(true);
@@ -290,6 +313,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         <div
             contentEditable
+            id={`segment-${segmentIndex}`}
             className={memoizedSegmentClassName}
             ref={element}
             onFocus={handleFocus}

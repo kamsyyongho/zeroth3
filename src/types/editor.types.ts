@@ -19,6 +19,13 @@ export interface WordKeyStoreContent {
   wordKeyLocations: WordKeyLocation3DArray;
 }
 
+export interface UndoRedoData {
+  wordIndex: number;
+  word: string;
+}
+
+export type UndoRedoStack = UndoRedoData[];
+
 export interface Shortcuts {
   approvalRequest: string[];
   save: string[];
