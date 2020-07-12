@@ -3,10 +3,11 @@ import React, { useGlobal, useRef, useMemo } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import { green, grey, pink, red } from '@material-ui/core/colors';
 import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
-import {Segment, WordAlignment, UndoRedoStack, EDITOR_CONTROLS} from "../../../types";
+import {Segment, WordAlignment, UndoRedoStack} from "../../../types";
+import {EDITOR_CONTROLS} from './EditorControls';
 import WordAlignmentBlock from './WordAlignmentBlock';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import log from '../../../util/log/logger';
+import log from '../../../util/log/logger';it
 import {getSegmentAndWordIndex } from '../helpers/editor.helper';
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
