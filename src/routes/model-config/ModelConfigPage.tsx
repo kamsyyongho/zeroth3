@@ -150,7 +150,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       }
     };
     const getModelConfigs = async () => {
-      console.log('-======== getModelConfig modelConfigPage : ')
       if (api?.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectId);
         if (response.kind === 'ok') {

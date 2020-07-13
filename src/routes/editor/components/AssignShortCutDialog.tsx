@@ -148,8 +148,6 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('keyup', handleKeyUp);
-
-
         }
     },[]);
 
