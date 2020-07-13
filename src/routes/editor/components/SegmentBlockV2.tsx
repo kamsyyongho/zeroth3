@@ -149,17 +149,17 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         if(undoStack.length) {
             const previousText: any = undoStack.pop();
             const updateWordAlignment = localSegment;
-            if(undoRedoData?.location){
-                const [segmentIndex, wordIndex] = undoRedoData?.location;
-                updateWordAlignment.wordAlignments[wordIndex].word = previousText;
-                setLocalSegment(updateWordAlignment);
-                setUndoRedoData({
-                    location: undoRedoData.location,
-                    undoStack: undoStack,
-                    redoStack: [...redoStack, previousText],
-                });
-                onCommandHandled();
-            }
+            // if(undoRedoData?.location){
+            //     const [segmentIndex, wordIndex] = undoRedoData?.location;
+            //     updateWordAlignment.wordAlignments[wordIndex].word = previousText;
+            //     setLocalSegment(updateWordAlignment);
+            //     setUndoRedoData({
+            //         location: undoRedoData.location,
+            //         undoStack: undoStack,
+            //         redoStack: [...redoStack, previousText],
+            //     });
+            //     onCommandHandled();
+            // }
         }
     };
 
@@ -170,14 +170,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             const undidState: any = redoStack.pop();
             const updateWordAlignment = localSegment;
             if(undoRedoData?.location) {
-                const [segmentIndex, wordIndex] = undoRedoData?.location
-                updateWordAlignment.wordAlignments[wordIndex].word = undidState;
-                setLocalSegment(updateWordAlignment);
-                setUndoRedoData({
-                    location: undoRedoData.location,
-                    undoStack: [...undoStack, undidState],
-                    redoStack: redoStack,
-                });
+                // const [segmentIndex, wordIndex] = undoRedoData?.location
+                // updateWordAlignment.wordAlignments[wordIndex].word = undidState;
+                // setLocalSegment(updateWordAlignment);
+                // setUndoRedoData({
+                //     location: undoRedoData.location,
+                //     undoStack: [...undoStack, undidState],
+                //     redoStack: redoStack,
+                // });
                 onCommandHandled();
             }
 

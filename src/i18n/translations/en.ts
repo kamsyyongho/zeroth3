@@ -281,6 +281,7 @@ export const en: ResourceLanguage = {
       save: 'Save',
       setThreshold: 'Set Threshold',
       shortcuts: 'Shortcuts',
+      duplicateShortcut: 'Cannot Assign Duplicate Shortcut',
       rewindAudio: 'Rewind Audio',
       forwardAudio: 'Forward Audio',
       audioPlayPause: 'Play/Pause',

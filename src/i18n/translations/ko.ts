@@ -284,6 +284,7 @@ export const ko: ResourceLanguage = {
       seeRejectReason: '반려사유 : {{rejectReason}}',
       setThreshold: 'Threshold 설정',
       shortcuts: '단축키',
+      duplicateShortcut: '단축키를 중복 설정 할 수 없습니다',
       rewindAudio: '뒤로감기',
       forwardAudio: '빨리감기',
       audioPlayPause: '재생/일시정지',

@@ -13,9 +13,11 @@
       <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/AssignShortCutDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/AssignShortCutDialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/HelperPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/HelperPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/history/History.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/History.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/history/components/HistoryCellStatusSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryCellStatusSelect.tsx" afterDir="false" />
@@ -119,7 +121,7 @@
       <workItem from="1591952035142" duration="4000" />
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
-      <workItem from="1593394113270" duration="151666000" />
+      <workItem from="1593394113270" duration="159491000" />
     </task>
     <servers />
   </component>
@@ -289,11 +291,16 @@
     <state x="1920" y="0" width="887" height="1080" key="dock-window-2/1920.0.1920.1080/0.23.1920.1057/56.1103.1792.1047@0.23.1920.1057" timestamp="1592445124387" />
     <state x="1920" y="0" width="1920" height="1080" key="dock-window-2/1920.23.1920.1057/0.23.1920.1057/56.1103.1792.1048@0.23.1920.1057" timestamp="1592435119935" />
     <state x="2057" y="-1057" width="1078" height="1057" key="dock-window-2/880.-1057.2560.1057/0.0.3440.1383/3440.-1057.1080.2537@0.0.3440.1383" timestamp="1589475501857" />
-    <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3" timestamp="1589533331096">
-      <screen x="1840" y="-1057" width="1920" height="1057" />
+    <state x="0" y="0" width="857" height="1080" key="dock-window-3" timestamp="1594607422870">
+      <screen x="0" y="0" width="1920" height="1028" />
     </state>
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/-80.-1080.1920.1080/1840.-1057.1920.1057/0.23.1792.1040@-80.-1080.1920.1080" timestamp="1589503773132" />
+    <state x="0" y="0" width="800" height="1120" key="dock-window-3/0.0.1792.1120@0.0.1792.1120" timestamp="1594605846338" />
+    <state x="0" y="0" width="857" height="1080" key="dock-window-3/0.0.1920.1028/-1920.-9.1920.1057/-1792.1071.1792.1097@-1792.1071.1792.1097" timestamp="1594607422870" />
+    <state x="0" y="0" width="857" height="1080" key="dock-window-3/0.0.1920.1080/-1920.-32.1920.1080/-1792.1048.1792.1120@-1920.-32.1920.1080" timestamp="1594595222403" />
+    <state x="0" y="0" width="857" height="1080" key="dock-window-3/0.0.1920.1080/-1920.-32.1920.1080/-1792.1071.1792.1097@-1920.-32.1920.1080" timestamp="1594597932941" />
     <state x="0" y="23" width="960" height="1046" key="dock-window-3/0.23.1792.1046@0.23.1792.1046" timestamp="1589529619997" />
+    <state x="-1920" y="-32" width="960" height="1080" key="dock-window-3/0.23.1920.1005/-1920.-32.1920.1080/-1792.1071.1792.1097@-1920.-32.1920.1080" timestamp="1594595204850" />
     <state x="1840" y="-1057" width="960" height="1057" key="dock-window-3/1840.-1057.1920.1057/0.23.1792.1046/-80.-1080.1920.1080@-80.-1080.1920.1080" timestamp="1589533331096" />
     <state x="3440" y="-1080" width="1080" height="2560" key="dock-window-4" timestamp="1589854401982">
       <screen x="3440" y="-1057" width="1080" height="2537" />

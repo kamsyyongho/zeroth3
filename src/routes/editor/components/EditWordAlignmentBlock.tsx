@@ -2,12 +2,11 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import React, { useGlobal, useRef, useMemo } from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import { green, grey, pink, red } from '@material-ui/core/colors';
-import {MemoizedSegmentBlockHeadV2} from './SegmentBlockHeadV2';
 import {Segment, WordAlignment, UndoRedoStack} from "../../../types";
 import {EDITOR_CONTROLS} from './EditorControls';
 import WordAlignmentBlock from './WordAlignmentBlock';
 import { ApiContext } from '../../../hooks/api/ApiContext';
-import log from '../../../util/log/logger';it
+import log from '../../../util/log/logger';
 import {getSegmentAndWordIndex } from '../helpers/editor.helper';
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -156,19 +155,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         selection ?.removeAllRanges();
         const range = document.createRange();
 
-
         if (!nextSegmentNode) { return; }
         // currentNode.current.blur();
         setRange(nextSegmentNode, false);
         updateCaretLocation(segmentIndex + 1, wordAlignmentIndex);
-    };
-
-    const handleArrowDownInSegment = () => {
-
-    };
-
-    const handleFocus = () => {
-
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
@@ -269,12 +259,12 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     };
 
     React.useEffect(() => {
-        if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
-            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
-            onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
-            setEditorCommandForWordBlock(editorCommand);
-        }
+        // if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
+        //     if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
+        //     if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
+        //     onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
+        //     setEditorCommandForWordBlock(editorCommand);
+        // }
     },[editorCommand]);
 
     React.useEffect(() => {
@@ -298,9 +288,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     }, [isCommentEnabled]);
 
     React.useEffect(() => {
-        const segmentNode = document.getElementById((`segment-${segmentIndex}`));
-        console.log('=============== segment innerText  :', segmentNode?.textContent);
-
         if(isShowComment) {
             highlightRejectReason();
             setIsMouseDown(true);
@@ -317,7 +304,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             id={`segment-${segmentIndex}`}
             className={memoizedSegmentClassName}
             ref={element}
-            onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             onMouseDown={handleMouseDown}
