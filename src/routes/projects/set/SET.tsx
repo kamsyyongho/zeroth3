@@ -75,17 +75,18 @@ export default function SET(props: SETProps) {
    * should fetch data on initial load and every time the counter changes
    */
   React.useEffect(() => {
-    getDataSets();
+    if(refreshCounter && refreshCounter > 0) {
+      getDataSets();
+    }
   }, [refreshCounter]);
 
   /**
    * should refresh if the project has changed
    */
   React.useEffect(() => {
-    getTranscribersWithStats();
     getDataSets();
   }, [projectId]);
-  
+
   const openTranscriberDialog = () => setTranscribersDialogOpen(true);
   const closeTranscriberDialog = () => {
     setTranscribersDialogOpen(false);

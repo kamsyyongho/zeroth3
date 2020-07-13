@@ -78,17 +78,19 @@ function App() {
           <Header />
         </ErrorBoundary>
         <Switch>
-          <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
-          <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
-          <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
-          <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
-          <Route path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
-          <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
-          <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
-          <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
           //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
-          <Route path={PATHS.transcription.to} component={Transcription} />
-          <Route path={PATHS.history.to} component={History} />
+          <ErrorBoundary FallbackComponent={PageErrorFallback}>
+            <Route exact path={PATHS.home.to} component={Home} />
+            <Route path={PATHS.IAM.to} component={IAM} />
+            <Route exact path={PATHS.project.to} component={ProjectDetails} />
+            <Route exact path={PATHS.modelConfig.to} component={ModelConfigPage} />
+            <Route path={PATHS.editor.to} component={EditorPage} />
+            <Route path={PATHS.models.to} component={Models} />
+            <Route path={PATHS.profile.to} component={Profile} />
+            <Route path={PATHS.modelTraining.to} component={ModelTraining} />
+            <Route path={PATHS.transcription.to} component={Transcription} />
+            <Route path={PATHS.history.to} component={History} />
+          </ErrorBoundary>
           <Route component={NotFound} />
         </Switch>
       </Router>

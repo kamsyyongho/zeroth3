@@ -149,21 +149,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setModelConfigsLoading(false);
       }
     };
-    const getAllDataSets = async () => {
-      if (api?.dataSet && projectId) {
-        const response = await api.dataSet.getAll(projectId);
-        if (response.kind === 'ok') {
-          setDataSets(response.dataSets);
-        } else {
-          log({
-            file: `ProjectDetails.tsx`,
-            caller: `getAllDataSets - failed to get data sets`,
-            value: response,
-            important: true,
-          });
-        }
-      }
-    };
+    // const getAllDataSets = async () => {
+    //   if (api?.dataSet && projectId) {
+    //     const response = await api.dataSet.getAll(projectId);
+    //     if (response.kind === 'ok') {
+    //       setDataSets(response.dataSets);
+    //     } else {
+    //       log({
+    //         file: `ProjectDetails.tsx`,
+    //         caller: `getAllDataSets - failed to get data sets`,
+    //         value: response,
+    //         important: true,
+    //       });
+    //     }
+    //   }
+    // };
     const getTopGraphs = async () => {
       if (api?.models) {
         const response = await api.models.getTopGraphs();
@@ -250,7 +250,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getAcousticModels();
     }
     if (hasTdpPermissions) {
-      getAllDataSets();
+      // getAllDataSets();
     }
   }, [api, projectId]);
 

@@ -112,7 +112,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
 
   React.useEffect(() => {
     getTranscribersWithStats();
-  }, []);
+  }, [projectId]);
 
   return (
     <Paper square elevation={0} className={classes.root} >
