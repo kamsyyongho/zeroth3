@@ -24,7 +24,7 @@ import ScaleLoader from 'react-spinners/ScaleLoader';
 import React, {useGlobal} from 'reactn';
 import videojs, {VideoJsPlayer, VideoJsPlayerOptions} from 'video.js';
 import 'video.js/dist/video-js.css';
-import {DEFAULT_EMPTY_TIME} from '../../constants';
+import {DEFAULT_EMPTY_TIME, renderInputCombination} from '../../constants';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {CustomTheme} from '../../theme';
 import {
@@ -182,6 +182,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
@@ -1358,7 +1359,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const playerControls = (<ButtonGroup size='large' variant='outlined' aria-label="audio player controls">
-    {renderControlWithTooltip(osText('rewind'),
+    {renderControlWithTooltip(renderInputCombination(shortcuts.rewindAudio),
         <Button aria-label="rewind-5s" onClick={() => handleSkip(true)} >
           <Replay5Icon />
         </Button>
@@ -1366,12 +1367,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
     <Button aria-label="stop" onClick={handleStop} >
       <StopIcon />
     </Button>
-    {renderControlWithTooltip(osText('playPause'),
+    {renderControlWithTooltip(renderInputCombination(shortcuts.audioPlayPause),
         <Button aria-label="play/pause" onClick={handlePlayPause} >
           {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
         </Button>
     )}
-    {renderControlWithTooltip(osText('forward'),
+    {renderControlWithTooltip(renderInputCombination(shortcuts.forwardAudio),
         <Button aria-label="forward-5s" onClick={() => handleSkip()} >
           <Forward5Icon />
         </Button>

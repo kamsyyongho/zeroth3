@@ -2,6 +2,7 @@ import {ApisauceInstance} from 'apisauce';
 import {
   AudioUrlResponse,
   CONTENT_STATUS,
+  HistoryDataResults,
   Segment,
   VoiceData as IVoiceData,
   VoiceDataResults,
@@ -11,13 +12,16 @@ import {getGeneralApiProblem} from '../api-problem';
 import {
   approveDataResult,
   confirmDataResult,
+  deleteAllDataSet,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
   getAudioUrl,
   getDataToReview,
   getHistory,
+  GetHistoryRequest,
   getSegmentsDataResult,
   getVoiceDataStateChanges,
+  GetVoiceDataToReviewRequest,
   MergeTwoSegmentsRequest,
   mergeTwoSegmentsResult,
   MergeWordsInSegmentRequest,
@@ -936,7 +940,7 @@ export class VoiceData extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async deleteAllDataSet(projectId: string, filterParams: any = {}) {
+  async deleteAllDataSet(projectId: string, filterParams: any = {}): Promise<deleteAllDataSet> {
     //over ride no request body in delete request in axios
     const response = await this.apisauce.delete<undefined, ServerError>(
         this.getPathWithOrganization(`/projects/${projectId}/data`),
@@ -946,20 +950,29 @@ export class VoiceData extends ParentApi {
         }
     );
 
-    if(!response.ok) {
+    if (!response.ok) {
       const problem = getGeneralApiProblem(response);
-      if(problem) {
-        if(problem.kind === ProblemKind['unauthorized']) {
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
       }
     }
     return { kind: 'ok' };
+
   }
-  async getDataToReview(): Promise<getDataToReview> {
-    const response = await this.apisauce.get<IVoiceData, ServerError>(
-        this.getPathWithOrganization('/reviews')
+  async getDataToReview(options: GetVoiceDataToReviewRequest = {}): Promise<getDataToReview> {
+    const {page = 0, size = 10} = options;
+    const params = {
+      ...options,
+      page,
+      size,
+    };
+
+    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
+        this.getPathWithOrganization('/reviews'),
+        params,
     );
 
     if(!response.ok) {
@@ -972,16 +985,23 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const voiceData = response.data as IVoiceData[];
-      return { kind: 'ok', voiceData };
+      const data = response.data as VoiceDataResults;
+      return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
   }
 
-  async getHistory(): Promise<getHistory> {
+  async getHistory(options: GetHistoryRequest = {}): Promise<getHistory> {
+    const {page = 0, size = 10} = options;
+    const params = {
+      ...options,
+      page,
+      size,
+    };
     const response = await this.apisauce.get<IVoiceData, ServerError>(
-        this.getPathWithOrganization('/history')
+        this.getPathWithOrganization('/history'),
+        params,
     );
 
     if(!response.ok) {
@@ -994,8 +1014,8 @@ export class VoiceData extends ParentApi {
       }
     }
     try {
-      const voiceData = response.data as IVoiceData[];
-      return { kind: 'ok', voiceData };
+      const data = response.data as HistoryDataResults;
+      return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

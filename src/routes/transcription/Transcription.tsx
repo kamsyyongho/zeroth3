@@ -20,6 +20,7 @@ import {
     AcousticModel,
     DataSet,
     VoiceData,
+    VoiceDataResults,
     LanguageModel,
     ModelConfig,
     PATHS,
@@ -39,6 +40,7 @@ import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
 import { NotFound } from '../shared/NotFound';
 import { CustomTheme } from '../../theme';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
 import ScaleLoader from 'react-spinners/ScaleLoader';
 
 const useStyles = makeStyles((theme) =>
@@ -95,23 +97,32 @@ export function Transcription() {
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-    const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
+    const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
+    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number>(0);
+    const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
+    const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [showStatus, setShowStatus] = React.useState<boolean>(false);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
 
-    // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
+    const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
+    const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
+    const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
 
-    const getAssingedDataSets = async (status?: boolean | null) => {
-        if (api?.user) {
-            const response = await api.user.getDataSetsToFetchFrom(status);
+    const getVoiceDataInReview = async (options: any = {}) => {
+        if (api?.voiceData) {
+            // const response = await api.voiceData.getHistory();
+            const response = await api.voiceData.getDataToReview(options);
             if (response.kind === 'ok') {
-                setDataSet(response.dataSets);
+                setShowStatus(false);
+                setVoiceDataResults(response.data);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getAssingedDataSets - failed to get data sets`,
+                    caller: `getVoiceDataInReview - failed to get data sets`,
                     value: response,
                     important: true,
                 });
@@ -119,19 +130,119 @@ export function Transcription() {
         }
     };
 
-    const handleCompletedChange = (status: boolean | null) => {
-        getAssingedDataSets(status);
+    const getAllVoiceData = async () => {
+        if (api?.voiceData) {
+            const response = await api.voiceData.getHistory();
+            // const response = await api.voiceData.getDataToReview();
+            if (response.kind === 'ok') {
+                setShowStatus(true);
+            } else {
+                log({
+                    file: `ProjectDetails.tsx`,
+                    caller: `getVoiceDataInReview - failed to get data sets`,
+                    value: response,
+                    important: true,
+                });
+            }
+        }
+    };
+
+    const handlePagination = (pageIndex: number, size: number) => getVoiceDataInReview({page: pageIndex, size});
+
+    const setSelectionAndOpenDialog = (index: number) => {
+        setSelectedVoiceDataIndex(index);
+        setSelectedVoiceData(voiceDataResults.content[index]);
+        setIsConfirmationOpen(true);
+    }
+
+    const handleConfirmationClick = (voiceDataIndex: number) => {
+        setIsConfirm(true);
+        setSelectionAndOpenDialog(voiceDataIndex)
+    };
+
+    const handleRejectClick = (voiceDataIndex: number) => {
+        setIsConfirm(false);
+        setSelectionAndOpenDialog(voiceDataIndex)
+    };
+
+    const handleConfirmation = async () => {
+        if (api?.voiceData && voiceDataResults && selectedVoiceData) {
+            setIsLoading(true);
+            setIsConfirmationOpen(false);
+            const response = await api.voiceData.confirmData(selectedVoiceData.projectId, selectedVoiceData.id);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                const copyData = voiceDataResults.content.slice();
+                snackbarError = undefined;
+                copyData.splice(selectedVoiceDataIndex, 1);
+                const updateVoiceDataResults = JSON.parse(JSON.stringify(voiceDataResults));
+                Object.assign(updateVoiceDataResults, {content: copyData});
+                setVoiceDataResults(updateVoiceDataResults)
+                // setVoiceData(copyData);
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                // setVoiceData(undefined);
+            } else {
+                log({
+                    file: `EditorPage.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setIsLoading(false);
+        }
+    };
+
+    const handleRejection = async () => {
+        if (api?.voiceData && voiceDataResults && selectedVoiceData) {
+            setIsLoading(true);
+            setIsConfirmationOpen(false);
+            const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if (response.kind === 'ok') {
+                const copyData = voiceDataResults.content.slice();
+                snackbarError = undefined;
+                copyData.splice(selectedVoiceDataIndex, 1);
+                const updateVoiceDataResults = JSON.parse(JSON.stringify(voiceDataResults));
+                Object.assign(updateVoiceDataResults, {content: copyData});
+                setVoiceDataResults(updateVoiceDataResults)
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                // to trigger the `useEffect` to fetch more
+                // setVoiceData(undefined);
+            } else {
+                log({
+                    file: `Transcription.tsx`,
+                    caller: `confirmData - failed to confirm segments`,
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+            setIsLoading(false);
+        }
     };
 
     React.useEffect(() => {
-        setPageTitle(translate('transcription.pageTitle'));
-        getAssingedDataSets();
+        setPageTitle(translate('admin.pageTitle'));
+        getVoiceDataInReview();
     }, []);
 
     const renderSummary = () => {
         return (<Card elevation={0} className={classes.card} >
             <CardHeader
-                title={<Typography variant='h4'>{translate('transcription.pageTitle')}</Typography>}
+                title={<Typography variant='h4'>{translate('admin.pageTitle')}</Typography>}
             />
             <CardContent className={classes.cardContent} >
                 {isLoading ? <BulletList /> :
@@ -174,48 +285,12 @@ export function Transcription() {
                                     variant="outlined"
                                 />
                             </Grid>
-                            <Grid container
-                                  item
-                                  direction='row'
-                                  justify='flex-start'
-                                  alignItems='center'
-                                  alignContent='center'>
-                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
-                                <TextField
-                                    id="api-key"
-                                    value={""}
-                                    className={clsx(classes.textField, classes.apiInfo)}
-                                    margin="normal"
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    variant="outlined"
-                                />
-                            </Grid>
-                            <Grid container
-                                  item
-                                  direction='row'
-                                  justify='flex-start'
-                                  alignItems='center'
-                                  alignContent='center'>
-                                <Typography align='left' className={classes.apiHeading} >{translate('projects.apiKey')}</Typography>
-                                <TextField
-                                    id="api-key"
-                                    value={""}
-                                    className={clsx(classes.textField, classes.apiInfo)}
-                                    margin="normal"
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    variant="outlined"
-                                />
-                            </Grid>
                         </Grid>
                     </Grid>
                 }
             </CardContent>
         </Card>);
-        if (!dataSet) {
+        if (!voiceDataResults) {
             return <NotFound text={translate('projects.notFound')} />;
         }
     };
@@ -227,14 +302,27 @@ export function Transcription() {
                     color={theme.palette.common.white}
                     loading={true}
                 />}
+                <ConfirmationDialog
+                    open={isConfirmationOpen}
+                    buttonMsg={isConfirm ? translate('common.confirm') : translate('common.reject')}
+                    contentMsg={isConfirm ? translate('admin.approveMsg') : translate('admin.rejectMsg')}
+                    isConfirm={isConfirm}
+                    onClose={() => setIsConfirmationOpen(false)}
+                    onConfirm={handleConfirmation}
+                    onReject={handleRejection} />
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
-                {dataSet &&
-                <TranscriptionTable
-                    dataSet={dataSet}
-                    handleCompletedChange={handleCompletedChange}
-                />
+                {voiceDataResults &&
+                    <TranscriptionTable
+                        voiceDataResults={voiceDataResults}
+                        handlePagination={handlePagination}
+                        getAllVoiceData={getAllVoiceData}
+                        getVoiceDataInReview={getVoiceDataInReview}
+                        handleConfirmationClick={handleConfirmationClick}
+                        handleRejectClick={handleRejectClick}
+                        showStatus={showStatus}
+                    />
                 }
             </Paper>
         </Container>

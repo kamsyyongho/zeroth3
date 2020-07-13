@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const en: ResourceLanguage = {
   translation: {
     common: {
+      all: 'All',
       okay: 'Okay',
       delete: 'Delete',
       submit: 'Submit',
@@ -69,7 +70,7 @@ export const en: ResourceLanguage = {
       models: 'Models',
       editor: 'Editor',
       modelTraining: 'Model Training',
-      admin: 'Admin',
+      history: 'Transcript History',
       transcription: 'Manage Transcript',
     },
     menu: {
@@ -172,7 +173,7 @@ export const en: ResourceLanguage = {
       fileUrl: 'File URL',
     },
     admin: {
-      pageTitle: 'Admin',
+      pageTitle: 'Manage Transcript',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',
@@ -180,7 +181,7 @@ export const en: ResourceLanguage = {
       reason: 'Reason',
     },
     transcription: {
-      pageTitle: 'Manage Transcripts',
+      pageTitle: 'Transcript History',
       diff: 'Diff',
       commentNumber: 'Number of Comments',
       approveMsg: 'Approve this transcript?',
@@ -214,7 +215,7 @@ export const en: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      decodeData: 'Decode data',
+      dataUpload: 'Data Upload',
       highRiskSegments: 'High Risk Segments',
       memo: 'Memo',
       sessionId: 'Session ID',
@@ -226,6 +227,7 @@ export const en: ResourceLanguage = {
       originalFilename: 'Filename',
       wordCount: 'Word Count',
       statusChange: 'Status Changes',
+      deleteFailMsg: '삭제요청 실패',
     },
     SET: {
       SET: 'SET',
@@ -279,6 +281,7 @@ export const en: ResourceLanguage = {
       save: 'Save',
       setThreshold: 'Set Threshold',
       shortcuts: 'Shortcuts',
+      duplicateShortcut: 'Cannot Assign Duplicate Shortcut',
       rewindAudio: 'Rewind Audio',
       forwardAudio: 'Forward Audio',
       audioPlayPause: 'Play/Pause',

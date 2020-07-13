@@ -65,7 +65,7 @@ const DEFAULT_NOTIFICATION_OPTIONS: OptionsObject = {
 
 /**
  * Handles initial data fetching and site management
- * @param props 
+ * @param props
  */
 export const Header: React.FunctionComponent<{}> = (props) => {
   const { user, hasPermission, initializeUserRoles, roles } = React.useContext(KeycloakContext);
@@ -77,6 +77,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [organizationLoading, setOrganizationsLoading] = React.useState(true);
   const [noProjectSelected, setNoProjectSelected] = React.useState(false);
   const [isRenameOpen, setIsRenameOpen] = React.useState(false);
@@ -119,6 +120,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   const onComplete = () => {
     setUploadQueueEmpty(true);
+    setProjectTdpDataShouldRefresh(true);
   };
 
   const customNotification = (key: string | number | undefined, message: React.ReactNode, callback: () => Promise<number | undefined>, progress: number) => {
@@ -327,10 +329,13 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         onSuccess={getOrganizations}
         onClose={hideRenameDialog}
       />
-      <ProjectsDialog
+      {
+        isProjectsOpen &&
+        <ProjectsDialog
         open={isProjectsOpen}
         onClose={hideProjectsDialog}
-      />
+        />
+      }
     </AppBar>
   );
 };

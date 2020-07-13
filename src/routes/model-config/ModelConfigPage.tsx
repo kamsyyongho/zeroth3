@@ -240,17 +240,17 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       });
     } else {
       // only get if we weren't passed anything from the previous page
-      if (!modelConfigs.length) {
-        getModelConfigs();
-      } else {
-        setModelConfigsLoading(false);
-      }
-      if (!project) {
-        getProject();
-      } else {
-        setProjectLoading(false);
-      }
       if (hasModelConfigPermission) {
+        if (!modelConfigs.length) {
+          getModelConfigs();
+        } else {
+          setModelConfigsLoading(false);
+        }
+        if (!project) {
+          getProject();
+        } else {
+          setProjectLoading(false);
+        }
         if (!topGraphs.length) {
           getTopGraphs();
         } else {

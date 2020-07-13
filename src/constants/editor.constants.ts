@@ -21,7 +21,7 @@ export const DEFAULT_SHORTCUTS = {
         //     debug: [],
     };
 
-export const renderInputCombination = (input: string[]) => {
+export const renderInputCombination = (input: any) => {
     let result = '';
     input.forEach((input: string, index: number) => {
         if(index > 0) result += ' + '
@@ -58,6 +58,9 @@ export const renderInputCombination = (input: string[]) => {
                 break;
             case 'ArrowDown':
                 result += '↓ ArrowDown';
+                break;
+            case ' ':
+                result += 'Space';
                 break;
             default:
                 result += input.toUpperCase();

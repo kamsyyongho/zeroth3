@@ -7,6 +7,7 @@ import {DEFAULT_SHORTCUTS} from './constants';
 
 setGlobal({
     shortcuts: DEFAULT_SHORTCUTS,
+    projectTdpDataShouldRefresh: false,
 });
 
 ReactDOM.render(<App />, document.getElementById('root'));

@@ -61,7 +61,6 @@ export const AppDrawer = (props: AppDrawerProps) => {
   const canSeeModels = canSeeAcousticModels || canSeeLanguageModels || canSeeSubGraphs;
   const canSeeUsers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.users), [roles]);
   const canSeeTranscribers = React.useMemo(() => hasPermission(roles, PERMISSIONS.IAM.transcribers), [roles]);
-  const canSeeAdmin = React.useMemo(() => hasPermission(roles, PERMISSIONS.admin), [roles]);
   const canSeeTranscription = React.useMemo(() => hasPermission(roles, PERMISSIONS.transcription), [roles]);
 
   const drawerItems: JSX.Element[] = [];
@@ -71,7 +70,6 @@ export const AppDrawer = (props: AppDrawerProps) => {
     if ((key === 'models' && !canSeeModels) ||
       (key === 'modelTraning' && !canSeeModels) ||
       (key === 'IAM' && !canSeeTranscribers && !canSeeUsers) ||
-        (key === 'admin' && !canSeeAdmin) ||
         (key === 'transcription' && !canSeeTranscription)) {
       shouldRender = false;
     }

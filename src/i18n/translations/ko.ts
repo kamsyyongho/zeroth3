@@ -4,6 +4,7 @@ import { ResourceLanguage } from 'i18next';
 export const ko: ResourceLanguage = {
   translation: {
     common: {
+      all: '전체',
       okay: '확인',
       delete: '삭제',
       submit: '제출',
@@ -68,7 +69,7 @@ export const ko: ResourceLanguage = {
       models: '모델',
       editor: '에디터',
       modelTraining: '모델 학습',
-      admin: '관리자',
+     history: '전사내역',
       transcription: '전사관리',
     },
     menu: {
@@ -135,7 +136,7 @@ export const ko: ResourceLanguage = {
       speaker: '발화자',
       name: '이름',
       text: '텍스트 입력',
-      file: '파일 업로드',
+      file: '파일',
       thresholdLr: 'Low risk threshold',
       thresholdHr: 'High risk threshold',
       description: '설명',
@@ -173,7 +174,7 @@ export const ko: ResourceLanguage = {
       fileUrl: '파일 URL',
     },
     admin: {
-      pageTitle: '관리자',
+      pageTitle: '전사 관리',
       diff: 'Diff',
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',
@@ -181,7 +182,7 @@ export const ko: ResourceLanguage = {
       reason: '이유',
     },
     transcription: {
-      pageTitle: '전사 관리',
+      pageTitle: '전사 내역',
       diff: 'Diff',
       commentNumber: '댓글수',
       approveMsg: '승인하시겠습니까?',
@@ -215,7 +216,7 @@ export const ko: ResourceLanguage = {
     },
     TDP: {
       TDP: 'TDP',
-      decodeData: '데이터 디코딩',
+      dataUpload: '데이터 업로드',
       highRiskSegments: 'High Risk 세그먼트',
       memo: '메모',
       sessionId: '세션 ID',
@@ -226,6 +227,7 @@ export const ko: ResourceLanguage = {
       originalFilename: '파일 이름',
       wordCount: '글자 수',
       statusChange: '상태변화 내역',
+      deleteFailMsg: '삭제요청 실패',
     },
     transcribingSet: {
       transcribingSet: 'TDP 세트',
@@ -282,6 +284,7 @@ export const ko: ResourceLanguage = {
       seeRejectReason: '반려사유 : {{rejectReason}}',
       setThreshold: 'Threshold 설정',
       shortcuts: '단축키',
+      duplicateShortcut: '단축키를 중복 설정 할 수 없습니다',
       rewindAudio: '뒤로감기',
       forwardAudio: '빨리감기',
       audioPlayPause: '재생/일시정지',

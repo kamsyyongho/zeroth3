@@ -108,7 +108,7 @@ export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
-  const { hasPermission, roles } = React.useContext(KeycloakContext);
+  const { hasPermission, roles, user } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
@@ -799,14 +799,16 @@ export function EditorPage() {
     if(api?.voiceData && voiceData) {
       setVoiceDataLoading(true);
       const url = voiceData.audioUrl;
-      const audioUrl = url.split('/');
-      let processedUrl = '';
+      // const audioUrl = url.split('/');
+      // let processedUrl = '';
 
-      audioUrl[audioUrl.length - 2] = voiceData.id;
-      audioUrl.forEach((url: string) => {
-        processedUrl += `${url}/`
-      });
-      const response = await api.voiceData.getAudio(processedUrl);
+      // audioUrl[audioUrl.length - 2] = voiceData.id;
+      // audioUrl[audioUrl.length - 3] = `organizations/${user.currentOrganizationId}/data`
+      // audioUrl.forEach((url: string) => {
+      //   processedUrl += `${url}/`
+      // });
+
+      const response = await api.voiceData.getAudio(url);
       if (response.kind === 'ok') {
         setAudioUrl(response.url);
       } else {

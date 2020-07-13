@@ -1,37 +1,23 @@
-import { Grid, TableCell, Tooltip, Typography } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
+import {TableCell, Typography} from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
-import AddIcon from '@material-ui/icons/Add';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import LaunchIcon from '@material-ui/icons/Launch';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import EditIcon from '@material-ui/icons/Edit';
-import RateReviewIcon from '@material-ui/icons/RateReview'
-import { useSnackbar } from 'notistack';
-import MoonLoader from 'react-spinners/MoonLoader';
-import React, { useGlobal } from 'reactn';
-import { useHistory } from 'react-router-dom';
-import { ApiContext } from '../../../hooks/api/ApiContext';
-import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { ServerError } from '../../../services/api/types/api-problem.types';
-import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData, PATHS } from '../../../types';
-import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
-import log from '../../../util/log/logger';
-import { ProgressBar } from '../../shared/ProgressBar';
-import { SetDetail } from "../../projects/set/components/SetDetail";
-import { EvaluationDetailModal } from '../../projects/set/components/EvaluationDetailModal';
-import { TrainingChip } from '../../shared/TrainingChip';
-import BackupIcon from '@material-ui/icons/Backup';
-import { ICONS } from '../../../theme/icons';
+import {useSnackbar} from 'notistack';
+import React, {useGlobal} from 'reactn';
+import {useHistory} from 'react-router-dom';
+import {ApiContext} from '../../../hooks/api/ApiContext';
+import {I18nContext} from '../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
+import {CustomTheme} from '../../../theme';
+import {CONTENT_STATUS, PATHS, VoiceData, ROLES} from '../../../types';
+import {ICONS} from '../../../theme/icons';
+import Chip from '@material-ui/core/Chip';
 
 interface TranscriptionTableItemProps {
-    dataSet: DataSet;
-    dataSetIndex: number;
+    voiceData: VoiceData;
+    voiceDataIndex: number;
+    handleConfirmationClick: (voiceDataIndex: number) => void;
+    handleRejectClick: (voiceDataIndex: number) => void;
     // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -56,72 +42,117 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         buttonReject: {
             backgroundColor: '#c33636',
-        }
+        },
+        rejected: {
+            backgroundColor: theme.error,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        confirmed: {
+            backgroundColor: theme.editor.changes,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        review: {
+            backgroundColor: theme.palette.primary.light,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
+        fetched: {
+            backgroundColor: theme.editor.LowConfidence,
+            color: theme.palette.primary.contrastText,
+            fontWeight: 'bold',
+        },
     }));
 
 export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
-    const { dataSet, dataSetIndex } = props;
-    const { transcribers, total, processed, name, wordCount, createdAt, rejected } = dataSet;
-    // const { transcribers, total, processed, name } = dataSet;
-    // const numberOfTranscribers = transcribers.length;
+    const { voiceData, voiceDataIndex, handleConfirmationClick, handleRejectClick } = props;
+    const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
     const history = useHistory();
     const api = React.useContext(ApiContext);
     const { enqueueSnackbar } = useSnackbar();
     const { translate, formatDate } = React.useContext(I18nContext);
+    const { hasPermission, roles } = React.useContext(KeycloakContext);
     const [downloadLinkPending, setDownloadLinkPending] = React.useState(false);
     const [downloadLink, setDownloadLink] = React.useState('');
     const [expanded, setExpanded] = React.useState(false);
     const [isCreateTrainingSetLoading, setIsCreateTrainingSetLoading] = React.useState(false);
     const [setDetailLoading, setSetDetailLoading] = React.useState(false);
-    const [subSets, setSubSets] = React.useState<DataSet[]>([]);
+    const [subSets, setSubSets] = React.useState<VoiceData[]>([]);
 
     const classes = useStyles();
     const theme: CustomTheme = useTheme();
 
-    // must be a number from 0 to 100
-    const progress = processed / total * 100;
+    const handleDiffClick = () => {
+        const projectId = voiceData.projectId;
+        setNavigationProps({ voiceData: voiceData, projectId: projectId, isDiff: true, readOnly: false });
+        PATHS.editor.to && history.push(PATHS.editor.to);
+    };
 
-    let processedText = (
-        <Typography className={classes.processedText} >
-            {processed}
-            <Typography component='span' color='textPrimary' >
-                {` / ${total}`}
-            </Typography>
-        </Typography>
-    );
-
-    if (!total || isNaN(progress)) {
-        processedText = (<Typography color='textSecondary' >
-            {translate('common.noData')}
-        </Typography>);
-    }
+    const statusChipClass = () => {
+        switch(voiceData.status) {
+            case CONTENT_STATUS.REJECTED :
+                return classes.rejected;
+            case CONTENT_STATUS.CONFIRMED :
+                return classes.confirmed;
+            // case CONTENT_STATUS.IN_REVIEW :
+            //     return classes.review;
+            // case CONTENT_STATUS.FETCHED :
+            //     return classes.fetched
+            default :
+                return '';
+        }
+    };
 
     return (
         <TableRow
             className={classes.tableRow}
         >
             <TableCell>
-                <Typography>{name}</Typography>
+                <Typography>{voiceData.originalFilename}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{wordCount}</Typography>
+                <Typography>{voiceData.transcriber}</Typography>
             </TableCell>
             <TableCell>
-                {dataSet.highRiskRatio + '%'}
+                {voiceData.wordCount}
             </TableCell>
             <TableCell>
-                <Typography>{rejected}</Typography>
+                <Typography>{voiceData.length}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>{formatDate(new Date(createdAt))}</Typography>
+                <Typography>{formatDate(new Date(voiceData.decodedAt))}</Typography>
             </TableCell>
             <TableCell>
-                <Typography>
-                    {processedText}
-                    <ProgressBar value={progress} maxWidth={200} />
-                </Typography>
+                <Button
+                    color='primary'
+                    startIcon={<ICONS.Diff />}
+                    onClick={handleDiffClick} />
             </TableCell>
-            <TableCell>
+            <TableCell style={{ minWidth: '250px' }}>
+                {
+                    roles.includes(ROLES.manager) && voiceData.status !== CONTENT_STATUS.CONFIRMED &&
+                        <>
+                            <Button
+                                className={classes.button}
+                                variant='contained'
+                                color="primary"
+                                disabled={voiceData.status !== CONTENT_STATUS.IN_REVIEW}
+                                size='small'
+                                onClick={() => handleConfirmationClick(voiceDataIndex)}>
+                                {translate('common.confirm')}
+                            </Button>
+                            <Button
+                                className={[classes.button, classes.buttonReject].join(' ')}
+                                color='secondary'
+                                disabled={voiceData.status !== CONTENT_STATUS.IN_REVIEW}
+                                variant='contained'
+                                size='small'
+                                onClick={() => handleRejectClick(voiceDataIndex)}>
+                                {translate('common.reject')}
+                            </Button>
+                        </>
+                }
             </TableCell>
         </TableRow>
     );

@@ -27,46 +27,31 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-const isCompletedStatus = {
-    all: 'All',
-    completed: 'Completed',
-    inComplete: 'Incomplete',
+const voiceDataStatus = {
+    all: 'all',
+    review: 'review',
 }
 
-interface TranscriptCellStatusSelectProps {
-    handleCompletedChange: (status: boolean | null) => void;
+interface TranscriptionCellStatusSelectProps {
+    getVoiceDataInReview: () => void;
+    getAllVoiceData: () => void;
 }
 
-export function TranscriptCellStatusSelect(props: TranscriptCellStatusSelectProps) {
-    const { handleCompletedChange } = props;
+export function TranscriptionCellStatusSelect(props: TranscriptionCellStatusSelectProps) {
+    const { getVoiceDataInReview, getAllVoiceData } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
 
-    const [status, setStatus] = React.useState<string>(isCompletedStatus.all);
+    const [status, setStatus] = React.useState<string>(voiceDataStatus.review);
 
     const classes = useStyles();
     const theme = useTheme();
-
-
+    
     const handleChange = (event: any) => {
         const value = event.target.value as string;
-        let status;
-        switch (value) {
-            case isCompletedStatus.all:
-                status = null;
-                break;
-            case isCompletedStatus.completed:
-                status = true;
-                break;
-            case isCompletedStatus.inComplete:
-                status = false;
-                break;
-            default:
-                status = null;
-                break;
-        }
-        handleCompletedChange(status);
+        if(value === voiceDataStatus.all) getAllVoiceData();
+        if(value === voiceDataStatus.review) getVoiceDataInReview();
         setStatus(value);
     };
 
@@ -77,21 +62,17 @@ export function TranscriptCellStatusSelect(props: TranscriptCellStatusSelectProp
             direction='row'
             alignContent='center'
             alignItems='center'
-            justify='flex-start'
-        >
+            justify='flex-start'>
             <FormControl className={classes.formControl} >
                 <Select
                     value={status}
                     onChange={handleChange}
                 >
-                    <MenuItem value={isCompletedStatus.all}>
-                        <ListItemText primary={`status: ${isCompletedStatus.all}`} />
+                    <MenuItem value={voiceDataStatus.all}>
+                        <ListItemText primary={`status: ${voiceDataStatus.all}`} />
                     </MenuItem>
-                    <MenuItem value={isCompletedStatus.inComplete}>
-                        <ListItemText primary={`status: ${isCompletedStatus.inComplete}`} />
-                    </MenuItem>
-                    <MenuItem value={isCompletedStatus.completed}>
-                        <ListItemText primary={`status: ${isCompletedStatus.completed}`} />
+                    <MenuItem value={voiceDataStatus.review}>
+                        <ListItemText primary={`status: ${voiceDataStatus.review}`} />
                     </MenuItem>
                 </Select>
             </FormControl>

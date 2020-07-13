@@ -78,14 +78,19 @@ export interface VoiceDataResults extends PaginatedResults {
   content: VoiceData[];
 }
 
+export interface HistoryDataResults extends PaginatedResults {
+  content: VoiceData[];
+  status?: CONTENT_STATUS;
+}
+
 export enum CONTENT_STATUS {
   DECODED = 'DECODED',
   UNCONFIRMED_HR = 'UNCONFIRMED_HR',
   UNCONFIRMED_LR = 'UNCONFIRMED_LR',
   FETCHED = 'FETCHED',
   CONFIRMED = 'CONFIRMED',
-  TRAINABLE_SV = 'TRAINABLE_SV',
-  TRAINABLE_USV = 'TRAINABLE_USV',
+  // TRAINABLE_SV = 'TRAINABLE_SV',
+  // TRAINABLE_USV = 'TRAINABLE_USV',
   IN_REVIEW = 'IN_REVIEW',
   REJECTED = 'REJECTED',
 }
