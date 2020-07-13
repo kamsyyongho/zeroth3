@@ -402,7 +402,6 @@ export function TDPTable(props: TDPTableProps) {
     if (initialLoad) {
       setInitialLoad(false);
     } else if (!setProjectTdpDataShouldRefresh) {
-      console.log('===== getVoiceData triggered');
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
       setExpandedRowsByIndex({});
     }

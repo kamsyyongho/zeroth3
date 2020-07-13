@@ -102,10 +102,12 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       setSelectedProject(project);
       setCurrentProject(project);
       setProjectTdpDataShouldRefresh(true);
-      setTimeout(() => {
-        history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
-        handleClose();
-      }, 0);
+      history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      handleClose();
+      // setTimeout(() => {
+      //   history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      //   handleClose();
+      // }, 0);
     }
   };
 
@@ -129,7 +131,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-
     if (currentOrganization) {
       getProjects();
     } else if (!currentOrganization && projects.length > 0) {
@@ -140,9 +141,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
 
   // to get the currently selected project
   React.useEffect(() => {
-    console.log('==========proejects : ', projects, currentProject);
     if (projects && projects.length && currentProjectId) {
-      console.log('=====current project',currentProject);
       for (let i = 0; i < projects.length; i++) {
         const project = projects[i];
         if (project.id === currentProjectId) {

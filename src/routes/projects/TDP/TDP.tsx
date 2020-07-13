@@ -282,10 +282,8 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
-      console.log(' ======== setTypeTDP ?', setTypeTDP);
       getSubSetVoiceData();
     } else if(!(voiceDataResults?.content?.length > 0)) {
-      console.log('=====initia lifeCycle : ', projectId);
       getVoiceDataWithDefaultOptions();
     }
     // if the flag was already set when we first load the page
@@ -309,7 +307,6 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-      console.log('========== projecTDPshould refresh : ', projectTdpDataShouldRefresh, projectId);
 
       getVoiceDataWithDefaultOptions();
       setProjectTdpDataShouldRefresh(false);

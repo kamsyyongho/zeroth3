@@ -328,13 +328,9 @@ export const Header: React.FunctionComponent<{}> = (props) => {
         onSuccess={getOrganizations}
         onClose={hideRenameDialog}
       />
-      {
-        isProjectsOpen &&
         <ProjectsDialog
         open={isProjectsOpen}
-        onClose={hideProjectsDialog}
-        />
-      }
+        onClose={hideProjectsDialog}/>
     </AppBar>
   );
 };

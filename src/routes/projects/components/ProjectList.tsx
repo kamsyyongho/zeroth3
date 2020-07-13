@@ -58,11 +58,7 @@ export function ProjectList(props: ProjectListProps) {
     onUpdate(updatedProject, isEdit);
     handleEditClose(updatedProject.id);
   };
-
-  React.useEffect(() => {
-    console.log('-============ selectedProjectId : ', selectedProjectId);
-  }, [selectedProjectId])
-
+  
   const renderProjects = () => projects.map((project, index) => {
     const selected = project.id === selectedProjectId;
     return (<React.Fragment key={index}>
