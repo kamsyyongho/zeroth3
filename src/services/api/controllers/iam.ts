@@ -212,7 +212,7 @@ export class IAM extends ParentApi {
     const request: InviteUserRequest = {
       email,
     };
-    if (inviteAsTranscriber) {
+    if (typeof inviteAsTranscriber === 'boolean') {
       request.transcriber = inviteAsTranscriber;
     }
     // make the api call

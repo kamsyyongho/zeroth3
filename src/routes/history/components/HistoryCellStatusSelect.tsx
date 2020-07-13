@@ -2,6 +2,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemText from '@material-ui/core/ListItemText';
+import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -27,33 +28,28 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-const voiceDataStatus = {
-    all: 'all',
-    review: 'review',
+export const allStatus = 'all'
+
+interface HistoryCellStatusSelectProps {
+    handleStatusChange: (status: any) => void;
 }
 
-interface AdminCellStatusSelectProps {
-    getVoiceDataInReview: () => void;
-    getAllVoiceData: () => void;
-}
-
-export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
-    const { getVoiceDataInReview, getAllVoiceData } = props;
+export function HistoryCellStatusSelect(props: HistoryCellStatusSelectProps) {
+    const { handleStatusChange } = props;
     const api = React.useContext(ApiContext);
     const { translate } = React.useContext(I18nContext);
     const { enqueueSnackbar } = useSnackbar();
 
-    const [status, setStatus] = React.useState<string>(voiceDataStatus.review);
+    const [status, setStatus] = React.useState<string>(allStatus);
 
     const classes = useStyles();
     const theme = useTheme();
 
 
     const handleChange = (event: any) => {
-        const value = event.target.value as string;
-        if(value === voiceDataStatus.all) getAllVoiceData();
-        if(value === voiceDataStatus.review) getVoiceDataInReview();
+        const value = event.target.value;
         setStatus(value);
+        handleStatusChange(value);
     };
 
     return (
@@ -66,16 +62,21 @@ export function AdminCellStatusSelect(props: AdminCellStatusSelectProps) {
             justify='flex-start'
         >
             <FormControl className={classes.formControl} >
+                <InputLabel>{translate('forms.status')}</InputLabel>
                 <Select
                     value={status}
                     onChange={handleChange}
                 >
-                    <MenuItem value={voiceDataStatus.all}>
-                        <ListItemText primary={`status: ${voiceDataStatus.all}`} />
+                    <MenuItem value={allStatus}>
+                        <ListItemText primary={translate('common.all')} />
                     </MenuItem>
-                    <MenuItem value={voiceDataStatus.review}>
-                        <ListItemText primary={`status: ${voiceDataStatus.review}`} />
-                    </MenuItem>
+                    {
+                        CONTENT_STATUS_VALUES.map((status, index) => {
+                            return (<MenuItem value={status} key={`history-select-${index}`} >
+                                <ListItemText primary={status} />
+                            </MenuItem>)
+                        })
+                    }
                 </Select>
             </FormControl>
         </Grid>

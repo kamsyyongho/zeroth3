@@ -40,6 +40,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const history = useHistory();
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
+  const [projectIdForProp, setProjectIdForProp] = React.useState(projectId);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -324,7 +325,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {project && isValidProject &&
         <>
           <ProjectTableTabs
-            projectId={projectId}
+            projectId={projectIdForProp}
             project={project}
             modelConfigs={modelConfigs}
             dataSets={dataSets}
@@ -332,7 +333,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             modelConfigDialogOpen={dialogOpen}
           />
           <ModelConfigDialog
-            projectId={projectId}
+            projectId={projectIdForProp}
             hideBackdrop={hideBackdrop}
             open={dialogOpen}
             onClose={closeDialog}

@@ -129,9 +129,10 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
+
     if (currentOrganization) {
       getProjects();
-    } else if (!currentOrganization) {
+    } else if (!currentOrganization && projects.length > 0) {
       setProjects([]);
     }
   }, [currentOrganization]);

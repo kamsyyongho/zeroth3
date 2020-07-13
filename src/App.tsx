@@ -20,8 +20,8 @@ import { Header } from './routes/shared/header/Header';
 import { NotFound } from './routes/shared/NotFound';
 import { PageErrorFallback } from './routes/shared/PageErrorFallback';
 import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
-import { Admin } from './routes/admin/Admin';
 import { Transcription } from './routes/transcription/Transcription';
+import { History } from './routes/history/History';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 
 const history = createBrowserHistory();
@@ -33,6 +33,7 @@ function App() {
 
   React.useEffect(() => {
     initKeycloak();
+    initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
     const globalCallback = addCallback(globalState => {
       if (globalState.currentProject?.id) {
@@ -57,6 +58,7 @@ function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   React.useEffect(() => {
     if (keycloakInitialized) {
@@ -84,8 +86,9 @@ function App() {
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
-          <Route path={PATHS.admin.to} component={withErrorBoundary(Admin, PageErrorFallback)} />
-          <Route path={PATHS.transcription.to} component={withErrorBoundary(Transcription, PageErrorFallback)} />
+          //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
+          <Route path={PATHS.transcription.to} component={Transcription} />
+          <Route path={PATHS.history.to} component={History} />
           <Route component={NotFound} />
         </Switch>
       </Router>

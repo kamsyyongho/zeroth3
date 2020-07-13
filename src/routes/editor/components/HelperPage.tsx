@@ -64,7 +64,7 @@ export function HelperPage(props: HelperPageProps) {
     // const [inputArray, setInputArray] = React.useState(Object.values(localShortcuts));
 
     const functionArray = React.useMemo(() => Object.keys(localShortcuts), [localShortcuts]);
-    const inputArray = React.useMemo(() => Object.values(localShortcuts), [localShortcuts])
+    const inputArray = React.useMemo(() => Object.values(localShortcuts), [localShortcuts]);
 
     const theme = useTheme();
     const classes = useStyles();
@@ -76,14 +76,6 @@ export function HelperPage(props: HelperPageProps) {
 
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
-
-    const handleSubmit = async () => {
-        if(api?.user) {
-            const response = await api.user.updateShortcuts(shortcuts);
-            console.log(response);
-        }
-
-    };
 
     const handleRowClick = (index: number) => {
         setDialogTitle(functionArray[index]);

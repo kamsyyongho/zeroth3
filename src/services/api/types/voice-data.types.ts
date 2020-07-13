@@ -1,5 +1,6 @@
 import {
   CONTENT_STATUS,
+  HistoryDataResults,
   Segment,
   VoiceData,
   VoiceDataResults,
@@ -50,6 +51,17 @@ export interface SearchDataRequest {
    * @example `sort-by: startAt.desc`
    */
   'sort-by'?: string;
+}
+
+export interface GetVoiceDataToReviewRequest {
+  page?: number;
+  size?: number;
+}
+
+export interface GetHistoryRequest {
+  page?: number;
+  size?: number;
+  status?: CONTENT_STATUS;
 }
 
 export interface SplitSegmentQuery {
@@ -114,6 +126,9 @@ export type UpdateSegmentsRequest = Segment[];
 /////////////
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
+
+
+export type deleteAllDataSet = { kind: 'ok' } | GeneralApiProblem;
 
 export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
 
@@ -184,11 +199,11 @@ export type deleteUnconfirmedVoiceDataResult =
   | GeneralApiProblem;
 
 export type getDataToReview =
-  | { kind: 'ok'; voiceData: VoiceData[] }
+  | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
 export type getHistory =
-  | { kind: 'ok'; voiceData: VoiceData[] }
+  | { kind: 'ok'; data: HistoryDataResults }
   | GeneralApiProblem;
 
 export type getAudioUrl =

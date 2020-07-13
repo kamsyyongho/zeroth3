@@ -18,6 +18,8 @@ import {
   ModelConfig,
   Project,
   Transcriber,
+  SnackbarError,
+  SNACKBAR_VARIANTS,
   VoiceData,
   VoiceDataResults,
   TranscriberStats } from '../../../types';
@@ -28,6 +30,7 @@ import { TDPTable } from './components/TDPTable';
 import { ConfirmationDialog } from "./components/Confirmation";
 import { StatusLogModal } from './components/StatusLogModal';
 import DeleteIcon from "@material-ui/icons/Delete";
+import { useSnackbar } from 'notistack';
 
 interface TDPProps {
   projectId: string;
@@ -78,6 +81,7 @@ export function TDP(props: TDPProps) {
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
+  const { enqueueSnackbar } = useSnackbar();
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
@@ -147,9 +151,12 @@ export function TDP(props: TDPProps) {
     if(api?.voiceData && projectId) {
       setVoiceDataDeleteLoading(true);
       const response = await api.voiceData.deleteAllDataSet(projectId, filterParams);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if(response.kind === 'ok') {
         setInitialVoiceDataLoading(true);
         getVoiceData({...previousSearchOptions, page: 0});
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
       } else {
         log({
           file: `TDP.tsx`,
@@ -157,7 +164,13 @@ export function TDP(props: TDPProps) {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(translate('TDP.deleteFailMsg'), { variant: SNACKBAR_VARIANTS.error });
     }
     setVoiceDataDeleteLoading(false);
   };
@@ -183,6 +196,8 @@ export function TDP(props: TDPProps) {
     if (api?.voiceData && projectId) {
       setVoiceDataDeleteLoading(true);
       const response = await api.voiceData.deleteUnconfirmedVoiceData(projectId, voiceDataId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         if (shouldRefresh) {
           // redo seach if the page would show no results
@@ -198,7 +213,14 @@ export function TDP(props: TDPProps) {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+
       setVoiceDataDeleteLoading(false);
     }
   };
@@ -242,6 +264,7 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData(options)
     } else {
+
       getVoiceData(options);
     }
   };
@@ -261,7 +284,8 @@ export function TDP(props: TDPProps) {
   React.useEffect(() => {
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
-    } else if(!voiceDataResults?.content?.length) {
+    } else if(!(voiceDataResults?.content?.length > 0)) {
+
       getVoiceDataWithDefaultOptions();
     }
     // if the flag was already set when we first load the page
@@ -270,20 +294,25 @@ export function TDP(props: TDPProps) {
     }
   }, []);
 
+  // React.useEffect(() => {
+  //   console.log('=========== projectTdpSouldRefresh : ', projectTdpDataShouldRefresh);
+  //   if(setTypeTDP?.length) {
+  //     getSubSetVoiceData();
+  //   } else if(!voiceDataResults?.content?.length) {
+  //     getVoiceDataWithDefaultOptions();
+  //   }
+  //   // if the flag was already set when we first load the page
+  //   if (projectTdpDataShouldRefresh) {
+  //     setProjectTdpDataShouldRefresh(false);
+  //   }
+  // }, [projectTdpDataShouldRefresh])
+
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
       getVoiceDataWithDefaultOptions();
       setProjectTdpDataShouldRefresh(false);
     }
-  }, [projectId])
-
-  // React.useEffect(() => {
-  //   // if the flag triggers after we are already on the page
-  //   if (projectTdpDataShouldRefresh && !voiceDataLoading) {
-  //     setProjectTdpDataShouldRefresh(false);
-  //     getVoiceDataWithDefaultOptions();
-  //   }
-  // }, [projectTdpDataShouldRefresh]);
+  }, [projectId, projectTdpDataShouldRefresh])
 
   React.useEffect(() => {
     if(setTypeTDP?.length) {
@@ -314,8 +343,6 @@ export function TDP(props: TDPProps) {
 
   const openCreateSetDialog = () => setIsCreateSetOpen(true);
   const closeCreateSetDialog = () => setIsCreateSetOpen(false);
-
-
 
   const renderContent = () => {
     return (<Card elevation={0} className={classes.card} >
@@ -349,7 +376,7 @@ export function TDP(props: TDPProps) {
               size='small'
               onClick={openUploadDialog}
               startIcon={<BackupIcon />}>
-              {translate('TDP.decodeData')}
+              {translate('TDP.dataUpload')}
             </Button>
           </Grid>}
         </Grid>}
@@ -380,15 +407,18 @@ export function TDP(props: TDPProps) {
       {!project ? <BulletList /> :
         renderContent()
       }
-      <AudioUploadDialog
-        open={isUploadOpen}
-        onClose={closeUploadDialog}
-        onSuccess={closeUploadDialog}
-        projectId={projectId}
-        modelConfigs={modelConfigs}
-        openModelConfigDialog={openModelConfigDialog}
-        modelConfigDialogOpen={modelConfigDialogOpen}
-      />
+      {
+        isUploadOpen &&
+        <AudioUploadDialog
+            open={isUploadOpen}
+            onClose={closeUploadDialog}
+            onSuccess={closeUploadDialog}
+            projectId={projectId}
+            modelConfigs={modelConfigs}
+            openModelConfigDialog={openModelConfigDialog}
+            modelConfigDialogOpen={modelConfigDialogOpen}
+        />
+      }
       <CreateSetFormDialog
         open={isCreateSetOpen}
         onClose={closeCreateSetDialog}

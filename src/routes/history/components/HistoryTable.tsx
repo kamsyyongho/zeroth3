@@ -1,8 +1,9 @@
-import {Button, TableBody, TablePagination, TableCell, Typography} from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import {Backdrop, Button, TablePagination, TableSortLabel, TableBody, TableCell, Typography} from '@material-ui/core';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import Select from '@material-ui/core/Select';
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -10,21 +11,18 @@ import FormControl from "@material-ui/core/FormControl";
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme';
-import { DataSet, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS } from '../../../types';
-import { PERMISSIONS } from '../../../constants';
-import { TranscriptionTableItem } from './TranscriptionTableItem';
-import { TranscriptionCellStatusSelect } from './TranscriptionCellStatusSelect';
+import { DataSet, HistoryDataResults, VoiceData, VoiceDataResults, LOCAL_STORAGE_KEYS, CONTENT_STATUS } from '../../../types';
+import { HistoryTableItem } from './HistoryTableItem';
+import { HistoryCellStatusSelect } from './HistoryCellStatusSelect'
+import PulseLoader from 'react-spinners/PulseLoader';
 
-const FULL_ROW_COL_SPAN = 7;
+const FULL_ROW_COL_SPAN = 5;
 
 interface TranscriptionTableProps {
-    voiceDataResults: VoiceDataResults;
-    getAllVoiceData: () => void;
+    voiceDataResults: HistoryDataResults;
+    handleStatusChange: (status: any) => void;
     handlePagination: (pageIndex: number, size: number) => void;
-    getVoiceDataInReview: () => void;
-    handleConfirmationClick: (voiceDataIndex: number) => void;
-    handleRejectClick: (voiceDataIndex: number) => void;
-    showStatus: boolean;
+    loading: boolean;
 }
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -50,22 +48,22 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         filterBtn: {
             height: 45,
-        }
+        },
+        backdrop: {
+            zIndex: theme.zIndex.drawer + 1,
+            color: theme.shadows[1],
+        },
     }));
 
-export function TranscriptionTable(props: TranscriptionTableProps) {
-    const { voiceDataResults, getAllVoiceData, getVoiceDataInReview, handlePagination, handleConfirmationClick, handleRejectClick, showStatus } = props;
+export function HistoryTable(props: TranscriptionTableProps) {
+    const { voiceDataResults, handleStatusChange, handlePagination, loading } = props;
     const { translate } = React.useContext(I18nContext);
+    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const [pageSize, setPageSize] = React.useState<number>(10);
     const [pageIndex, setPageIndex] = React.useState<number>(0);
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
     const classes = useStyles();
 
-    React.useEffect(() => {
-        if(voiceDataResults?.content) {
-            setVoiceData(voiceDataResults.content);
-        }
-    }, [voiceDataResults]);
+    const theme: CustomTheme = useTheme();
 
     const renderRowFiller = (<TableRow >
         <TableCell colSpan={FULL_ROW_COL_SPAN} className={classes.tableFiller} />
@@ -75,11 +73,10 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
         key={voiceData.id}
     >
         {index > 0 && renderRowFiller}
-        <TranscriptionTableItem
+        <HistoryTableItem
             voiceData={voiceData}
             voiceDataIndex={index}
-            handleConfirmationClick={handleConfirmationClick}
-            handleRejectClick={handleRejectClick}
+            status={voiceDataResults?.status}
             // openEvaluationDetail={openEvaluationDetail}
         />
     </React.Fragment>));
@@ -90,9 +87,6 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('forms.file')}
             </TableCell>
             <TableCell>
-                {translate('forms.transcriber')}
-            </TableCell>
-            <TableCell>
                 {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
@@ -101,20 +95,26 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
             <TableCell>
                 {translate('common.date')}
             </TableCell>
-            <TableCell>
-                {translate('admin.diff')}
+            <TableCell style={{ minWidth: '250px', display: 'flex', flexDirection: 'row', }}>
+                <HistoryCellStatusSelect handleStatusChange={handleStatusChange}/>
             </TableCell>
-            <TableCell>
-                {translate('common.confirm') + ' / ' + translate('common.reject')}
-            </TableCell>
+            {/*<TableCell>*/}
+            {/*    <HistoryCellStatusSelect handleStatusChange={handleStatusChange}/>*/}
+            {/*</TableCell>*/}
         </TableRow>
     </TableHead>);
 
-    const renderNoResults = () => (<TableRow>
+    const renderNoResults = () => (<TableRow >
         <TableCell colSpan={FULL_ROW_COL_SPAN}>
             <Typography align='center' >{translate('table.noResults')}</Typography>
         </TableCell>
     </TableRow>);
+
+    React.useEffect(() => {
+        if(voiceDataResults?.content) {
+            setVoiceData(voiceDataResults.content);
+        }
+    }, [voiceDataResults]);
 
     return (
         <>
@@ -124,6 +124,16 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                     {!voiceData.length ? renderNoResults() : renderSets()}
                 </TableBody>
             </Table>
+            {loading && (
+                <Backdrop className={classes.backdrop} open={loading}>
+                    <PulseLoader
+                        sizeUnit={"px"}
+                        size={25}
+                        color={theme.palette.primary.light}
+                        loading={true}
+                    />
+                </Backdrop>
+            )}
             {
                 voiceData.length > 0 &&
                 <TablePagination
@@ -154,6 +164,5 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 />
             }
         </>
-
     );
 }

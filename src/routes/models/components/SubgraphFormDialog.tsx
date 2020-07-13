@@ -156,16 +156,16 @@ export function SubgraphFormDialog(props: SubgraphFormDialogProps) {
       const { name, text, path, selectedTopGraphId, isMutable, isPublic } = values;
       let response!: postSubGraphResult;
       if (isEdit && subGraphToEdit) {
-        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
+        response = await api.models.updateSubGraph(subGraphToEdit.id, name.trim(), text.trim(), selectedTopGraphId, !isPublic, !isMutable);
       } else {
         if (uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.TEXT) {
-          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, isPublic, !isMutable);
+          response = await api.models.postSubGraph(name.trim(), text.trim(), selectedTopGraphId, !isPublic, !isMutable);
         } else {
           if(uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.DATASET) {
             // only send the first file, because our limit is 1 file only
-            response = await api.models.uploadSubGraphFile(name.trim(), files[0], selectedTopGraphId, isPublic, !isMutable);
+            response = await api.models.uploadSubGraphFile(name.trim(), files[0], selectedTopGraphId, !isPublic, !isMutable);
           } else if (uploadType === TRAINING_DATA_TYPE_SUB_GRAPH.PATH) {
-            response = await api.models.uploadSubGraphPath(name.trim(), path, selectedTopGraphId, isPublic, !isMutable);
+            response = await api.models.uploadSubGraphPath(name.trim(), path, selectedTopGraphId, !isPublic, !isMutable);
           }
         }
       }

@@ -21,7 +21,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
-import { DEFAULT_SHORTCUTS } from '../../../constants'
+import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -222,7 +222,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.save:
           label = translate('common.save');
           icon = <ICONS.Save />;
-          tooltipText = osText('save');
+          tooltipText = renderInputCombination(shortcuts.save);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.save),
             disabled: disabledControls.includes(EDITOR_CONTROLS.save),
@@ -239,7 +239,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.undo:
           label = translate('editor.undo');
           icon = <ICONS.Undo />;
-          tooltipText = osText('undo');
+          tooltipText = renderInputCombination(shortcuts.undo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.undo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
@@ -248,7 +248,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.redo:
           label = translate('editor.redo');
           icon = <ICONS.Redo />;
-          tooltipText = osText('redo');
+          tooltipText = renderInputCombination(shortcuts.redo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.redo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
@@ -257,7 +257,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.merge:
           label = translate('editor.merge');
           icon = <ICONS.Merge />;
-          tooltipText = osText('merge');
+          tooltipText = renderInputCombination(shortcuts.merge);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.merge),
             disabled: disabledControls.includes(EDITOR_CONTROLS.merge),
@@ -266,7 +266,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.split:
           label = translate('editor.split');
           icon = <ICONS.Split />;
-          tooltipText = osText('split');
+          tooltipText = renderInputCombination(shortcuts.split);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.split),
             disabled: disabledControls.includes(EDITOR_CONTROLS.split),
@@ -279,7 +279,7 @@ export const EditorControls = (props: EditorControlsProps) => {
             onIcon={<VisibilityIcon />}
             offIcon={<VisibilityOffIcon />}
           />;
-          tooltipText = osText('toggleMore');
+          tooltipText = renderInputCombination(shortcuts.toggleMore);
           selected = !!showEditorPopups;
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.toggleMore),
@@ -297,7 +297,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.editSegmentTime:
           label = translate('editor.editSegmentTime');
           icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;
-          tooltipText = osText('editSegmentTime');
+          tooltipText = renderInputCombination(shortcuts.editSegmentTime);
           props = {
             // onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
             disabled: disabledControls.includes(EDITOR_CONTROLS.editSegmentTime),
@@ -330,6 +330,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.shortcuts:
           label = 'SHORTCUTS';
           icon = <DescriptionIcon />;
+          tooltipText= renderInputCombination(shortcuts.shortcuts);
           props = {
             onClick: () => {
               setEditorDebugMode(!editorDebugMode);
@@ -346,7 +347,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
-  const handleShortcut = () => {
+  const handleShortcut = (event: KeyboardEvent) => {
     const keyCombinationArray = Object.values(localShortcuts);
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
@@ -404,17 +405,16 @@ export const EditorControls = (props: EditorControlsProps) => {
         onCommandClick(EDITOR_CONTROLS.audioPlayPause);
         break;
     }
+    event.preventDefault();
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
     if(shortcutsStack.length < 2) {
       return;
     } else {
-      handleShortcut();
+      handleShortcut(event);
       shortcutsStack = [];
-      event.preventDefault();
     }
-
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {

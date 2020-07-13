@@ -65,7 +65,7 @@ export function UsersTable(props: UsersTableProps) {
 
   const classes = useStyles();
 
-  // used in the multi-select to quicly access the role by id 
+  // used in the multi-select to quicly access the role by id
   const parsedRolesById: ParsedRolesById = {};
   roles.forEach(role => parsedRolesById[role.id] = role);
 
@@ -122,13 +122,12 @@ export function UsersTable(props: UsersTableProps) {
     const checkValueNull = value.length ? value : null;
     setNoteLog({...currentNoteLog, [index]: checkValueNull});
   };
-  
+
   const onChangePhone = (value: string, index: number) => {
     const currentPhoneLog = phoneLog;
     const checkValueNull = value.length ? value : null;
     setPhoneLog({...currentPhoneLog, [index]: checkValueNull});
   };
-
 
   React.useEffect(() => {
     let note = {}
@@ -139,7 +138,7 @@ export function UsersTable(props: UsersTableProps) {
     })
     setNoteLog(note);
     setPhoneLog(phone);
-  }, [])
+  }, [users])
   // define the logic and what the columns should render
   const columns = React.useMemo(
     () => [
@@ -172,7 +171,7 @@ export function UsersTable(props: UsersTableProps) {
         id: 'submit',
         Header: null,
         accessor: (row: User) => row,
-        Cell: (data: CellProps<User>) => UsersCellSubmitButton({ 
+        Cell: (data: CellProps<User>) => UsersCellSubmitButton({
           cellData: data,
           selectedRoles,
           onUpdateRoleSuccess,

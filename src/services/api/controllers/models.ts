@@ -563,7 +563,7 @@ export class Models extends ParentApi {
     // query params
     const params = {
       name,
-      topGraphId,
+      'top-graph-id':topGraphId,
       public: isPublic,
       immutable: isImmutable,
     };

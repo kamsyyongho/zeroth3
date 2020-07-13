@@ -48,7 +48,7 @@ interface AudioUploadDialogProps {
 const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
 const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
 
-const ACCEPTED_FILE_TYPES = ['audio/*'];
+const ACCEPTED_FILE_TYPES = ['audio/*', '.mp4', '.MP4'];
 
 export function AudioUploadDialog(props: AudioUploadDialogProps) {
   const {
@@ -244,7 +244,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
         container: clsx(modelConfigDialogOpen && classes.hidden)
       }}
     >
-      <DialogTitle id="audio-upload-dialog">{translate(`TDP.decodeData`)}</DialogTitle>
+      <DialogTitle id="audio-upload-dialog">{translate(`TDP.dataUpload`)}</DialogTitle>
       <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
         {(formikProps) => {
           const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.FILE as string;

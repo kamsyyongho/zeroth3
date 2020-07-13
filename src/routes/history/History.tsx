@@ -6,7 +6,6 @@ import {useSnackbar, VariantType} from 'notistack';
 import { SNACKBAR_VARIANTS } from '../../types/snackbar.types';
 import clsx from 'clsx';
 import { RouteComponentProps } from "react-router";
-import { useHistory } from 'react-router-dom';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import React, { useGlobal } from "reactn";
@@ -18,9 +17,13 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { ProblemKind } from '../../services/api/types';
 import {
     AcousticModel,
+    CONTENT_STATUS,
     DataSet,
+    HistoryDataResults,
     VoiceData,
+    VoiceDataResults,
     LanguageModel,
+    LOCAL_STORAGE_KEYS,
     ModelConfig,
     PATHS,
     Project,
@@ -33,14 +36,14 @@ import {
 import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
-import { AdminTable } from './components/AdminTable';
+import { HistoryTable } from './components/HistoryTable';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { AddTranscriberDialog } from '../projects/set/components/AddTranscriberDialog';
 import { NotFound } from '../shared/NotFound';
 import { CustomTheme } from '../../theme';
-import { ConfirmationDialog } from './components/ConfirmationDialog';
 import ScaleLoader from 'react-spinners/ScaleLoader';
+import { allStatus } from './components/HistoryCellStatusSelect';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -85,154 +88,85 @@ const useStyles = makeStyles((theme) =>
     }),
 );
 
-export function Admin() {
-    //temporary hardcoded projectId for setting up dummy component
+export function History() {
     const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
     const [isForbidden, setIsForbidden] = React.useState(false);
-    // const { projectId } = match.params;
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
-    const history = useHistory();
     const { enqueueSnackbar } = useSnackbar();
     const { hasPermission, roles } = React.useContext(KeycloakContext);
-    const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-    const [voiceData, setVoiceData] = React.useState<VoiceData[]>([]);
-    const [selectedVoiceData, setSelectedVoiceData] = React.useState<VoiceData | undefined>();
-    const [selectedVoiceDataIndex, setSelectedVoiceDataIndex] = React.useState<number>(0);
-    const [isConfirmationOpen, setIsConfirmationOpen] = React.useState<boolean>(false);
-    const [isConfirm, setIsConfirm] = React.useState<boolean>(true);
+    const [dataSet, setDataSet] = React.useState<DataSet[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [voiceDataResults, setVoiceDataResults] = React.useState<HistoryDataResults>({} as HistoryDataResults);
+    const [filterParams, setFilterParams] = React.useState<any>({});
+    const [voiceDataLoading, setVoiceDataLoading] = React.useState<boolean>(false);
+    const [initialLoad, setInitialLoad] = React.useState<boolean>(false);
+
+    // const initialPageSize = React.useMemo(() => {
+    //     const rowsPerPageString = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE);
+    //     if (rowsPerPageString) {
+    //         const rowsPerPage = Number(rowsPerPageString);
+    //         if (!isNaN(rowsPerPage)) {
+    //             return rowsPerPage;
+    //         }
+    //     }
+    //     return null;
+    // }, []);
 
     const theme: CustomTheme = useTheme();
     const classes = useStyles();
 
-    const hasAdminPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.administration), [roles]);
-    const hasModelConfigPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.modelConfig), [roles]);
-    const hasTdpPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.TDP), [roles]);
+    // const hasTranscriptionPermissions = React.useMemo(() => hasPermission(roles, PERMISSIONS.projects.transcriptionistration), [roles]);
 
-    const getVoiceDataInReview = async () => {
+    const getHistory = async (options: any = {}) => {
+        setVoiceDataLoading(true);
         if (api?.voiceData) {
-            // const response = await api.voiceData.getHistory();
-            const response = await api.voiceData.getDataToReview();
+            const response = await api.voiceData.getHistory(options);
+
             if (response.kind === 'ok') {
-                setVoiceData(response.voiceData);
+                setVoiceDataResults(response.data);
             } else {
                 log({
                     file: `ProjectDetails.tsx`,
-                    caller: `getVoiceDataInReview - failed to get data sets`,
+                    caller: `getHistory - failed to get data sets`,
                     value: response,
                     important: true,
                 });
             }
+            setVoiceDataLoading(false);
         }
     };
 
-    const getAllVoiceData = async () => {
-        if (api?.voiceData) {
-            const response = await api.voiceData.getHistory();
-            // const response = await api.voiceData.getDataToReview();
-            if (response.kind === 'ok') {
-                setVoiceData(response.voiceData);
-            } else {
-                log({
-                    file: `ProjectDetails.tsx`,
-                    caller: `getVoiceDataInReview - failed to get data sets`,
-                    value: response,
-                    important: true,
-                });
-            }
-        }
+    const handleStatusChange = (status: any) => {
+        const statusForOption = status === allStatus ? null : status;
+        const options = {};
+        const size = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY_TABLE_ROWS_PER_PAGE) || 10;
+        Object.assign(options, {page: 0, size, status: statusForOption})
+        getHistory(options);
     };
 
-    const setSelectionAndOpenDialog = (index: number) => {
-        setSelectedVoiceDataIndex(index);
-        setSelectedVoiceData(voiceData[index]);
-        setIsConfirmationOpen(true);
-    }
-
-    const handleConfirmationClick = (voiceDataIndex: number) => {
-        setIsConfirm(true);
-        setSelectionAndOpenDialog(voiceDataIndex)
-    };
-
-    const handleRejectClick = (voiceDataIndex: number) => {
-        setIsConfirm(false);
-        setSelectionAndOpenDialog(voiceDataIndex)
-    };
-
-    const handleConfirmation = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
-            setIsLoading(true);
-            setIsConfirmationOpen(false);
-            const response = await api.voiceData.confirmData(selectedVoiceData.projectId, selectedVoiceData.id);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
-                snackbarError = undefined;
-                copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                // to trigger the `useEffect` to fetch more
-                // setVoiceData(undefined);
-            } else {
-                log({
-                    file: `EditorPage.tsx`,
-                    caller: `confirmData - failed to confirm segments`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-            }
-            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-            setIsLoading(false);
-        }
-    };
-
-    const handleRejection = async () => {
-        if (api?.voiceData && voiceData && selectedVoiceData) {
-            setIsLoading(true);
-            setIsConfirmationOpen(false);
-            const response = await api.voiceData.rejectData(selectedVoiceData.projectId, selectedVoiceData.id);
-            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-            if (response.kind === 'ok') {
-                const copyData = voiceData.slice();
-                snackbarError = undefined;
-                copyData.splice(selectedVoiceDataIndex, 1);
-                setVoiceData(copyData);
-                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                // to trigger the `useEffect` to fetch more
-                // setVoiceData(undefined);
-            } else {
-                log({
-                    file: `EditorPage.tsx`,
-                    caller: `confirmData - failed to confirm segments`,
-                    value: response,
-                    important: true,
-                });
-                snackbarError.isError = true;
-                const { serverError } = response;
-                if (serverError) {
-                    snackbarError.errorText = serverError.message || "";
-                }
-            }
-            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-            setIsLoading(false);
-        }
+    const handlePagination = (pageIndex: number, size: number) => {
+        const options = {};
+        Object.assign(options, filterParams);
+        Object.assign(options, {page: pageIndex, size});
+        getHistory(options);
     };
 
     React.useEffect(() => {
-        setPageTitle(translate('admin.pageTitle'));
-        getVoiceDataInReview();
+        setPageTitle(translate('transcription.pageTitle'));
+        setInitialLoad(true);
+        if(!initialLoad) {
+            getHistory();
+        }
+        return () => {
+            setVoiceDataResults({} as VoiceDataResults);
+        }
     }, []);
 
     const renderSummary = () => {
         return (<Card elevation={0} className={classes.card} >
             <CardHeader
-                title={<Typography variant='h4'>{translate('admin.pageTitle')}</Typography>}
+                title={<Typography variant='h4'>{translate('transcription.pageTitle')}</Typography>}
             />
             <CardContent className={classes.cardContent} >
                 {isLoading ? <BulletList /> :
@@ -316,7 +250,7 @@ export function Admin() {
                 }
             </CardContent>
         </Card>);
-        if (!voiceData) {
+        if (!dataSet) {
             return <NotFound text={translate('projects.notFound')} />;
         }
     };
@@ -328,25 +262,16 @@ export function Admin() {
                     color={theme.palette.common.white}
                     loading={true}
                 />}
-                <ConfirmationDialog
-                    open={isConfirmationOpen}
-                    buttonMsg={isConfirm ? translate('common.confirm') : translate('common.reject')}
-                    contentMsg={isConfirm ? translate('admin.approveMsg') : translate('admin.rejectMsg')}
-                    isConfirm={isConfirm}
-                    onClose={() => setIsConfirmationOpen(false)}
-                    onConfirm={handleConfirmation}
-                    onReject={handleRejection} />
                 {
                     isLoading ? <BulletList /> : renderSummary()
                 }
-                {voiceData &&
-                    <AdminTable
-                        voiceData={voiceData}
-                        getAllVoiceData={getAllVoiceData}
-                        getVoiceDataInReview={getVoiceDataInReview}
-                        handleConfirmationClick={handleConfirmationClick}
-                        handleRejectClick={handleRejectClick}
-                    />
+                {voiceDataResults &&
+                <HistoryTable
+                    voiceDataResults={voiceDataResults}
+                    handleStatusChange={handleStatusChange}
+                    handlePagination={handlePagination}
+                    loading={voiceDataLoading}
+                />
                 }
             </Paper>
         </Container>
