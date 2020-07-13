@@ -41,6 +41,10 @@ export function ProjectList(props: ProjectListProps) {
   const [editOpen, setEditOpen] = React.useState<EditOpenByProjectId>({});
   const { translate } = React.useContext(I18nContext);
 
+  // const selected = React.useMemo(() => project.id === selectedProjectId, [selectedProjectId]);
+
+
+
   const handleEditOpen = (projectId: string) => setEditOpen(prevOpen => {
     setEditDialogOpen(true);
     return { ...prevOpen, [projectId]: true };
@@ -54,6 +58,10 @@ export function ProjectList(props: ProjectListProps) {
     onUpdate(updatedProject, isEdit);
     handleEditClose(updatedProject.id);
   };
+
+  React.useEffect(() => {
+    console.log('-============ selectedProjectId : ', selectedProjectId);
+  }, [selectedProjectId])
 
   const renderProjects = () => projects.map((project, index) => {
     const selected = project.id === selectedProjectId;

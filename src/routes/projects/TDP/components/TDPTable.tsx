@@ -125,6 +125,7 @@ export function TDPTable(props: TDPTableProps) {
   const history = useHistory();
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [expandedRowsByIndex, setExpandedRowsByIndex] = React.useState<BooleanById>({});
   const [voiceDataOptions, setVoiceDataOptions] = React.useState<SearchDataRequest>({});
   const [sortBy, setSortBy] = React.useState<string | undefined>();
@@ -400,7 +401,8 @@ export function TDPTable(props: TDPTableProps) {
     // to prevent reloading the initial data from the parent
     if (initialLoad) {
       setInitialLoad(false);
-    } else {
+    } else if (!setProjectTdpDataShouldRefresh) {
+      console.log('===== getVoiceData triggered');
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
       setExpandedRowsByIndex({});
     }

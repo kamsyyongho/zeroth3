@@ -40,7 +40,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const history = useHistory();
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-  const [projectIdForProp, setProjectIdForProp] = React.useState(projectId);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -108,6 +107,22 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     }
   };
 
+  const getAllDataSets = async () => {
+    if (api?.dataSet && projectId) {
+      const response = await api.dataSet.getAll(projectId);
+      if (response.kind === 'ok') {
+        setDataSets(response.dataSets);
+      } else {
+        log({
+          file: `ProjectDetails.tsx`,
+          caller: `getAllDataSets - failed to get data sets`,
+          value: response,
+          important: true,
+        });
+      }
+    }
+  };
+
   React.useEffect(() => {
     const getProject = async () => {
       if (api?.projects) {
@@ -149,21 +164,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setModelConfigsLoading(false);
       }
     };
-    // const getAllDataSets = async () => {
-    //   if (api?.dataSet && projectId) {
-    //     const response = await api.dataSet.getAll(projectId);
-    //     if (response.kind === 'ok') {
-    //       setDataSets(response.dataSets);
-    //     } else {
-    //       log({
-    //         file: `ProjectDetails.tsx`,
-    //         caller: `getAllDataSets - failed to get data sets`,
-    //         value: response,
-    //         important: true,
-    //       });
-    //     }
-    //   }
-    // };
     const getTopGraphs = async () => {
       if (api?.models) {
         const response = await api.models.getTopGraphs();
@@ -325,7 +325,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {project && isValidProject &&
         <>
           <ProjectTableTabs
-            projectId={projectIdForProp}
+            projectId={projectId}
             project={project}
             modelConfigs={modelConfigs}
             dataSets={dataSets}
@@ -333,7 +333,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             modelConfigDialogOpen={dialogOpen}
           />
           <ModelConfigDialog
-            projectId={projectIdForProp}
+            projectId={projectId}
             hideBackdrop={hideBackdrop}
             open={dialogOpen}
             onClose={closeDialog}

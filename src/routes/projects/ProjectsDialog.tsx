@@ -140,7 +140,9 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
 
   // to get the currently selected project
   React.useEffect(() => {
+    console.log('==========proejects : ', projects, currentProject);
     if (projects && projects.length && currentProjectId) {
+      console.log('=====current project',currentProject);
       for (let i = 0; i < projects.length; i++) {
         const project = projects[i];
         if (project.id === currentProjectId) {
@@ -278,8 +280,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           size="small"
           color="primary"
           disabled={projectsLoading}
-          onClick={handleSettingsOpen}
-        >
+          onClick={handleSettingsOpen}>
           <ICONS.Settings />
         </IconButton>
       </Grid>
@@ -290,8 +291,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           aria-label="create-button"
           size="small"
           color="primary"
-          onClick={handleCreateOpen}
-        >
+          onClick={handleCreateOpen}>
           <AddIcon />
         </IconButton>
       </Grid>
