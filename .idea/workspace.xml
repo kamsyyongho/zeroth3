@@ -3,9 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +87,7 @@
       <workItem from="1592137087954" duration="11115000" />
       <workItem from="1592179144601" duration="180000000" />
       <workItem from="1593394113270" duration="172159000" />
-      <workItem from="1594640383101" duration="8602000" />
+      <workItem from="1594640383101" duration="13260000" />
     </task>
     <servers />
   </component>
@@ -147,13 +145,14 @@
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1680.1050/-1920.0.1920.1080@-1920.0.1920.1080" timestamp="1586155584785" />
     <state width="500" height="445" key="SwitcherDM/0.0.1920.1080/-1920.-32.1920.1080/-1792.1048.1792.1120@-1920.-32.1920.1080" timestamp="1593995423869" />
-    <state x="0" y="0" width="939" height="1080" key="dock-window-1" timestamp="1594943835266">
+    <state x="0" y="0" width="939" height="1080" key="dock-window-1" timestamp="1594957030211">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="0" y="0" width="939" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1594943835266" />
     <state x="0" y="0" width="885" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1071.1792.1097/0.0.1920.1029@-1920.-32.1920.1080" timestamp="1593763879795" />
     <state x="-679" y="-32" width="679" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1071.1792.1097/0.23.1920.1057@-1920.-32.1920.1080" timestamp="1594942924118" />
     <state x="0" y="0" width="894" height="1080" key="dock-window-1/-1920.-9.1920.1057/-1792.1071.1792.1097/0.0.1920.1028@-1920.-9.1920.1057" timestamp="1593668775928" />
+    <state x="0" y="0" width="939" height="1080" key="dock-window-1/-1920.-9.1920.1057/-1792.1071.1792.1097/0.0.1920.1080@-1920.-9.1920.1057" timestamp="1594957030211" />
     <state x="0" y="0" width="885" height="1080" key="dock-window-1/-1920.-9.1920.1057/-1792.1071.1792.1097/0.23.1920.1006@-1920.-9.1920.1057" timestamp="1593744050913" />
     <state x="0" y="0" width="954" height="1080" key="dock-window-1/-1920.-9.1920.1057/-1792.1071.1792.1097/0.23.1920.1057@-1920.-9.1920.1057" timestamp="1594943275375" />
     <state x="-1260" y="1037" width="1260" height="1440" key="dock-window-1/-2560.-20.2560.1057/-3440.1037.3440.1440/0.23.1080.2504@-3440.1037.3440.1440" timestamp="1593418383499" />

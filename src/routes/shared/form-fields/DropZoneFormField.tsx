@@ -71,6 +71,7 @@ export const DropZoneFormField = ({
   const isError = !!errorText || !!errorOverride;
 
   const handleChange = (selectedFiles: File[]) => {
+    console.log('=========== selectedFiles : ', selectedFiles);
     // reset errors before check
     form.setFieldError(field.name, '');
     onDuplicateFileNames();
@@ -121,25 +122,26 @@ export const DropZoneFormField = ({
       const exceedSizeLimit = translate('forms.dropZone.reject.exceedSizeLimit', { size: convertBytesToMbsOrKbs(maxFileSize) });
       message += ` ${exceedSizeLimit} `;
     }
+    enqueueSnackbar(message, { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
     return message;
   };
 
   const handleRemoveFile = (fileName: string) => {
-    enqueueSnackbar(`File Removed : ${fileName}`, { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 3000, });
+    enqueueSnackbar(`File Removed : ${fileName}`, { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
     return '';
   };
 
   const handleFileAdded = (fileName: string) => {
     if(fileNames.includes(fileName)) {
       enqueueSnackbar(`[${fileName}] ${translate('forms.dropZone.reject.duplicateFileNames')}`,
-          { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
+          { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 1500, });
     }
     return '';
   };
 
   const handleFileLimit = (fileLimit: number) => {
     enqueueSnackbar(`File Limit Exceeded : ${fileLimit}`,
-        { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 3000, });
+        { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
     return '';
   };
 
@@ -161,7 +163,6 @@ export const DropZoneFormField = ({
           useChipsForPreview={true}
           getFileLimitExceedMessage={handleFileLimit}
           getFileRemovedMessage={handleRemoveFile}
-          getFileAddedMessage={handleFileAdded}
           getDropRejectMessage={handleRejectText}
           clearOnUnmount={true}
           //disable alerts for and handle alerts in onDrop API
