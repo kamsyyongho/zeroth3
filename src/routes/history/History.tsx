@@ -122,6 +122,7 @@ export function History() {
         setVoiceDataLoading(true);
         if (api?.voiceData) {
             const response = await api.voiceData.getHistory(options);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
             if (response.kind === 'ok') {
                 setVoiceDataResults(response.data);
@@ -132,7 +133,15 @@ export function History() {
                     value: response,
                     important: true,
                 });
+
+                snackbarError.isError = true;
+                const { serverError } = response;
+                if (serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
             }
+            
+            snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
             setVoiceDataLoading(false);
         }
     };

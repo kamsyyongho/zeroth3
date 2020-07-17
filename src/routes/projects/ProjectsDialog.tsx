@@ -102,10 +102,12 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       setSelectedProject(project);
       setCurrentProject(project);
       setProjectTdpDataShouldRefresh(true);
-      setTimeout(() => {
-        history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
-        handleClose();
-      }, 0);
+      history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      handleClose();
+      // setTimeout(() => {
+      //   history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      //   handleClose();
+      // }, 0);
     }
   };
 
@@ -129,7 +131,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-
     if (currentOrganization) {
       getProjects();
     } else if (!currentOrganization && projects.length > 0) {
@@ -278,8 +279,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           size="small"
           color="primary"
           disabled={projectsLoading}
-          onClick={handleSettingsOpen}
-        >
+          onClick={handleSettingsOpen}>
           <ICONS.Settings />
         </IconButton>
       </Grid>
@@ -290,8 +290,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           aria-label="create-button"
           size="small"
           color="primary"
-          onClick={handleCreateOpen}
-        >
+          onClick={handleCreateOpen}>
           <AddIcon />
         </IconButton>
       </Grid>

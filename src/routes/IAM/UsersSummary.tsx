@@ -8,7 +8,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { deleteUserResult, ProblemKind, ServerError } from '../../services/api/types';
-import { Role, SNACKBAR_VARIANTS, User } from '../../types';
+import { Role, SNACKBAR_VARIANTS, SnackbarError, User } from '../../types';
 import log from '../../util/log/logger';
 import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Forbidden } from '../shared/Forbidden';
@@ -68,6 +68,8 @@ export function UsersSummary(props: UsersSummaryProps) {
   const getUsers = async () => {
     if (api?.IAM) {
       const response = await api.IAM.getUsers();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setUsers(response.users);
         getUserEmailsById(response.users);
@@ -81,7 +83,13 @@ export function UsersSummary(props: UsersSummaryProps) {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setUsersLoading(false);
     }
   };
@@ -90,6 +98,8 @@ export function UsersSummary(props: UsersSummaryProps) {
     const getRoles = async () => {
       if (api?.IAM) {
         const response = await api.IAM.getRoles();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setRoles(response.roles);
         } else {
@@ -102,6 +112,11 @@ export function UsersSummary(props: UsersSummaryProps) {
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
         setRolesLoading(false);
       }

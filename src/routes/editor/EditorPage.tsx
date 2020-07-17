@@ -190,6 +190,8 @@ export function EditorPage() {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.getAssignedData();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setVoiceData(response.voiceData);
@@ -203,7 +205,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
     }
@@ -213,6 +222,8 @@ export function EditorPage() {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.fetchUnconfirmedData(dataSetId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setNoRemainingContent(response.noContent);
@@ -227,7 +238,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
     };
@@ -237,6 +255,8 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
       const response = await api.voiceData.getSegments(projectId, voiceData.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setSegments(response.segments);
       } else {
@@ -246,7 +266,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
   };
@@ -255,6 +282,8 @@ export function EditorPage() {
     if (api?.user) {
       setSegmentsLoading(true);
       const response = await api.user.getShortcuts();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setShortcuts(response.shortcuts);
       } else {
@@ -264,7 +293,15 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
   };
@@ -272,6 +309,8 @@ export function EditorPage() {
   const getDataSetsToFetchFrom = async () => {
     if (api?.user) {
       const response = await api.user.getDataSetsToFetchFrom();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setDataSets(response.dataSets);
       } else {
@@ -281,7 +320,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
   };
 
@@ -799,16 +845,9 @@ export function EditorPage() {
     if(api?.voiceData && voiceData) {
       setVoiceDataLoading(true);
       const url = voiceData.audioUrl;
-      // const audioUrl = url.split('/');
-      // let processedUrl = '';
-
-      // audioUrl[audioUrl.length - 2] = voiceData.id;
-      // audioUrl[audioUrl.length - 3] = `organizations/${user.currentOrganizationId}/data`
-      // audioUrl.forEach((url: string) => {
-      //   processedUrl += `${url}/`
-      // });
-
       const response = await api.voiceData.getAudio(url);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setAudioUrl(response.url);
       } else {
@@ -818,7 +857,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
     }
   };

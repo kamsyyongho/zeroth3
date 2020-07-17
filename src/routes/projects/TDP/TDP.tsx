@@ -264,7 +264,6 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData(options)
     } else {
-
       getVoiceData(options);
     }
   };
@@ -285,7 +284,6 @@ export function TDP(props: TDPProps) {
     if(setTypeTDP?.length) {
       getSubSetVoiceData();
     } else if(!(voiceDataResults?.content?.length > 0)) {
-
       getVoiceDataWithDefaultOptions();
     }
     // if the flag was already set when we first load the page
@@ -295,7 +293,6 @@ export function TDP(props: TDPProps) {
   }, []);
 
   // React.useEffect(() => {
-  //   console.log('=========== projectTdpSouldRefresh : ', projectTdpDataShouldRefresh);
   //   if(setTypeTDP?.length) {
   //     getSubSetVoiceData();
   //   } else if(!voiceDataResults?.content?.length) {
@@ -309,6 +306,7 @@ export function TDP(props: TDPProps) {
 
   React.useEffect(() => {
     if (projectTdpDataShouldRefresh && !voiceDataLoading) {
+
       getVoiceDataWithDefaultOptions();
       setProjectTdpDataShouldRefresh(false);
     }

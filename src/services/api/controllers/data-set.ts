@@ -293,7 +293,7 @@ export class DataSet extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind == ProblemKind.unauthorized) {
+        if(problem.kind == ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;

@@ -40,7 +40,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const history = useHistory();
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const [navigationProps, setNavigationProps] = useGlobal('navigationProps');
-  const [projectIdForProp, setProjectIdForProp] = React.useState(projectId);
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -109,6 +108,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   };
 
   React.useEffect(() => {
+    const getAllDataSets = async () => {
+      if (api?.dataSet && projectId) {
+        const response = await api.dataSet.getAll(projectId);
+        if (response.kind === 'ok') {
+          setDataSets(response.dataSets);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getAllDataSets - failed to get data sets`,
+            value: response,
+            important: true,
+          });
+        }
+      }
+    };
     const getProject = async () => {
       if (api?.projects) {
         const response = await api.projects.getProject(projectId);
@@ -147,21 +161,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           });
         }
         setModelConfigsLoading(false);
-      }
-    };
-    const getAllDataSets = async () => {
-      if (api?.dataSet && projectId) {
-        const response = await api.dataSet.getAll(projectId);
-        if (response.kind === 'ok') {
-          setDataSets(response.dataSets);
-        } else {
-          log({
-            file: `ProjectDetails.tsx`,
-            caller: `getAllDataSets - failed to get data sets`,
-            value: response,
-            important: true,
-          });
-        }
       }
     };
     const getTopGraphs = async () => {
@@ -249,10 +248,12 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getLanguageModels();
       getAcousticModels();
     }
+
     if (hasTdpPermissions) {
       getAllDataSets();
     }
-  }, [api, projectId]);
+  }, [api, roles, projectId]);
+  
 
   React.useEffect(() => {
     setPageTitle(translate('path.projects'));
@@ -325,7 +326,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       {project && isValidProject &&
         <>
           <ProjectTableTabs
-            projectId={projectIdForProp}
+            projectId={projectId}
             project={project}
             modelConfigs={modelConfigs}
             dataSets={dataSets}
@@ -333,7 +334,7 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             modelConfigDialogOpen={dialogOpen}
           />
           <ModelConfigDialog
-            projectId={projectIdForProp}
+            projectId={projectId}
             hideBackdrop={hideBackdrop}
             open={dialogOpen}
             onClose={closeDialog}
