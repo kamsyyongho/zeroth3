@@ -107,23 +107,22 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     }
   };
 
-  const getAllDataSets = async () => {
-    if (api?.dataSet && projectId) {
-      const response = await api.dataSet.getAll(projectId);
-      if (response.kind === 'ok') {
-        setDataSets(response.dataSets);
-      } else {
-        log({
-          file: `ProjectDetails.tsx`,
-          caller: `getAllDataSets - failed to get data sets`,
-          value: response,
-          important: true,
-        });
-      }
-    }
-  };
-
   React.useEffect(() => {
+    const getAllDataSets = async () => {
+      if (api?.dataSet && projectId) {
+        const response = await api.dataSet.getAll(projectId);
+        if (response.kind === 'ok') {
+          setDataSets(response.dataSets);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getAllDataSets - failed to get data sets`,
+            value: response,
+            important: true,
+          });
+        }
+      }
+    };
     const getProject = async () => {
       if (api?.projects) {
         const response = await api.projects.getProject(projectId);
@@ -249,10 +248,12 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getLanguageModels();
       getAcousticModels();
     }
+
     if (hasTdpPermissions) {
-      // getAllDataSets();
+      getAllDataSets();
     }
-  }, [api, projectId]);
+  }, [api, roles, projectId]);
+  
 
   React.useEffect(() => {
     setPageTitle(translate('path.projects'));

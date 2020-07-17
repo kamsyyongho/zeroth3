@@ -16,6 +16,7 @@ import { ServerError } from '../../../services/api/types/api-problem.types';
 
 
 interface SETProps {
+  initialDataSets: DataSet[];
   projectId: string;
   refreshCounter?: number;
   modelConfigs: ModelConfig[];
@@ -27,13 +28,13 @@ interface SETProps {
 }
 
 export default function SET(props: SETProps) {
-  const { projectId, refreshCounter, modelConfigs, getTranscribersWithStats, displaySubSetInTDP, transcribersStats, transcriberStatDataLoading, pagination } = props;
+  const { initialDataSets, projectId, refreshCounter, modelConfigs, getTranscribersWithStats, displaySubSetInTDP, transcribersStats, transcriberStatDataLoading, pagination } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [isForbidden, setIsForbidden] = React.useState(false);
   const [transcribersDialogOpen, setTranscribersDialogOpen] = React.useState(false);
-  const [setsLoading, setSetsLoading] = React.useState(true);
+  const [setsLoading, setSetsLoading] = React.useState(false);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
   const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
@@ -76,7 +77,7 @@ export default function SET(props: SETProps) {
    */
   React.useEffect(() => {
     if(refreshCounter && refreshCounter > 0) {
-      getDataSets();
+      // getDataSets();
     }
   }, [refreshCounter]);
 
@@ -84,8 +85,9 @@ export default function SET(props: SETProps) {
    * should refresh if the project has changed
    */
   React.useEffect(() => {
-    getDataSets();
-  }, [projectId]);
+    // getDataSets();
+    setDataSets(initialDataSets);
+  }, [initialDataSets]);
 
   const openTranscriberDialog = () => setTranscribersDialogOpen(true);
   const closeTranscriberDialog = () => {
