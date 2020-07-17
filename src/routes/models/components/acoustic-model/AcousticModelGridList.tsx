@@ -66,6 +66,8 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     const getModels = async () => {
       if (api?.models) {
         const response = await api.models.getAcousticModels();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setModels(response.acousticModels);
         } else {
@@ -75,7 +77,15 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
             value: response,
             important: true,
           });
+
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setModelsLoading(false);
       }
     };
@@ -86,6 +96,8 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     if (api?.models && !modelsLoading) {
       setModelsLoading(true);
       const response = await api.models.refreshAndGetAcousticModels();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setModels(response.acousticModels);
       } else {
@@ -95,7 +107,15 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setModelsLoading(false);
     }
   };
@@ -125,7 +145,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
     handleEditClose(updatedModel.id);
   };
 
-  
+
   const handleModelCheck = (modelId: string, value: boolean) : void => {
     setCheckedModels((prevCheckedModels) => {
       return { ...prevCheckedModels, [modelId]: value };

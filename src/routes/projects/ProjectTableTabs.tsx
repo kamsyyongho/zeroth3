@@ -112,7 +112,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
 
   React.useEffect(() => {
     getTranscribersWithStats();
-  }, []);
+  }, [projectId]);
 
   return (
     <Paper square elevation={0} className={classes.root} >
@@ -144,6 +144,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
       {hasSetPermissions && <TabPanel value={activeTab} index={TAB_INDEX.SET}>
         {tabsThatShouldRender.has(TAB_INDEX.SET) &&
           <SET
+            initialDataSets={dataSets}
             refreshCounter={refreshCounterForSet}
             projectId={projectId}
             modelConfigs={modelConfigs}

@@ -45,8 +45,8 @@ interface AudioUploadDialogProps {
 }
 
 /** this is using the same simple (incorrect) method for calculating file size as file upload library */
-const MAX_TOTAL_FILE_SIZE_LIMIT = 50000000; // 50 MB in bytes
-const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '50 MB';
+const MAX_TOTAL_FILE_SIZE_LIMIT = 100000000; // 100 MB in bytes
+const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '100 MB';
 
 const ACCEPTED_FILE_TYPES = ['audio/*', '.mp4', '.MP4'];
 

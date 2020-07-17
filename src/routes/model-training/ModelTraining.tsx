@@ -55,6 +55,8 @@ export function ModelTraining() {
   const getModelConfigs = async (projectId: string) => {
     if (api?.modelConfig) {
       const response = await api.modelConfig.getModelConfigs(projectId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         const modelConfigsById: GenericById<ModelConfig> = {};
         response.modelConfigs.forEach(modelConfig => modelConfigsById[modelConfig.id] = modelConfig);
@@ -67,7 +69,15 @@ export function ModelTraining() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setModelConfigsLoading(false);
     }
   };

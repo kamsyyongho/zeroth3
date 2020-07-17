@@ -121,6 +121,7 @@ export const DropZoneFormField = ({
       const exceedSizeLimit = translate('forms.dropZone.reject.exceedSizeLimit', { size: convertBytesToMbsOrKbs(maxFileSize) });
       message += ` ${exceedSizeLimit} `;
     }
+    enqueueSnackbar(message, { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 3000, });
     return message;
   };
 
@@ -132,7 +133,7 @@ export const DropZoneFormField = ({
   const handleFileAdded = (fileName: string) => {
     if(fileNames.includes(fileName)) {
       enqueueSnackbar(`[${fileName}] ${translate('forms.dropZone.reject.duplicateFileNames')}`,
-          { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 2000, });
+          { variant: SNACKBAR_VARIANTS.error, autoHideDuration: 1500, });
     }
     return '';
   };
@@ -161,7 +162,6 @@ export const DropZoneFormField = ({
           useChipsForPreview={true}
           getFileLimitExceedMessage={handleFileLimit}
           getFileRemovedMessage={handleRemoveFile}
-          getFileAddedMessage={handleFileAdded}
           getDropRejectMessage={handleRejectText}
           clearOnUnmount={true}
           //disable alerts for and handle alerts in onDrop API

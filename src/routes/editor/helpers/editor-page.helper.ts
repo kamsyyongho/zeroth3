@@ -18,12 +18,6 @@ export const calculateWordTime = (
     totalTime = Number(totalTime.toFixed(2));
     return totalTime;
   } catch (error) {
-    log({
-      file: `editor-page.helper.ts`,
-      caller: `calculateWordTime - failed to calculate time`,
-      value: error.toString(),
-      important: true,
-    });
     return 0;
   }
 };

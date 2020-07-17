@@ -18,10 +18,10 @@ export function getGeneralApiProblem(
       };
       break;
     case 'NETWORK_ERROR':
-      generalApiProblem = {
-        kind: ProblemKind['cannot-connect'],
-        temporary: true,
-      };
+        generalApiProblem = {
+          kind: ProblemKind['cannot-connect'],
+          temporary: true,
+        };
       break;
     case 'TIMEOUT_ERROR':
       generalApiProblem = { kind: ProblemKind['timeout'], temporary: true };

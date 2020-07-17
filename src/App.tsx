@@ -1,8 +1,7 @@
-
 import { createBrowserHistory } from 'history';
 import ErrorBoundary, { withErrorBoundary } from 'react-error-boundary';
 import { Route, Router, Switch } from "react-router-dom";
-import React, { addCallback, setGlobal } from "reactn";
+import React, { addCallback, setGlobal, useGlobal } from "reactn";
 import { useApi } from './hooks/api/useApi';
 import { useI18n } from './hooks/i18n/useI18n';
 import { useKeycloak } from './hooks/keycloak/useKeycloak';
@@ -78,17 +77,17 @@ function App() {
           <Header />
         </ErrorBoundary>
         <Switch>
+          //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
           <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
           <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
-          <Route exact path={PATHS.project.to} component={withErrorBoundary(ProjectDetails, PageErrorFallback)} />
+          <Route exact path={PATHS.project.to} component={ProjectDetails} />
           <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
           <Route path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
-          <Route path={PATHS.modelTraining.to} component={withErrorBoundary(ModelTraining, PageErrorFallback)} />
-          //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
+          <Route path={PATHS.modelTraining.to} component={ModelTraining} />
           <Route path={PATHS.transcription.to} component={Transcription} />
-          <Route path={PATHS.history.to} component={History} />
+          <Route path={PATHS.history.to} component={withErrorBoundary(History, PageErrorFallback)} />
           <Route component={NotFound} />
         </Switch>
       </Router>

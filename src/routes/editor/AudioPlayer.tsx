@@ -290,6 +290,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleStreamingError = () => {
+    console.log('================ handleStreamingError : 292 , mediaElement.error : ', mediaElement?.error);
     if (mediaElement?.error instanceof Error) {
       handleError(mediaElement.error);
     }
@@ -1171,7 +1172,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     // const handleKeyPress = (event: KeyboardEvent) => {
     //   if (!isReady) return;
     //   const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    //   console.log('=============event in audioPlayer : ', event);
+    //
+    //   ('=============event in audioPlayer : ', event);
     //   const { key, shiftKey } = event;
     //   switch (key) {
     //     case 'a':
@@ -1277,6 +1279,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       StreamPlayer = videojs(WAVEFORM_DOM_IDS['audio-container'], options) as VideoJsPlayer;
       // load the content once ready
       StreamPlayer.on('ready', function (error) {
+        console.log('==================== error in StreamPlayer.on ready  :line 1282 : ', error);
         if (StreamPlayer) {
           StreamPlayer.src({
             src: audioUrl,
