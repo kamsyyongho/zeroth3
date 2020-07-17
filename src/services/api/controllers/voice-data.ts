@@ -170,7 +170,7 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind === ProblemKind.unauthorized) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
@@ -251,7 +251,7 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind === ProblemKind.unauthorized) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
@@ -978,7 +978,7 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind = ProblemKind.unauthorized) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
@@ -1007,7 +1007,7 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind = ProblemKind.unauthorized) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
@@ -1027,7 +1027,8 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        if(problem.kind = ProblemKind.unauthorized) {
+        debugger;
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;
