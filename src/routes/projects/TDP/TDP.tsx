@@ -293,7 +293,6 @@ export function TDP(props: TDPProps) {
   }, []);
 
   // React.useEffect(() => {
-  //   console.log('=========== projectTdpSouldRefresh : ', projectTdpDataShouldRefresh);
   //   if(setTypeTDP?.length) {
   //     getSubSetVoiceData();
   //   } else if(!voiceDataResults?.content?.length) {
