@@ -11,7 +11,7 @@ import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { deleteLanguageModelResult, ServerError } from '../../../../services/api/types';
-import { BooleanById, LanguageModel, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
+import { BooleanById, LanguageModel, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { LanguageModelDialog } from './LanguageModelDialog';
