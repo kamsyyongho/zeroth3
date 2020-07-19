@@ -8,7 +8,7 @@ import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { AcousticModel, SNACKBAR_VARIANTS, BooleanById } from '../../../../types';
+import { AcousticModel, SNACKBAR_VARIANTS, SnackbarError, BooleanById } from '../../../../types';
 import { deleteLanguageModelResult, ServerError } from '../../../../services/api/types';
 import log from '../../../../util/log/logger';
 import { EditOpenByModelId, CheckedModelById } from '../language-model/LanguageModelGridList';
@@ -114,7 +114,7 @@ export function AcousticModelGridList(props: AcousticModelGridListProps) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-      
+
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setModelsLoading(false);
     }
