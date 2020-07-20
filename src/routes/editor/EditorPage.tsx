@@ -287,10 +287,10 @@ export function EditorPage() {
 
       if (response.kind === 'ok') {
         setShortcuts(response.shortcuts);
-      } else {
+      } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
-          caller: `getSegments - failed to get segments`,
+          caller: `getShortcuts - failed to get shortcuts`,
           value: response,
           important: true,
         });
