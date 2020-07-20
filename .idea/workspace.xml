@@ -2,120 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/zeroth-ee-dashboard.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/react-table-config.d.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/constants/projects.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/AssignShortCutDialog.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/Comment.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/DecoderSegmentBlock.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/EditWordAlignmentBlock.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/editor/components/HelperPage.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/history/History.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryCellStatusSelect.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryTable.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/history/components/HistoryTableItem.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/Confirmation.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/StatusLogModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/projects/set/components/EvaluationChip.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/projects/set/components/EvaluationDetailModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/transcription/Transcription.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/transcription/components/ConfirmationDialog.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionCellStatusSelect.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTable.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/transcription/components/TranscriptionTableItem.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/theme/icons/diff.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env.dev" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env.docker" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env.staging" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/editor.constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/editor.constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/permission.constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/permission.constants.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/Rootprovider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/keycloak/keycloak-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/keycloak/keycloak-config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/keycloak/useKeycloak.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/keycloak/useKeycloak.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/en.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/en.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/i18n/translations/ko.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n/translations/ko.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/TranscribersSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/TranscribersSummary.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/UsersSummary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/UsersSummary.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/transcribers/TranscribersTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/users/InviteFormDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/users/InviteFormDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersCellPlainText.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersCellPlainText.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/IAM/components/users/UsersTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/AudioPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/Editor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPageV2.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/AssignSpeakerDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/AssignSpeakerDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EditorControls.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/EntityContent.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHead.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHead.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockV2.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/WordAlignmentBlock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor-page.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor-page.helper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/helpers/editor.helper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigListItemExpand.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigListItemExpand.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-config/ModelConfigPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-config/ModelConfigPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/model-training/ModelTraining.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/model-training/ModelTraining.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/ModelTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/ModelTabs.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/SubgraphFormDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/SubgraphFormDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/acoustic-model/AcousticModelGridList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/models/components/language-model/LanguageModelGridList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/models/components/language-model/LanguageModelGridList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/profile/Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectDetails.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectTableTabs.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/ProjectsDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/ProjectsDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/TDP.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/DeleteConfirmation.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPFilters.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPFilters.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPRowDetails.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/TDP/components/TDPTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/components/AudioUploadDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/components/ProjectList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/components/ProjectList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/SET.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/projects/set/components/SetTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/Drawer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/Drawer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/DropZoneFormField.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/SelectFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/SelectFormField.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/form-fields/TextFormField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/form-fields/TextFormField.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/header/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/shared/header/components/UploadProgressNotification.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/shared/header/components/UploadProgressNotification.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/api-problem.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/api-problem.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/data-set.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/iam.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/iam.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/models.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/models.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/controllers/voice-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/data-set.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/models.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/projects.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/projects.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/user.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/user.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api/types/voice-data.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/env/environment-variables.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/env/environment-variables.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/theme/icons.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/theme/icons.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/theme/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/theme/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/data-set.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/data-set.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/editor.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/editor.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/global.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/misc.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/misc.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/models.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/models.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/path.types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/path.types.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/transcriber.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/transcriber.types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/voice-data.types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,8 +88,7 @@
       <workItem from="1592179144601" duration="180000000" />
       <workItem from="1593394113270" duration="172159000" />
       <workItem from="1594640383101" duration="24206000" />
-      <workItem from="1595159849627" duration="7774000" />
-      <workItem from="1595225738575" duration="73000" />
+      <workItem from="1595159849627" duration="8616000" />
     </task>
     <servers />
   </component>
@@ -233,10 +120,9 @@
       <screen x="-1920" y="-32" width="1920" height="1080" />
     </state>
     <state x="-1496" y="170" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1594948947897" />
-    <state x="-1255" y="312" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1595225790527">
-      <screen x="-1920" y="-32" width="1920" height="1080" />
+    <state x="-3328" y="-220" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1589254003235">
+      <screen x="-4520" y="-678" width="3440" height="1440" />
     </state>
-    <state x="-1255" y="312" key="#com.intellij.fileTypes.FileTypeChooser/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1595225790527" />
     <state x="-3328" y="-220" key="#com.intellij.fileTypes.FileTypeChooser/-7080.-678.2560.1080/-4520.-678.3440.1440/-1080.-678.1080.2560/0.0.1792.1120@-4520.-678.3440.1440" timestamp="1589254003235" />
     <state x="2323" y="294" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1591668557628">
       <screen x="1920" y="0" width="1920" height="1080" />
@@ -259,10 +145,10 @@
       <screen x="-1920" y="-32" width="1920" height="1080" />
     </state>
     <state width="500" height="445" key="SwitcherDM/0.0.1920.1080/-1920.-32.1920.1080/-1792.1048.1792.1120@-1920.-32.1920.1080" timestamp="1593995423869" />
-    <state x="0" y="0" width="954" height="1080" key="dock-window-1" timestamp="1595221250103">
-      <screen x="0" y="23" width="1920" height="1006" />
+    <state x="0" y="0" width="849" height="1080" key="dock-window-1" timestamp="1595224132027">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="0" y="0" width="939" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1594943835266" />
+    <state x="0" y="0" width="849" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1595224132027" />
     <state x="0" y="0" width="954" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1071.1792.1097/0.0.1920.1029@-1920.-32.1920.1080" timestamp="1595209852956" />
     <state x="0" y="0" width="868" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1071.1792.1097/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1594961404851" />
     <state x="0" y="0" width="954" height="1080" key="dock-window-1/-1920.-32.1920.1080/-1792.1071.1792.1097/0.23.1920.1006@-1920.-32.1920.1080" timestamp="1595221250103" />
