@@ -28,6 +28,7 @@ import {
   WordAlignment,
   WordToCreateTimeFor
 } from '../../types';
+import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
 import {setPageTitle} from '../../util/misc';
 import {ConfirmationDialog} from '../shared/ConfirmationDialog';
@@ -259,7 +260,7 @@ export function EditorPage() {
 
       if (response.kind === 'ok') {
         setSegments(response.segments);
-      } else {
+      } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
           caller: `getSegments - failed to get segments`,

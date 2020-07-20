@@ -111,12 +111,12 @@ export interface Segment {
   /** the original transcript created by the decoder */
   decoderTranscript: string;
   wordAlignments: WordAlignment[];
-  speaker: string | null;
   highRisk: boolean;
 }
 
 export interface WordAlignment {
   confidence: number;
+  speaker: string | null;
   /** the length in seconds of the word */
   length: number;
   /** the starting time of the word within the segment */
