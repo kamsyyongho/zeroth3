@@ -3,8 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b0cbced2-58ec-489c-baef-dcf11218167e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/voice-data.types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/voice-data.types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/EditorV2.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/AssignSpeakerDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/AssignSpeakerDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHead.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHead.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/editor/components/SegmentBlockHeadV2.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +91,7 @@
       <workItem from="1592179144601" duration="180000000" />
       <workItem from="1593394113270" duration="172159000" />
       <workItem from="1594640383101" duration="24206000" />
-      <workItem from="1595159849627" duration="6391000" />
+      <workItem from="1595159849627" duration="7774000" />
     </task>
     <servers />
   </component>
@@ -316,10 +318,10 @@
     </state>
     <state x="418" y="-284" key="run.anything.popup/1792.-1080.1920.1080/0.0.1792.1120/-207.-1080.1920.1080@-207.-1080.1920.1080" timestamp="1588919184262" />
     <state x="625" y="796" key="run.anything.popup/1920.0.1920.1080/0.0.1920.1080/56.1080.1792.1120@0.0.1920.1080" timestamp="1592551225494" />
-    <state x="-2173" y="1356" width="1375" height="907" key="search.everywhere.popup" timestamp="1594646618357">
-      <screen x="-3440" y="1037" width="3440" height="1440" />
+    <state x="-1213" y="207" width="767" height="680" key="search.everywhere.popup" timestamp="1595223862998">
+      <screen x="-1920" y="-32" width="1920" height="1080" />
     </state>
-    <state x="-1213" y="207" width="767" height="680" key="search.everywhere.popup/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1593674798945" />
+    <state x="-1213" y="207" width="767" height="680" key="search.everywhere.popup/-1920.-32.1920.1080/-1792.1048.1792.1120/0.0.1920.1080@-1920.-32.1920.1080" timestamp="1595223862998" />
     <state x="-2173" y="1356" width="1375" height="907" key="search.everywhere.popup/0.0.1080.2560/-3440.1037.3440.1440/-2560.-43.2560.1080@-3440.1037.3440.1440" timestamp="1594646618357" />
     <state x="660" y="248" width="716" height="706" key="search.everywhere.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1593943401241" />
     <state x="-1213" y="207" width="768" height="681" key="search.everywhere.popup/0.0.1920.1080/-1920.-32.1920.1080/-1792.1048.1792.1120@-1920.-32.1920.1080" timestamp="1594251184583" />
