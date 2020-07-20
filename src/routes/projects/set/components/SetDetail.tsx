@@ -6,7 +6,9 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { CONTENT_STATUS, VoiceData } from '../../../../types';
+import { CONTENT_STATUS, VoiceData, VoiceDataResults, DataSet, SubSetCountResults } from '../../../../types';
+import { SUB_SET_TYPES } from '../../../../constants'
+import { ApiContext } from '../../../../hooks/api/ApiContext';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,269 +50,138 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface SetDetailProps {
     setDetailLoading: boolean;
-    row: VoiceData;
     projectId: string;
+    displaySubSetInTDP: (setId: string, subSetType: string) => void;
+    dataSetId: string;
+    isTestSetCreated: boolean;
+    setIsTestSetCreated: (bool: boolean) => void;
 }
 
 export function SetDetail(props: SetDetailProps) {
     const classes = useStyles();
+    const { isTestSetCreated, setIsTestSetCreated } = props;
     const { translate, formatDate } = React.useContext(I18nContext);
+    const api = React.useContext(ApiContext);
+    const [testSet, setTestSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [validationSet, setValidationSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [trainingSet, setTrainingSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
+    const [subSetCount, setSubSetCount] = React.useState<SubSetCountResults>({testCount: 0, trainCount: 0, validationCount: 0} as SubSetCountResults);
+
     const {
-        row,
+        // row,
         projectId,
         setDetailLoading,
+        displaySubSetInTDP,
+        dataSetId,
     } = props;
-    const {
-        decodedAt,
-        fetchedAt,
-        confirmedAt,
-        memo,
-        originalFilename,
-        modelConfigId,
-        sessionId,
-        ip,
-        transcriber,
-        wordCount,
-    } = row;
 
-    const startDate = new Date(decodedAt);
-    const fetchedDate = fetchedAt ? new Date(fetchedAt) : null;
-    const confirmedDate = confirmedAt ? new Date(confirmedAt) : null;
+    const getSubSetCount = async () => {
+        if (api ?.dataSet) {
+            const response = await api.dataSet ?.getSubSetCount(projectId, dataSetId);
+            if (response.kind === "ok") {
+                setSubSetCount(response.count);
+            }
+        }
+    };
+
+
+    React.useEffect(() => {
+        getSubSetCount();
+        return () => {
+            setSubSetCount({} as SubSetCountResults);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if(isTestSetCreated) {
+            getSubSetCount();
+            setIsTestSetCreated(false);
+        }
+    }, [isTestSetCreated])
 
     return (<TableRow
         className={classes.row}
     >
         <TableCell
-            colSpan={6}
+            colSpan={7}
             className={classes.cell}
         >
             <Grid container spacing={3}>
                 <Grid
                     container
                     item
-                    xs={7}
+                    xs={12}
                     wrap='nowrap'
-                    direction='column'
-                    alignContent='center'
+                    direction='row'
+                    alignContent='space-around'
                     alignItems='flex-start'
-                    justify='flex-start'
+                    justify='center'
                 >
                     <Grid
                         container
                         item
-                        wrap='nowrap'
+                        xs={4}
                         direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('common.startAt')}:`}
-                        </Typography>
-                        <Typography>{startDate ? formatDate(startDate) : '-'}</Typography>
-                    </Grid>
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('common.endAt')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{formatDate(endDate)}</Typography>*/}
-                    {/*</Grid>*/}
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.sessionId')}:`}
-                        </Typography>
-                        <Typography>{sessionId ? sessionId : '-'}</Typography>
+                        justify='center'
+                        alignContent='space-between'
+                        spacing={2}>
+                        <Grid item>
+                            <Button
+                                color='primary'
+                                variant='outlined'
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.test)}
+                            >
+                                {'Test'}
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Typography>{`Record Count : ${!!subSetCount.testCount ? subSetCount.testCount : 0}`}</Typography>
+                        </Grid>
                     </Grid>
                     <Grid
                         container
                         item
-                        wrap='nowrap'
+                        xs={4}
                         direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.ip')}:`}
-                        </Typography>
-                        <Typography>{ip ? ip : '-'}</Typography>
+                        justify='center'
+                        alignContent='space-between'
+                        spacing={2}>
+                        <Grid item>
+                            <Button
+                                color='primary'
+                                variant='outlined'
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.validation)}
+                            >
+                                {'Validation'}
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Typography>{`Record Count : ${!!subSetCount.validationCount ? subSetCount.validationCount : 0}`}</Typography>
+                        </Grid>
                     </Grid>
                     <Grid
                         container
                         item
-                        wrap='nowrap'
+                        xs={4}
                         direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('common.fetchedAt')}:`}
-                        </Typography>
-                        <Typography>{fetchedDate ? formatDate(fetchedDate) : ''}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('common.confirmedAt')}:`}
-                        </Typography>
-                        <Typography>{confirmedDate ? formatDate(confirmedDate) : ''}</Typography>
+                        justify='center'
+                        alignContent='space-between'
+                        spacing={2}>
+                        <Grid item>
+                            <Button
+                                color='primary'
+                                variant='outlined'
+                                onClick={() => displaySubSetInTDP(dataSetId, SUB_SET_TYPES.training)}
+                            >
+                                {'Train'}
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Typography>{`Record Count : ${!!subSetCount.trainCount ? subSetCount.trainCount : 0}`}</Typography>
+                        </Grid>
                     </Grid>
                 </Grid>
-                <Grid
-                    container
-                    item
-                    xs={5}
-                    wrap='nowrap'
-                    direction='column'
-                    alignContent='center'
-                    alignItems='flex-start'
-                    justify='flex-start'
-                >
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.websocketCloseStatus')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{webSocketCloseStatus}</Typography>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.websocketCloseReason')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{webSocketCloseReason}</Typography>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid*/}
-                    {/*    container*/}
-                    {/*    item*/}
-                    {/*    wrap='nowrap'*/}
-                    {/*    direction='row'*/}
-                    {/*    alignContent='center'*/}
-                    {/*    alignItems='center'*/}
-                    {/*    justify='flex-start'*/}
-                    {/*>*/}
-                    {/*    <Typography*/}
-                    {/*        className={classes.category}*/}
-                    {/*        variant='subtitle2'*/}
-                    {/*    >*/}
-                    {/*        {`${translate('TDP.transferredBytes')}:`}*/}
-                    {/*    </Typography>*/}
-                    {/*    <Typography>{transferredBytes}</Typography>*/}
-                    {/*</Grid>*/}
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.wordCount')}:`}
-                        </Typography>
-                        <Typography>{wordCount}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('TDP.originalFilename')}:`}
-                        </Typography>
-                        <Typography>{originalFilename ? originalFilename : '-'}</Typography>
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        wrap='nowrap'
-                        direction='row'
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                    >
-                        <Typography
-                            className={classes.category}
-                            variant='subtitle2'
-                        >
-                            {`${translate('forms.transcriber')}:`}
-                        </Typography>
-                        <Typography className={!transcriber ? classes.italic : undefined}>{transcriber || translate('forms.none')}</Typography>
-                    </Grid>
-                </Grid>
+
             </Grid>
         </TableCell>
     </TableRow>);

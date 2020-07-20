@@ -52,7 +52,7 @@ export interface VoiceData {
   memo: string | null;
   modelConfigId: string;
   originalFilename: string | null
-  projectId: string | null;
+  projectId: string;
   sessionId: string;
   ip: string;
   stateChanges: any[];
@@ -64,11 +64,23 @@ export interface VoiceData {
   transcriber: string | null;
   transcript: string;
   transcriptionRating: number | null;
+  waveformUrl: string;
   wordCount: number;
+}
+
+export interface SubSetCountResults {
+  testCount: number;
+  trainCount: number;
+  validationCount: number;
 }
 
 export interface VoiceDataResults extends PaginatedResults {
   content: VoiceData[];
+}
+
+export interface HistoryDataResults extends PaginatedResults {
+  content: VoiceData[];
+  status?: CONTENT_STATUS;
 }
 
 export enum CONTENT_STATUS {
@@ -77,9 +89,10 @@ export enum CONTENT_STATUS {
   UNCONFIRMED_LR = 'UNCONFIRMED_LR',
   FETCHED = 'FETCHED',
   CONFIRMED = 'CONFIRMED',
-  TRAINABLE_SV = 'TRAINABLE_SV',
-  TRAINABLE_USV = 'TRAINABLE_USV',
+  // TRAINABLE_SV = 'TRAINABLE_SV',
+  // TRAINABLE_USV = 'TRAINABLE_USV',
   IN_REVIEW = 'IN_REVIEW',
+  REJECTED = 'REJECTED',
 }
 
 export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
@@ -98,24 +111,33 @@ export interface Segment {
   /** the original transcript created by the decoder */
   decoderTranscript: string;
   wordAlignments: WordAlignment[];
-  speaker: string | null;
   highRisk: boolean;
 }
 
 export interface WordAlignment {
   confidence: number;
+  speaker: string | null;
   /** the length in seconds of the word */
   length: number;
   /** the starting time of the word within the segment */
   start: number;
   word: string;
+  rejectReason?: string;
 }
 
 export enum TDPTableColumns {
-  'transcript' = 'transcript',
+  'sessionId' = 'sessionId',
   'modelConfigId' = 'modelConfigId',
   'length' = 'length',
   'decodedAt' = 'decodedAt',
   'status' = 'status',
   'highRiskSegments' = 'highRiskSegments',
+}
+
+export interface AudioUrlResponse extends AudioUrlData {
+  data: AudioUrlData;
+}
+
+interface AudioUrlData {
+  url: string;
 }

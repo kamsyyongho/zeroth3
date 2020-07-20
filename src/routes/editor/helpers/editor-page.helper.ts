@@ -8,7 +8,6 @@ export const calculateWordTime = (
   segmentIndex: number,
   wordIndex: number,
 ) => {
-  console.log('================arguments in caculateWordTime', segments, segmentIndex, wordIndex);
   try {
     const segment = segments[segmentIndex];
     const word = segment.wordAlignments[wordIndex];
@@ -19,12 +18,6 @@ export const calculateWordTime = (
     totalTime = Number(totalTime.toFixed(2));
     return totalTime;
   } catch (error) {
-    log({
-      file: `editor-page.helper.ts`,
-      caller: `calculateWordTime - failed to calculate time`,
-      value: error.toString(),
-      important: true,
-    });
     return 0;
   }
 };
@@ -55,7 +48,7 @@ export const getDisabledControls = (
   }
   if (saveSegmentsLoading || confirmSegmentsLoading) {
     disabledControls.push(EDITOR_CONTROLS.save);
-    disabledControls.push(EDITOR_CONTROLS.confirm);
+    disabledControls.push(EDITOR_CONTROLS.approvalRequest);
   }
   return disabledControls;
 };

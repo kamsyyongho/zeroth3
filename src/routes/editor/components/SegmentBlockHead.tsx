@@ -8,7 +8,7 @@ import VisibilitySensor from "react-visibility-sensor";
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../theme/index';
-import { DEFAULT_OFFSET, Segment, SegmentBlockData } from '../../../types';
+import { DEFAULT_OFFSET, Segment, SegmentBlockData, WordAlignment } from '../../../types';
 import { formatSecondsDuration } from '../../../util/misc';
 import { SegmentBlockSubProps } from './SegmentBlock';
 
@@ -84,7 +84,7 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
   const rawBlockData = block.getData();
   const blockData: SegmentBlockData = rawBlockData.toJS();
   const segment = blockData.segment || {} as Segment;
-  const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
+  const { id, transcript, decoderTranscript, start, highRisk } = segment;
   const displayTextChangedHover = (!readOnly
       && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
   const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
@@ -98,6 +98,8 @@ const SegmentBlockHead = (props: SegmentBlockHeadProps) => {
       removeHighRiskValueFromSegment(id);
     }
   };
+    const speakerReducer = (accumulator: string, currentValue: WordAlignment) => currentValue.speaker || '';
+    const speaker = segment?.wordAlignments.reduce(speakerReducer, '') || '';
   const iconHidden = !speaker && !showEditorPopups;
   const showChip = highRisk && showEditorPopups;
   const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined}

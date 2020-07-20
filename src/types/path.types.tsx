@@ -2,7 +2,8 @@
 import { SvgIconProps } from '@material-ui/core';
 import React from 'reactn';
 import { ICONS } from '../theme/icons';
-
+import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
+import AssignmentIcon from '@material-ui/icons/Assignment';
 /**
  * - `to` - used as the router path
  * - `title` - used as a key to get translations
@@ -27,6 +28,8 @@ interface Paths {
   models: Path;
   modelTraining: Path;
   editor: Path;
+  admin: Path;
+  transcribers: Path;
 }
 
 export const PATHS: { [x: string]: Path; } = {
@@ -60,6 +63,16 @@ export const PATHS: { [x: string]: Path; } = {
     to: '/training',
     title: 'modelTraining',
     Icon: props => <ICONS.Training {...props} />,
+  },
+  transcription: {
+    to: '/transcription',
+    title: 'transcription',
+    Icon: props => <SupervisorAccountIcon {...props} />,
+  },
+  history: {
+    to: '/history',
+    title: 'history',
+    Icon: props => <AssignmentIcon {...props} />,
   },
   editor: {
     to: '/editor',

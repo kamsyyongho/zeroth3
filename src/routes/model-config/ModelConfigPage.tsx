@@ -3,12 +3,13 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { BulletList } from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import React, { useGlobal } from "reactn";
+import { useSnackbar } from 'notistack';
 import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
-import { ModelConfig, Project, SubGraph, TopGraph } from '../../types';
+import { ModelConfig, Project, SubGraph, TopGraph, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
@@ -41,6 +42,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const { translate } = React.useContext(I18nContext);
   const api = React.useContext(ApiContext);
   const { hasPermission, roles } = React.useContext(KeycloakContext);
+  const { enqueueSnackbar } = useSnackbar();
   const [isValidId, setIsValidId] = React.useState(true);
   const [isValidProject, setIsValidProject] = React.useState(true);
   const [projectLoading, setProjectLoading] = React.useState(true);
@@ -128,30 +130,41 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     const getProject = async () => {
       if (api?.projects) {
         const response = await api.projects.getProject(projectId);
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setProject(response.project);
-        } else if (response.kind === ProblemKind["not-found"]) {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getProject - project does not exist`,
-            value: response,
-            important: true,
-          });
-          setIsValidProject(false);
         } else {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getProject - failed to get project`,
-            value: response,
-            important: true,
-          });
+          if (response.kind === ProblemKind["not-found"]) {
+            log({
+              file: `ModelConfigPage.tsx`,
+              caller: `getProject - project does not exist`,
+              value: response,
+              important: true,
+            });
+            setIsValidProject(false);
+          } else {
+            log({
+              file: `ModelConfigPage.tsx`,
+              caller: `getProject - failed to get project`,
+              value: response,
+              important: true,
+            });
+          }
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setProjectLoading(false);
       }
     };
     const getModelConfigs = async () => {
       if (api?.modelConfig) {
         const response = await api.modelConfig.getModelConfigs(projectId);
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
         if (response.kind === 'ok') {
           setModelConfigs(response.modelConfigs);
         } else {
@@ -161,13 +174,21 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setModelConfigsLoading(false);
       }
     };
     const getTopGraphs = async () => {
       if (api?.models) {
         const response = await api.models.getTopGraphs();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setTopGraphs(response.topGraphs);
         } else {
@@ -177,13 +198,20 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setTopGraphsLoading(false);
       }
     };
     const getSubGraphs = async () => {
       if (api?.models) {
         const response = await api.models.getSubGraphs();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
         if (response.kind === 'ok') {
           setSubGraphs(response.subGraphs);
         } else {
@@ -193,13 +221,21 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setSubGraphsLoading(false);
       }
     };
     const getLanguageModels = async () => {
       if (api?.models) {
         const response = await api.models.getLanguageModels();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setLanguageModels(response.languageModels);
         } else {
@@ -209,13 +245,21 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setLanguageModelsLoading(false);
       }
     };
     const getAcousticModels = async () => {
       if (api?.models) {
         const response = await api.models.getAcousticModels();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setAcousticModels(response.acousticModels);
         } else {
@@ -225,7 +269,13 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
             value: response,
             important: true,
           });
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setAcousticModelsLoading(false);
       }
     };
@@ -240,17 +290,17 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
       });
     } else {
       // only get if we weren't passed anything from the previous page
-      if (!modelConfigs.length) {
-        getModelConfigs();
-      } else {
-        setModelConfigsLoading(false);
-      }
-      if (!project) {
-        getProject();
-      } else {
-        setProjectLoading(false);
-      }
       if (hasModelConfigPermission) {
+        if (!modelConfigs.length) {
+          getModelConfigs();
+        } else {
+          setModelConfigsLoading(false);
+        }
+        if (!project) {
+          getProject();
+        } else {
+          setProjectLoading(false);
+        }
         if (!topGraphs.length) {
           getTopGraphs();
         } else {

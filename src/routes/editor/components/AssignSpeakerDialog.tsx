@@ -13,7 +13,7 @@ import React from 'reactn';
 import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { Segment, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
+import { Segment, SnackbarError, SNACKBAR_VARIANTS, WordAlignment } from '../../../types';
 import log from '../../../util/log/logger';
 import { InputSelectFormField } from '../../shared/form-fields/InputSelectFormField';
 
@@ -47,7 +47,9 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
   const api = React.useContext(ApiContext);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
-  const speaker = segment?.speaker || '';
+  const speakerReducer = (accumulator: string, currentValue: WordAlignment) => currentValue.speaker || '';
+  const speaker = segment?.wordAlignments.reduce(speakerReducer, '') || '';
+  // const speaker = segment?.speaker || '';
   const segmentId = segment?.id || '';
 
   const theme = useTheme();

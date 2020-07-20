@@ -9,6 +9,9 @@
 .idea
 .idea/workspace.xml
 
+#webstorm ide file
+npm run
+
 # testing
 /coverage
 

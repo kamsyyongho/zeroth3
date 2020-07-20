@@ -1,9 +1,11 @@
 import {
   CONTENT_STATUS,
+  HistoryDataResults,
   Segment,
   VoiceData,
   VoiceDataResults,
   WordAlignment,
+  AudioUrlResponse,
 } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -12,7 +14,7 @@ import { GeneralApiProblem } from './api-problem.types';
 //////////////
 
 export interface SearchDataRequest {
-  'data-set'?: string;
+  'dataSetIds'?: string[];
   filename?: string;
   from?: Date;
   till?: Date;
@@ -49,6 +51,17 @@ export interface SearchDataRequest {
    * @example `sort-by: startAt.desc`
    */
   'sort-by'?: string;
+}
+
+export interface GetVoiceDataToReviewRequest {
+  page?: number;
+  size?: number;
+}
+
+export interface GetHistoryRequest {
+  page?: number;
+  size?: number;
+  status?: CONTENT_STATUS;
 }
 
 export interface SplitSegmentQuery {
@@ -114,6 +127,13 @@ export type UpdateSegmentsRequest = Segment[];
 
 export type confirmDataResult = { kind: 'ok' } | GeneralApiProblem;
 
+
+export type deleteAllDataSet = { kind: 'ok' } | GeneralApiProblem;
+
+export type rejectDataResult = { kind: 'ok' } | GeneralApiProblem;
+
+export type updateRejectReasonResult = { kind: 'ok' } | GeneralApiProblem;
+
 export type approveDataResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type searchDataResult =
@@ -122,6 +142,10 @@ export type searchDataResult =
 
 export type getAssignedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
+  | GeneralApiProblem;
+
+export type getVoiceDataStateChanges =
+  | { kind: 'ok', statusChanges: any[] }
   | GeneralApiProblem;
 
 export type fetchUnconfirmedDataResult =
@@ -173,3 +197,15 @@ export type updateSegmentTimeResult = { kind: 'ok' } | GeneralApiProblem;
 export type deleteUnconfirmedVoiceDataResult =
   | { kind: 'ok' }
   | GeneralApiProblem;
+
+export type getDataToReview =
+  | { kind: 'ok'; data: VoiceDataResults }
+  | GeneralApiProblem;
+
+export type getHistory =
+  | { kind: 'ok'; data: HistoryDataResults }
+  | GeneralApiProblem;
+
+export type getAudioUrl =
+    | { kind: 'ok'; url: string }
+    | GeneralApiProblem;

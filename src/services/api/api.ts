@@ -3,7 +3,7 @@ import { AxiosRequestConfig } from 'axios';
 import { KeycloakInstance } from 'keycloak-js';
 import { LOCAL_STORAGE_KEYS } from '../../types';
 import log from '../../util/log/logger';
-import ENV from '../env/index';
+import ENV from '../env';
 import { ApiConfig, DEFAULT_API_CONFIG } from './api-config';
 import { DataSet } from './controllers/data-set';
 import { IAM } from './controllers/iam';
@@ -165,7 +165,7 @@ export class Api {
     };
     if (this.keycloak) {
       try {
-        const { token } = this.keycloak;
+        const token = this.keycloak.token || localStorage.getItem(LOCAL_STORAGE_KEYS.KEY_CLOAK_TOKEN);
         header.Authorization = `Bearer ${token}`;
         if (!token) {
           log({

@@ -64,6 +64,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
+  const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setfilteredProjects] = React.useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = React.useState(true);
@@ -100,10 +101,13 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
     if (project) {
       setSelectedProject(project);
       setCurrentProject(project);
-      setTimeout(() => {
-        history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
-        handleClose();
-      }, 0);
+      setProjectTdpDataShouldRefresh(true);
+      history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      handleClose();
+      // setTimeout(() => {
+      //   history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
+      //   handleClose();
+      // }, 0);
     }
   };
 
@@ -129,7 +133,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   React.useEffect(() => {
     if (currentOrganization) {
       getProjects();
-    } else if (!currentOrganization) {
+    } else if (!currentOrganization && projects.length > 0) {
       setProjects([]);
     }
   }, [currentOrganization]);
@@ -275,8 +279,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           size="small"
           color="primary"
           disabled={projectsLoading}
-          onClick={handleSettingsOpen}
-        >
+          onClick={handleSettingsOpen}>
           <ICONS.Settings />
         </IconButton>
       </Grid>
@@ -287,8 +290,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
           aria-label="create-button"
           size="small"
           color="primary"
-          onClick={handleCreateOpen}
-        >
+          onClick={handleCreateOpen}>
           <AddIcon />
         </IconButton>
       </Grid>

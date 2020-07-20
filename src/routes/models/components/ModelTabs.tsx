@@ -10,7 +10,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { deleteSubGraphResult } from '../../../services/api/types';
 import { ServerError } from '../../../services/api/types/api-problem.types';
-import { BooleanById, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../types';
+import { BooleanById, SNACKBAR_VARIANTS, SnackbarError, SubGraph, TopGraph } from '../../../types';
 import log from '../../../util/log/logger';
 import { ConfirmationDialog } from '../../shared/ConfirmationDialog';
 import { TabPanel } from '../../shared/TabPanel';
@@ -131,6 +131,8 @@ export function ModelTabs() {
       setSubGraphsLoading(true);
       setSubGraphs([]);
       const response = await api.models.getSubGraphs();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setSubGraphs(response.subGraphs);
       } else {
@@ -140,7 +142,14 @@ export function ModelTabs() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSubGraphsLoading(false);
     }
   };
@@ -149,6 +158,8 @@ export function ModelTabs() {
     if (api?.models) {
       setTopGraphsLoading(true);
       const response = await api.models.getTopGraphs();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setTopGraphs(response.topGraphs);
       } else {
@@ -158,7 +169,13 @@ export function ModelTabs() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setTopGraphsLoading(false);
     }
   };
@@ -167,6 +184,8 @@ export function ModelTabs() {
     if (api?.models) {
       setTopGraphsLoading(true);
       const response = await api.models.refreshAndGetTopGraph();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         getSubGraphs();
         getTopGraphs();
@@ -177,7 +196,14 @@ export function ModelTabs() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setTopGraphsLoading(false);
     }
   };

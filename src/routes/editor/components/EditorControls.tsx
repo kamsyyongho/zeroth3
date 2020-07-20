@@ -7,6 +7,9 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
 import MultilineChartIcon from '@material-ui/icons/MultilineChart';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import DescriptionIcon from '@material-ui/icons/Description';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -18,6 +21,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
+import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -54,22 +58,38 @@ const useStyles = makeStyles((theme) =>
     popper: {
       zIndex: theme.zIndex.drawer,
     },
+    status: {
+      color: theme.palette.common.white,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }
   }),
 );
 
 export enum EDITOR_CONTROLS {
-  confirm,
+  approvalRequest,
   save,
   undo,
   redo,
   merge,
   split,
   toggleMore,
-  createWord,
+  // createWord,
   editSegmentTime,
   setThreshold,
   speaker,
-  debug,
+  // debug,
+  shortcuts,
+  rewindAudio,
+  forwardAudio,
+  audioPlayPause,
+}
+
+const EDITOR_STATUS = {
+  loading: 'loading',
+  saved: 'saved',
+  error: 'error',
 }
 
 const primaryControlOrder = [
@@ -83,16 +103,19 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
   // EDITOR_CONTROLS.debug,
+  EDITOR_CONTROLS.shortcuts,
 ];
 
 const secondaryControlOrder = [
-  EDITOR_CONTROLS.confirm,
+  EDITOR_CONTROLS.approvalRequest,
 ];
 
 /** keeps track of the editor state for the keyboard listener
  * - outside the component to keep it out of the react lifecycle
  */
 let editorInFocus = false;
+let shortcutsStack: string[] = [];
+let localShortcuts: any = {};
 
 interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
@@ -101,6 +124,7 @@ interface EditorControlsProps {
   loading?: boolean;
   editorReady?: boolean;
   playingLocation: number[];
+  isSegmentUpdateError: boolean;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -111,6 +135,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     loading,
     editorReady,
     playingLocation,
+    isSegmentUpdateError,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -118,6 +143,9 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [editorDebugMode, setEditorDebugMode] = useGlobal('editorDebugMode');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
+  const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
+  const [statusEl, setStatusEl] = React.useState<any>();
+  // const [shortcutsStack, setShortcutStack] = React.useState<string[]>();
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -194,24 +222,24 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.save:
           label = translate('common.save');
           icon = <ICONS.Save />;
-          tooltipText = osText('save');
+          tooltipText = renderInputCombination(shortcuts.save);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.save),
             disabled: disabledControls.includes(EDITOR_CONTROLS.save),
           };
           break;
-        case EDITOR_CONTROLS.confirm:
+        case EDITOR_CONTROLS.approvalRequest:
           label = translate('editor.approvalRequest');
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
-            disabled: disabledControls.includes(EDITOR_CONTROLS.confirm),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
           };
           break;
         case EDITOR_CONTROLS.undo:
           label = translate('editor.undo');
           icon = <ICONS.Undo />;
-          tooltipText = osText('undo');
+          tooltipText = renderInputCombination(shortcuts.undo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.undo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
@@ -220,7 +248,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.redo:
           label = translate('editor.redo');
           icon = <ICONS.Redo />;
-          tooltipText = osText('redo');
+          tooltipText = renderInputCombination(shortcuts.redo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.redo),
             disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
@@ -229,7 +257,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.merge:
           label = translate('editor.merge');
           icon = <ICONS.Merge />;
-          tooltipText = osText('merge');
+          tooltipText = renderInputCombination(shortcuts.merge);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.merge),
             disabled: disabledControls.includes(EDITOR_CONTROLS.merge),
@@ -238,7 +266,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         case EDITOR_CONTROLS.split:
           label = translate('editor.split');
           icon = <ICONS.Split />;
-          tooltipText = osText('split');
+          tooltipText = renderInputCombination(shortcuts.split);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.split),
             disabled: disabledControls.includes(EDITOR_CONTROLS.split),
@@ -251,25 +279,25 @@ export const EditorControls = (props: EditorControlsProps) => {
             onIcon={<VisibilityIcon />}
             offIcon={<VisibilityOffIcon />}
           />;
-          tooltipText = osText('toggleMore');
+          tooltipText = renderInputCombination(shortcuts.toggleMore);
           selected = !!showEditorPopups;
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.toggleMore),
             disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
           };
           break;
-        case EDITOR_CONTROLS.createWord:
-          label = translate('editor.createWord');
-          icon = <AddIcon />;
-          props = {
-            onClick: () => handleClick(EDITOR_CONTROLS.createWord),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
-          };
-          break;
+        // case EDITOR_CONTROLS.createWord:
+        //   label = translate('editor.createWord');
+        //   icon = <AddIcon />;
+        //   props = {
+        //     onClick: () => handleClick(EDITOR_CONTROLS.createWord),
+        //     disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
+        //   };
+        //   break;
         case EDITOR_CONTROLS.editSegmentTime:
           label = translate('editor.editSegmentTime');
           icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;
-          tooltipText = osText('editSegmentTime');
+          tooltipText = renderInputCombination(shortcuts.editSegmentTime);
           props = {
             // onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
             disabled: disabledControls.includes(EDITOR_CONTROLS.editSegmentTime),
@@ -287,16 +315,28 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: disabledControls.includes(EDITOR_CONTROLS.setThreshold),
           };
           break;
-        case EDITOR_CONTROLS.debug:
-          label = 'DEBUG';
-          icon = <DeveloperModeIcon />;
-          selected = !!editorDebugMode;
+        // case EDITOR_CONTROLS.debug:
+        //   label = 'DEBUG';
+        //   icon = <DeveloperModeIcon />;
+        //   selected = !!editorDebugMode;
+        //   props = {
+        //     onClick: () => {
+        //       setEditorDebugMode(!editorDebugMode);
+        //       handleClick(EDITOR_CONTROLS.debug);
+        //     },
+        //     disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
+        //   };
+        //   break;
+        case EDITOR_CONTROLS.shortcuts:
+          label = 'SHORTCUTS';
+          icon = <DescriptionIcon />;
+          tooltipText= renderInputCombination(shortcuts.shortcuts);
           props = {
             onClick: () => {
               setEditorDebugMode(!editorDebugMode);
-              handleClick(EDITOR_CONTROLS.debug);
+              handleClick(EDITOR_CONTROLS.shortcuts);
             },
-            disabled: disabledControls.includes(EDITOR_CONTROLS.debug),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.shortcuts),
           };
           break;
       }
@@ -307,13 +347,142 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
+  const handleShortcut = (event: KeyboardEvent) => {
+    const keyCombinationArray = Object.values(localShortcuts);
+    const functionArray = Object.keys(localShortcuts);
+    let resultIndex: number = -1;
+    keyCombinationArray.forEach((combination: any, index: number) => {
+      for(let i = 0; i < shortcutsStack.length; i++) {
+        if(!combination.includes(shortcutsStack[i])) {
+          return;
+        }
+      }
+      resultIndex = index;
+    });
+    const command = functionArray[resultIndex];
+
+    switch (command) {
+      case 'confirm':
+        onCommandClick(EDITOR_CONTROLS.approvalRequest);
+        break;
+      case 'save':
+        handleClick(EDITOR_CONTROLS.save);
+        break;
+      case 'undo':
+        onCommandClick(EDITOR_CONTROLS.undo);
+        break;
+      case 'redo':
+        onCommandClick(EDITOR_CONTROLS.redo);
+        break;
+      case 'merge':
+        onCommandClick(EDITOR_CONTROLS.merge);
+        break;
+      case 'split':
+        onCommandClick(EDITOR_CONTROLS.split);
+        break;
+      case 'toggleMore':
+        onCommandClick(EDITOR_CONTROLS.toggleMore);
+        break;
+      case 'editSegmentTime':
+        onCommandClick(EDITOR_CONTROLS.editSegmentTime);
+        break;
+      case 'setThreshold':
+        handleClick(EDITOR_CONTROLS.setThreshold);
+        break;
+      case 'shortcuts':
+        onCommandClick(EDITOR_CONTROLS.shortcuts);
+        break;
+      case 'speaker':
+        onCommandClick(EDITOR_CONTROLS.speaker);
+        break;
+      case 'rewindAudio':
+        onCommandClick(EDITOR_CONTROLS.rewindAudio);
+        break;
+      case 'forwardAudio':
+        onCommandClick(EDITOR_CONTROLS.forwardAudio);
+        break;
+      case 'audioPlayPause':
+        onCommandClick(EDITOR_CONTROLS.audioPlayPause);
+        break;
+    }
+    event.preventDefault();
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if(shortcutsStack.length < 2) {
+      return;
+    } else {
+      handleShortcut(event);
+      shortcutsStack = [];
+    }
+  }
+
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
+    const key = event.code === "Space" ? "Space" : event.key;
+    if(shortcutsStack?.length) {
+      shortcutsStack.push(key);
+    } else {
+      shortcutsStack.push(key);
+    }
+    event.preventDefault();
+  };
+
+  React.useEffect(() => {
+    localShortcuts = shortcuts;
+  }, [shortcuts]);
+
+  React.useEffect(() => {
+    const statusTextEl = (
+        <Typography className={classes.status}>
+          {translate('forms.status')}
+        </Typography>
+    )
+    if(loading) {
+      const loadingEl = (<ScaleLoader
+          color={theme.palette.common.white}
+          loading={true}
+      />);
+      setStatusEl(loadingEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1500);
+    }
+    if(!isSegmentUpdateError) {
+      const successEl = (
+          <div className={classes.status}>
+            <CheckCircleOutlineIcon />
+            <Typography className={classes.status}>
+              {translate('common.saved')}
+            </Typography>
+          </div>
+      );
+      setStatusEl(successEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1500);
+    } else if (isSegmentUpdateError) {
+      const errorEl = (
+          <div className={classes.status}>
+            <ErrorOutlineIcon />
+            <Typography className={classes.status}>
+              {translate('common.error')}
+            </Typography>
+          </div>
+      );
+      setStatusEl(errorEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 1500);
+    }
+
+  }, [loading, isSegmentUpdateError]);
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**
     * handle shortcut key presses
     */
-    const handleKeyPress = (event: KeyboardEvent) => {
-      console.log('============editorInFocus : ', editorInFocus);
+    const handleKeyPress1 = (event: KeyboardEvent) => {
       const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
       const { key, shiftKey } = event;
       switch (key) {
@@ -365,6 +534,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     };
 
     document.addEventListener('keydown', handleKeyPress);
+    document.addEventListener('keyup', handleKeyUp);
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
       setEditorDebugMode(false);
@@ -372,6 +542,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       editorInFocus = false;
     };
   }, []);
+
 
   return (
     <Grid
@@ -388,10 +559,11 @@ export const EditorControls = (props: EditorControlsProps) => {
       >
         {renderButtons(primaryControlOrder)}
       </ButtonGroup>
-      {loading && <ScaleLoader
+      {/*{loading && <ScaleLoader
         color={theme.palette.common.white}
         loading={true}
-      />}
+      />}*/}
+      {statusEl}
       <ButtonGroup
         variant="contained"
         aria-label="secondary editor buttons"

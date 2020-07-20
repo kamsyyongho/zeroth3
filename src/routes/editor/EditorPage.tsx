@@ -1,62 +1,62 @@
-import { Container } from '@material-ui/core';
+import {Container} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-/* eslint import/no-webpack-loader-syntax: off */ // this lint rule is from create-react-app
+import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
+/* eslint import/no-webpack-loader-syntax: off */
+// this lint rule is from create-react-app
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import {useSnackbar, VariantType} from 'notistack';
-import { BulletList } from 'react-content-loader';
+import {BulletList} from 'react-content-loader';
 import ErrorBoundary from 'react-error-boundary';
-import React, { useGlobal } from "reactn";
-import { PERMISSIONS } from '../../constants';
-import { ApiContext } from '../../hooks/api/ApiContext';
-import { I18nContext } from '../../hooks/i18n/I18nContext';
-import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
-import { useWindowSize } from '../../hooks/window/useWindowSize';
-import { CustomTheme } from '../../theme/index';
+import React, {useGlobal} from "reactn";
+import {PERMISSIONS} from '../../constants';
+import {ApiContext} from '../../hooks/api/ApiContext';
+import {I18nContext} from '../../hooks/i18n/I18nContext';
+import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
+import {useWindowSize} from '../../hooks/window/useWindowSize';
+import {CustomTheme} from '../../theme/index';
 import {
   CONTENT_STATUS,
   DataSet,
+  PlayingTimeData,
   Segment,
   SegmentAndWordIndex,
-  SnackbarError,
   SNACKBAR_VARIANTS,
+  SnackbarError,
   Time,
   VoiceData,
   Word,
   WordAlignment,
-  WordToCreateTimeFor,
-  PlayingWordAndSegment,
-  PlayingTimeData } from '../../types';
-import {  } from '../../types/editor.types';
+  WordToCreateTimeFor
+} from '../../types';
+import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
-import { setPageTitle } from '../../util/misc';
-import { ConfirmationDialog } from '../shared/ConfirmationDialog';
-import { Forbidden } from '../shared/Forbidden';
-import { NotFound } from '../shared/NotFound';
-import { PageErrorFallback } from '../shared/PageErrorFallback';
-import { SiteLoadingIndicator } from '../shared/SiteLoadingIndicator';
-import { AudioPlayer } from './AudioPlayer';
-import { AssignSpeakerDialog } from './components/AssignSpeakerDialog';
-import { EditorControls, EDITOR_CONTROLS } from './components/EditorControls';
-import { EditorFetchButton } from './components/EditorFetchButton';
-import { StarRating } from './components/StarRating';
-import { Editor } from './Editor';
-import { calculateWordTime, getDisabledControls } from './helpers/editor-page.helper';
-import { getSegmentAndWordIndex, updatePlayingLocation } from './helpers/editor.helper';
-import localForage from 'localforage';
-import {UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK} from "../../common/constants";
+import {setPageTitle} from '../../util/misc';
+import {ConfirmationDialog} from '../shared/ConfirmationDialog';
+import {Forbidden} from '../shared/Forbidden';
+import {NotFound} from '../shared/NotFound';
+import {PageErrorFallback} from '../shared/PageErrorFallback';
+import {SiteLoadingIndicator} from '../shared/SiteLoadingIndicator';
+import {AudioPlayer} from './AudioPlayer';
+import {AssignSpeakerDialog} from './components/AssignSpeakerDialog';
+import {EDITOR_CONTROLS, EditorControls} from './components/EditorControls';
+import {EditorFetchButton} from './components/EditorFetchButton';
+import {StarRating} from './components/StarRating';
+import {Editor} from './Editor';
+import {calculateWordTime, getDisabledControls} from './helpers/editor-page.helper';
+import {getSegmentAndWordIndex, updatePlayingLocation} from './helpers/editor.helper';
+import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
-  createStyles({
-    container: {
-      marginTop: 25,
-    },
-  }),
+    createStyles({
+      container: {
+        marginTop: 25,
+      },
+    }),
 );
 
 /**
  * ensures that the selected word will be correctly
- * highlighted when setting the audio player seek 
+ * highlighted when setting the audio player seek
  * from a text input focus
  */
 const SEEK_SLOP = 0.00001;
@@ -65,7 +65,6 @@ let internalSegmentsTracker: Segment[] = [];
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
-let renderCount = 0;
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -99,15 +98,22 @@ export interface SplitTimePickerRootProps {
   onSegmentSplitTimeDelete: () => void;
 }
 
+export interface NavigationPropsToGet {
+  voiceData?: VoiceData;
+  projectId?: string;
+  isDiff?: boolean;
+  readOnly: boolean
+}
 
 export function EditorPage() {
   const { translate } = React.useContext(I18nContext);
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
-  const { hasPermission, roles } = React.useContext(KeycloakContext);
+  const { hasPermission, roles, user } = React.useContext(KeycloakContext);
   const { enqueueSnackbar } = useSnackbar();
   const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
+  const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -144,16 +150,18 @@ export function EditorPage() {
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
   const [playingTimeData, setPlayingTimeData] = React.useState<PlayingTimeData>({});
+  const [audioUrl, setAudioUrl] = React.useState<string>('');
+  const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
+  const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
 
   // get the passed info if we got here via the details page
-  interface NavigationPropsToGet {
-    voiceData?: VoiceData;
-    projectId?: string;
-  }
+
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
   const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
+  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -183,6 +191,8 @@ export function EditorPage() {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.getAssignedData();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setVoiceData(response.voiceData);
@@ -196,7 +206,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
     }
@@ -206,6 +223,8 @@ export function EditorPage() {
     if (api?.voiceData) {
       setVoiceDataLoading(true);
       const response = await api.voiceData.fetchUnconfirmedData(dataSetId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setNoAssignedData(response.noContent);
         setNoRemainingContent(response.noContent);
@@ -220,7 +239,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
     };
@@ -230,8 +256,37 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
       const response = await api.voiceData.getSegments(projectId, voiceData.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setSegments(response.segments);
+      } else if (response.kind !== ProblemKind['bad-data']){
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setSegmentsLoading(false);
+    }
+  };
+
+  const getShortcuts = async () => {
+    if (api?.user) {
+      setSegmentsLoading(true);
+      const response = await api.user.getShortcuts();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if (response.kind === 'ok') {
+        setShortcuts(response.shortcuts);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -239,7 +294,15 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
   };
@@ -247,6 +310,8 @@ export function EditorPage() {
   const getDataSetsToFetchFrom = async () => {
     if (api?.user) {
       const response = await api.user.getDataSetsToFetchFrom();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         setDataSets(response.dataSets);
       } else {
@@ -256,7 +321,14 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
   };
 
@@ -270,6 +342,7 @@ export function EditorPage() {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         // to trigger the `useEffect` to fetch more
+        setIsSegmentUpdateError(false);
         setVoiceData(undefined);
       } else {
         log({
@@ -279,6 +352,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -304,6 +378,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
         log({
@@ -313,6 +388,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -333,6 +409,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
+        setIsSegmentUpdateError(false);
         const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
@@ -346,6 +423,7 @@ export function EditorPage() {
           value: response,
           important: true,
         });
+        setIsSegmentUpdateError(true);
         snackbarError.isError = true;
         const { serverError } = response;
         if (serverError) {
@@ -379,6 +457,7 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
         log({
@@ -388,6 +467,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -402,7 +482,6 @@ export function EditorPage() {
     const caretLocation = getSegmentAndWordIndex();
     const segmentIndex = caretLocation?.[0];
     const wordIndex = caretLocation?.[1];
-    console.log('caretLocation : ', caretLocation);
     if(typeof segmentIndex !== 'number' || typeof wordIndex !== 'number' || !caretLocation || !caretLocation[0] || !caretLocation[1]) {return;}
     if(segmentIndex === 0 ||
         wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
@@ -411,7 +490,6 @@ export function EditorPage() {
     }
 
     const trackSegments = segments || internalSegmentsTracker;
-    console.log('==================trackSegments: ', trackSegments);
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
@@ -419,6 +497,7 @@ export function EditorPage() {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
+        setIsSegmentUpdateError(false);
         //cut out and replace the old segment
         const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
@@ -437,6 +516,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -446,7 +526,7 @@ export function EditorPage() {
       setSaveSegmentsLoading(false);
     }
   };
-  
+
   const submitSegmentSplitByTime = async (segmentId: string,
                                           segmentIndex: number,
                                           time: number,
@@ -457,6 +537,7 @@ export function EditorPage() {
       const response = await api.voiceData.splitSegmentByTime(projectId, voiceData.id, segmentId, time, wordStringSplitIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
+        setIsSegmentUpdateError(false);
         snackbarError = undefined;
         //cut out and replace the old segment
         const splitSegments = [...segments];
@@ -475,6 +556,7 @@ export function EditorPage() {
           important: true,
         });
         snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
         const { serverError } = response;
         if (serverError) {
           snackbarError.errorText = serverError.message || "";
@@ -574,7 +656,7 @@ export function EditorPage() {
           setCurrentPlayingLocation(playingLocation);
         }
         if (playingLocation && (initialSegmentLoad ||
-          JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
+            JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
           const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
@@ -593,7 +675,7 @@ export function EditorPage() {
     openConfirmDialog();
   };
 
-  
+
 
   /**
    * keeps track of where the timer is
@@ -651,7 +733,7 @@ export function EditorPage() {
     setDisabledTimes(disabledTimes);
   };
 
-  /** 
+  /**
    * will be called in the editor to get the updated info
    * - used to update the attached segment data for the block
    */
@@ -760,6 +842,34 @@ export function EditorPage() {
     setCanRedo(canRedo);
   };
 
+  const getAudioUrl = async ()=> {
+    if(api?.voiceData && voiceData) {
+      setVoiceDataLoading(true);
+      const url = voiceData.audioUrl;
+      const response = await api.voiceData.getAudio(url);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if (response.kind === 'ok') {
+        setAudioUrl(response.url);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getAudioUrl - failed to get assigned data`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setVoiceDataLoading(false);
+    }
+  };
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.save:
@@ -774,9 +884,9 @@ export function EditorPage() {
       case EDITOR_CONTROLS.merge:
         handleSegmentMergeCommand();
         break;
-      case EDITOR_CONTROLS.createWord:
-        // createWordTime(editorState);
-        break;
+      // case EDITOR_CONTROLS.createWord:
+      //   // createWordTime(editorState);
+      //   break;
       case EDITOR_CONTROLS.editSegmentTime:
         setEditorCommand(command);
         // prepareSegmentTimePicker(editorState);
@@ -791,6 +901,18 @@ export function EditorPage() {
         break;
       case EDITOR_CONTROLS.speaker:
         // assignSpeakerFromShortcut(editorState);
+        break;
+      case EDITOR_CONTROLS.shortcuts:
+        setIsShortCutPageOpen(!isShortCutPageOpen);
+        break;
+      case EDITOR_CONTROLS.rewindAudio:
+        setEditorCommand(command);
+        break;
+      case EDITOR_CONTROLS.forwardAudio:
+        setEditorCommand(command);
+        break;
+      case EDITOR_CONTROLS.audioPlayPause:
+        setEditorCommand(command);
         break;
       default:
         break;
@@ -813,13 +935,18 @@ export function EditorPage() {
     setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
-    setNavigationProps({});
+    setNavigationProps({} as NavigationPropsToGet);
   };
 
   React.useEffect(() => {
-    console.log('=========segments in state', segments);
     internalSegmentsTracker = segments;
   }, [segments]);
+
+  React.useEffect(() => {
+    if(voiceData && !audioUrl.length) {
+      getAudioUrl();
+    }
+  }, [voiceData]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
@@ -838,19 +965,30 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
+  React.useEffect(() => {
+    if(navigationProps) {
+      setVoiceData(navigationProps.voiceData);
+      setProjectId(navigationProps.projectId);
+      setIsDiff(navigationProps.isDiff);
+      setReadOnly(navigationProps.readOnly)
+      setInitialFetchDone(true);
+    }
+  }, [navigationProps])
+
   // initial fetch and dismount logic
   React.useEffect(() => {
     setPageTitle(translate('path.editor'));
+    getShortcuts();
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
-    } else if (canUseEditor) {
+    } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
     }
@@ -862,22 +1000,23 @@ export function EditorPage() {
     };
   }, []);
 
-  // if we don't have the correct permissions
-  if ((readOnly && !canSeeReadOnlyEditor) ||
-    (!readOnly && !canUseEditor)) {
-    return <Forbidden />;
-  }
 
-  if (voiceDataLoading) {
+  if (voiceDataLoading || !initialFetchDone) {
     return <SiteLoadingIndicator />;
   }
 
-  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent) {
+  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent && !isDiff) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
-  if (noRemainingContent || !voiceData || !projectId) {
+  if (!isDiff && noRemainingContent || !voiceData || !projectId) {
     return <NotFound text={translate('editor.nothingToTranscribe')} />;
+  }
+
+  // if we don't have the correct permissions
+  if ((readOnly && !canSeeReadOnlyEditor) ||
+      (!readOnly && !canUseEditor)) {
+    return <Forbidden />;
   }
 
   const disabledControls = getDisabledControls(segments, canUndo, canRedo, saveSegmentsLoading, confirmSegmentsLoading);
@@ -889,119 +1028,125 @@ export function EditorPage() {
   };
 
   return (
-    <>
-      {!readOnly && <EditorControls
-        onCommandClick={handleEditorCommand}
-        onConfirm={onConfirmClick}
-        disabledControls={disabledControls}
-        loading={saveSegmentsLoading || confirmSegmentsLoading}
-        editorReady={editorReady}
-        playingLocation={currentPlayingLocation}
-      />}
-      <Container >
-        {readOnly && <StarRating
-          voiceData={voiceData}
-          projectId={projectId}
+      <>
+        {!readOnly && !isDiff && <EditorControls
+            onCommandClick={handleEditorCommand}
+            onConfirm={onConfirmClick}
+            disabledControls={disabledControls}
+            loading={saveSegmentsLoading || confirmSegmentsLoading}
+            editorReady={editorReady}
+            playingLocation={currentPlayingLocation}
+            isSegmentUpdateError={isSegmentUpdateError}
         />}
-        <Paper
-          className={classes.container}
-          elevation={5}
-        >
-          <div style={editorContainerStyle}>
-            {segmentsLoading ? <BulletList /> :
-              !!segments.length && (<Editor
-                key={voiceData.id}
-                readOnly={readOnly}
-                responseFromParent={responseToPassToEditor}
-                onParentResponseHandled={handleEditorResponseHandled}
-                onCommandHandled={handleCommandHandled}
-                height={editorHeight}
-                segments={segments}
-                onReady={setEditorReady}
-                playingLocation={currentPlayingLocation}
-                loading={saveSegmentsLoading}
-                isAudioPlaying={isAudioPlaying}
-                editorCommand={editorCommand}
-                onSpeakersUpdate={handleSpeakersUpdate}
-                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                onWordClick={handleWordClick}
-                handleSegmentUpdate={handleSegmentUpdate}
-                updateSegment={submitSegmentUpdate}
-                updateSegmentTime={submitSegmentTimeUpdate}
-                splitSegmentByTime={submitSegmentSplitByTime}
-                assignSpeaker={openSpeakerAssignDialog}
-                removeHighRiskFromSegment={removeHighRiskFromSegment}
-                onWordTimeCreationClose={handleWordTimeCreationClose}
-                timePickerRootProps={{
-                  setDisabledTimes: handleDisabledTimesSet,
-                  createTimeSection: createTimeSection,
-                  updateTimeSection: updateTimeSection,
-                  deleteTimeSection: deleteTimeSection,
-                  timeFromPlayer: timeFromPlayer,
-                }}
-                splitTimePickerRootProps={{
-                  segmentSplitTime,
-                  onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
-                  onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
-                  onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
-                  onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
-                }}
-              />)
-            }
-          </div>
-          {!!voiceData.length && <ErrorBoundary
-            key={voiceData.id}
-            FallbackComponent={PageErrorFallback}
+        <Container >
+          {readOnly && <StarRating
+              voiceData={voiceData}
+              projectId={projectId}
+          />}
+          <Paper
+              className={classes.container}
+              elevation={5}
           >
-            <AudioPlayer
-              segments={segments}
-              key={voiceData.id}
-              url={voiceData.audioUrl}
-              // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
-              disabledTimes={disabledTimes}
-              segmentIdToDelete={segmentIdToDelete}
-              onAutoSeekToggle={handleAutoSeekToggle}
-              wordsClosed={wordsClosed}
-              deleteAllWordSegments={deleteAllWordSegments}
-              onSegmentDelete={handleSegmentDelete}
-              onSegmentCreate={handleAudioSegmentCreate}
-              onSegmentUpdate={handleAudioSegmentUpdate}
-              onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
-              onSegmentStatusEditChange={handleSegmentStatusEditChange}
-              // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
-              wordToCreateTimeFor={wordToCreateTimeFor}
-              wordToUpdateTimeFor={wordToUpdateTimeFor}
-              onTimeChange={handlePlaybackTimeChange}
-              onSectionChange={handleSectionChange}
-              onReady={handlePlayerRendered}
-              segmentSplitTimeBoundary={segmentSplitTimeBoundary}
-              segmentSplitTime={segmentSplitTime}
-              onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
-              setIsAudioPlaying={setIsAudioPlaying}
-              playingTimeData={playingTimeData}
-            />
-          </ErrorBoundary>}
-        </Paper>
-      </Container >
-      <ConfirmationDialog
-        titleText={`${translate('editor.confirmTranscript')}?`}
-        submitText={translate('common.submit')}
-        contentText={translate('editor.confirmWarning')}
-        open={confirmDialogOpen}
-        onSubmit={confirmData}
-        onCancel={closeConfirmDialog}
-      />
-      <AssignSpeakerDialog
-        projectId={projectId}
-        dataId={voiceData.id}
-        speakers={speakers}
-        onSpeakersUpdate={handleSpeakersUpdate}
-        segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
-        segmentIndex={segmentIndexToAssignSpeakerTo}
-        open={segmentIndexToAssignSpeakerTo !== undefined}
-        onClose={closeSpeakerAssignDialog}
-        onSuccess={handleSpeakerAssignSuccess}
-      />
-    </>
+            <div style={editorContainerStyle}>
+              {segmentsLoading ? <BulletList /> :
+                  !!segments.length && (<Editor
+                      key={voiceData.id}
+                      responseFromParent={responseToPassToEditor}
+                      onParentResponseHandled={handleEditorResponseHandled}
+                      onCommandHandled={handleCommandHandled}
+                      height={editorHeight}
+                      segments={segments}
+                      voiceData={voiceData}
+                      onReady={setEditorReady}
+                      playingLocation={currentPlayingLocation}
+                      loading={saveSegmentsLoading}
+                      setLoading={setSaveSegmentsLoading}
+                      isAudioPlaying={isAudioPlaying}
+                      editorCommand={editorCommand}
+                      onSpeakersUpdate={handleSpeakersUpdate}
+                      onUpdateUndoRedoStack={onUpdateUndoRedoStack}
+                      onWordClick={handleWordClick}
+                      handleSegmentUpdate={handleSegmentUpdate}
+                      updateSegment={submitSegmentUpdate}
+                      updateSegmentTime={submitSegmentTimeUpdate}
+                      splitSegmentByTime={submitSegmentSplitByTime}
+                      assignSpeaker={openSpeakerAssignDialog}
+                      removeHighRiskFromSegment={removeHighRiskFromSegment}
+                      onWordTimeCreationClose={handleWordTimeCreationClose}
+                      timePickerRootProps={{
+                        setDisabledTimes: handleDisabledTimesSet,
+                        createTimeSection: createTimeSection,
+                        updateTimeSection: updateTimeSection,
+                        deleteTimeSection: deleteTimeSection,
+                        timeFromPlayer: timeFromPlayer,
+                      }}
+                      splitTimePickerRootProps={{
+                        segmentSplitTime,
+                        onCreateSegmentSplitTimeBoundary: handleCreateSegmentSplitTimeBoundary,
+                        onSegmentSplitTimeBoundaryCreated: handleSegmentSplitTimeBoundaryCreated,
+                        onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
+                        onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
+                      }}
+                  />)
+              }
+            </div>
+
+            {!!voiceData.length && <ErrorBoundary
+                key={voiceData.id}
+                FallbackComponent={PageErrorFallback}
+            >
+              <AudioPlayer
+                  segments={segments}
+                  key={voiceData.id}
+                  audioUrl={audioUrl}
+                  waveformUrl={voiceData.waveformUrl}
+                  editorCommand={editorCommand}
+                  // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
+                  disabledTimes={disabledTimes}
+                  segmentIdToDelete={segmentIdToDelete}
+                  onAutoSeekToggle={handleAutoSeekToggle}
+                  wordsClosed={wordsClosed}
+                  deleteAllWordSegments={deleteAllWordSegments}
+                  onSegmentDelete={handleSegmentDelete}
+                  onSegmentCreate={handleAudioSegmentCreate}
+                  onSegmentUpdate={handleAudioSegmentUpdate}
+                  onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
+                  onSegmentStatusEditChange={handleSegmentStatusEditChange}
+                  // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
+                  wordToCreateTimeFor={wordToCreateTimeFor}
+                  wordToUpdateTimeFor={wordToUpdateTimeFor}
+                  onTimeChange={handlePlaybackTimeChange}
+                  onSectionChange={handleSectionChange}
+                  onReady={handlePlayerRendered}
+                  segmentSplitTimeBoundary={segmentSplitTimeBoundary}
+                  segmentSplitTime={segmentSplitTime}
+                  onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
+                  setIsAudioPlaying={setIsAudioPlaying}
+                  playingTimeData={playingTimeData}
+              />
+            </ErrorBoundary>}
+          </Paper>
+        </Container >
+        <ConfirmationDialog
+            titleText={`${translate('editor.confirmTranscript')}?`}
+            submitText={translate('common.submit')}
+            contentText={translate('editor.confirmWarning')}
+            open={confirmDialogOpen}
+            onSubmit={confirmData}
+            onCancel={closeConfirmDialog}
+        />
+        <AssignSpeakerDialog
+            projectId={projectId}
+            dataId={voiceData.id}
+            speakers={speakers}
+            onSpeakersUpdate={handleSpeakersUpdate}
+            segment={(segmentIndexToAssignSpeakerTo !== undefined) ? segments[segmentIndexToAssignSpeakerTo] : undefined}
+            segmentIndex={segmentIndexToAssignSpeakerTo}
+            open={segmentIndexToAssignSpeakerTo !== undefined}
+            onClose={closeSpeakerAssignDialog}
+            onSuccess={handleSpeakerAssignSuccess}
+        />
+        <HelperPage open={isShortCutPageOpen} onClose={() => setIsShortCutPageOpen(false)} onCommandClick={handleEditorCommand} />
+      </>
   );
 }

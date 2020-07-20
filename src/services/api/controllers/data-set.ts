@@ -1,20 +1,23 @@
-import { ApisauceInstance } from 'apisauce';
-import {DataSet as IDataSet, FilterParams, SubSet, VoiceData, Transcriber} from '../../../types';
-import { getGeneralApiProblem } from '../api-problem';
+import {ApisauceInstance} from 'apisauce';
+import {DataSet as IDataSet, FilterParams, SubSetCountResults, Transcriber, VoiceDataResults} from '../../../types';
+import {getGeneralApiProblem} from '../api-problem';
 import {
   AssignTranscribersToDataSetRequest,
   assignTranscribersToDataSetResult,
+  createTrainingSet,
   getAllResult,
   getDownloadLinkResult,
-  getTrainingSet,
-  createTrainingSet,
+  getEvaluationDownloadLink,
+  getSubSet,
+  getSubSetCount,
   PostDataSetRequest,
   postDataSetResult,
   ProblemKind,
   removeTranscriberFromDataSetResult,
+  requestEvaluation,
   ServerError,
 } from '../types';
-import { ParentApi } from './parent-api';
+import {ParentApi} from './parent-api';
 
 /**
  * Manages all data set requests to the API.
@@ -209,12 +212,12 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async getTrainingSet(projectId: string, dataSetId: string, types: string): Promise<getTrainingSet> {
-    const param = types.length ? types : null;
-    const response = await this.apisauce.get<SubSet, ServerError>(
+  async getSubSet(projectId: string, dataSetId: string, params: any): Promise<getSubSet> {
+    // const param = types.length ? types : null;
+    const response = await this.apisauce.get<VoiceDataResults, ServerError>(
         this.getPathWithOrganization(
             `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
-        ), { types: param }
+        ), params
     );
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
@@ -227,11 +230,80 @@ export class DataSet extends ParentApi {
     }
 
     try {
-      const subSets = response.data as SubSet;
+      const subSets = response.data as VoiceDataResults;
       return { kind: 'ok', subSets };
     } catch {
       return {kind: ProblemKind['bad-data']};
     }
+  }
 
+  async getSubSetCount(projectId: string, dataSetId: string): Promise<getSubSetCount> {
+    const response = await this.apisauce.get<SubSetCountResults, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data-sets/${dataSetId}/sub-sets/count`));
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      const count = response.data as SubSetCountResults;
+      return { kind: 'ok', count };
+    } catch {
+      return {kind: ProblemKind['bad-data']};
+    }
+  }
+
+  async requestEvaluation(projectId: string, dataSetId: string, modelConfigId: string): Promise<requestEvaluation> {
+    const param = { modelConfigId };
+    const response = await this.apisauce.post<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data-sets/${dataSetId}/evaluate`,
+        ),
+        param,
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      return { kind: 'ok' };
+    } catch {
+      return {kind: ProblemKind['bad-data']};
+    }
+
+  }
+
+  async getEvaluationDownloadLink (projectId: string, dataSetId: string): Promise<getEvaluationDownloadLink> {
+    const response = await this.apisauce.get<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data-sets/${dataSetId}/download-eval`,
+        )
+    );
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind == ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const data = response.data as any;
+      return { kind: 'ok', url: data.url }
+    } catch {
+      return { kind: ProblemKind['bad-data'] }
+    }
   }
 }

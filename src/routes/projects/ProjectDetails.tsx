@@ -9,7 +9,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
-import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph } from '../../types';
+import { AcousticModel, DataSet, LanguageModel, ModelConfig, PATHS, Project, SubGraph, TopGraph, VoiceData } from '../../types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
 import { ModelConfigDialog } from '../model-config/ModelConfigDialog';
@@ -108,6 +108,21 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   };
 
   React.useEffect(() => {
+    const getAllDataSets = async () => {
+      if (api?.dataSet && projectId) {
+        const response = await api.dataSet.getAll(projectId);
+        if (response.kind === 'ok') {
+          setDataSets(response.dataSets);
+        } else {
+          log({
+            file: `ProjectDetails.tsx`,
+            caller: `getAllDataSets - failed to get data sets`,
+            value: response,
+            important: true,
+          });
+        }
+      }
+    };
     const getProject = async () => {
       if (api?.projects) {
         const response = await api.projects.getProject(projectId);
@@ -146,21 +161,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
           });
         }
         setModelConfigsLoading(false);
-      }
-    };
-    const getAllDataSets = async () => {
-      if (api?.dataSet && projectId) {
-        const response = await api.dataSet.getAll(projectId);
-        if (response.kind === 'ok') {
-          setDataSets(response.dataSets);
-        } else {
-          log({
-            file: `ProjectDetails.tsx`,
-            caller: `getAllDataSets - failed to get data sets`,
-            value: response,
-            important: true,
-          });
-        }
       }
     };
     const getTopGraphs = async () => {
@@ -248,10 +248,12 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
       getLanguageModels();
       getAcousticModels();
     }
+
     if (hasTdpPermissions) {
       getAllDataSets();
     }
-  }, [api, projectId]);
+  }, [api, roles, projectId]);
+  
 
   React.useEffect(() => {
     setPageTitle(translate('path.projects'));

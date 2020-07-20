@@ -11,7 +11,7 @@ import React from 'reactn';
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { deleteLanguageModelResult, ServerError } from '../../../../services/api/types';
-import { BooleanById, LanguageModel, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
+import { BooleanById, LanguageModel, SnackbarError, SNACKBAR_VARIANTS, SubGraph, TopGraph } from '../../../../types';
 import log from '../../../../util/log/logger';
 import { ConfirmationDialog } from '../../../shared/ConfirmationDialog';
 import { LanguageModelDialog } from './LanguageModelDialog';
@@ -103,6 +103,8 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
       if (api?.models) {
         setModelsLoading(true);
         const response = await api.models.getLanguageModels();
+        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
         if (response.kind === 'ok') {
           setModels(response.languageModels);
         } else {
@@ -112,7 +114,15 @@ export function LanguageModelGridList(props: LanguageModelGridListProps) {
             value: response,
             important: true,
           });
+
+          snackbarError.isError = true;
+          const { serverError } = response;
+          if (serverError) {
+            snackbarError.errorText = serverError.message || "";
+          }
         }
+
+        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setModelsLoading(false);
       }
     };
