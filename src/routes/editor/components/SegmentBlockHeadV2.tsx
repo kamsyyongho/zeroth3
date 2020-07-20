@@ -91,7 +91,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     const { translate, osText } = React.useContext(I18nContext);
     const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
     const { readOnly, assignSpeakerForSegment, isChanged, setIsShowComment, removeHighRiskValueFromSegment, segment } = props;
-    const { id, transcript, decoderTranscript, start, speaker, highRisk } = segment;
+    const { id, transcript, decoderTranscript, start, highRisk } = segment;
     const [isRejectReason, setIsRejectReason] = React.useState<boolean>(false);
     const [rejectReason, setRejectReason] = React.useState<string>('');
     const displayTextChangedHover = (!readOnly && isChanged && !!decoderTranscript?.trim());
@@ -107,6 +107,8 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
             removeHighRiskValueFromSegment(id);
         }
     };
+    const speakerReducer = (accumulator: string, currentValue: WordAlignment) => currentValue.speaker || '';
+    const speaker = segment?.wordAlignments.reduce(speakerReducer, '') || '';
     const iconHidden = !speaker && !showEditorPopups;
     const showChip = highRisk && showEditorPopups;
     const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined} fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
