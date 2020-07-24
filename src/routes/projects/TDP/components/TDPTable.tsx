@@ -401,7 +401,7 @@ export function TDPTable(props: TDPTableProps) {
     // to prevent reloading the initial data from the parent
     if (initialLoad) {
       setInitialLoad(false);
-    } else if (!setProjectTdpDataShouldRefresh) {
+    } else {
       getVoiceData({ ...voiceDataOptions, page: pageIndex, size: pageSize, 'sort-by': sortBy });
       setExpandedRowsByIndex({});
     }
