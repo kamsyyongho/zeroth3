@@ -93,7 +93,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
     const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
 
-
     const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment, playingLocation)
     const memoizedWordClassName = React.useMemo(() => playingLocation[1] === segmentIndex ? `${classes.playingWord}` : '', playingLocation)
 
