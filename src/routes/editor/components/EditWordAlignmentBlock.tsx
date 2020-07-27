@@ -284,7 +284,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 setWordAlignments(updateWordAlignments);
                 setUndoStack(updateUndoStack);
                 setRedoStack([...redoStack, undoData]);
-                onUpdateUndoRedoStack(undoStack.length > 0, true);
+                onUpdateUndoRedoStack(updateUndoStack.length > 0, true);
             }
         }
     };
@@ -302,7 +302,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 setWordAlignments(updateWordAlignments);
                 setRedoStack(updateRedoStack);
                 setUndoStack([...redoStack, redoData]);
-                onUpdateUndoRedoStack(true, redoStack.length > 0);
+                onUpdateUndoRedoStack(true, updateRedoStack.length > 0);
             }
         }
     }
