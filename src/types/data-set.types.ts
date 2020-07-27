@@ -23,12 +23,12 @@ export interface FilterParams {
   /**
    * in seconds
    */
-  lengthMax?: number;
+  'length-max'?: number;
   /**
    * in seconds
    * - from `0`
    */
-  lengthMin?: number;
+  'length-min'?: number;
   dataSetIds?: string[];
   modelConfig?: string;
   status?: CONTENT_STATUS;

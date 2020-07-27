@@ -376,8 +376,8 @@ export function TDPTable(props: TDPTableProps) {
       filename,
       transcript,
       dataSetIds,
-      lengthMax: options['length-max'],
-      lengthMin: options['length-min'],
+      'length-max': options['length-max'],
+      'length-min': options['length-min'],
       modelConfig: options['model-config'],
     };
     const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
