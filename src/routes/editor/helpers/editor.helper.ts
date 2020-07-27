@@ -24,6 +24,59 @@ import {
 } from '../../../types';
 import { EntityContent } from '../components/EntityContent';
 
+const inputKeys = [
+  "Digit1",
+  "Digit2",
+  "Digit3",
+  "Digit4",
+  "Digit5",
+  "Digit6",
+  "Digit7",
+  "Digit8",
+  "Digit9",
+  "Digit0",
+  "KeyA",
+  "KeyB",
+  "KeyC",
+  "KeyD",
+  "KeyE",
+  "KeyF",
+  "KeyG",
+  "KeyH",
+  "KeyI",
+  "KeyJ",
+  "KeyK",
+  "KeyL",
+  "KeyM",
+  "KeyN",
+  "KeyO",
+  "KeyP",
+  "KeyQ",
+  "KeyR",
+  "KeyS",
+  "KeyT",
+  "KeyU",
+  "KeyV",
+  "KeyW",
+  "KeyX",
+  "KeyY",
+  "KeyZ",
+  "Comma",
+  "Period",
+  "Quote",
+  "SemiColon",
+  "Space",
+  "Backspace",
+
+];
+
+export const isInputKey = (keyEvent: KeyboardEvent) => {
+  const keyCode = keyEvent.code;
+  if(keyEvent.ctrlKey || keyEvent.shiftKey || keyEvent.altKey) return false;
+  if(inputKeys.includes(keyCode)) return true;
+  return false;
+}
+
 // Custom overrides for "playing" style.
 export const buildStyleMap = (theme: CustomTheme) => {
   return {
@@ -74,7 +127,7 @@ export const getSegmentAndWordIndex = () => {
   const selectedBlock: any = window.getSelection();
   const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
   const selectedBlockId: string = selectedBlockNode?.id || selectedBlockNode?.parentNode?.id;
-  if(!selectedBlockNode || !selectedBlockId) return;
+  if(!selectedBlockNode || !selectedBlockId) return [0,0];
 
   const segmentAndWordIndex = selectedBlockId.split('-');
   segmentAndWordIndex.shift();

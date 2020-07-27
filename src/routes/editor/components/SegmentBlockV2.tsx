@@ -89,7 +89,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [localSegment, setLocalSegment] = React.useState<Segment>(segment);
     const [isChanged, setIsChanged] = React.useState(false);
     const [editorCommandForWordBlock, setEditorCommandForWordBlock] = React.useState<EDITOR_CONTROLS>();
-    const [undoRedoData, setUndoRedoData] = React.useState<UndoRedoData | undefined>();
     const [isAbleToComment, setIsAbleToComment] = React.useState<boolean>(false);
     const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
@@ -127,63 +126,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             setLocalSegment(updatedSegment);
     };
 
-    const getUndoStack = () => {
-        if(!undoRedoData || !undoRedoData.undoStack || !undoRedoData.undoStack.length) {
-            return [];
-        } else {
-            return undoRedoData.undoStack;
-        }
-    };
-
-    const getRedoStack = () => {
-        if(!undoRedoData || !undoRedoData.redoStack || !undoRedoData.redoStack.length) {
-            return [];
-        } else {
-            return undoRedoData.redoStack;
-        }
-    }
-
-    const handleUndoCommand = () => {
-        const undoStack = getUndoStack();
-        const redoStack = getRedoStack();
-        if(undoStack.length) {
-            const previousText: any = undoStack.pop();
-            const updateWordAlignment = localSegment;
-            // if(undoRedoData?.location){
-            //     const [segmentIndex, wordIndex] = undoRedoData?.location;
-            //     updateWordAlignment.wordAlignments[wordIndex].word = previousText;
-            //     setLocalSegment(updateWordAlignment);
-            //     setUndoRedoData({
-            //         location: undoRedoData.location,
-            //         undoStack: undoStack,
-            //         redoStack: [...redoStack, previousText],
-            //     });
-            //     onCommandHandled();
-            // }
-        }
-    };
-
-    const handleRedoCommand = () => {
-        const undoStack = getUndoStack();
-        const redoStack = getRedoStack();
-        if(redoStack.length){
-            const undidState: any = redoStack.pop();
-            const updateWordAlignment = localSegment;
-            if(undoRedoData?.location) {
-                // const [segmentIndex, wordIndex] = undoRedoData?.location
-                // updateWordAlignment.wordAlignments[wordIndex].word = undidState;
-                // setLocalSegment(updateWordAlignment);
-                // setUndoRedoData({
-                //     location: undoRedoData.location,
-                //     undoStack: [...undoStack, undidState],
-                //     redoStack: redoStack,
-                // });
-                onCommandHandled();
-            }
-
-        }
-    };
-
     const handleFocus = () => {
         isFocused = true
     };
@@ -203,7 +145,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
     const resetState = () => {
-      setUndoRedoData(undefined);
         setIsChanged(false);
     };
 
@@ -232,15 +173,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         }
     }, [segment]);
 
-    React.useEffect(() => {
-        if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-            if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
-            if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
-            onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
-            setEditorCommandForWordBlock(editorCommand);
-        }
-    },[editorCommand]);
-
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
@@ -251,43 +183,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            {/*{
-                !isDiff || isAudioPlaying ?
-                    localSegment.wordAlignments.map((word: WordAlignment, index: number) => {
-                            return (
-                                <WordAlignmentBlock
-                                    key={`word-alignment-${segmentIndex}-${index}`}
-                                    findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
-                                    setUndoRedoData={setUndoRedoData}
-                                    getLastAlignmentIndexInSegment={getLastAlignmentIndexInSegment}
-                                    onUpdateUndoRedoStack={onUpdateUndoRedoStack}
-                                    updateCaretLocation={updateCaretLocation}
-                                    updateChange={updateChange}
-                                    updateWordAlignmentChange={updateWordAlignmentChange}
-                                    segmentIndex={segmentIndex}
-                                    wordAlignmentIndex={index}
-                                    wordAlignmentsLength={segment.wordAlignments.length}
-                                    lengthBeforeBlock={lengthBeforeBlockArray[index]}
-                                    start={word.start}
-                                    length={word.length}
-                                    word={word.word}
-                                    readOnly={readOnly}
-                                    confidence={word.confidence} />
-                            )
-                        })
-                    :
-                    <div>
-                        <EditWordAlignmentBlock
-                            segment={localSegment}
-                            segmentIndex={segmentIndex}
-                            isAbleToComment={isAbleToComment}
-                            isCommentEnabled={isCommentEnabled}
-                            readOnly={readOnly}
-                            playingLocation={playingLocation}
-                            updateCaretLocation={updateCaretLocation}
-                            handleTextSelection={handleTextSelection} />
-                    </div>
-            }*/}
             <EditWordAlignmentBlock
                 editorCommand={editorCommand}
                 segment={localSegment}
@@ -300,6 +195,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 lengthBeforeBlock={lengthBeforeBlockArray}
                 isDiff={isDiff}
                 findWordAlignmentIndexToPrevSegment={findWordAlignmentIndexToPrevSegment}
+                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                 updateCaretLocation={updateCaretLocation}
                 updateSegment={updateSegment}
                 handleTextSelection={handleTextSelection} />
