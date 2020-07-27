@@ -873,6 +873,7 @@ export function EditorPage() {
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.save:
+        setEditorCommand(command);
         // updateSegmentOnChange(editorState, undefined, true);
         break;
       case EDITOR_CONTROLS.toggleMore:
@@ -893,11 +894,9 @@ export function EditorPage() {
         break;
       case EDITOR_CONTROLS.undo:
         setEditorCommand(command);
-        // updatedEditorState = EditorState.undo(editorState);
         break;
       case EDITOR_CONTROLS.redo:
         setEditorCommand(command);
-        // updatedEditorState = EditorState.redo(editorState);
         break;
       case EDITOR_CONTROLS.speaker:
         // assignSpeakerFromShortcut(editorState);
@@ -928,8 +927,6 @@ export function EditorPage() {
     setDataSets([]);
     setPlaybackTime(0);
     setCanPlayAudio(false);
-    setCanUndo(false);
-    setCanRedo(false);
     setCurrentPlayingLocation(STARTING_PLAYING_LOCATION);
     setPlayingTimeData({});
     setCurrentlyPlayingWordTime(undefined);

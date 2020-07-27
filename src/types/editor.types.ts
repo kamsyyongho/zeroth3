@@ -287,9 +287,3 @@ export const DEFAULT_OFFSET: VisibilitySensorOffsetShape = {
   top: 140,
   bottom: 190,
 };
-
-export interface UndoRedoData {
-  location: number[];
-  undoStack?: string[];
-  redoStack?: string[];
-}
