@@ -304,7 +304,7 @@ export function TDPTable(props: TDPTableProps) {
   const columns = React.useMemo(
     () => [
       {
-        Header: translate('TDP.sessionId'),
+        Header: translate('TDP.originalFilename'),
         accessor: TDPTableColumns['originalFilename'],
         Cell: (cellData: CellProps<VoiceData>) => renderFilename(cellData),
       },
