@@ -206,7 +206,7 @@ export function TDPTable(props: TDPTableProps) {
     </Tooltip>);
   };
 
-  const renderSessionId = (cellData: CellProps<VoiceData>) => {
+  const renderFilename = (cellData: CellProps<VoiceData>) => {
     const TWENTY_FIVE_PERCENT = 0.25;
     // to keep a dynamic width of 25% based on the window
     const dynamicWidth = width && width * TWENTY_FIVE_PERCENT;
@@ -305,8 +305,8 @@ export function TDPTable(props: TDPTableProps) {
     () => [
       {
         Header: translate('TDP.sessionId'),
-        accessor: TDPTableColumns['sessionId'],
-        Cell: (cellData: CellProps<VoiceData>) => renderSessionId(cellData),
+        accessor: TDPTableColumns['originalFilename'],
+        Cell: (cellData: CellProps<VoiceData>) => renderFilename(cellData),
       },
       {
         Header: translate('modelConfig.header'),
@@ -376,8 +376,8 @@ export function TDPTable(props: TDPTableProps) {
       filename,
       transcript,
       dataSetIds,
-      lengthMax: options['length-max'],
-      lengthMin: options['length-min'],
+      'length-max': options['length-max'],
+      'length-min': options['length-min'],
       modelConfig: options['model-config'],
     };
     const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
