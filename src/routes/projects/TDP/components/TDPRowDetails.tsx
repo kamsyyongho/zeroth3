@@ -117,9 +117,9 @@ export function TDPRowDetails(props: TDPRowDetailsProps) {
                 className={classes.category}
                 variant='subtitle2'
             >
-              {`${translate('TDP.originalFilename')}:`}
+              {`${translate('TDP.sessionId')}:`}
             </Typography>
-            <Typography>{originalFilename ? originalFilename : '-'}</Typography>
+            <Typography>{sessionId ? sessionId : '-'}</Typography>
           </Grid>
           <Grid
             container

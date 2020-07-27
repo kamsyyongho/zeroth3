@@ -126,7 +126,7 @@ export interface WordAlignment {
 }
 
 export enum TDPTableColumns {
-  'sessionId' = 'sessionId',
+  'originalFilename' = 'originalFilename',
   'modelConfigId' = 'modelConfigId',
   'length' = 'length',
   'decodedAt' = 'decodedAt',
