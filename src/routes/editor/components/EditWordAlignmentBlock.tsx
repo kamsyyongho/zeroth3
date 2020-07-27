@@ -64,6 +64,7 @@ interface EditWordAlignmentBlockProps  {
 }
 
 let isFocused = false;
+let localWordForLengthComparison = '';
 
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const classes = useStyles();
@@ -209,10 +210,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     if(isInputKey(event.nativeEvent)) {
                         const word = document.getElementById(`word-${segmentIndex}-${location[1]}`);
                         const updateUndoStack = undoStack.slice(0);
-                        updateUndoStack.push({ wordIndex: location[1], word: word?.innerText || '' });
+                        if(localWordForLengthComparison.length === 0) localWordForLengthComparison = wordAlignments[location[1]]['word'];
                         setIsChanged(true);
-                        onUpdateUndoRedoStack(true, false);
-                        setUndoStack(updateUndoStack);
+                        if(localWordForLengthComparison.length !== word?.innerText.length) {
+                            updateUndoStack.push({ wordIndex: location[1], word: word?.innerText || '' });
+                            localWordForLengthComparison = word?.innerText || '';
+                            onUpdateUndoRedoStack(true, false);
+                            setUndoStack(updateUndoStack);
+                        }
                     }
                 }
                 return;
@@ -269,21 +274,46 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleUndo = () => {
         if(undoStack.length > 0) {
             const updateUndoStack = undoStack.slice();
+            const updateRedoStack = redoStack.slice();
             const updateWordAlignments = wordAlignments.slice();
             const undoData = updateUndoStack.pop();
 
             if(!!undoData?.wordIndex) {
                 const wordNode = document.getElementById(`word-${segmentIndex}-${undoData.wordIndex}`);
                 if(wordNode) wordNode.innerHTML = undoData.word;
+                setWordAlignments(updateWordAlignments);
+                setUndoStack(updateUndoStack);
+                setRedoStack([...redoStack, undoData]);
+                onUpdateUndoRedoStack(undoStack.length > 0, true);
             }
-            setWordAlignments(updateWordAlignments);
         }
     };
+
+    const handleRedo = () => {
+        if(redoStack.length > 0) {
+            const updateUndoStack = undoStack.slice();
+            const updateRedoStack = redoStack.slice();
+            const updateWordAlignments = wordAlignments.slice();
+            const redoData = updateRedoStack.pop();
+
+            if(!!redoData?.wordIndex) {
+                const wordNode = document.getElementById(`word-${segmentIndex}-${redoData.wordIndex}`);
+                if(wordNode) wordNode.innerHTML = redoData.word;
+                setWordAlignments(updateWordAlignments);
+                setRedoStack(updateRedoStack);
+                setUndoStack([...redoStack, redoData]);
+                onUpdateUndoRedoStack(true, redoStack.length > 0);
+            }
+        }
+    }
 
     React.useEffect(() => {
         if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {
             handleUndo();
         };
+        if(redoStack.length > 0 && editorCommand === EDITOR_CONTROLS.redo) {
+            handleRedo();
+        }
         // if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
         //     if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
         //     if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
