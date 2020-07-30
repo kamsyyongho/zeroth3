@@ -962,7 +962,7 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !voiceDataLoading && !voiceData && !initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();

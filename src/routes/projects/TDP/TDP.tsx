@@ -37,6 +37,7 @@ interface TDPProps {
   project?: Project;
   modelConfigs: ModelConfig[];
   dataSets: DataSet[];
+  getDataSets: () => void;
   onSetCreate: () => void;
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
@@ -70,6 +71,7 @@ export function TDP(props: TDPProps) {
     project,
     modelConfigs = [] as ModelConfig[],
     dataSets = [] as DataSet[],
+    getDataSets,
     onSetCreate,
     modelConfigDialogOpen,
     openModelConfigDialog,

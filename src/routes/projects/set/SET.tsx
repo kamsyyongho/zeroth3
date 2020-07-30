@@ -18,7 +18,6 @@ import { ServerError } from '../../../services/api/types/api-problem.types';
 interface SETProps {
   initialDataSets: DataSet[];
   projectId: string;
-  refreshCounter?: number;
   modelConfigs: ModelConfig[];
   getTranscribersWithStats: (page?:number, size?: number) => void;
   displaySubSetInTDP: (setId: string, subSetType: string) => void;
@@ -28,7 +27,7 @@ interface SETProps {
 }
 
 export default function SET(props: SETProps) {
-  const { initialDataSets, projectId, refreshCounter, modelConfigs, getTranscribersWithStats, displaySubSetInTDP, transcribersStats, transcriberStatDataLoading, pagination } = props;
+  const { initialDataSets, projectId, modelConfigs, getTranscribersWithStats, displaySubSetInTDP, transcribersStats, transcriberStatDataLoading, pagination } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -71,15 +70,6 @@ export default function SET(props: SETProps) {
       },
       [modelConfigs]
   );
-
-  /**
-   * should fetch data on initial load and every time the counter changes
-   */
-  React.useEffect(() => {
-    if(refreshCounter && refreshCounter > 0) {
-      // getDataSets();
-    }
-  }, [refreshCounter]);
 
   /**
    * should refresh if the project has changed

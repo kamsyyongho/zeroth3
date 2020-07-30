@@ -35,6 +35,7 @@ interface ProjectTableTabsProps {
   project?: Project;
   modelConfigs: ModelConfig[];
   dataSets: DataSet[];
+  getDataSets: () => void;
   modelConfigDialogOpen?: boolean;
   openModelConfigDialog?: (hideBackdrop?: boolean) => void;
 }
@@ -45,6 +46,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
     project,
     modelConfigs,
     dataSets,
+    getDataSets,
     modelConfigDialogOpen,
     openModelConfigDialog,
   } = props;
@@ -52,7 +54,6 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
   const { hasPermission, roles } = React.useContext(KeycloakContext);
   const api = React.useContext(ApiContext);
   const [activeTab, setActiveTab] = React.useState(STARTING_TAB_INDEX);
-  const [refreshCounterForSet, setRefreshCounterForSet] = React.useState(0);
   const [transcriberStatDataLoading, setTranscriberStatDataLoading] = React.useState(true);
   const [transcribersStats, setTranscribersStats] = React.useState<TranscriberStats[]>([]);
   const [pagination, setPagination] = React.useState<PaginatedResults>({} as PaginatedResults);
@@ -71,14 +72,8 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
     setActiveTab(newActiveTab);
   };
 
-  /**
-   * Increments the counter that is passed to the `SET` component
-   * - the child component refetches all data everytime the counter changes
-   */
   const handleSetCreate = () => {
-    if (tabsThatShouldRender.has(TAB_INDEX.SET)) {
-      setRefreshCounterForSet(refreshCounterForSet + 1);
-    }
+    getDataSets();
   };
 
   const getTranscribersWithStats = async (page?: number, size = 10000) => {
@@ -133,6 +128,7 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
             project={project}
             modelConfigs={modelConfigs}
             dataSets={dataSets}
+            getDataSets={getDataSets}
             onSetCreate={handleSetCreate}
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}
@@ -145,10 +141,10 @@ export function ProjectTableTabs(props: ProjectTableTabsProps) {
         {tabsThatShouldRender.has(TAB_INDEX.SET) &&
           <SET
             initialDataSets={dataSets}
-            refreshCounter={refreshCounterForSet}
             projectId={projectId}
             modelConfigs={modelConfigs}
             getTranscribersWithStats={getTranscribersWithStats}
+
             transcribersStats={transcribersStats}
             pagination={pagination}
             transcriberStatDataLoading={transcriberStatDataLoading}
