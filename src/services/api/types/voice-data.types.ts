@@ -119,6 +119,7 @@ export interface UpdateSegmentTimeRequest {
   start: number;
 }
 
+
 export type UpdateSegmentsRequest = Segment[];
 
 /////////////
@@ -155,6 +156,8 @@ export type fetchUnconfirmedDataResult =
 export type getSegmentsDataResult =
   | { kind: 'ok'; segments: Segment[] }
   | GeneralApiProblem;
+
+export type classifyTdpResult = { kind: 'ok' } | GeneralApiProblem;
 
 export type updateSegmentResult = { kind: 'ok' } | GeneralApiProblem;
 

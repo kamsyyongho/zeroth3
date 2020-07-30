@@ -3,6 +3,7 @@ import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
+import PriorityHighIcon from '@material-ui/icons/PriorityHigh';
 import { BulletList } from 'react-content-loader';
 import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../../constants/permission.constants';
@@ -93,9 +94,11 @@ export function TDP(props: TDPProps) {
   const [previousSearchOptions, setPreviousSearchOptions] = React.useState({} as SearchDataRequest);
   const [voiceDataResults, setVoiceDataResults] = React.useState<VoiceDataResults>({} as VoiceDataResults);
   const [isDeleteSetOpen, setIsDeleteSetOpen] = React.useState(false);
+  const [isClassifyHighRiskOpen, setIsClassifyHighRiskOpen] = React.useState(false);
   const [setTypeTDP, setSetTypeTDP] = React.useState<string | undefined>(setType);
   const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = React.useState<boolean>(false);
   const [selectedData, setSelectedData] = React.useState<VoiceData>({} as VoiceData);
+  const [selectedModelConfig, setSelectedModelConfig] = React.useState('');
 
   const classes = useStyles();
 
@@ -273,7 +276,34 @@ export function TDP(props: TDPProps) {
   const handleStatusChangesModalOpen = (dataIndex: number) => {
     setSelectedData(voiceDataResults.content[dataIndex]);
     setIsStatusChangeModalOpen(true);
-  }
+  };
+
+  const handleClassificationRequest = async () => {
+    setIsClassifyHighRiskOpen(false);
+    if(api?.voiceData && selectedModelConfig) {
+      setVoiceDataDeleteLoading(true);
+      const response = await api.voiceData.classifyTdp(selectedModelConfig);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if(response.kind === 'ok') {
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `handleClassificationRequest - failed to request classification`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(translate('TDP.deleteFailMsg'), { variant: SNACKBAR_VARIANTS.error });
+    }
+    setVoiceDataDeleteLoading(false);
+  };
 
   React.useEffect(() => {
     setSetTypeTDP(setType)
@@ -352,6 +382,7 @@ export function TDP(props: TDPProps) {
             <Button
               variant='outlined'
               color="primary"
+              size='small'
               disabled={!filterParams || voiceDataResults.empty || !voiceDataResults.content?.length}
               onClick={openCreateSetDialog}
               startIcon={<AddIcon />}>
@@ -363,7 +394,18 @@ export function TDP(props: TDPProps) {
                 color='secondary'
                 variant='contained'
                 size='small'
-                // disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
+                disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
+                onClick={() => setIsClassifyHighRiskOpen(true)}
+                startIcon={<PriorityHighIcon />}>
+              {translate('TDP.classifyHighRisk')}
+            </Button>
+          </Grid>}
+          {canUpload && <Grid item>
+            <Button
+                color='secondary'
+                variant='contained'
+                size='small'
+                disabled={voiceDataResults.empty || !voiceDataResults.content?.length}
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}>
               {translate('SET.deleteAll')}
@@ -440,6 +482,14 @@ export function TDP(props: TDPProps) {
           open={isDeleteSetOpen}
           onClose={() => setIsDeleteSetOpen(false)}
           onSuccess={handleDeleteAll} />
+      <ConfirmationDialog
+          contentMsg={translate('TDP.classifyHighRiskHelper')}
+          buttonMsg={translate('TDP.requestClassification')}
+          open={isClassifyHighRiskOpen}
+          modelConfigsById={modelConfigsById}
+          setSelectedModelConfigId={setSelectedModelConfig}
+          onClose={() => setIsClassifyHighRiskOpen(false)}
+          onSuccess={handleClassificationRequest} />
     </>
   );
 }
