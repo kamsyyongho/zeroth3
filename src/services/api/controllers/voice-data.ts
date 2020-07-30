@@ -54,6 +54,7 @@ import {
   updateSpeakerResult,
   UpdateStatusRequest,
   updateStatusResult,
+  classifyTdpResult,
 } from '../types';
 import {deleteUnconfirmedVoiceDataResult} from '../types/voice-data.types';
 import {ParentApi} from './parent-api';
@@ -861,6 +862,28 @@ export class VoiceData extends ParentApi {
         `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`,
       ),
       request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async classifyTdp(
+      modelConfigId: string,
+  ): Promise<updateSpeakerResult> {
+    // make the api call
+    const response = await this.apisauce.post<undefined, ServerError>(
+        this.getPathWithOrganization(
+            `/classify/${modelConfigId}`,
+        )
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

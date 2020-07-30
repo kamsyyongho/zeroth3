@@ -154,6 +154,25 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                         </TableBody>
                     </Table>
                 }
+                {
+                    modelConfigsById && !selectedDataSet &&
+                    <FormControl className={classes.formControl}>
+                        <Select
+                            id="demo-simple-select-autowidth"
+                            label="Set Type"
+                            value={setType}
+                            onChange={handleModelConfigId}
+                            autoWidth
+                            MenuProps={{ variant: "menu", getContentAnchorEl: null }}>
+                            <MenuItem value={"none"}>None</MenuItem>
+                            {Object.keys(modelConfigsById).map((id: string, index: number) => {
+                                return <MenuItem key={`modelConfigId-${index}`}
+                                                 value={modelConfigsById[id].id}>{modelConfigsById[id].name}</MenuItem>
+                            })}
+                        </Select>
+                    </FormControl>
+
+                }
             </DialogContent>
                 <DialogActions>
                     <Button disabled={loading} onClick={onClose} color="primary">
