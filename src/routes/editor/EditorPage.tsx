@@ -200,6 +200,7 @@ export function EditorPage() {
           setProjectId(response.voiceData.projectId);
         }
       } else {
+        setNoRemainingContent(true);
         log({
           file: `EditorPage.tsx`,
           caller: `getAssignedData - failed to get assigned data`,
@@ -940,7 +941,7 @@ export function EditorPage() {
   }, [segments]);
 
   React.useEffect(() => {
-    if(voiceData && !audioUrl.length) {
+    if(voiceData && audioUrl.length) {
       getAudioUrl();
     }
   }, [voiceData]);
@@ -962,7 +963,7 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!isDiff && !voiceDataLoading && !voiceData && !initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -997,8 +998,7 @@ export function EditorPage() {
     };
   }, []);
 
-
-  if (voiceDataLoading || !initialFetchDone) {
+  if (canUseEditor && (voiceDataLoading || !initialFetchDone)) {
     return <SiteLoadingIndicator />;
   }
 

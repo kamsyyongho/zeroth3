@@ -15,7 +15,7 @@ export const PERMISSIONS = {
   },
   editor: {
     edit: [ROLES.transcriber],
-    readOnly: [ROLES.root],
+    readOnly: [ROLES.root, ROLES.manager],
   },
   projects: {
     administration: [ROLES.root, ROLES.manager, ROLES.admin],
