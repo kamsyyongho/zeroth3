@@ -940,16 +940,17 @@ export function EditorPage() {
     internalSegmentsTracker = segments;
   }, [segments]);
 
-  React.useEffect(() => {
-    if(voiceData && audioUrl.length) {
-      getAudioUrl();
-    }
-  }, [voiceData]);
+  // React.useEffect(() => {
+  //   if(voiceData && audioUrl.length) {
+  //     getAudioUrl();
+  //   }
+  // }, [voiceData]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
-    if (!readOnly) {
+    if (!readOnly && voiceData && projectId) {
       getSegments();
+      getAudioUrl();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -986,6 +987,7 @@ export function EditorPage() {
     getShortcuts();
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
+      getAudioUrl();
     } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
