@@ -447,17 +447,18 @@ export function EditorPage() {
       return;
     }
 
+    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
     const selectedSegmentIndex = caretLocation[0];
-    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const firstSegmentId = segments[selectedSegmentIndex].id;
-      const secondSegmentId = segments[selectedSegmentIndex + 1].id;
+      const firstSegmentId = trackSegments[selectedSegmentIndex].id;
+      const secondSegmentId = trackSegments[selectedSegmentIndex + 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = [...segments];
+        const mergedSegments = [...trackSegments];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
@@ -499,9 +500,6 @@ export function EditorPage() {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      console.log('============= caretLocation when split is called : ', caretLocation);
-      console.log('============= trackSegments when split is called : ', trackSegments);
-      console.log('============= segments when split is called : ', segments);
       const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -536,10 +534,6 @@ export function EditorPage() {
       setSaveSegmentsLoading(false);
     }
   };
-
-  React.useEffect(() => {
-    console.log('================track segments changes : ', segments);
-  }, [segments])
 
   const submitSegmentSplitByTime = async (segmentId: string,
                                           segmentIndex: number,

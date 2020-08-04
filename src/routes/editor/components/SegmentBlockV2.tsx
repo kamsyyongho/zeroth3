@@ -113,8 +113,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         setLengthBeforeBlockArray(result);
     };
 
-
-
     const updateWordAlignmentChange = (wordIndex: number, word: string, isChanged: boolean) => {
             const updatedSegment = localSegment;
             if(updatedSegment.highRisk) {
@@ -147,8 +145,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const resetState = () => {
         setIsChanged(false);
     };
-
-
 
     React.useEffect(() => {
         return () => {
