@@ -360,6 +360,7 @@ export const EditorControls = (props: EditorControlsProps) => {
       resultIndex = index;
     });
     const command = functionArray[resultIndex];
+    console.log('=======command : ', command);
 
     switch (command) {
       case 'confirm':
@@ -420,6 +421,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const handleKeyPress = (event: KeyboardEvent) => {
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
     const key = event.code === "Space" ? "Space" : event.key;
+    console.log('=============shortcutsStack : ', shortcutsStack);
     if(shortcutsStack?.length) {
       shortcutsStack.push(key);
     } else {

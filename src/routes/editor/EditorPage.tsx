@@ -185,6 +185,7 @@ export function EditorPage() {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
     setSegments(updatedSegments);
+    internalSegmentsTracker = updatedSegments
   };
 
   const getAssignedData = async () => {
@@ -261,6 +262,7 @@ export function EditorPage() {
 
       if (response.kind === 'ok') {
         setSegments(response.segments);
+        internalSegmentsTracker = response.segments;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
@@ -379,6 +381,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        internalSegmentsTracker = updatedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
@@ -415,6 +418,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        internalSegmentsTracker = updatedSegments;
         onUpdateUndoRedoStack(false, false);
 
       } else {
@@ -458,6 +462,7 @@ export function EditorPage() {
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
@@ -490,10 +495,13 @@ export function EditorPage() {
       return;
     }
 
-    const trackSegments = segments || internalSegmentsTracker;
+    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
+      console.log('============= caretLocation when split is called : ', caretLocation);
+      console.log('============= trackSegments when split is called : ', trackSegments);
+      console.log('============= segments when split is called : ', segments);
       const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -507,6 +515,7 @@ export function EditorPage() {
 
         // reset our new default baseline
         setSegments(splitSegments);
+        internalSegmentsTracker = splitSegments;
         onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
@@ -528,6 +537,10 @@ export function EditorPage() {
     }
   };
 
+  React.useEffect(() => {
+    console.log('================track segments changes : ', segments);
+  }, [segments])
+
   const submitSegmentSplitByTime = async (segmentId: string,
                                           segmentIndex: number,
                                           time: number,
@@ -547,6 +560,7 @@ export function EditorPage() {
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
         setSegments(splitSegments);
+        internalSegmentsTracker = splitSegments;
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -924,6 +938,7 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
+    internalSegmentsTracker = [];
     setSpeakers([]);
     setDataSets([]);
     setPlaybackTime(0);
