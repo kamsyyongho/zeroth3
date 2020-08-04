@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 const SEEK_SLOP = 0.00001;
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
 let internalSegmentsTracker: Segment[] = [];
+let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
@@ -886,7 +887,8 @@ export function EditorPage() {
         // updateSegmentOnChange(editorState, undefined, true);
         break;
       case EDITOR_CONTROLS.toggleMore:
-        setShowEditorPopups(!showEditorPopups);
+        internalShowEditorPopup = !internalShowEditorPopup
+        setShowEditorPopups(internalShowEditorPopup);
         break;
       case EDITOR_CONTROLS.split:
         handleSegmentSplitCommand();

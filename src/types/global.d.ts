@@ -21,7 +21,7 @@ declare module 'reactn/default' {
     playingWordKey?: number;
     wordConfidenceThreshold?: number;
     editorDebugMode?: boolean;
-    showEditorPopups?: boolean;
+    showEditorPopups: boolean;
     undoRedoData?: undoRedoData;
     editorFocussed?: boolean;
     editorContentHeight?: number;
