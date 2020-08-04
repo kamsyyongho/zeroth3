@@ -20,7 +20,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             textShadow: '0 0 4x #888',
             WebkiTextFillColor: 'transparent',
             whiteSpace: 'pre-wrap',
-
             // -webkit-text-fill-color: 'transparent'
         },
         highlight: {

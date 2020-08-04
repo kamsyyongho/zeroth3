@@ -234,9 +234,6 @@ export function Editor(props: EditorProps) {
     }
   };
 
-  const focusEditor = () => {
-  };
-
   const displayMessage = (message: string, variant: VariantType = SNACKBAR_VARIANTS.info) => {
     enqueueSnackbar(message, { variant });
   };
@@ -340,11 +337,13 @@ export function Editor(props: EditorProps) {
   };
 
   const handleTextSelection = (segmentId:string, indexFrom: number, indexTo: number) => {
-    setIsCommentEnabled(true);
-    setCommentInfo({segmentId, indexFrom, indexTo});
-    setTimeout(() => {
-      if(commentRef?.current) commentRef.current.focus();
-    }, 20);
+    if(isDiff) {
+      setIsCommentEnabled(true);
+      setCommentInfo({segmentId, indexFrom, indexTo});
+      setTimeout(() => {
+        if(commentRef?.current) commentRef.current.focus();
+      }, 20);
+    }
   };
 
   const updateChange = async (segmentIndex: number, wordIndex: number, word: string) => {
@@ -554,7 +553,6 @@ export function Editor(props: EditorProps) {
   // initial mount and unmount logic
   React.useEffect(() => {
     setReady(true);
-    focusEditor();
     onReady(true);
     return () => {
       onReady(false);

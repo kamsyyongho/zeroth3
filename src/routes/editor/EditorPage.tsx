@@ -250,7 +250,7 @@ export function EditorPage() {
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
-    };
+    }
   };
 
   const getSegments = async () => {
