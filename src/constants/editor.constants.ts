@@ -7,7 +7,7 @@ export const DEFAULT_SHORTCUTS = {
         save: ['Control',"s"],
         undo: ['Control', "z"],
         redo: ['Control','Shift', "Z"],
-        merge: ['Shift', ' '],
+        merge: ['Shift', "Space"],
         split: ['Shift', 'Enter'],
         toggleMore: ['Alt', 'Shift'],
         editSegmentTime: ['Alt', 'Enter'],
@@ -60,6 +60,7 @@ export const renderInputCombination = (input: any) => {
                 result += '↓ ArrowDown';
                 break;
             case ' ':
+            case 'Space':
                 result += 'Space';
                 break;
             default:

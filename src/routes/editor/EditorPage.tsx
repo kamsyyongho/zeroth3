@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 const SEEK_SLOP = 0.00001;
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
 let internalSegmentsTracker: Segment[] = [];
+let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
@@ -185,6 +186,7 @@ export function EditorPage() {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
     setSegments(updatedSegments);
+    internalSegmentsTracker = updatedSegments
   };
 
   const getAssignedData = async () => {
@@ -200,6 +202,7 @@ export function EditorPage() {
           setProjectId(response.voiceData.projectId);
         }
       } else {
+        setNoRemainingContent(true);
         log({
           file: `EditorPage.tsx`,
           caller: `getAssignedData - failed to get assigned data`,
@@ -249,7 +252,7 @@ export function EditorPage() {
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
-    };
+    }
   };
 
   const getSegments = async () => {
@@ -260,6 +263,7 @@ export function EditorPage() {
 
       if (response.kind === 'ok') {
         setSegments(response.segments);
+        internalSegmentsTracker = response.segments;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
@@ -378,6 +382,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        internalSegmentsTracker = updatedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
@@ -414,6 +419,7 @@ export function EditorPage() {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         setSegments(updatedSegments);
+        internalSegmentsTracker = updatedSegments;
         onUpdateUndoRedoStack(false, false);
 
       } else {
@@ -442,21 +448,23 @@ export function EditorPage() {
       return;
     }
 
+    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
     const selectedSegmentIndex = caretLocation[0];
-    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const firstSegmentId = segments[selectedSegmentIndex].id;
-      const secondSegmentId = segments[selectedSegmentIndex + 1].id;
+      const firstSegmentId = trackSegments[selectedSegmentIndex].id;
+      const secondSegmentId = trackSegments[selectedSegmentIndex + 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = [...segments];
+        const mergedSegments = [...trackSegments];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
         mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
+        internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
       } else {
@@ -489,7 +497,7 @@ export function EditorPage() {
       return;
     }
 
-    const trackSegments = segments || internalSegmentsTracker;
+    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
@@ -506,6 +514,7 @@ export function EditorPage() {
 
         // reset our new default baseline
         setSegments(splitSegments);
+        internalSegmentsTracker = splitSegments;
         onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
@@ -546,6 +555,7 @@ export function EditorPage() {
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
         setSegments(splitSegments);
+        internalSegmentsTracker = splitSegments;
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -877,7 +887,8 @@ export function EditorPage() {
         // updateSegmentOnChange(editorState, undefined, true);
         break;
       case EDITOR_CONTROLS.toggleMore:
-        setShowEditorPopups(!showEditorPopups);
+        internalShowEditorPopup = !internalShowEditorPopup
+        setShowEditorPopups(internalShowEditorPopup);
         break;
       case EDITOR_CONTROLS.split:
         handleSegmentSplitCommand();
@@ -923,6 +934,7 @@ export function EditorPage() {
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
+    internalSegmentsTracker = [];
     setSpeakers([]);
     setDataSets([]);
     setPlaybackTime(0);
@@ -939,16 +951,17 @@ export function EditorPage() {
     internalSegmentsTracker = segments;
   }, [segments]);
 
-  React.useEffect(() => {
-    if(voiceData && !audioUrl.length) {
-      getAudioUrl();
-    }
-  }, [voiceData]);
+  // React.useEffect(() => {
+  //   if(voiceData && audioUrl.length) {
+  //     getAudioUrl();
+  //   }
+  // }, [voiceData]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
-    if (!readOnly) {
+    if (!readOnly && voiceData && projectId) {
       getSegments();
+      getAudioUrl();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -962,7 +975,7 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!isDiff && !voiceDataLoading && !voiceData && !initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -985,6 +998,7 @@ export function EditorPage() {
     getShortcuts();
     if (readOnly && canSeeReadOnlyEditor) {
       getSegments();
+      getAudioUrl();
     } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -997,8 +1011,7 @@ export function EditorPage() {
     };
   }, []);
 
-
-  if (voiceDataLoading || !initialFetchDone) {
+  if (canUseEditor && (voiceDataLoading || !initialFetchDone)) {
     return <SiteLoadingIndicator />;
   }
 

@@ -299,7 +299,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;
           tooltipText = renderInputCombination(shortcuts.editSegmentTime);
           props = {
-            // onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
+            onClick: () => onCommandClick(EDITOR_CONTROLS.editSegmentTime),
             disabled: disabledControls.includes(EDITOR_CONTROLS.editSegmentTime),
           };
           break;
