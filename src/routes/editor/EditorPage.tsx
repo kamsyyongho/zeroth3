@@ -19,6 +19,7 @@ import {
   DataSet,
   PlayingTimeData,
   Segment,
+  SegmentResults,
   SegmentAndWordIndex,
   SNACKBAR_VARIANTS,
   SnackbarError,
@@ -147,6 +148,8 @@ export function EditorPage() {
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
+  const [segmentResults, setSegmentResults] = React.useState<SegmentResults>({} as SegmentResults);
+  const [prevSegmentResults, setPrevSegmentResults] = React.useState<SegmentResults | undefined>();
   const [speakers, setSpeakers] = React.useState<string[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
@@ -154,6 +157,8 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 50});
+  const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
 
   // get the passed info if we got here via the details page
 
@@ -255,15 +260,75 @@ export function EditorPage() {
     }
   };
 
-  const getSegments = async () => {
+  const getAdditionalSegments = async (page: number, pageSize: number) => {
     if (api?.voiceData && projectId && voiceData) {
-      setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id);
+      setIsLoadingAdditionalSegment(true);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, page, pageSize);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
-        setSegments(response.segments);
-        internalSegmentsTracker = response.segments;
+        setSegmentResults(response.data);
+        // setSegments(response.data.content);
+        internalSegmentsTracker = response.data.content;
+        setIsLoadingAdditionalSegment(false);
+        return response?.data.content;
+      } else if (response.kind !== ProblemKind['bad-data']){
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+    }
+  }
+
+  const getPrevSegment = async () => {
+    if(segmentResults.first) return;
+  };
+
+  const getNextSegment = async () => {
+    if(segmentResults.last) return;
+    // const page = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number
+    //     ? prevSegmentResults?.number + 1 : segmentResults?.number + 1;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const page = prevSegment.number + 1;
+    console.log('========params to update : ', page);
+    setPrevSegmentResults(segmentResults);
+    setPaginationParams({page, pageSize: paginationParams.pageSize});
+    const additionalSegments = await getAdditionalSegments(page, paginationParams.pageSize);
+    if(additionalSegments) {
+      const updateSegment = [...prevSegment.content, ...additionalSegments];
+      console.log('======currentPlayingLocation : ', currentPlayingLocation);
+      console.log('==========updateSegment : ', updateSegment);
+      console.log('=========== segment : ', segments);
+      let playingSegmentIndex;
+      updateSegment.forEach((segment, index) => {
+        if(prevSegment && segment.id == prevSegment.content[currentPlayingLocation[0]]['id']) {
+          playingSegmentIndex =  index;
+        }
+      })
+      setCurrentPlayingLocation([playingSegmentIndex, currentPlayingLocation[1]])
+      setSegments([...segmentResults.content, ...additionalSegments]);
+    }
+  };
+
+  const getSegments = async () => {
+    if (api?.voiceData && projectId && voiceData) {
+      setSegmentsLoading(true);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.page, paginationParams.pageSize);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if (response.kind === 'ok') {
+        setSegmentResults(response.data);
+        setSegments(response.data.content);
+        internalSegmentsTracker = response.data.content;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
@@ -1043,6 +1108,7 @@ export function EditorPage() {
             onCommandClick={handleEditorCommand}
             onConfirm={onConfirmClick}
             disabledControls={disabledControls}
+            isLoadingAdditionalSegment={isLoadingAdditionalSegment}
             loading={saveSegmentsLoading || confirmSegmentsLoading}
             editorReady={editorReady}
             playingLocation={currentPlayingLocation}
@@ -1097,6 +1163,8 @@ export function EditorPage() {
                         onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
                         onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
                       }}
+                      getNextSegment={getNextSegment}
+                      getPrevSegment={getPrevSegment}
                   />)
               }
             </div>

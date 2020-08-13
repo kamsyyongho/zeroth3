@@ -72,7 +72,7 @@ export function TranscribersTable(props: TranscribersTableProps) {
   );
 
   // Use the state and functions returned from useTable to build your UI
-  const instance = useTable<TranscriberStats>(
+  const instance = useTable(
     {
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       //@ts-ignore
