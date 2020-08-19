@@ -127,6 +127,7 @@ interface EditorProps {
   onWordTimeCreationClose: () => void;
   onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
+  isLoadingAdditionalSegment: boolean;
   loading?: boolean;
   setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
@@ -157,6 +158,7 @@ export function Editor(props: EditorProps) {
     onWordTimeCreationClose,
     onSpeakersUpdate,
     onUpdateUndoRedoStack,
+    isLoadingAdditionalSegment,
     loading,
     setLoading,
     isAudioPlaying,
@@ -588,6 +590,10 @@ export function Editor(props: EditorProps) {
       setReadOnly(navigationProps.readOnly);
     }
   }, [navigationProps]);
+
+  React.useEffect(() => {
+    setReadOnlyEditorState(isLoadingAdditionalSegment);
+  }, [isLoadingAdditionalSegment]);
 
 
   return (

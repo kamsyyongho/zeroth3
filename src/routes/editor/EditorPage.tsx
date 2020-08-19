@@ -306,12 +306,11 @@ export function EditorPage() {
     if(additionalSegments) {
       const updateSegment = [...prevSegment.content, ...additionalSegments];
       console.log('======currentPlayingLocation : ', currentPlayingLocation);
-      console.log('==========updateSegment : ', updateSegment);
-      console.log('=========== segment : ', segments);
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
         if(prevSegment && segment.id == prevSegment.content[currentPlayingLocation.segmentIndex]['id']) {
+          console.log('=========== segment : ', segments);
           playingSegmentIndex =  index;
         }
       })
@@ -554,9 +553,13 @@ export function EditorPage() {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    const segmentIndex = caretLocation?.[0];
-    const wordIndex = caretLocation?.[1];
-    if(typeof segmentIndex !== 'number' || typeof wordIndex !== 'number' || !caretLocation || !caretLocation[0] || !caretLocation[1]) {return;}
+    const segmentIndex = caretLocation.segmentIndex;
+    const wordIndex = caretLocation.wordIndex;
+    if(typeof segmentIndex !== 'number'
+        || typeof wordIndex !== 'number'
+        || !caretLocation
+        || !caretLocation.segmentIndex
+        || !caretLocation.wordIndex) {return;}
     if(segmentIndex === 0 ||
         wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
@@ -1136,6 +1139,7 @@ export function EditorPage() {
                       voiceData={voiceData}
                       onReady={setEditorReady}
                       playingLocation={currentPlayingLocation}
+                      isLoadingAdditionalSegment={isLoadingAdditionalSegment}
                       loading={saveSegmentsLoading}
                       setLoading={setSaveSegmentsLoading}
                       isAudioPlaying={isAudioPlaying}

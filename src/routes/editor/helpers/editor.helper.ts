@@ -67,7 +67,6 @@ const inputKeys = [
   "SemiColon",
   "Space",
   "Backspace",
-
 ];
 
 export const isInputKey = (keyEvent: KeyboardEvent) => {
@@ -133,41 +132,6 @@ export const getSegmentAndWordIndex = () => {
   segmentAndWordIndex.shift();
 
   return { segmentIndex: Number(segmentAndWordIndex[0]), wordIndex: Number(segmentAndWordIndex[1]) };
-};
-
-
-/** generates the custom entity components */
-export const generateDecorators = () =>
-  new CompositeDecorator([
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
-      component: EntityContent,
-      props: {},
-    },
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
-      component: EntityContent,
-      props: {},
-    },
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
-      component: EntityContent,
-      props: {},
-    },
-  ]);
-
-/**
- * Creates a new state from the old one with the same selection
- * @param incomingEditorState
- */
-export const cloneEditorState = (
-  incomingEditorState: EditorState,
-): EditorState => {
-  const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(
-    incomingEditorState,
-    incomingEditorState.getSelection(),
-  );
-  return newEditorStateWithSameContentAndSelection;
 };
 
 export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
