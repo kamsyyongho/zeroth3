@@ -22,6 +22,7 @@ import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
 import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
+import { SegmentAndWordIndex } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -124,7 +125,7 @@ interface EditorControlsProps {
   isLoadingAdditionalSegment?: boolean;
   loading?: boolean;
   editorReady?: boolean;
-  playingLocation: number[];
+  playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
 }
 
@@ -162,7 +163,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const handleClick = (command: EDITOR_CONTROLS) => {
     onCommandClick(command);
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 

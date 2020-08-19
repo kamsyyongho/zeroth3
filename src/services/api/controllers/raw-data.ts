@@ -83,7 +83,7 @@ export class RawData extends ParentApi {
     };
     // make the api call
     const response = await this.apisauce.post<string | undefined, ServerError>(
-      this.getPathWithOrganization(`/projects/${projectId}/raw-data`),
+      this.getDecoderPath(`/projects/${projectId}/raw-data/upload`),
       request,
       config,
     );

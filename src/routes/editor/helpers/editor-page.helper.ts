@@ -29,26 +29,28 @@ export const getDisabledControls = (
   saveSegmentsLoading?: boolean,
   confirmSegmentsLoading?: boolean,
 ) => {
-  const disabledControls: EDITOR_CONTROLS[] = [];
-  const mergeDisabled = segments.length < 2;
-  if (!canUndo) {
-    disabledControls.push(EDITOR_CONTROLS.undo);
+  if(segments?.length) {
+    const disabledControls: EDITOR_CONTROLS[] = [];
+    const mergeDisabled = segments.length < 2;
+    if (!canUndo) {
+      disabledControls.push(EDITOR_CONTROLS.undo);
+    }
+    if (!canRedo) {
+      disabledControls.push(EDITOR_CONTROLS.redo);
+    }
+    if (mergeDisabled) {
+      disabledControls.push(EDITOR_CONTROLS.merge);
+    }
+    const splitDisabled = !segments.some(
+        segment => segment.wordAlignments.length > 0,
+    );
+    if (splitDisabled) {
+      disabledControls.push(EDITOR_CONTROLS.split);
+    }
+    if (saveSegmentsLoading || confirmSegmentsLoading) {
+      disabledControls.push(EDITOR_CONTROLS.save);
+      disabledControls.push(EDITOR_CONTROLS.approvalRequest);
+    }
+    return disabledControls;
   }
-  if (!canRedo) {
-    disabledControls.push(EDITOR_CONTROLS.redo);
-  }
-  if (mergeDisabled) {
-    disabledControls.push(EDITOR_CONTROLS.merge);
-  }
-  const splitDisabled = !segments.some(
-    segment => segment.wordAlignments.length > 0,
-  );
-  if (splitDisabled) {
-    disabledControls.push(EDITOR_CONTROLS.split);
-  }
-  if (saveSegmentsLoading || confirmSegmentsLoading) {
-    disabledControls.push(EDITOR_CONTROLS.save);
-    disabledControls.push(EDITOR_CONTROLS.approvalRequest);
-  }
-  return disabledControls;
 };

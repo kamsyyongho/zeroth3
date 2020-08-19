@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  * from a text input focus
  */
 const SEEK_SLOP = 0.00001;
-const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
+const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = {segmentIndex: 0, wordIndex: 0};
 let internalSegmentsTracker: Segment[] = [];
 let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
@@ -309,12 +309,13 @@ export function EditorPage() {
       console.log('==========updateSegment : ', updateSegment);
       console.log('=========== segment : ', segments);
       let playingSegmentIndex;
+      const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment.id == prevSegment.content[currentPlayingLocation[0]]['id']) {
+        if(prevSegment && segment.id == prevSegment.content[currentPlayingLocation.segmentIndex]['id']) {
           playingSegmentIndex =  index;
         }
       })
-      setCurrentPlayingLocation([playingSegmentIndex, currentPlayingLocation[1]])
+      setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
       setSegments([...segmentResults.content, ...additionalSegments]);
     }
   };
@@ -681,7 +682,7 @@ export function EditorPage() {
    * @params playingLocation
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = playingLocation;
+    const { segmentIndex, wordIndex } = playingLocation;
     if (!segments.length) return;
     const segment = segments[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
@@ -732,7 +733,7 @@ export function EditorPage() {
         }
         if (playingLocation && (initialSegmentLoad ||
             JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
-          const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
+          const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
             const timeToSeekTo = {timeToSeekTo: wordTime}
@@ -784,7 +785,7 @@ export function EditorPage() {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = wordLocation;
+    const { segmentIndex, wordIndex } = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);

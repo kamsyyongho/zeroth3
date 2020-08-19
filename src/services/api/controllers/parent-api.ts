@@ -44,6 +44,10 @@ export abstract class ParentApi {
     }
   }
 
+  getDecoderPath(path:string): string {
+    return '/decoding' + this.buildPathStringWithOrganizationInfo(path);
+  }
+
   /**
    * Adds the correct organization information to api requests
    * - puts `/organizations/{organizationId}` to the beginning of the path
@@ -51,6 +55,7 @@ export abstract class ParentApi {
    * @param path the api path we are making a request to
    */
   getPathWithOrganization(path: string): string {
-    return this.buildPathStringWithOrganizationInfo(path);
+    return '/api' + this.buildPathStringWithOrganizationInfo(path);
   }
 }
+

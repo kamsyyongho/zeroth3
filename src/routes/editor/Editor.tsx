@@ -218,13 +218,13 @@ export function Editor(props: EditorProps) {
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
     //
-    onWordClick([segmentIndex, wordIndex]);
+    onWordClick({ segmentIndex, wordIndex });
     // handleClickInsideEditor();
   };
 
   const updatePlayingLocation = () => {
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 
@@ -247,7 +247,7 @@ export function Editor(props: EditorProps) {
   const assignSpeakerForSegment = (segmentId: string) => {
     const segmentAndWordIndex = getSegmentAndWordIndex();
     if (segmentAndWordIndex) {
-      assignSpeaker(segmentAndWordIndex[0]);
+      assignSpeaker(segmentAndWordIndex.segmentIndex);
     }
   };
 
@@ -269,20 +269,13 @@ export function Editor(props: EditorProps) {
     return buildStyleMap(theme);
   }, []);
 
-  /** updates the undo/redo button status and rebuilds the entity map */
-  const onEditorStateUpdate = () => {
-  };
-
-  const removeEntitiesAtSelection = () => {
-  };
-
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 
   const openSegmentSplitTimePicker = () => {
       if (playingLocation) {
-        const cursorContent = segments[playingLocation[0]].wordAlignments[playingLocation[1]].word;
+        const cursorContent = segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex].word;
         const segmentSplitOptions: SegmentSplitOptions = {
-          segmentIndex: playingLocation[0],
+          segmentIndex: playingLocation.segmentIndex,
         }
       }
   };
@@ -535,8 +528,8 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(editorCommand) {
-      if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
-        prepareSegmentTimePicker(playingLocation[0]);
+      if(editorCommand === EDITOR_CONTROLS.editSegmentTime && playingLocation?.segmentIndex) {
+        prepareSegmentTimePicker(playingLocation.segmentIndex);
       }
       onCommandHandled();
       if(readOnlyEditorState || readOnly) {
@@ -581,7 +574,7 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(playingLocation && ready) {
-      if(playingLocation[0] === 0 && playingLocation[1] === 0) {
+      if(playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
         // updatePlayingLocation();
       }
     }
@@ -655,7 +648,7 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
-      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
+      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex]} />}*/}
       {
         isDiff ?
         <>
