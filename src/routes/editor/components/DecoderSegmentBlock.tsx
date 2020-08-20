@@ -84,7 +84,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const styleMap = React.useMemo(() => {
         return buildStyleMap(theme);
     }, []);
-    const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? classes.playingSegment : '', playingLocation)
+    const memoizedSegmentClassName = React.useMemo(() => playingLocation.segmentIndex === segmentIndex ? classes.playingSegment : '', playingLocation)
 
 
     const setLengthBeforeEachBlockArray = () => {
@@ -143,7 +143,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     }, [segment]);
 
     React.useEffect(() => {
-        if(playingLocation[0] === segmentIndex) {
+        if(playingLocation.segmentIndex === segmentIndex) {
             checkLocationOnScreenAndScroll(
                 segmentRef.current,
                 editorElement,

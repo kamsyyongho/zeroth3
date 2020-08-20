@@ -110,7 +110,7 @@ export function getRandomColor(
 }
 
 export function parseWordKey(key: string): SegmentAndWordIndex {
-  const [segmentIndex, wordIndex] = key.split(WORD_KEY_SEPARATOR);
+  const { segmentIndex, wordIndex } = key.split(WORD_KEY_SEPARATOR);
   return [Number(segmentIndex), Number(wordIndex)];
 }
 

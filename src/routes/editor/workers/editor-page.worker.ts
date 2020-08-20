@@ -136,7 +136,7 @@ const calculatePlayingLocation = (
       );
     }
 
-    const playingLocation: SegmentAndWordIndex = [segmentIndex, wordIndex];
+    const playingLocation: SegmentAndWordIndex = { segmentIndex, wordIndex };
     return playingLocation;
   } catch (error) {
     console.warn(

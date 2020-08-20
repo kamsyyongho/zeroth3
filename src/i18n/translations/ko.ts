@@ -301,6 +301,7 @@ export const ko: ResourceLanguage = {
       speaker: '발화자',
       toggleMore: '자세히보기',
       createWord: '단어 만들기',
+      loadingAdditonalSegmentSuccess: '추가 세그먼트 로딩 성공',
       editSegmentTime: '세그먼트 시간 수정',
       wordConfidence: '단어 confidence',
       setWordConfidence: '단어 confidence threshold 설정',

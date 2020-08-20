@@ -22,6 +22,7 @@ import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
 import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
+import { SegmentAndWordIndex } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -121,9 +122,10 @@ interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
   onConfirm: () => void;
   disabledControls?: EDITOR_CONTROLS[];
+  isLoadingAdditionalSegment?: boolean;
   loading?: boolean;
   editorReady?: boolean;
-  playingLocation: number[];
+  playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
 }
 
@@ -132,6 +134,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     onCommandClick,
     onConfirm,
     disabledControls = [],
+    isLoadingAdditionalSegment,
     loading,
     editorReady,
     playingLocation,
@@ -160,7 +163,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const handleClick = (command: EDITOR_CONTROLS) => {
     onCommandClick(command);
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 
@@ -351,6 +354,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     const keyCombinationArray = Object.values(localShortcuts);
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
+    console.log('=============== sbhortcutsStack : ', shortcutsStack);
     keyCombinationArray.forEach((combination: any, index: number) => {
       for(let i = 0; i < shortcutsStack.length; i++) {
         if(!combination.includes(shortcutsStack[i])) {
@@ -360,6 +364,8 @@ export const EditorControls = (props: EditorControlsProps) => {
       resultIndex = index;
     });
     const command = functionArray[resultIndex];
+
+    console.log('================= command : ', command);
 
     switch (command) {
       case 'confirm':
@@ -418,6 +424,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
+    console.log('============keyboardEvent charCode, code, keycode : ', event.charCode, event.code, event.keyCode);
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
     const key = event.code === "Space" ? "Space" : event.key;
     if(shortcutsStack?.length) {
@@ -475,8 +482,32 @@ export const EditorControls = (props: EditorControlsProps) => {
         setStatusEl(statusTextEl);
       }, 1500);
     }
-
   }, [loading, isSegmentUpdateError]);
+
+  React.useEffect(() => {
+    const statusTextEl = (
+        <Typography className={classes.status}>
+          {translate('forms.status')}
+        </Typography>
+    )
+    if(isLoadingAdditionalSegment) {
+      const loadingEl = (<ScaleLoader
+          color={theme.palette.common.white}
+          loading={true}
+      />);
+      setStatusEl(loadingEl);
+    } else {
+      const successTextEl = (
+          <Typography className={classes.status}>
+            {translate('editor.loadingAdditonalSegmentSuccess')}
+          </Typography>
+      )
+      setStatusEl(successTextEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 2000);
+    }
+  }, [isLoadingAdditionalSegment])
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**

@@ -94,10 +94,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
     const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
 
-    const memoizedSegmentClassName = React.useMemo(() => playingLocation[0] === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment, playingLocation)
-    const memoizedWordClassName = React.useMemo(() => playingLocation[1] === segmentIndex ? `${classes.playingWord}` : '', playingLocation)
-
-
     const initTranscriptToRender = () => {
         const inititalTranscript = (<span>{segment.transcript}</span>)
         setTranscriptToRender(inititalTranscript);
@@ -106,7 +102,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleArrowKeyDown = () => {
         const playingLocation = getSegmentAndWordIndex();
         if(playingLocation) {
-            updateCaretLocation(playingLocation[0], playingLocation[1]);
+            updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
             return;
         }
     };
@@ -128,7 +124,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const currentLocation = selection ?.anchorOffset;
         const playingLocation = getSegmentAndWordIndex() || [0,0];
         const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
-        (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation[1]]) : null;
+        (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
         const previousSegmentNode = document.getElementById
         (`word-${segmentIndex - 1}-${wordAlignmentIndex}`) || null;
         const range = document.createRange();
@@ -148,7 +144,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const currentLocation = selection?.anchorOffset;
         const playingLocation = getSegmentAndWordIndex() || [0,0];
         const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
-        (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation[1]]);
+        (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]);
         const nextSegmentNode = document.getElementById
         (`word-${segmentIndex + 1}-${wordAlignmentIndex}`);
         const currentNode = element;
@@ -207,12 +203,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     event.preventDefault();
                 } else {
                     if(isInputKey(event.nativeEvent)) {
-                        const word = document.getElementById(`word-${segmentIndex}-${location[1]}`);
+                        const word = document.getElementById(`word-${segmentIndex}-${location.segmentIndex}`);
                         const updateUndoStack = undoStack.slice(0);
-                        if(localWordForLengthComparison.length === 0) localWordForLengthComparison = wordAlignments[location[1]]['word'];
+                        if(localWordForLengthComparison.length === 0) {
+                            localWordForLengthComparison = wordAlignments[location.segmentIndex]['word'];
+                        }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            updateUndoStack.push({ wordIndex: location[1], word: word?.innerText || '' });
+                            updateUndoStack.push({ wordIndex: location.wordIndex, word: word?.innerText || '' });
                             localWordForLengthComparison = word?.innerText || '';
                             onUpdateUndoRedoStack(true, false);
                             setUndoStack(updateUndoStack);
@@ -260,7 +258,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const copySegment = JSON.parse(JSON.stringify(segment));
         const wordsInSegment: HTMLCollection = document.getElementsByClassName(`segment-${segmentIndex}`);
         let transcript = '';
-        if(isChanged && playingLocation[0] !== segmentIndex) {
+        if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
             Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
                 transcript += wordEl.innerHTML;
                 copySegment.wordAlignments[index].word = wordEl.innerHTML;
@@ -360,7 +358,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         <div
             contentEditable
             id={`segment-${segmentIndex}`}
-            className={memoizedSegmentClassName}
+            className={playingLocation.segmentIndex === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment}
             ref={element}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
@@ -376,7 +374,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const text = wordAlignment.word.replace('|', ' ');
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
-                                 className={playingLocation[0] === segmentIndex && playingLocation[1] === index
+                                 className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}
                             </div>

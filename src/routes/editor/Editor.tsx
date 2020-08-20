@@ -31,7 +31,6 @@ import {
 import log from '../../util/log/logger';
 import {NavigationPropsToGet} from  './EditorPage';
 
-let renderTimes = 0;
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
 const COMMENT_HEIGHT = 40;
@@ -128,6 +127,7 @@ interface EditorProps {
   onWordTimeCreationClose: () => void;
   onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
+  isLoadingAdditionalSegment: boolean;
   loading?: boolean;
   setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
@@ -142,6 +142,8 @@ interface EditorProps {
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   timePickerRootProps: TimePickerRootProps;
   splitTimePickerRootProps: SplitTimePickerRootProps;
+  getNextSegment: () => void;
+  getPrevSegment: () => void;
 }
 
 export function Editor(props: EditorProps) {
@@ -156,6 +158,7 @@ export function Editor(props: EditorProps) {
     onWordTimeCreationClose,
     onSpeakersUpdate,
     onUpdateUndoRedoStack,
+    isLoadingAdditionalSegment,
     loading,
     setLoading,
     isAudioPlaying,
@@ -171,6 +174,8 @@ export function Editor(props: EditorProps) {
     splitSegmentByTime,
     timePickerRootProps,
     splitTimePickerRootProps,
+    getNextSegment,
+    getPrevSegment,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
@@ -215,13 +220,13 @@ export function Editor(props: EditorProps) {
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
     //
-    onWordClick([segmentIndex, wordIndex]);
+    onWordClick({ segmentIndex, wordIndex });
     // handleClickInsideEditor();
   };
 
   const updatePlayingLocation = () => {
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 
@@ -244,7 +249,7 @@ export function Editor(props: EditorProps) {
   const assignSpeakerForSegment = (segmentId: string) => {
     const segmentAndWordIndex = getSegmentAndWordIndex();
     if (segmentAndWordIndex) {
-      assignSpeaker(segmentAndWordIndex[0]);
+      assignSpeaker(segmentAndWordIndex.segmentIndex);
     }
   };
 
@@ -266,20 +271,13 @@ export function Editor(props: EditorProps) {
     return buildStyleMap(theme);
   }, []);
 
-  /** updates the undo/redo button status and rebuilds the entity map */
-  const onEditorStateUpdate = () => {
-  };
-
-  const removeEntitiesAtSelection = () => {
-  };
-
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 
   const openSegmentSplitTimePicker = () => {
       if (playingLocation) {
-        const cursorContent = segments[playingLocation[0]].wordAlignments[playingLocation[1]].word;
+        const cursorContent = segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex].word;
         const segmentSplitOptions: SegmentSplitOptions = {
-          segmentIndex: playingLocation[0],
+          segmentIndex: playingLocation.segmentIndex,
         }
       }
   };
@@ -490,6 +488,16 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  const handleScrollEvent = (event: any) => {
+    const element = event.target;
+    if(element.scrollHeight - Math.floor(element.scrollTop) <= element.clientHeight) {
+      getNextSegment();
+    }
+    if(element.scrollTop === 0) {
+      getPrevSegment();
+    }
+  };
+
   const handleCommentCancel = () => {
     setCommentInfo({});
     setReason('');
@@ -506,7 +514,6 @@ export function Editor(props: EditorProps) {
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
-    renderTimes++;
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
@@ -523,8 +530,8 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(editorCommand) {
-      if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
-        prepareSegmentTimePicker(playingLocation[0]);
+      if(editorCommand === EDITOR_CONTROLS.editSegmentTime && playingLocation?.segmentIndex) {
+        prepareSegmentTimePicker(playingLocation.segmentIndex);
       }
       onCommandHandled();
       if(readOnlyEditorState || readOnly) {
@@ -536,7 +543,6 @@ export function Editor(props: EditorProps) {
   // used to calculate the exact dimensions of the root div
   // so we can make the overlay the exact same size
   React.useEffect(() => {
-    renderTimes++;
     if (containerRef.current) {
       const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
       const overlayPositionStyle: React.CSSProperties = {
@@ -554,9 +560,11 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     onReady(true);
+    // containerRef?.current?.addEventListener('scroll', handleScrollEvent);
     return () => {
       onReady(false);
       setEditorFocussed(false);
+      containerRef?.current?.removeEventListener('scroll', handleScrollEvent);
     };
   }, []);
 
@@ -568,7 +576,7 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(playingLocation && ready) {
-      if(playingLocation[0] === 0 && playingLocation[1] === 0) {
+      if(playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
         // updatePlayingLocation();
       }
     }
@@ -583,24 +591,28 @@ export function Editor(props: EditorProps) {
     }
   }, [navigationProps]);
 
+  React.useEffect(() => {
+    setReadOnlyEditorState(isLoadingAdditionalSegment);
+  }, [isLoadingAdditionalSegment]);
+
+
   return (
     <div
       id={'scroll-container'}
       ref={containerRef}
       onClick={handleClickInsideEditor}
+      onScroll={handleScrollEvent}
       style={{
         height,
         overflowY: 'auto',
-      }}
-    >
+      }}>
       <Backdrop
         className={classes.backdrop}
         style={overlayStyle}
         open={!!readOnlyEditorState}
         onClick={() => {
           return undefined;
-        }}
-      >
+        }}>
         <Draggable
           axis="both"
           defaultPosition={{ x: 0, y: 0 }}
@@ -640,7 +652,7 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
-      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
+      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex]} />}*/}
       {
         isDiff ?
         <>

@@ -19,6 +19,7 @@ import {
   DataSet,
   PlayingTimeData,
   Segment,
+  SegmentResults,
   SegmentAndWordIndex,
   SNACKBAR_VARIANTS,
   SnackbarError,
@@ -60,7 +61,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  * from a text input focus
  */
 const SEEK_SLOP = 0.00001;
-const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = [0, 0];
+const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = {segmentIndex: 0, wordIndex: 0};
 let internalSegmentsTracker: Segment[] = [];
 let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
@@ -147,6 +148,8 @@ export function EditorPage() {
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
   const [segments, setSegments] = React.useState<Segment[]>([]);
+  const [segmentResults, setSegmentResults] = React.useState<SegmentResults>({} as SegmentResults);
+  const [prevSegmentResults, setPrevSegmentResults] = React.useState<SegmentResults | undefined>();
   const [speakers, setSpeakers] = React.useState<string[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = React.useState(false);
@@ -154,6 +157,8 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 25});
+  const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
 
   // get the passed info if we got here via the details page
 
@@ -255,15 +260,97 @@ export function EditorPage() {
     }
   };
 
-  const getSegments = async () => {
+  const getAdditionalSegments = async (page: number, pageSize: number) => {
     if (api?.voiceData && projectId && voiceData) {
-      setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id);
+      setIsLoadingAdditionalSegment(true);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, page, pageSize);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
-        setSegments(response.segments);
-        internalSegmentsTracker = response.segments;
+        setSegmentResults(response.data);
+        // setSegments(response.data.content);
+        internalSegmentsTracker = response.data.content;
+        setIsLoadingAdditionalSegment(false);
+        return response?.data.content;
+      } else if (response.kind !== ProblemKind['bad-data']){
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+    }
+  }
+
+  const getPrevSegment = async () => {
+    if(segmentResults.first) return;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const prevPage = prevSegment.number - 1;
+    console.log('========params to update : ', prevPage);
+    setPrevSegmentResults(segmentResults);
+    setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
+    const additionalSegments = await getAdditionalSegments(prevPage, paginationParams.pageSize);
+    if(additionalSegments) {
+      const updateSegment = [...prevSegment.content, ...additionalSegments];
+      console.log('======currentPlayingLocation : ', currentPlayingLocation);
+      let playingSegmentIndex;
+      const wordIndex = currentPlayingLocation.wordIndex;
+      updateSegment.forEach((segment, index) => {
+        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
+          console.log('=========== segment : ', segments);
+          playingSegmentIndex =  index;
+          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+        } else if(prevSegment) {
+          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
+        }
+      })
+      setSegments([...segmentResults.content, ...additionalSegments]);
+    }
+  };
+
+  const getNextSegment = async () => {
+    if(segmentResults.last) return;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const nextPage = prevSegment.number + 1;
+    console.log('========params to update : ', nextPage);
+    setPrevSegmentResults(segmentResults);
+    setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
+    const additionalSegments = await getAdditionalSegments(nextPage, paginationParams.pageSize);
+    if(additionalSegments) {
+      const updateSegment = [...prevSegment.content, ...additionalSegments];
+      console.log('======currentPlayingLocation : ', currentPlayingLocation);
+      let playingSegmentIndex;
+      const wordIndex = currentPlayingLocation.wordIndex;
+      updateSegment.forEach((segment, index) => {
+        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
+          console.log('=========== segment : ', segments);
+          playingSegmentIndex =  index;
+          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+        } else if(prevSegment) {
+          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
+        }
+      })
+      setSegments([...segmentResults.content, ...additionalSegments]);
+    }
+  };
+
+  const getSegments = async () => {
+    if (api?.voiceData && projectId && voiceData) {
+      setSegmentsLoading(true);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.page, paginationParams.pageSize);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if (response.kind === 'ok') {
+        setSegmentResults(response.data);
+        setSegments(response.data.content);
+        internalSegmentsTracker = response.data.content;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
@@ -443,13 +530,13 @@ export function EditorPage() {
 
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation || caretLocation[0] === segments.length -1) {
+    if(!caretLocation || caretLocation.segmentIndex === segments.length -1) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
 
     const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
-    const selectedSegmentIndex = caretLocation[0];
+    const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const firstSegmentId = trackSegments[selectedSegmentIndex].id;
@@ -488,9 +575,13 @@ export function EditorPage() {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    const segmentIndex = caretLocation?.[0];
-    const wordIndex = caretLocation?.[1];
-    if(typeof segmentIndex !== 'number' || typeof wordIndex !== 'number' || !caretLocation || !caretLocation[0] || !caretLocation[1]) {return;}
+    const segmentIndex = caretLocation.segmentIndex;
+    const wordIndex = caretLocation.wordIndex;
+    if(typeof segmentIndex !== 'number'
+        || typeof wordIndex !== 'number'
+        || !caretLocation
+        || !caretLocation.segmentIndex
+        || !caretLocation.wordIndex) {return;}
     if(segmentIndex === 0 ||
         wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
@@ -501,7 +592,7 @@ export function EditorPage() {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation.segmentIndex].id, caretLocation.wordIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -510,7 +601,7 @@ export function EditorPage() {
         const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
-        splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
+        splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
 
         // reset our new default baseline
         setSegments(splitSegments);
@@ -616,7 +707,7 @@ export function EditorPage() {
    * @params playingLocation
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = playingLocation;
+    const { segmentIndex, wordIndex } = playingLocation;
     if (!segments.length) return;
     const segment = segments[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
@@ -667,7 +758,7 @@ export function EditorPage() {
         }
         if (playingLocation && (initialSegmentLoad ||
             JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
-          const wordTime = calculateWordTime(segments, playingLocation[0], playingLocation[1]);
+          const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
           let timeData = buildPlayingAudioPlayerSegment(playingLocation);
           if(timeData && wordTime) {
             const timeToSeekTo = {timeToSeekTo: wordTime}
@@ -719,7 +810,7 @@ export function EditorPage() {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = wordLocation;
+    const { segmentIndex, wordIndex } = wordLocation;
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       wordWasClicked = true;
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
@@ -1043,6 +1134,7 @@ export function EditorPage() {
             onCommandClick={handleEditorCommand}
             onConfirm={onConfirmClick}
             disabledControls={disabledControls}
+            isLoadingAdditionalSegment={isLoadingAdditionalSegment}
             loading={saveSegmentsLoading || confirmSegmentsLoading}
             editorReady={editorReady}
             playingLocation={currentPlayingLocation}
@@ -1069,6 +1161,7 @@ export function EditorPage() {
                       voiceData={voiceData}
                       onReady={setEditorReady}
                       playingLocation={currentPlayingLocation}
+                      isLoadingAdditionalSegment={isLoadingAdditionalSegment}
                       loading={saveSegmentsLoading}
                       setLoading={setSaveSegmentsLoading}
                       isAudioPlaying={isAudioPlaying}
@@ -1097,6 +1190,8 @@ export function EditorPage() {
                         onSegmentSplitTimeChanged: handleSegmentSplitTimeChanged,
                         onSegmentSplitTimeDelete: handleSegmentSplitTimeDelete,
                       }}
+                      getNextSegment={getNextSegment}
+                      getPrevSegment={getPrevSegment}
                   />)
               }
             </div>

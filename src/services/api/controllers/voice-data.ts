@@ -4,6 +4,7 @@ import {
   CONTENT_STATUS,
   HistoryDataResults,
   Segment,
+  SegmentResults,
   VoiceData as IVoiceData,
   VoiceDataResults,
   WordAlignment
@@ -335,10 +336,12 @@ export class VoiceData extends ParentApi {
   async getSegments(
     projectId: string,
     dataId: string,
+    page: number,
+    pageSize: number,
   ): Promise<getSegmentsDataResult> {
-    const response = await this.apisauce.get<Segment[], ServerError>(
+    const response = await this.apisauce.get<SegmentResults, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments`,
+        `/projects/${projectId}/data/${dataId}/segments?page=${page}&size=${pageSize}`,
       ),
     );
     // the typical ways to die when calling an api
@@ -353,8 +356,8 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const segments = response.data as Segment[];
-      return { kind: 'ok', segments };
+      const data = response.data as SegmentResults;
+      return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
