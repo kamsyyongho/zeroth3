@@ -298,6 +298,7 @@ export const en: ResourceLanguage = {
       speaker: 'Speaker',
       toggleMore: 'View more',
       createWord: 'Create word',
+      loadingAdditonalSegmentSuccess: 'Loaded Additional Segments!',
       editSegmentTime: 'Edit segment time',
       wordConfidence: 'Word confidence',
       setWordConfidence: 'Set word confidence threshold',

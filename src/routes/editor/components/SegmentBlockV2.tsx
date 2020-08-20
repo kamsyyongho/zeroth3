@@ -133,18 +133,31 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        checkLocationOnScreenAndScroll(
-            segmentRef.current,
-            editorElement,
-            editorContentHeight,
-            windowHeight,
-            editorAutoScrollDisabled);
+        if(!editorAutoScrollDisabled) {
+            checkLocationOnScreenAndScroll(
+                segmentRef.current,
+                editorElement,
+                editorContentHeight,
+                windowHeight,
+                editorAutoScrollDisabled);
+        }
         isFocused = false;
     };
 
     const resetState = () => {
         setIsChanged(false);
     };
+
+    React.useEffect(() => {
+        if(!editorAutoScrollDisabled) {
+            checkLocationOnScreenAndScroll(
+                segmentRef.current,
+                editorElement,
+                editorContentHeight,
+                windowHeight,
+                editorAutoScrollDisabled);
+        }
+    },[editorAutoScrollDisabled]);
 
     React.useEffect(() => {
         return () => {

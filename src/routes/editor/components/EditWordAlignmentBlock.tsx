@@ -94,10 +94,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
     const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
 
-    const memoizedSegmentClassName = React.useMemo(() => playingLocation.segmentIndex === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment, playingLocation)
-    const memoizedWordClassName = React.useMemo(() => playingLocation.wordIndex === segmentIndex ? `${classes.playingWord}` : '', playingLocation)
-
-
     const initTranscriptToRender = () => {
         const inititalTranscript = (<span>{segment.transcript}</span>)
         setTranscriptToRender(inititalTranscript);
@@ -207,12 +203,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     event.preventDefault();
                 } else {
                     if(isInputKey(event.nativeEvent)) {
-                        const word = document.getElementById(`word-${segmentIndex}-${location[1]}`);
+                        const word = document.getElementById(`word-${segmentIndex}-${location.segmentIndex}`);
                         const updateUndoStack = undoStack.slice(0);
-                        if(localWordForLengthComparison.length === 0) localWordForLengthComparison = wordAlignments[location[1]]['word'];
+                        if(localWordForLengthComparison.length === 0) {
+                            localWordForLengthComparison = wordAlignments[location.segmentIndex]['word'];
+                        }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            updateUndoStack.push({ wordIndex: location[1], word: word?.innerText || '' });
+                            updateUndoStack.push({ wordIndex: location.wordIndex, word: word?.innerText || '' });
                             localWordForLengthComparison = word?.innerText || '';
                             onUpdateUndoRedoStack(true, false);
                             setUndoStack(updateUndoStack);
@@ -360,7 +358,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         <div
             contentEditable
             id={`segment-${segmentIndex}`}
-            className={memoizedSegmentClassName}
+            className={playingLocation.segmentIndex === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment}
             ref={element}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}

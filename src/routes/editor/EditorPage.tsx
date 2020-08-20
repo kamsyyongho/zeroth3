@@ -157,7 +157,7 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
-  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 50});
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 25});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
 
   // get the passed info if we got here via the details page
@@ -291,30 +291,52 @@ export function EditorPage() {
 
   const getPrevSegment = async () => {
     if(segmentResults.first) return;
-  };
-
-  const getNextSegment = async () => {
-    if(segmentResults.last) return;
-    // const page = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number
-    //     ? prevSegmentResults?.number + 1 : segmentResults?.number + 1;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
-    const page = prevSegment.number + 1;
-    console.log('========params to update : ', page);
+    const prevPage = prevSegment.number - 1;
+    console.log('========params to update : ', prevPage);
     setPrevSegmentResults(segmentResults);
-    setPaginationParams({page, pageSize: paginationParams.pageSize});
-    const additionalSegments = await getAdditionalSegments(page, paginationParams.pageSize);
+    setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
+    const additionalSegments = await getAdditionalSegments(prevPage, paginationParams.pageSize);
     if(additionalSegments) {
       const updateSegment = [...prevSegment.content, ...additionalSegments];
       console.log('======currentPlayingLocation : ', currentPlayingLocation);
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment.id == prevSegment.content[currentPlayingLocation.segmentIndex]['id']) {
+        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
           console.log('=========== segment : ', segments);
           playingSegmentIndex =  index;
+          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+        } else if(prevSegment) {
+          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
         }
       })
-      setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+      setSegments([...segmentResults.content, ...additionalSegments]);
+    }
+  };
+
+  const getNextSegment = async () => {
+    if(segmentResults.last) return;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const nextPage = prevSegment.number + 1;
+    console.log('========params to update : ', nextPage);
+    setPrevSegmentResults(segmentResults);
+    setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
+    const additionalSegments = await getAdditionalSegments(nextPage, paginationParams.pageSize);
+    if(additionalSegments) {
+      const updateSegment = [...prevSegment.content, ...additionalSegments];
+      console.log('======currentPlayingLocation : ', currentPlayingLocation);
+      let playingSegmentIndex;
+      const wordIndex = currentPlayingLocation.wordIndex;
+      updateSegment.forEach((segment, index) => {
+        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
+          console.log('=========== segment : ', segments);
+          playingSegmentIndex =  index;
+          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+        } else if(prevSegment) {
+          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
+        }
+      })
       setSegments([...segmentResults.content, ...additionalSegments]);
     }
   };
@@ -508,13 +530,13 @@ export function EditorPage() {
 
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation || caretLocation[0] === segments.length -1) {
+    if(!caretLocation || caretLocation.segmentIndex === segments.length -1) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
 
     const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
-    const selectedSegmentIndex = caretLocation[0];
+    const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const firstSegmentId = trackSegments[selectedSegmentIndex].id;
@@ -570,7 +592,7 @@ export function EditorPage() {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation[0]].id, caretLocation[1]);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation.segmentIndex].id, caretLocation.wordIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -579,7 +601,7 @@ export function EditorPage() {
         const splitSegments = [...trackSegments];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
-        splitSegments.splice(caretLocation[0], NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
+        splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
 
         // reset our new default baseline
         setSegments(splitSegments);

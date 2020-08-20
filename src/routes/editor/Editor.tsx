@@ -605,16 +605,14 @@ export function Editor(props: EditorProps) {
       style={{
         height,
         overflowY: 'auto',
-      }}
-    >
+      }}>
       <Backdrop
         className={classes.backdrop}
         style={overlayStyle}
         open={!!readOnlyEditorState}
         onClick={() => {
           return undefined;
-        }}
-      >
+        }}>
         <Draggable
           axis="both"
           defaultPosition={{ x: 0, y: 0 }}

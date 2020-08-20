@@ -445,16 +445,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           {translate('forms.status')}
         </Typography>
     )
-    if(isLoadingAdditionalSegment) {
-      const loadingEl = (<ScaleLoader
-          color={theme.palette.common.white}
-          loading={true}
-      />);
-      setStatusEl(loadingEl);
-      setTimeout(() => {
-        setStatusEl(statusTextEl);
-      }, 1500);
-    } else if(loading) {
+    if(loading) {
       const loadingEl = (<ScaleLoader
           color={theme.palette.common.white}
           loading={true}
@@ -491,8 +482,32 @@ export const EditorControls = (props: EditorControlsProps) => {
         setStatusEl(statusTextEl);
       }, 1500);
     }
+  }, [loading, isSegmentUpdateError]);
 
-  }, [loading, isSegmentUpdateError, isLoadingAdditionalSegment]);
+  React.useEffect(() => {
+    const statusTextEl = (
+        <Typography className={classes.status}>
+          {translate('forms.status')}
+        </Typography>
+    )
+    if(isLoadingAdditionalSegment) {
+      const loadingEl = (<ScaleLoader
+          color={theme.palette.common.white}
+          loading={true}
+      />);
+      setStatusEl(loadingEl);
+    } else {
+      const successTextEl = (
+          <Typography className={classes.status}>
+            {translate('editor.loadingAdditonalSegmentSuccess')}
+          </Typography>
+      )
+      setStatusEl(successTextEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 2000);
+    }
+  }, [isLoadingAdditionalSegment])
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**
