@@ -21,7 +21,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
-import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
+import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
 import { SegmentAndWordIndex } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
@@ -424,9 +424,10 @@ export const EditorControls = (props: EditorControlsProps) => {
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    console.log('============keyboardEvent charCode, code, keycode : ', event.charCode, event.code, event.keyCode);
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
-    const key = event.code === "Space" ? "Space" : event.key;
+    const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+    console.log('============keyboardEvent charCode, code, keycode : ', event.charCode, event.code, event.keyCode, key);
+
     if(shortcutsStack?.length) {
       shortcutsStack.push(key);
     } else {

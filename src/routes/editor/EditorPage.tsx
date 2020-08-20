@@ -291,20 +291,17 @@ export function EditorPage() {
 
   const getPrevSegment = async () => {
     if(segmentResults.first) return;
-    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number ? prevSegmentResults : segmentResults;
     const prevPage = prevSegment.number - 1;
-    console.log('========params to update : ', prevPage);
     setPrevSegmentResults(segmentResults);
     setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
     const additionalSegments = await getAdditionalSegments(prevPage, paginationParams.pageSize);
     if(additionalSegments) {
-      const updateSegment = [...prevSegment.content, ...additionalSegments];
-      console.log('======currentPlayingLocation : ', currentPlayingLocation);
+      const updateSegment = [...additionalSegments, ...prevSegment.content];
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
         if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
-          console.log('=========== segment : ', segments);
           playingSegmentIndex =  index;
           setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
         } else if(prevSegment) {
@@ -319,18 +316,15 @@ export function EditorPage() {
     if(segmentResults.last) return;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
     const nextPage = prevSegment.number + 1;
-    console.log('========params to update : ', nextPage);
     setPrevSegmentResults(segmentResults);
     setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
     const additionalSegments = await getAdditionalSegments(nextPage, paginationParams.pageSize);
     if(additionalSegments) {
       const updateSegment = [...prevSegment.content, ...additionalSegments];
-      console.log('======currentPlayingLocation : ', currentPlayingLocation);
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
         if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
-          console.log('=========== segment : ', segments);
           playingSegmentIndex =  index;
           setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
         } else if(prevSegment) {
