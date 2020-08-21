@@ -21,7 +21,7 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
-import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
+import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
 import { SegmentAndWordIndex } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
@@ -354,7 +354,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     const keyCombinationArray = Object.values(localShortcuts);
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
-    console.log('=============== sbhortcutsStack : ', shortcutsStack);
     keyCombinationArray.forEach((combination: any, index: number) => {
       for(let i = 0; i < shortcutsStack.length; i++) {
         if(!combination.includes(shortcutsStack[i])) {
@@ -364,8 +363,6 @@ export const EditorControls = (props: EditorControlsProps) => {
       resultIndex = index;
     });
     const command = functionArray[resultIndex];
-
-    console.log('================= command : ', command);
 
     switch (command) {
       case 'confirm':
@@ -424,9 +421,9 @@ export const EditorControls = (props: EditorControlsProps) => {
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    console.log('============keyboardEvent charCode, code, keycode : ', event.charCode, event.code, event.keyCode);
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
-    const key = event.code === "Space" ? "Space" : event.key;
+    const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+
     if(shortcutsStack?.length) {
       shortcutsStack.push(key);
     } else {
