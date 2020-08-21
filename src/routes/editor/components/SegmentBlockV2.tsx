@@ -149,7 +149,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     };
 
     React.useEffect(() => {
-        if(!editorAutoScrollDisabled) {
+        if(!editorAutoScrollDisabled && isAudioPlaying && playingLocation.segmentIndex === segmentIndex) {
             checkLocationOnScreenAndScroll(
                 segmentRef.current,
                 editorElement,
@@ -157,7 +157,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 windowHeight,
                 editorAutoScrollDisabled);
         }
-    },[editorAutoScrollDisabled]);
+    },[playingLocation]);
 
     React.useEffect(() => {
         return () => {

@@ -263,6 +263,7 @@ export function EditorPage() {
   const getAdditionalSegments = async (page: number, pageSize: number) => {
     if (api?.voiceData && projectId && voiceData) {
       setIsLoadingAdditionalSegment(true);
+      if(isAudioPlaying) setIsAudioPlaying(false);
       const response = await api.voiceData.getSegments(projectId, voiceData.id, page, pageSize);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
@@ -271,6 +272,7 @@ export function EditorPage() {
         // setSegments(response.data.content);
         internalSegmentsTracker = response.data.content;
         setIsLoadingAdditionalSegment(false);
+        setIsAudioPlaying(true);
         return response?.data.content;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
@@ -303,9 +305,9 @@ export function EditorPage() {
       updateSegment.forEach((segment, index) => {
         if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
           playingSegmentIndex =  index;
-          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
         } else if(prevSegment) {
-          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
+          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
         }
       })
       setSegments([...segmentResults.content, ...additionalSegments]);
@@ -326,9 +328,9 @@ export function EditorPage() {
       updateSegment.forEach((segment, index) => {
         if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
           playingSegmentIndex =  index;
-          setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex})
+          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
         } else if(prevSegment) {
-          setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0})
+          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
         }
       })
       setSegments([...segmentResults.content, ...additionalSegments]);

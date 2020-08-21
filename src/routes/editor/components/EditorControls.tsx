@@ -354,7 +354,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     const keyCombinationArray = Object.values(localShortcuts);
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
-    console.log('=============== sbhortcutsStack : ', shortcutsStack);
     keyCombinationArray.forEach((combination: any, index: number) => {
       for(let i = 0; i < shortcutsStack.length; i++) {
         if(!combination.includes(shortcutsStack[i])) {
@@ -364,8 +363,6 @@ export const EditorControls = (props: EditorControlsProps) => {
       resultIndex = index;
     });
     const command = functionArray[resultIndex];
-
-    console.log('================= command : ', command);
 
     switch (command) {
       case 'confirm':
@@ -426,7 +423,6 @@ export const EditorControls = (props: EditorControlsProps) => {
   const handleKeyPress = (event: KeyboardEvent) => {
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
     const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
-    console.log('============keyboardEvent charCode, code, keycode : ', event.charCode, event.code, event.keyCode, key);
 
     if(shortcutsStack?.length) {
       shortcutsStack.push(key);
