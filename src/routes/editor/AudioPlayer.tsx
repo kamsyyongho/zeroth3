@@ -1445,7 +1445,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(autoSeekDisabled ?
+    {renderControlWithTooltip(!autoSeekDisabled ?
         translate('audioPlayer.activateNavigateOnClick') : translate('audioPlayer.deactivateNavigateOnClick'),
         <Button
             aria-label="seek-lock"

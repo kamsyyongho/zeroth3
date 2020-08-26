@@ -128,9 +128,41 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const previousSegmentNode = document.getElementById
         (`word-${segmentIndex - 1}-${wordAlignmentIndex}`) || null;
         const range = document.createRange();
+        const currentWordElement = document.getElementById
+        (`word-${segmentIndex}-${playingLocation.wordIndex}`)
+        const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
+        const wordElementPosition = currentWordElement?.getBoundingClientRect();
 
         if (!previousSegmentNode) { return; }
-        setRange(previousSegmentNode, false);
+
+        if(Math.floor(segmentElementPosition?.top || 0) === Math.floor(wordElementPosition?.top || 0)) {
+            setRange(previousSegmentNode, false);
+        } else {
+            const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+            let previousDiff = Math.abs((wordElementPosition?.x || 0)
+                - wordsInSegment[0].getBoundingClientRect().x);
+
+            for(let i = 1; i < wordsInSegment.length - 1; i++) {
+                const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
+                const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
+                const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
+                const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
+                const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
+
+                if((wordElementPosition?.bottom || 0) > currentWordPosition.bottom) {
+                    if(currentDiff < previousDiff && currentDiff < nextDiff) {
+                        const prevSegment = wordsInSegment[i] as HTMLElement;
+                        setRange(prevSegment, false);
+                        return
+                    } else {
+                        previousDiff = currentDiff;
+                    }
+                }
+
+            }
+        }
+        //
+        // setRange(previousSegmentNode, false);
         // updateCaretLocation(segmentIndex - 1, wordAlignmentIndex);
     };
 
@@ -150,11 +182,39 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const currentNode = element;
         selection ?.removeAllRanges();
         const range = document.createRange();
+        const currentWordElement = document.getElementById
+        (`word-${segmentIndex}-${playingLocation.wordIndex}`)
+        const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
+        const wordElementPosition = currentWordElement?.getBoundingClientRect();
 
         if (!nextSegmentNode) { return; }
-        // currentNode.current.blur();
-        setRange(nextSegmentNode, false);
-        // updateCaretLocation(segmentIndex + 1, wordAlignmentIndex);
+
+        if(Math.floor(segmentElementPosition?.bottom || 0) === Math.floor(wordElementPosition?.bottom || 0)) {
+            setRange(nextSegmentNode, false);
+        } else {
+            const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+            let previousDiff = Math.abs((wordElementPosition?.x || 0)
+                - wordsInSegment[0].getBoundingClientRect().x);
+
+            for(let i = 1; i < wordsInSegment.length - 1; i++) {
+                const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
+                const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
+                const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
+                const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
+                const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
+
+                if((wordElementPosition?.bottom || 0) < currentWordPosition.bottom) {
+                    if(currentDiff < previousDiff && currentDiff < nextDiff) {
+                        const nextSegment = wordsInSegment[i] as HTMLElement;
+                        setRange(nextSegment, false);
+                        return
+                    } else {
+                        previousDiff = currentDiff;
+                    }
+                }
+
+            }
+        }
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {

@@ -158,7 +158,7 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
-  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 25});
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 40});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
 
   // get the passed info if we got here via the details page
@@ -262,9 +262,10 @@ export function EditorPage() {
   };
 
   const getAdditionalSegments = async (page?: number, time?: number) => {
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
     if (api?.voiceData && projectId && voiceData) {
       setIsLoadingAdditionalSegment(true);
-      if(isAudioPlaying) setIsAudioPlaying(false);
+      if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
       const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, page, time);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
@@ -274,7 +275,7 @@ export function EditorPage() {
         // setSegments(response.data.content);
         internalSegmentsTracker = response.data.content;
         setIsLoadingAdditionalSegment(false);
-        setIsAudioPlaying(true);
+        if(checkAudioPlaying) setIsAudioPlaying(true);
         return response?.data.content;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
