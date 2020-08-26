@@ -386,8 +386,10 @@ export const ko: ResourceLanguage = {
       loop: '루프하기',
       playbackSpeed: '재생속도',
       mute: '음소거하기',
-      lockNavigateOnClick: '클릭탐색 잠기',
+      activateNavigateOnClick: '클릭탐색 활성',
+      deactivateNavigateOnClick: '클릭탐색 비활성',
       disableAutoScroll: '자동스크롤 사용안하기',
+      enableAutoScroll: '자동스크롤 사용하기',
     },
     home: {
       header: 'Welcome to Zeroth',

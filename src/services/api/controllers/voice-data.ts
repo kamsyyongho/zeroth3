@@ -336,13 +336,18 @@ export class VoiceData extends ParentApi {
   async getSegments(
     projectId: string,
     dataId: string,
-    page: number,
-    pageSize: number,
+    size: number,
+    page?: number,
+    time?: number,
   ): Promise<getSegmentsDataResult> {
+    const params = {
+      page,
+      size,
+      time,
+    }
     const response = await this.apisauce.get<SegmentResults, ServerError>(
-      this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments?page=${page}&size=${pageSize}`,
-      ),
+      this.getPathWithOrganization(`/projects/${projectId}/data/${dataId}/segments`,),
+        params
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

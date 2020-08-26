@@ -44,7 +44,7 @@ import {EditorFetchButton} from './components/EditorFetchButton';
 import {StarRating} from './components/StarRating';
 import {Editor} from './Editor';
 import {calculateWordTime, getDisabledControls} from './helpers/editor-page.helper';
-import {getSegmentAndWordIndex, updatePlayingLocation} from './helpers/editor.helper';
+import {getSegmentAndWordIndex} from './helpers/editor.helper';
 import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -116,6 +116,7 @@ export function EditorPage() {
   const [undoRedoData, setUndoRedoData] = useGlobal('undoRedoData');
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
+  const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -260,11 +261,12 @@ export function EditorPage() {
     }
   };
 
-  const getAdditionalSegments = async (page: number, pageSize: number) => {
+  const getAdditionalSegments = async (page?: number, time?: number) => {
     if (api?.voiceData && projectId && voiceData) {
       setIsLoadingAdditionalSegment(true);
       if(isAudioPlaying) setIsAudioPlaying(false);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, page, pageSize);
+      const pageParam = !!time ? null : page;
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, page, time);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -291,13 +293,18 @@ export function EditorPage() {
     }
   }
 
+  const getTimeBasedSegment = async (time: number) => {
+    const updateSegments = await getAdditionalSegments(undefined, time);
+    if(updateSegments) setSegments(updateSegments);
+  };
+
   const getPrevSegment = async () => {
     if(segmentResults.first) return;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number ? prevSegmentResults : segmentResults;
     const prevPage = prevSegment.number - 1;
     setPrevSegmentResults(segmentResults);
     setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
-    const additionalSegments = await getAdditionalSegments(prevPage, paginationParams.pageSize);
+    const additionalSegments = await getAdditionalSegments(prevPage);
     if(additionalSegments) {
       const updateSegment = [...additionalSegments, ...prevSegment.content];
       let playingSegmentIndex;
@@ -320,7 +327,7 @@ export function EditorPage() {
     const nextPage = prevSegment.number + 1;
     setPrevSegmentResults(segmentResults);
     setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
-    const additionalSegments = await getAdditionalSegments(nextPage, paginationParams.pageSize);
+    const additionalSegments = await getAdditionalSegments(nextPage);
     if(additionalSegments) {
       const updateSegment = [...prevSegment.content, ...additionalSegments];
       let playingSegmentIndex;
@@ -340,7 +347,7 @@ export function EditorPage() {
   const getSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.page, paginationParams.pageSize);
+      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, paginationParams.page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -749,7 +756,6 @@ export function EditorPage() {
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
-          updatePlayingLocation(playingLocation);
           setCurrentPlayingLocation(playingLocation);
         }
         if (playingLocation && (initialSegmentLoad ||
@@ -806,9 +812,12 @@ export function EditorPage() {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
+    if(autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
+    let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       wordWasClicked = true;
+      if(checkAudioPlaying) setIsAudioPlaying(false);
       const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData && wordTime) {
@@ -817,10 +826,8 @@ export function EditorPage() {
         setPlayingTimeData(timeData);
       }
       // setTimeToSeekTo(wordTime + SEEK_SLOP);
-
-      if (!autoSeekLock) {
-        setCurrentPlayingLocation(wordLocation);
-      }
+      setCurrentPlayingLocation(wordLocation);
+      if(checkAudioPlaying) setIsAudioPlaying(true);
     }
   };
 
@@ -854,8 +861,6 @@ export function EditorPage() {
     setSegmentIdToDelete(undefined);
     setWordToCreateTimeFor(undefined);
   };
-
-  const handleAutoSeekToggle = (value: boolean) => setAutoSeekLock(value);
 
   const openSpeakerAssignDialog = (segmentIndex: number) => setSegmentIndexToAssignSpeakerTo(segmentIndex);
 
@@ -1205,7 +1210,6 @@ export function EditorPage() {
                   // timeToSeekTo={playingTimeData ? playingTimeData.timeToSeekTo : undefined}
                   disabledTimes={disabledTimes}
                   segmentIdToDelete={segmentIdToDelete}
-                  onAutoSeekToggle={handleAutoSeekToggle}
                   wordsClosed={wordsClosed}
                   deleteAllWordSegments={deleteAllWordSegments}
                   onSegmentDelete={handleSegmentDelete}
@@ -1222,8 +1226,10 @@ export function EditorPage() {
                   segmentSplitTimeBoundary={segmentSplitTimeBoundary}
                   segmentSplitTime={segmentSplitTime}
                   onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
+                  isAudioPlaying={isAudioPlaying}
                   setIsAudioPlaying={setIsAudioPlaying}
                   playingTimeData={playingTimeData}
+                  getTimeBasedSegment={getTimeBasedSegment}
               />
             </ErrorBoundary>}
           </Paper>

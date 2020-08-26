@@ -152,24 +152,6 @@ export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
   return selection;
 };
 
-export const updatePlayingLocation = (playingLocation: any) => {
-  if(playingLocation) {
-    const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
-    const selection = window.getSelection();
-    const range = document.createRange();
-
-    if(playingBlock) {
-      range.selectNodeContents(playingBlock);
-      range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-  }
-  // if(playingBlock) {
-  //   playingBlock.focus();
-  // }
-};
-
 const removeStyleFromSelection = (
   editorState: EditorState,
   selectionState: SelectionState,

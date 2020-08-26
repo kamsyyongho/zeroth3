@@ -94,6 +94,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+    const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;

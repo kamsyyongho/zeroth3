@@ -182,6 +182,7 @@ export function Editor(props: EditorProps) {
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
+  const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
   const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
   const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
@@ -295,7 +296,7 @@ export function Editor(props: EditorProps) {
 
   const handleClickInsideEditor = () => {
     const playingLocation: SegmentAndWordIndex = getSegmentAndWordIndex();
-    if(playingLocation) onWordClick(playingLocation);
+    if(playingLocation && !autoSeekDisabled) onWordClick(playingLocation);
   };
   /** updates the word alignment data once selected segment / blocks have changed
    * @returns if we should update the editor state
@@ -575,12 +576,10 @@ export function Editor(props: EditorProps) {
   }, [focussed]);
 
   React.useEffect(() => {
-    if(playingLocation && ready) {
-      if(playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
-        // updatePlayingLocation();
-      }
+    if(playingLocation && ready &&
+        playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
+      // updatePlayingLocation();
     }
-    if(isAudioPlaying) updatePlayingLocation();
   }, [playingLocation, ready]);
 
   React.useEffect(() => {

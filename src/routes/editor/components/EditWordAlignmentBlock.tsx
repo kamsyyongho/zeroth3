@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             width: 'fit-content',
             maxWidth: '100%',
             caretStyle: 'block',
-            caretColor: 'white',
+            // caretColor: 'white',
             textShadow: '0 0 4x #888',
             WebkiTextFillColor: 'transparent',
             whiteSpace: 'pre-wrap',
@@ -101,10 +101,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleArrowKeyDown = () => {
         const playingLocation = getSegmentAndWordIndex();
-        if(playingLocation) {
-            updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
-            return;
-        }
+        // if(playingLocation) {
+        //     updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
+        //     return;
+        // }
     };
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
@@ -131,7 +131,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         if (!previousSegmentNode) { return; }
         setRange(previousSegmentNode, false);
-        updateCaretLocation(segmentIndex - 1, wordAlignmentIndex);
+        // updateCaretLocation(segmentIndex - 1, wordAlignmentIndex);
     };
 
     const handleArrowUpInSegment = () => {
@@ -154,7 +154,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         if (!nextSegmentNode) { return; }
         // currentNode.current.blur();
         setRange(nextSegmentNode, false);
-        updateCaretLocation(segmentIndex + 1, wordAlignmentIndex);
+        // updateCaretLocation(segmentIndex + 1, wordAlignmentIndex);
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
@@ -206,7 +206,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const word = document.getElementById(`word-${segmentIndex}-${location.segmentIndex}`);
                         const updateUndoStack = undoStack.slice(0);
                         if(localWordForLengthComparison.length === 0) {
-                            localWordForLengthComparison = wordAlignments[location.segmentIndex]['word'];
+                            localWordForLengthComparison = wordAlignments[location.wordIndex]['word'];
                         }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
@@ -256,12 +256,13 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleBlur = () => {
         const copySegment = JSON.parse(JSON.stringify(segment));
-        const wordsInSegment: HTMLCollection = document.getElementsByClassName(`segment-${segmentIndex}`);
+        const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
         let transcript = '';
         if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
             Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
-                transcript += wordEl.innerHTML;
-                copySegment.wordAlignments[index].word = wordEl.innerHTML;
+                const htmlWord = wordEl as HTMLElement;
+                transcript += htmlWord.innerHTML;
+                copySegment.wordAlignments[index].word = htmlWord.innerText;
             });
             updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
             setIsChanged(false);
@@ -311,12 +312,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         if(redoStack.length > 0 && editorCommand === EDITOR_CONTROLS.redo) {
             handleRedo();
         }
-        // if(undoRedoData && undoRedoData.location.length && segmentIndex == undoRedoData.location[0]) {
-        //     if(editorCommand === EDITOR_CONTROLS.undo) handleUndoCommand();
-        //     if(editorCommand === EDITOR_CONTROLS.redo) handleRedoCommand();
-        //     onUpdateUndoRedoStack(getUndoStack().length > 0, getRedoStack().length > 0)
-        //     setEditorCommandForWordBlock(editorCommand);
-        // }
     },[editorCommand]);
 
     React.useEffect(() => {
@@ -365,7 +360,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}>
             {
-                isMouseDown ?
+                isAbleToComment && isMouseDown ?
                     <div>
                         {transcriptToRender}
                     </div>
@@ -380,7 +375,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                             </div>
                         )
                     })
-
             }
         </div>
     );
