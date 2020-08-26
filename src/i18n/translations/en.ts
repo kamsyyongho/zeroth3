@@ -385,8 +385,10 @@ export const en: ResourceLanguage = {
       loop: 'Loop',
       playbackSpeed: 'Playback speed',
       mute: 'Mute',
-      lockNavigateOnClick: 'Lock click navigation',
+      lockNavigateOnClick: 'Activate click navigation',
+      deactivateNavigateOnClick: 'Deactivate click navigation',
       disableAutoScroll: 'Disable auto scroll',
+      enableAutoScroll: 'Enable auto scroll',
     },
     home: {
       header: 'Welcome to Zeroth',

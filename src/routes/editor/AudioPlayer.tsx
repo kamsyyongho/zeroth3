@@ -72,6 +72,7 @@ const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
+let audioSegmentsTracker: SegmentEditor[] = [];
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -136,7 +137,6 @@ interface AudioPlayerProps {
   segmentSplitTimeBoundary?: Required<Time>;
   segmentSplitTime?: number;
   onSegmentSplitTimeChanged: (time: number) => void;
-  onAutoSeekToggle: (value: boolean) => void;
   onTimeChange: (timeInSeconds: number) => void;
   onSectionChange: (time: Time, wordKey: string) => void;
   onSegmentDelete: () => void;
@@ -145,8 +145,10 @@ interface AudioPlayerProps {
   onPlayingSegmentCreate: () => void;
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
+  isAudioPlaying: boolean;
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
   playingTimeData: PlayingTimeData;
+  getTimeBasedSegment: (time: number) => void;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -157,7 +159,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     waveformUrl,
     editorCommand,
     onTimeChange,
-    onAutoSeekToggle,
     onSectionChange,
     disabledTimes,
     segmentIdToDelete,
@@ -175,24 +176,25 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onPlayingSegmentCreate,
     onSegmentStatusEditChange,
     onReady,
+    isAudioPlaying,
     setIsAudioPlaying,
     playingTimeData,
+    getTimeBasedSegment,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
+  const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
-  const [isPlay, setIsPlay] = React.useState(false);
   const [loop, setLoop] = React.useState(false);
   const [zoomLevel, setZoomLevel] = React.useState<0 | 1 | 2 | number>(0);
   const [waiting, setWaiting] = React.useState(false);
   const [showStreamLoader, setShowStreamLoader] = React.useState(false);
   const [isMute, setIsMute] = React.useState(false);
-  const [autoSeekDisabled, setAutoSeekDisabled] = React.useState(false);
   const [playbackSpeed, setPlaybackSpeed] = React.useState<0.5 | 1>(1); // 0 to 1
   // for recreating the segments after disabling a loop
   const [savedCurrentPlayingWordPlayerSegment, setSavedCurrentPlayingWordPlayerSegment] = React.useState<PlayingWordAndSegment | undefined>();
@@ -203,14 +205,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
-  const handlePause = () => {
-    setIsPlay(false);
-    setIsAudioPlaying(false);
-  };
-  const handlePlay = () => {
-    setIsPlay(true);
-    setIsAudioPlaying(true);
-  };
+  const handlePause = () =>  setIsAudioPlaying(false);
+
+  const handlePlay = () =>   setIsAudioPlaying(true);
+
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
@@ -221,8 +219,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }, [currentTime]);
 
   React.useEffect(() => {
-    playing = isPlay;
-  }, [isPlay]);
+    playing = isAudioPlaying;
+  }, [isAudioPlaying]);
 
   // to prevent the keypress listeners from firing twice
   // the editor will handle the shortcuts when it is focussed
@@ -235,10 +233,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     handlePause();
   };
 
-  const toggleLockSeek = () => setAutoSeekDisabled((prevValue) => {
-    onAutoSeekToggle(!prevValue);
-    return !prevValue;
-  });
+  const toggleLockSeek = () => setAutoSeekDisabled(!autoSeekDisabled);
 
   const toggleLockScroll = () => setEditorAutoScrollDisabled(!editorAutoScrollDisabled);
 
@@ -250,7 +245,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handleStop = () => {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
-      setIsPlay(false);
+      setIsAudioPlaying(false);
       setIsAudioPlaying(false);
       StreamPlayer.pause();
       PeaksPlayer.player.seek(0);
@@ -353,7 +348,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
 
-  const handleAudioProcess = (currentTime?: number) => {
+  const handleAudioProcess = async (currentTime?: number) => {
     if (!mediaElement || !PeaksPlayer?.player || typeof currentTime !== 'number' || !getTimeIntervalId) return;
     try {
       const currentTimeString = currentTime.toFixed(2);
@@ -372,7 +367,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
    * - sets or clears an interval (77ms) if the we are currently playing audio
    */
   React.useEffect(() => {
-    if (isPlay && !waiting) {
+    if (isAudioPlaying && !waiting) {
       getTimeIntervalId = setInterval(() => {
         handleAudioProcess(mediaElement?.currentTime);
       }, 77);
@@ -382,18 +377,23 @@ export function AudioPlayer(props: AudioPlayerProps) {
         getTimeIntervalId = undefined;
       }
     }
-  }, [isPlay, waiting]);
+  }, [isAudioPlaying, waiting]);
 
   const handleLoaded = () => {
     setWaiting(false);
   };
 
-  function handleSeek() {
+  async function handleSeek() {
+    // console.log('==========every seek event')
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
       if (typeof currentTime !== 'number') return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
+      if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed) {
+        await getTimeBasedSegment(currentTimeFixed);
+      }
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
       handleTimeChange(currentTimeFixed);
@@ -401,6 +401,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       handleError(error);
     }
   };
+
+
 
   function handleZoom(zoomIn = false) {
     if (!PeaksPlayer?.zoom || !peaksReady) return;
@@ -950,6 +952,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  React.useEffect(() => {
+    audioSegmentsTracker = segments;
+    return () => {
+      audioSegmentsTracker = [];
+    }
+  }, [segments]);
+
   // once everything is ready
   React.useEffect(() => {
     if (duration > 0 && ready) {
@@ -1317,6 +1326,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('seeked', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
+
         }
         audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
@@ -1370,7 +1380,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     </Button>
     {renderControlWithTooltip(renderInputCombination(shortcuts.audioPlayPause),
         <Button aria-label="play/pause" onClick={handlePlayPause} >
-          {isPlay ? <PauseIcon /> : <PlayArrowIcon />}
+          {isAudioPlaying ? <PauseIcon /> : <PlayArrowIcon />}
         </Button>
     )}
     {renderControlWithTooltip(renderInputCombination(shortcuts.forwardAudio),
@@ -1435,7 +1445,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(translate('audioPlayer.lockNavigateOnClick'),
+    {renderControlWithTooltip(autoSeekDisabled ?
+        translate('audioPlayer.activateNavigateOnClick') : translate('audioPlayer.deactivateNavigateOnClick'),
         <Button
             aria-label="seek-lock"
             onClick={toggleLockSeek}
@@ -1450,7 +1461,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(translate('audioPlayer.disableAutoScroll'),
+    {renderControlWithTooltip(editorAutoScrollDisabled ?
+        translate('audioPlayer.enableAutoScroll') : translate('audioPlayer.disableAutoScroll'),
         <Button
             aria-label="scroll-lock"
             onClick={toggleLockScroll}
@@ -1513,7 +1525,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
                 </Grid>
                 <Grid
                     item
-                    className={!duration || (isPlay && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+                    className={!duration || (isAudioPlaying && (showStreamLoader || waiting)) ? undefined : classes.hidden}
                 >
                   <ScaleLoader
                       height={15}
