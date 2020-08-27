@@ -133,21 +133,21 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       const response = await api.rawData.getRawDataQueue(projectId);
       if (response.kind === 'ok') {
         const { queue } = response;
-        const { progress } = queue;
-        if (progress === 100) {
+        const { length } = queue;
+        if (length === 0) {
           onComplete();
         } else {
           //!
           //TODO
           //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
-          const text = `${translate('common.decoding')}: ${progress}%`;
+          const text = `${translate('common.decoding')}: ${length} seconds remaining`;
           enqueueSnackbar(text, {
             ...DEFAULT_NOTIFICATION_OPTIONS,
-            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), progress),
+            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), length),
           });
         }
         if (isGetter) {
-          return progress;
+          return length;
         }
       } else {
         log({

@@ -112,7 +112,7 @@ export const UploadProgressNotification = React.forwardRef((props: UploadProgres
           onComplete();
         }
       } else {
-        setText(`${translate('common.decoding')}: ${progress}%`);
+        setText(`${translate('common.decoding')}: ${translate('common.decodingTimeRemaining', { progress })}`);
         uploadQueueCheckTimeoutId = setTimeout(() => {
           checkUploadQueue();
         }, DEFAULT_POLLING_TIMEOUT);

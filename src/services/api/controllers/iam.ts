@@ -62,7 +62,7 @@ export class IAM extends ParentApi {
   async getRoles(): Promise<getRolesResult> {
     // make the api call
     const response: ApiResponse<Role[], ServerError> = await this.apisauce.get(
-      `/iam/roles`,
+      `/api/iam/roles`,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

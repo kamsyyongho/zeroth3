@@ -28,5 +28,6 @@ declare module 'reactn/default' {
     editorAutoScrollDisabled?: boolean;
     autoSeekDisabled?: boolean;
     shortcuts: Shortcuts;
+    scrollToSegmentIndex?: number;
   }
 }

@@ -491,7 +491,7 @@ export function Editor(props: EditorProps) {
 
   const handleScrollEvent = (event: any) => {
     const element = event.target;
-    if(element.scrollHeight - Math.floor(element.scrollTop) <= element.clientHeight) {
+    if(Math.floor(element.scrollHeight - element.scrollTop) <= element.clientHeight) {
       getNextSegment();
     }
     if(element.scrollTop === 0) {
