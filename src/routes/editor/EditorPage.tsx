@@ -305,12 +305,14 @@ export function EditorPage() {
     const wordIndex = currentPlayingLocation.wordIndex;
 
     updateSegments.forEach((segment, index) => {
-      if(segment && segment.id == updateSegments[currentPlayingLocation.segmentIndex]['id']) {
+      if(segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
         playingSegmentIndex =  index;
-        if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
+        setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
+        console.log('=========  same ID: ', playingSegmentIndex);
       }
     })
     if(!playingSegmentIndex) {
+      console.log('========= !playingSegmentIndex : ', playingSegmentIndex);
       setCurrentPlayingLocation({segmentIndex: prevSegments.content.length, wordIndex: 0});
       setScrollToSegmentIndex(prevSegments.content.length);
     }
@@ -327,14 +329,15 @@ export function EditorPage() {
       const updateSegment = [...additionalSegments, ...prevSegment.content];
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
-      updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
-          playingSegmentIndex =  index;
-          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
-        } else if(prevSegment) {
-          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
-        }
-      })
+      // updateSegment.forEach((segment, index) => {
+      //   if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
+      //     playingSegmentIndex =  index;
+      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
+      //   } else if(prevSegment) {
+      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
+      //   }
+      // })
+      findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
       setSegments([...segmentResults.content, ...additionalSegments]);
     }
   };
@@ -350,14 +353,15 @@ export function EditorPage() {
       const updateSegment = [...prevSegment.content, ...additionalSegments];
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
-      updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
-          playingSegmentIndex =  index;
-          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
-        } else if(prevSegment) {
-          if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
-        }
-      })
+      // updateSegment.forEach((segment, index) => {
+      //   if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
+      //     playingSegmentIndex =  index;
+      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
+      //   } else if(prevSegment) {
+      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
+      //   }
+      // })
+      findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
       setSegments([...segmentResults.content, ...additionalSegments]);
     }
   };

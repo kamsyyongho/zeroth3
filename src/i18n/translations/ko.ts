@@ -33,7 +33,7 @@ export const ko: ResourceLanguage = {
       decode: '디코딩',
       decoded: '오디오 디코딩 완료',
       decoding: '오디오 디코딩 진행중',
-      decodingTimeRemaining: '{{progress}} 초 소요',
+      decodingTimeRemaining: '{{progress}} 초',
       forbidden: '금지',
       view: '보기',
       date: '날짜',

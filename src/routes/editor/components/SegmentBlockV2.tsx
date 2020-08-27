@@ -183,7 +183,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             resetState();
         }
     }, [segment]);
-    
+
     React.useEffect(() => {
         if(scrollToSegmentIndex) {
             if(scrollToSegmentIndex === segmentIndex) {
@@ -193,9 +193,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                     editorContentHeight,
                     windowHeight,
                     editorAutoScrollDisabled);
+                setScrollToSegmentIndex(undefined);
             }
         }
-    }, [scrollToSegmentIndex])
+    }, [scrollToSegmentIndex]);
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>

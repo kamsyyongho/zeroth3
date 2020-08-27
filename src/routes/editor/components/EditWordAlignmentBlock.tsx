@@ -135,8 +135,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         if (!previousSegmentNode) { return; }
 
-        const testDate1 = new Date('1992-01-21');
-        const testDate2 = new Date('1992-01-22');
         if(Math.floor(segmentElementPosition?.top || 0) === Math.floor(wordElementPosition?.top || 0)) {
             setRange(previousSegmentNode, false);
         } else {
@@ -152,10 +150,12 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
 
                 if((wordElementPosition?.bottom || 0) > currentWordPosition.bottom) {
+                    const prevSegment = wordsInSegment[i] as HTMLElement;
                     if(currentDiff < previousDiff && currentDiff < nextDiff) {
-                        const prevSegment = wordsInSegment[i] as HTMLElement;
                         setRange(prevSegment, false);
                         return
+                    } else if(i === wordsInSegment.length - 2) {
+                        setRange(prevSegment, false);
                     } else {
                         previousDiff = currentDiff;
                     }
@@ -198,10 +198,13 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
 
                 if((wordElementPosition?.bottom || 0) < currentWordPosition.bottom) {
+                    const nextSegment = wordsInSegment[i] as HTMLElement;
+
                     if(currentDiff < previousDiff && currentDiff < nextDiff) {
-                        const nextSegment = wordsInSegment[i] as HTMLElement;
                         setRange(nextSegment, false);
                         return
+                    } else if(i === wordsInSegment.length - 2) {
+                        setRange(nextSegment, false);
                     } else {
                         previousDiff = currentDiff;
                     }
@@ -290,6 +293,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const commentField = document.getElementById('comment-text-field');
         let indexFrom;
         let indexTo;
+        if(!isCommentEnabled) return;
         if(selection) {
             if(selection?.anchorOffset === selection?.focusOffset) {
                 // setIsMouseDown(false);
@@ -357,7 +361,14 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 onUpdateUndoRedoStack(true, updateRedoStack.length > 0);
             }
         }
-    }
+    };
+
+    const handleDoubleClick = () => {
+        // const location = getSegmentAndWordIndex();
+        // updateCaretLocation(location.segmentIndex, location.wordIndex);
+
+
+    };
 
     React.useEffect(() => {
         if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {
@@ -423,6 +434,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const text = wordAlignment.word.replace('|', ' ');
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
+                                 onDoubleClick={handleDoubleClick}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}
