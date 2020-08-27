@@ -78,13 +78,15 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
     const [decoderTranscriptAnimated, setDecoderTranscriptAnimated] = React.useState([]);
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
+    const [isDiff, setIsDiff] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
 
     const styleMap = React.useMemo(() => {
         return buildStyleMap(theme);
     }, []);
-    const memoizedSegmentClassName = React.useMemo(() => playingLocation.segmentIndex === segmentIndex ? classes.playingSegment : '', playingLocation)
+    const memoizedSegmentClassName = React.useMemo(() => isDiff && playingLocation.segmentIndex === segmentIndex ? `${classes.playingSegment} ${DECODER_DIFF_CLASSNAME}`
+        : playingLocation.segmentIndex === segmentIndex ? classes.playingSegment :'', playingLocation)
 
 
     const setLengthBeforeEachBlockArray = () => {
@@ -127,11 +129,12 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
               letterStack = '';
           } else {
               const animatedText = (
-                  <span key={`decoder-diff-span-${i}`} className={`${classes.highlight + ' ' +  DECODER_DIFF_CLASSNAME}`}>
+                  <span key={`decoder-diff-span-${i}`} className={classes.highlight}>
                       {decoderTranscriptArray[i]}
                   </span>
               )
               animated.push(animatedText);
+              setIsDiff(true);
           }
       }
       return animated;

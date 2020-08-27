@@ -737,7 +737,7 @@ export class Models extends ParentApi {
     const response: ApiResponse<
       TRAINING_METHODS[],
       ServerError
-    > = await this.apisauce.get(`/training-methods`);
+    > = await this.apisauce.get(`/api/training-methods`);
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response);

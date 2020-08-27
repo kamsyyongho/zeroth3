@@ -135,6 +135,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         if (!previousSegmentNode) { return; }
 
+        const testDate1 = new Date('1992-01-21');
+        const testDate2 = new Date('1992-01-22');
         if(Math.floor(segmentElementPosition?.top || 0) === Math.floor(wordElementPosition?.top || 0)) {
             setRange(previousSegmentNode, false);
         } else {
@@ -158,16 +160,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         previousDiff = currentDiff;
                     }
                 }
-
             }
         }
-        //
-        // setRange(previousSegmentNode, false);
-        // updateCaretLocation(segmentIndex - 1, wordAlignmentIndex);
-    };
-
-    const handleArrowUpInSegment = () => {
-
     };
 
     const handleArrowDown = () => {

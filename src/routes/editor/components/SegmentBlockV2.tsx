@@ -95,6 +95,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
+    const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
@@ -182,6 +183,19 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             resetState();
         }
     }, [segment]);
+    
+    React.useEffect(() => {
+        if(scrollToSegmentIndex) {
+            if(scrollToSegmentIndex === segmentIndex) {
+                checkLocationOnScreenAndScroll(
+                    segmentRef.current,
+                    editorElement,
+                    editorContentHeight,
+                    windowHeight,
+                    editorAutoScrollDisabled);
+            }
+        }
+    }, [scrollToSegmentIndex])
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>

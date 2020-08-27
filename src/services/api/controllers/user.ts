@@ -132,7 +132,7 @@ export class User extends ParentApi {
 
   async getShortcuts (): Promise<getShortcuts> {
     const response = await this.apisauce.get<any, ServerError>(
-        '/shortcuts',
+        '/api/shortcuts',
     );
 
     if(!response.ok) {
@@ -158,7 +158,7 @@ export class User extends ParentApi {
     const JSONShortcuts = JSON.stringify(shortcuts)
     const params = {shortcuts: JSONShortcuts};
     const response = await this.apisauce.post<undefined, ServerError>(
-        '/shortcuts',
+        'api/shortcuts',
         params,
     );
 

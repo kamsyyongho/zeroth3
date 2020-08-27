@@ -117,6 +117,7 @@ export function EditorPage() {
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
+  const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -299,8 +300,24 @@ export function EditorPage() {
     if(updateSegments) setSegments(updateSegments);
   };
 
+  const findPlayingLocationFromAdditionalSegments = (prevSegments: SegmentResults, updateSegments: Segment[]) => {
+    let playingSegmentIndex;
+    const wordIndex = currentPlayingLocation.wordIndex;
+
+    updateSegments.forEach((segment, index) => {
+      if(segment && segment.id == updateSegments[currentPlayingLocation.segmentIndex]['id']) {
+        playingSegmentIndex =  index;
+        if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
+      }
+    })
+    if(!playingSegmentIndex) {
+      setCurrentPlayingLocation({segmentIndex: prevSegments.content.length, wordIndex: 0});
+      setScrollToSegmentIndex(prevSegments.content.length);
+    }
+  };
+
   const getPrevSegment = async () => {
-    if(segmentResults.first) return;
+    if(segmentResults.first || prevSegmentResults && prevSegmentResults.first) return;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number ? prevSegmentResults : segmentResults;
     const prevPage = prevSegment.number - 1;
     setPrevSegmentResults(segmentResults);
@@ -311,7 +328,7 @@ export function EditorPage() {
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
+        if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
           playingSegmentIndex =  index;
           if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
         } else if(prevSegment) {
@@ -334,7 +351,7 @@ export function EditorPage() {
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
       updateSegment.forEach((segment, index) => {
-        if(prevSegment && segment && segment.id == updateSegment[currentPlayingLocation.segmentIndex]['id']) {
+        if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
           playingSegmentIndex =  index;
           if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
         } else if(prevSegment) {
