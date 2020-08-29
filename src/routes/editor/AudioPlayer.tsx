@@ -147,6 +147,7 @@ interface AudioPlayerProps {
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
   isAudioPlaying: boolean;
+  isLoadingAdditionalSegment:boolean;
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
   playingTimeData: PlayingTimeData;
   getTimeBasedSegment: (time: number) => void;
@@ -179,6 +180,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentStatusEditChange,
     onReady,
     isAudioPlaying,
+    isLoadingAdditionalSegment,
     setIsAudioPlaying,
     playingTimeData,
     getTimeBasedSegment,
@@ -301,7 +303,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const seekToTime = (timeToSeekTo: number) => {
-    console.log('=====timeToSeekto : ', timeToSeekTo);
     if (!PeaksPlayer?.player || timeToSeekTo < 0) return;
     try {
       PeaksPlayer.player.seek(timeToSeekTo);
@@ -338,10 +339,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const handleTimeChange = async (time: number) => {
-    if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
-        audioSegmentsTracker[audioSegmentsTracker.length - 1].length < time) {
-      await getTimeBasedSegment(time);
-    }
     if (onTimeChange && typeof onTimeChange === 'function') {
       onTimeChange(time);
     }
@@ -395,7 +392,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
-      if (typeof currentTime !== 'number') return;
+      if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime) {
@@ -1089,7 +1086,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    console.log('============= playTimeData : ', playingTimeData);
     if (typeof playingTimeData.timeToSeekTo === 'number') {
       seekToTime(playingTimeData.timeToSeekTo);
     }
@@ -1099,19 +1095,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
 
   }, [playingTimeData]);
-
-  // React.useEffect(() => {
-  //   if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
-  //     seekToTime(timeToSeekTo);
-  //   }
-  // }, [timeToSeekTo]);
-
-  // React.useEffect(() => {
-  //   // don't update playing segments if the loop is active or when it should be disabled
-  //   if (!isLoop && !disableLoop) {
-  //     parseCurrentlyPlayingWordSegment();
-  //   }
-  // }, [currentPlayingWordPlayerSegment]);
 
   // set the update the time for a segment
   React.useEffect(() => {
@@ -1243,18 +1226,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
     };
 
-    const handleSeeking = (arg) => {
-      console.log('========seeking arg : ', arg);
-    };
-
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
     mediaElement?.addEventListener('canplay', handleStreamReady);
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
-    // mediaElement?.addEventListener('seeked', handleSeek);
-    // mediaElement?.addEventListener('seek', handleSeek);
     mediaElement?.addEventListener('seeking', handleSeek);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
@@ -1292,7 +1269,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           handleError(error);
         }
       });
-      PeaksPlayer.on('player.seeked', () => {console.log('========== seeked')});
       PeaksPlayer.on('peaks.ready', handlePeaksReady);
       PeaksPlayer.on('segments.exit', handleSegmentExit);
       PeaksPlayer.on('segments.enter', handleSegmentEnter);
@@ -1351,7 +1327,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('canplay', handleStreamReady);
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
-          mediaElement.removeEventListener('seeked', handleSeek);
+          mediaElement.removeEventListener('seeking', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
@@ -1552,7 +1528,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
                 </Grid>
                 <Grid
                     item
-                    className={!duration || (isAudioPlaying && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+                    className={!duration|| isLoadingAdditionalSegment || (isAudioPlaying && (showStreamLoader || waiting)) ? undefined : classes.hidden}
                 >
                   <ScaleLoader
                       height={15}

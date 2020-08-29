@@ -275,7 +275,7 @@ export function EditorPage() {
         // setSegments(response.data.content);
         internalSegmentsTracker = response.data.content;
         if(checkAudioPlaying) setIsAudioPlaying(true);
-        return response?.data.content;
+        return response?.data;
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
@@ -294,8 +294,42 @@ export function EditorPage() {
   }
 
   const getTimeBasedSegment = async (time: number) => {
+    if(time <=  0) return;
+    setIsLoadingAdditionalSegment(true);
     const updateSegments = await getAdditionalSegments(undefined, time);
-    if(updateSegments) setSegments(updateSegments);
+    if(updateSegments) {
+      let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
+      setSegments(updateSegments.content);
+      internalSegmentsTracker = updateSegments.content;
+      
+      for(let i = 0; i < updateSegments.content.length; i++) {
+        const currentSegment = updateSegments.content[i];
+        const nextSegment = updateSegments.content[i + 1];
+        
+        if(time > currentSegment.start && time< nextSegment.start) {
+          Object.assign(playingLocation, {segmentIndex: i});
+          
+          for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
+            const currentWord = currentSegment.wordAlignments[j];
+            const nextWord = currentSegment.wordAlignments[j + 1];
+            
+            if(time > currentWord.start && time < nextWord.start) {
+              Object.assign(playingLocation, {wordIndex: j});
+            } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
+              const wordIndex = currentSegment.wordAlignments.length - 1;
+              Object.assign(playingLocation, {wordIndex})
+            }
+          }
+        }
+      }
+      const timeData = buildPlayingAudioPlayerSegment(playingLocation);
+      if(timeData) {
+        Object.assign(timeData, {timeToSeekTo: time});
+        setPlayingTimeData(timeData);
+      }
+      setScrollToSegmentIndex(playingLocation.segmentIndex);
+    }
+    setIsLoadingAdditionalSegment(false);
   };
 
   const findPlayingLocationFromAdditionalSegments = (prevSegments: SegmentResults, updateSegments: Segment[]) => {
@@ -310,7 +344,6 @@ export function EditorPage() {
     if(playingLocation === null) {
       playingLocation = {segmentIndex: prevSegments.content.length - 1, wordIndex: 0};
     }
-    console.log('==========playingLocation : ', playingLocation);
     // const wordToFocus = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`)
     const wordTime = calculateWordTime(updateSegments, playingLocation.segmentIndex, wordIndex);
     let timeData;
@@ -359,12 +392,12 @@ export function EditorPage() {
     if(segmentResults.first || prevSegmentResults && prevSegmentResults.first) return;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number ? prevSegmentResults : segmentResults;
     const prevPage = prevSegment.number - 1;
+    setIsLoadingAdditionalSegment(true);
     setPrevSegmentResults(segmentResults);
     setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
-    setIsLoadingAdditionalSegment(true);
     const additionalSegments = await getAdditionalSegments(prevPage);
     if(additionalSegments) {
-      const updateSegment = [...additionalSegments, ...prevSegment.content];
+      const updateSegment = [...additionalSegments.content, ...prevSegment.content];
       internalSegmentsTracker = updateSegment;
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
@@ -376,7 +409,7 @@ export function EditorPage() {
       //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
       //   }
       // })
-      setSegments([...segmentResults.content, ...additionalSegments]);
+      setSegments([...segmentResults.content, ...additionalSegments.content]);
       setTimeout(() => setIsLoadingAdditionalSegment(false), 10);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
     }
@@ -391,7 +424,7 @@ export function EditorPage() {
     setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
     const additionalSegments = await getAdditionalSegments(nextPage);
     if(additionalSegments) {
-      const updateSegment = [...prevSegment.content, ...additionalSegments];
+      const updateSegment = [...prevSegment.content, ...additionalSegments.content];
       internalSegmentsTracker = updateSegment;
       let playingSegmentIndex;
       const wordIndex = currentPlayingLocation.wordIndex;
@@ -403,7 +436,7 @@ export function EditorPage() {
       //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
       //   }
       // })
-      setSegments([...segmentResults.content, ...additionalSegments]);
+      setSegments([...segmentResults.content, ...additionalSegments.content]);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
       setIsLoadingAdditionalSegment(false);
     }
@@ -777,7 +810,6 @@ export function EditorPage() {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const { segmentIndex, wordIndex } = playingLocation;
     if (!segments.length) return;
-    console.log('========= internalSegmentsTracker : ', internalSegmentsTracker);
     const segment = internalSegmentsTracker[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
@@ -1293,6 +1325,7 @@ export function EditorPage() {
                   segmentSplitTime={segmentSplitTime}
                   onSegmentSplitTimeChanged={handleSegmentSplitTimeChanged}
                   isAudioPlaying={isAudioPlaying}
+                  isLoadingAdditionalSegment={isLoadingAdditionalSegment}
                   setIsAudioPlaying={setIsAudioPlaying}
                   playingTimeData={playingTimeData}
                   getTimeBasedSegment={getTimeBasedSegment}

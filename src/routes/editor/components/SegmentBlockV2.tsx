@@ -186,9 +186,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     React.useEffect(() => {
         if(scrollToSegmentIndex !== undefined) {
-            console.log('========== scrollToSegmentIndex : ', scrollToSegmentIndex);
             if(scrollToSegmentIndex === segmentIndex) {
-                console.log('========== playingSegment after additional page : ', segment);
                 checkLocationOnScreenAndScroll(
                     segmentRef.current,
                     editorElement,
