@@ -127,6 +127,7 @@ interface AudioPlayerProps {
   audioUrl: string;
   waveformUrl: string;
   disabledTimes?: Time[];
+  timeToSeekTo?: number;
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
@@ -146,6 +147,7 @@ interface AudioPlayerProps {
   onSegmentStatusEditChange: () => void;
   onReady: () => void;
   isAudioPlaying: boolean;
+  isLoadingAdditionalSegment:boolean;
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
   playingTimeData: PlayingTimeData;
   getTimeBasedSegment: (time: number) => void;
@@ -157,6 +159,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     segments,
     audioUrl,
     waveformUrl,
+    timeToSeekTo,
     editorCommand,
     onTimeChange,
     onSectionChange,
@@ -177,6 +180,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentStatusEditChange,
     onReady,
     isAudioPlaying,
+    isLoadingAdditionalSegment,
     setIsAudioPlaying,
     playingTimeData,
     getTimeBasedSegment,
@@ -334,10 +338,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setPeaksReady(true);
   };
 
-  const handleTimeChange = (time: number) => {
+  const handleTimeChange = async (time: number) => {
     if (onTimeChange && typeof onTimeChange === 'function') {
       onTimeChange(time);
     }
+
   };
 
   const getCurrentTimeDisplay = (currentTime: number) => {
@@ -384,14 +389,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeek() {
-    // console.log('==========every seek event')
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
-      if (typeof currentTime !== 'number') return;
+      if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
-          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed) {
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime) {
         await getTimeBasedSegment(currentTimeFixed);
       }
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
@@ -1082,11 +1086,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+    if (typeof playingTimeData.timeToSeekTo === 'number') {
       seekToTime(playingTimeData.timeToSeekTo);
     }
     // don't update playing segments if the loop is active or when it should be disabled
-    if (!isLoop && !disableLoop) {
+    if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
       parseCurrentlyPlayingWordSegment();
     }
 
@@ -1228,7 +1232,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('canplay', handleStreamReady);
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
-    mediaElement?.addEventListener('seeked', handleSeek);
+    mediaElement?.addEventListener('seeking', handleSeek);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1323,10 +1327,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('canplay', handleStreamReady);
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
-          mediaElement.removeEventListener('seeked', handleSeek);
+          mediaElement.removeEventListener('seeking', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
-
         }
         audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {
@@ -1525,7 +1528,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
                 </Grid>
                 <Grid
                     item
-                    className={!duration || (isAudioPlaying && (showStreamLoader || waiting)) ? undefined : classes.hidden}
+                    className={!duration|| isLoadingAdditionalSegment || (isAudioPlaying && (showStreamLoader || waiting)) ? undefined : classes.hidden}
                 >
                   <ScaleLoader
                       height={15}

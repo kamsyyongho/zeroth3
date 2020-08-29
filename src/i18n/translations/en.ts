@@ -33,7 +33,7 @@ export const en: ResourceLanguage = {
       decode: 'Decode',
       decoded: 'Decoded',
       decoding: 'Decoding',
-      decodingTimeRemaining: '{{length}} Seconds Remaining',
+      decodingTimeRemaining: '{{length}} Seconds',
       forbidden: 'Forbidden',
       view: 'View',
       date: 'Date',

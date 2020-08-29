@@ -2,6 +2,18 @@ import { Segment } from '../../../types';
 import log from '../../../util/log/logger';
 import { EDITOR_CONTROLS } from '../components/EditorControls';
 
+export const setSelectionRange = (playingBlock: HTMLElement) => {
+  const selection = window.getSelection();
+  const range = document.createRange();
+
+  if(playingBlock) {
+    range.selectNodeContents(playingBlock);
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+};
+
 /** gets the time in segments of a word alignment item */
 export const calculateWordTime = (
   segments: Segment[],

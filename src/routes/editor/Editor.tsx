@@ -491,10 +491,10 @@ export function Editor(props: EditorProps) {
 
   const handleScrollEvent = (event: any) => {
     const element = event.target;
-    if(Math.floor(element.scrollHeight - element.scrollTop) <= element.clientHeight) {
+    if(!isLoadingAdditionalSegment && Math.floor(element.scrollHeight - element.scrollTop) <= element.clientHeight) {
       getNextSegment();
     }
-    if(element.scrollTop === 0) {
+    if(!isLoadingAdditionalSegment && element.scrollTop === 0) {
       getPrevSegment();
     }
   };
@@ -590,9 +590,9 @@ export function Editor(props: EditorProps) {
     }
   }, [navigationProps]);
 
-  React.useEffect(() => {
-    setReadOnlyEditorState(isLoadingAdditionalSegment);
-  }, [isLoadingAdditionalSegment]);
+  // React.useEffect(() => {
+  //   setReadOnlyEditorState(isLoadingAdditionalSegment);
+  // }, [isLoadingAdditionalSegment]);
 
 
   return (

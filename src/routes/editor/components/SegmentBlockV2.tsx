@@ -135,14 +135,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        if(!editorAutoScrollDisabled) {
-            checkLocationOnScreenAndScroll(
-                segmentRef.current,
-                editorElement,
-                editorContentHeight,
-                windowHeight,
-                editorAutoScrollDisabled);
-        }
+        // if(!editorAutoScrollDisabled) {
+        //     checkLocationOnScreenAndScroll(
+        //         segmentRef.current,
+        //         editorElement,
+        //         editorContentHeight,
+        //         windowHeight,
+        //         editorAutoScrollDisabled);
+        // }
         isFocused = false;
     };
 
@@ -183,19 +183,20 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             resetState();
         }
     }, [segment]);
-    
+
     React.useEffect(() => {
-        if(scrollToSegmentIndex) {
+        if(scrollToSegmentIndex !== undefined) {
             if(scrollToSegmentIndex === segmentIndex) {
                 checkLocationOnScreenAndScroll(
                     segmentRef.current,
                     editorElement,
                     editorContentHeight,
                     windowHeight,
-                    editorAutoScrollDisabled);
+                    false);
+                setScrollToSegmentIndex(undefined);
             }
         }
-    }, [scrollToSegmentIndex])
+    }, [scrollToSegmentIndex]);
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
