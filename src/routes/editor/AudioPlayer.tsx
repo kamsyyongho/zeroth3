@@ -127,6 +127,7 @@ interface AudioPlayerProps {
   audioUrl: string;
   waveformUrl: string;
   disabledTimes?: Time[];
+  timeToSeekTo?: number;
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
@@ -157,6 +158,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     segments,
     audioUrl,
     waveformUrl,
+    timeToSeekTo,
     editorCommand,
     onTimeChange,
     onSectionChange,
@@ -299,6 +301,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const seekToTime = (timeToSeekTo: number) => {
+    console.log('=====timeToSeekto : ', timeToSeekTo);
     if (!PeaksPlayer?.player || timeToSeekTo < 0) return;
     try {
       PeaksPlayer.player.seek(timeToSeekTo);
@@ -334,10 +337,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setPeaksReady(true);
   };
 
-  const handleTimeChange = (time: number) => {
+  const handleTimeChange = async (time: number) => {
+    if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+        audioSegmentsTracker[audioSegmentsTracker.length - 1].length < time) {
+      await getTimeBasedSegment(time);
+    }
     if (onTimeChange && typeof onTimeChange === 'function') {
       onTimeChange(time);
     }
+
   };
 
   const getCurrentTimeDisplay = (currentTime: number) => {
@@ -384,14 +392,13 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeek() {
-    // console.log('==========every seek event')
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
       if (typeof currentTime !== 'number') return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
-          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed) {
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime) {
         await getTimeBasedSegment(currentTimeFixed);
       }
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
@@ -1082,15 +1089,29 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
+    console.log('============= playTimeData : ', playingTimeData);
+    if (typeof playingTimeData.timeToSeekTo === 'number') {
       seekToTime(playingTimeData.timeToSeekTo);
     }
     // don't update playing segments if the loop is active or when it should be disabled
-    if (!isLoop && !disableLoop) {
+    if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
       parseCurrentlyPlayingWordSegment();
     }
 
   }, [playingTimeData]);
+
+  // React.useEffect(() => {
+  //   if (typeof timeToSeekTo === 'number' && !autoSeekDisabled) {
+  //     seekToTime(timeToSeekTo);
+  //   }
+  // }, [timeToSeekTo]);
+
+  // React.useEffect(() => {
+  //   // don't update playing segments if the loop is active or when it should be disabled
+  //   if (!isLoop && !disableLoop) {
+  //     parseCurrentlyPlayingWordSegment();
+  //   }
+  // }, [currentPlayingWordPlayerSegment]);
 
   // set the update the time for a segment
   React.useEffect(() => {
@@ -1222,13 +1243,19 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
     };
 
+    const handleSeeking = (arg) => {
+      console.log('========seeking arg : ', arg);
+    };
+
     mediaElement = document.querySelector('audio') as HTMLAudioElement;
     mediaElement?.addEventListener('loadstart', handleWaiting);
     mediaElement?.addEventListener('waiting', handleWaiting);
     mediaElement?.addEventListener('canplay', handleStreamReady);
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
-    mediaElement?.addEventListener('seeked', handleSeek);
+    // mediaElement?.addEventListener('seeked', handleSeek);
+    // mediaElement?.addEventListener('seek', handleSeek);
+    mediaElement?.addEventListener('seeking', handleSeek);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1265,6 +1292,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           handleError(error);
         }
       });
+      PeaksPlayer.on('player.seeked', () => {console.log('========== seeked')});
       PeaksPlayer.on('peaks.ready', handlePeaksReady);
       PeaksPlayer.on('segments.exit', handleSegmentExit);
       PeaksPlayer.on('segments.enter', handleSegmentEnter);
@@ -1326,7 +1354,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('seeked', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
-
         }
         audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
       } catch (error) {

@@ -434,6 +434,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const text = wordAlignment.word.replace('|', ' ');
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
+                                 key={`word-${index}`}
                                  onDoubleClick={handleDoubleClick}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>

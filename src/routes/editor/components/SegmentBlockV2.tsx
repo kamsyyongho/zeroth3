@@ -135,14 +135,14 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        if(!editorAutoScrollDisabled) {
-            checkLocationOnScreenAndScroll(
-                segmentRef.current,
-                editorElement,
-                editorContentHeight,
-                windowHeight,
-                editorAutoScrollDisabled);
-        }
+        // if(!editorAutoScrollDisabled) {
+        //     checkLocationOnScreenAndScroll(
+        //         segmentRef.current,
+        //         editorElement,
+        //         editorContentHeight,
+        //         windowHeight,
+        //         editorAutoScrollDisabled);
+        // }
         isFocused = false;
     };
 
@@ -185,14 +185,16 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     }, [segment]);
 
     React.useEffect(() => {
-        if(scrollToSegmentIndex) {
+        if(scrollToSegmentIndex !== undefined) {
+            console.log('========== scrollToSegmentIndex : ', scrollToSegmentIndex);
             if(scrollToSegmentIndex === segmentIndex) {
+                console.log('========== playingSegment after additional page : ', segment);
                 checkLocationOnScreenAndScroll(
                     segmentRef.current,
                     editorElement,
                     editorContentHeight,
                     windowHeight,
-                    editorAutoScrollDisabled);
+                    false);
                 setScrollToSegmentIndex(undefined);
             }
         }
