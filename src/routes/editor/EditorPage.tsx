@@ -301,18 +301,18 @@ export function EditorPage() {
       let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
       setSegments(updateSegments.content);
       internalSegmentsTracker = updateSegments.content;
-      
+
       for(let i = 0; i < updateSegments.content.length; i++) {
         const currentSegment = updateSegments.content[i];
         const nextSegment = updateSegments.content[i + 1];
-        
+
         if(time > currentSegment.start && time< nextSegment.start) {
           Object.assign(playingLocation, {segmentIndex: i});
-          
+
           for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
             const currentWord = currentSegment.wordAlignments[j];
             const nextWord = currentSegment.wordAlignments[j + 1];
-            
+
             if(time > currentWord.start && time < nextWord.start) {
               Object.assign(playingLocation, {wordIndex: j});
             } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
@@ -443,6 +443,7 @@ export function EditorPage() {
   };
 
   const getSegments = async () => {
+    console.log('========= projectId, voiceData : ', projectId, voiceData);
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
       const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, paginationParams.page);
@@ -465,7 +466,6 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
@@ -1149,6 +1149,7 @@ export function EditorPage() {
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
+    console.log('=========== readOnly, voiceData, projectId', readOnly, voiceData, projectId);
     if (!readOnly && voiceData && projectId) {
       getSegments();
       getAudioUrl();
@@ -1186,7 +1187,7 @@ export function EditorPage() {
   React.useEffect(() => {
     setPageTitle(translate('path.editor'));
     getShortcuts();
-    if (readOnly && canSeeReadOnlyEditor) {
+    if ((readOnly || isDiff) && canSeeReadOnlyEditor) {
       getSegments();
       getAudioUrl();
     } else if (canUseEditor && !isDiff) {

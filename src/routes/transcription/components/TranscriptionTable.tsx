@@ -62,6 +62,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
     const classes = useStyles();
 
     React.useEffect(() => {
+        console.log('====== voiceDataResults in Transcription : ', voiceDataResults);
         if(voiceDataResults?.content) {
             setVoiceData(voiceDataResults.content);
         }

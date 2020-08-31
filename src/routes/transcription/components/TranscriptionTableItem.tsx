@@ -104,6 +104,10 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
         }
     };
 
+    React.useEffect(() => {
+        console.log('========roles in TranscriptionTableItem : ', roles);
+    }, []);
+
     return (
         <TableRow
             className={classes.tableRow}
