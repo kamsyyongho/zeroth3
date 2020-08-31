@@ -308,8 +308,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const updateSegments = await getAdditionalSegments(undefined, time);
     if(updateSegments) {
       let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
+      const updatePagination = {page: paginationParams.page, pageSize: paginationParams.pageSize};
+      Object.assign(updatePagination, {page: updateSegments.number})
+      setSegmentResults(updateSegments);
       setSegments(updateSegments.content);
       internalSegmentsTracker = updateSegments.content;
+      setPrevSegmentResults({} as SegmentResults);
+      setPaginationParams(updatePagination);
 
       for(let i = 0; i < updateSegments.content.length; i++) {
         const currentSegment = updateSegments.content[i];
