@@ -220,9 +220,7 @@ export function Editor(props: EditorProps) {
   };
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
-    //
     onWordClick({ segmentIndex, wordIndex });
-    // handleClickInsideEditor();
   };
 
   const updatePlayingLocation = () => {
