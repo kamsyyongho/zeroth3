@@ -102,10 +102,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleArrowKeyDown = () => {
         const playingLocation = getSegmentAndWordIndex();
-        // if(playingLocation) {
-        //     updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
-        //     return;
-        // }
+        if(playingLocation && !autoSeekDisabled) {
+            updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
+            return;
+        }
     };
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
