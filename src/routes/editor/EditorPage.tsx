@@ -176,8 +176,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   // const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
   // const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(mode === 'diff');
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(mode === 'readonly');
+  const [isDiff, setIsDiff] = React.useState<boolean>(mode === 'diff');
+  const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -480,26 +480,26 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  const getVoiceData = async () => {
-    // if (api?.voiceData && projectId) {
-    //   setVoiceDataLoading(true);
-    //   //save the options to allow us to redo a search
-    //   // in case we delete a row and it would lead us to have no results
-    //   setPreviousSearchOptions(options);
-    //   const response = await api.voiceData.searchData(projectId, options);
-    //   if (response.kind === 'ok') {
-    //     setVoiceDataResults(response.data);
-    //   } else {
-    //     log({
-    //       file: `TDP.tsx`,
-    //       caller: `getVoiceData - failed to get voice data`,
-    //       value: response,
-    //       important: true,
-    //     });
-    //   }
-    //   setVoiceDataLoading(false);
-    //   setInitialVoiceDataLoading(false);
-    // }
+  const getDataForModeEditor = async (projectId: string, voiceDataId: string) => {
+    if (api?.voiceData) {
+      setVoiceDataLoading(true);
+      //save the options to allow us to redo a search
+      // in case we delete a row and it would lead us to have no results
+      const response = await api.voiceData.getSelectedVoiceData(projectId, voiceDataId);
+      if (response.kind === 'ok') {
+        setVoiceData(response.voiceData);
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `getVoiceData - failed to get voice data`,
+          value: response,
+          important: true,
+        });
+      }
+      // await getSegments();
+      // await getAudioUrl();
+      setVoiceDataLoading(false);
+    }
   };
 
   const getShortcuts = async () => {
@@ -1207,7 +1207,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     if(navigationProps) {
       setVoiceData(navigationProps.voiceData);
       setProjectId(navigationProps.projectId);
-      setIsDiff(navigationProps.isDiff);
+      // setIsDiff(navigationProps.isDiff);
       setReadOnly(navigationProps.readOnly)
       setInitialFetchDone(true);
     }
@@ -1216,10 +1216,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   // initial fetch and dismount logic
   React.useEffect(() => {
     console.log('======match params : ', match.params);
-    console.log('========== readonly', readOnly, isDiff);
     setPageTitle(translate('path.editor'));
     getShortcuts();
-    if (readOnly && canSeeReadOnlyEditor) {
+    if ((readOnly || isDiff) && canSeeReadOnlyEditor && modeProjectId && voiceDataId) {
+      console.log('========== readonly', readOnly, isDiff);
+      getDataForModeEditor(modeProjectId, voiceDataId);
       getSegments();
       getAudioUrl();
     } else if (canUseEditor && !isDiff) {
@@ -1233,6 +1234,14 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
     };
   }, []);
+
+  // React.useEffect(() => {
+  //   if((mode === 'diff' || mode === 'readonly') && modeProjectId && voiceDataId) {
+  //     getDataForModeEditor(modeProjectId, voiceDataId);
+  //     // getSegments();
+  //     // getAudioUrl();
+  //   }
+  // }, [mode, modeProjectId]);
 
   if (canUseEditor && (voiceDataLoading || !initialFetchDone)) {
     return <SiteLoadingIndicator />;
@@ -1285,6 +1294,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               {segmentsLoading ? <BulletList /> :
                   !!segments.length && (<Editor
                       key={voiceData.id}
+                      readOnly={mode === 'readonly'}
+                      isDiff={mode === 'diff'}
                       responseFromParent={responseToPassToEditor}
                       onParentResponseHandled={handleEditorResponseHandled}
                       onCommandHandled={handleCommandHandled}

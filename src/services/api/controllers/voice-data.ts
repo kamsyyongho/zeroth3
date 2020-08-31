@@ -1,6 +1,5 @@
 import {ApisauceInstance} from 'apisauce';
 import {
-  AudioUrlResponse,
   CONTENT_STATUS,
   HistoryDataResults,
   Segment,
@@ -21,6 +20,7 @@ import {
   getHistory,
   GetHistoryRequest,
   getSegmentsDataResult,
+  getSelectedVoiceDataResult,
   getVoiceDataStateChanges,
   GetVoiceDataToReviewRequest,
   MergeTwoSegmentsRequest,
@@ -55,7 +55,6 @@ import {
   updateSpeakerResult,
   UpdateStatusRequest,
   updateStatusResult,
-  classifyTdpResult,
 } from '../types';
 import {deleteUnconfirmedVoiceDataResult} from '../types/voice-data.types';
 import {ParentApi} from './parent-api';
@@ -131,6 +130,31 @@ export class VoiceData extends ParentApi {
       return { kind: ProblemKind['bad-data'] };
     }
   }
+
+  async getSelectedVoiceData(
+      projectId: string,
+      voiceDataId: string,
+  ): Promise<getSelectedVoiceDataResult> {
+    const response = await this.apisauce.get<IVoiceData, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data/${voiceDataId}`)
+    );
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const voiceData = response.data as IVoiceData;
+
+      return { kind: 'ok', voiceData };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+};
 
   /**
    * Gets the current voice data assigned to the current user
