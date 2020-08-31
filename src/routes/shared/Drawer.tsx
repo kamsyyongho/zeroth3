@@ -69,8 +69,9 @@ export const AppDrawer = (props: AppDrawerProps) => {
     let shouldRender = true;
     if ((key === 'models' && !canSeeModels) ||
       (key === 'modelTraning' && !canSeeModels) ||
+      (key === 'modeEditor') ||
       (key === 'IAM' && !canSeeTranscribers && !canSeeUsers) ||
-        (key === 'transcription' && !canSeeTranscription)) {
+      (key === 'transcription' && !canSeeTranscription)) {
       shouldRender = false;
     }
 

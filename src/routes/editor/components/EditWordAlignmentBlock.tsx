@@ -372,9 +372,11 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleDoubleClick = () => {
         // const location = getSegmentAndWordIndex();
         // updateCaretLocation(location.segmentIndex, location.wordIndex);
-
-
     };
+
+    React.useEffect(() => {
+        console.log('========== readOnly : ', readOnly);
+    }, [readOnly])
 
     React.useEffect(() => {
         if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {

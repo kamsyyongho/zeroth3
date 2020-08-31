@@ -86,7 +86,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const handleDiffClick = () => {
         const projectId = voiceData.projectId;
         setNavigationProps({ voiceData: voiceData, projectId: projectId, isDiff: true, readOnly: false });
-        PATHS.editor.to && history.push(PATHS.editor.to);
+        PATHS.editor.to && history.push(`/editor/mode/diff/projectId/${projectId}/voiceDataId/${voiceData.id}`);
     };
 
     const statusChipClass = () => {

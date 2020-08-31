@@ -114,7 +114,8 @@ interface SegmentSplitOptions {
 
 interface EditorProps {
   height?: number;
-  // readOnly?: boolean;
+  readOnly?: boolean;
+  isDiff?: boolean;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -149,7 +150,8 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const {
     height,
-    // readOnly,
+    readOnly,
+    isDiff,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -183,9 +185,9 @@ export function Editor(props: EditorProps) {
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  // const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
   const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
+  // const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -579,14 +581,14 @@ export function Editor(props: EditorProps) {
       // updatePlayingLocation();
     }
   }, [playingLocation, ready]);
-
-  React.useEffect(() => {
-    if(navigationProps) {
-      setProjectId(navigationProps.projectId);
-      setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly);
-    }
-  }, [navigationProps]);
+  //
+  // React.useEffect(() => {
+  //   if(navigationProps) {
+  //     setProjectId(navigationProps.projectId);
+  //     setIsDiff(navigationProps.isDiff);
+  //     setReadOnly(navigationProps.readOnly);
+  //   }
+  // }, [navigationProps]);
 
   // React.useEffect(() => {
   //   setReadOnlyEditorState(isLoadingAdditionalSegment);
