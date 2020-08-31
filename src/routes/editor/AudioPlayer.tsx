@@ -1448,8 +1448,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(!autoSeekDisabled ?
-        translate('audioPlayer.activateNavigateOnClick') : translate('audioPlayer.deactivateNavigateOnClick'),
+    {renderControlWithTooltip(autoSeekDisabled ?
+        translate('audioPlayer.syncAudioCursorLocation') : translate('audioPlayer.unsyncAudioCursorLocation'),
         <Button
             aria-label="seek-lock"
             onClick={toggleLockSeek}
@@ -1458,7 +1458,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
             }}
         >
           <ToggleIcon
-              on={!autoSeekDisabled}
+              on={!!autoSeekDisabled}
               onIcon={<SvgIcon component={TiLockOpenOutline} />}
               offIcon={<SvgIcon component={TiLockClosedOutline} />}
           />

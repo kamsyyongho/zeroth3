@@ -1,5 +1,5 @@
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
-import React, {useRef} from 'reactn';
+import React, {useRef, useGlobal} from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import {green, pink} from '@material-ui/core/colors';
 import {Segment, UndoRedoStack, WordAlignment} from "../../../types";
@@ -84,6 +84,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         lengthBeforeBlock, } = props;
     const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
+    const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -110,6 +111,11 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const range = document.createRange();
         const selection = window.getSelection();
         const currentNode = element;
+
+        if(!autoSeekDisabled && node) {
+            const playingLocation = node.id.split('-');
+            updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
+        }
 
         range.selectNodeContents(node);
         range.collapse(collapse);
