@@ -6,6 +6,7 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import {useSnackbar, VariantType} from 'notistack';
 import {BulletList} from 'react-content-loader';
+import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
 import {PERMISSIONS} from '../../constants';
@@ -107,8 +108,15 @@ export interface NavigationPropsToGet {
   readOnly: boolean
 }
 
-export function EditorPage() {
+interface EditorPageProps {
+  mode?: string;
+  modeProjectId?: string;
+  voiceDataId?: string;
+}
+
+export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const { translate } = React.useContext(I18nContext);
+  const { mode, modeProjectId, voiceDataId } = match.params;
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { hasPermission, roles, user } = React.useContext(KeycloakContext);
@@ -161,14 +169,15 @@ export function EditorPage() {
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
   const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 40});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
-
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>({} as VoiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>('');
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  // const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
+  // const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
+  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(mode === 'diff');
+  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(mode === 'readonly');
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -267,7 +276,7 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, page, time);
+      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, paginationParams.pageSize, page, time);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -301,18 +310,18 @@ export function EditorPage() {
       let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
       setSegments(updateSegments.content);
       internalSegmentsTracker = updateSegments.content;
-      
+
       for(let i = 0; i < updateSegments.content.length; i++) {
         const currentSegment = updateSegments.content[i];
         const nextSegment = updateSegments.content[i + 1];
-        
+
         if(time > currentSegment.start && time< nextSegment.start) {
           Object.assign(playingLocation, {segmentIndex: i});
-          
+
           for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
             const currentWord = currentSegment.wordAlignments[j];
             const nextWord = currentSegment.wordAlignments[j + 1];
-            
+
             if(time > currentWord.start && time < nextWord.start) {
               Object.assign(playingLocation, {wordIndex: j});
             } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
@@ -445,7 +454,7 @@ export function EditorPage() {
   const getSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, paginationParams.page);
+      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, paginationParams.pageSize, paginationParams.page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -469,6 +478,28 @@ export function EditorPage() {
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
+  };
+
+  const getVoiceData = async () => {
+    // if (api?.voiceData && projectId) {
+    //   setVoiceDataLoading(true);
+    //   //save the options to allow us to redo a search
+    //   // in case we delete a row and it would lead us to have no results
+    //   setPreviousSearchOptions(options);
+    //   const response = await api.voiceData.searchData(projectId, options);
+    //   if (response.kind === 'ok') {
+    //     setVoiceDataResults(response.data);
+    //   } else {
+    //     log({
+    //       file: `TDP.tsx`,
+    //       caller: `getVoiceData - failed to get voice data`,
+    //       value: response,
+    //       important: true,
+    //     });
+    //   }
+    //   setVoiceDataLoading(false);
+    //   setInitialVoiceDataLoading(false);
+    // }
   };
 
   const getShortcuts = async () => {
@@ -1184,6 +1215,8 @@ export function EditorPage() {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
+    console.log('======match params : ', match.params);
+    console.log('========== readonly', readOnly, isDiff);
     setPageTitle(translate('path.editor'));
     getShortcuts();
     if (readOnly && canSeeReadOnlyEditor) {

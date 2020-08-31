@@ -1058,7 +1058,6 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        debugger;
         if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
