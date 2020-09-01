@@ -152,6 +152,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
 
     React.useEffect(() => {
         if(!editorAutoScrollDisabled && isAudioPlaying && playingLocation.segmentIndex === segmentIndex) {
+            console.log('============editorAutoScrollDisabled, isAudioPlaying : ', editorAutoScrollDisabled, isAudioPlaying);
             checkLocationOnScreenAndScroll(
                 segmentRef.current,
                 editorElement,
@@ -187,6 +188,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     React.useEffect(() => {
         if(scrollToSegmentIndex !== undefined) {
             if(scrollToSegmentIndex === segmentIndex) {
+                console.log('================ scrollToSegmentIndex : ', scrollToSegmentIndex);
                 checkLocationOnScreenAndScroll(
                     segmentRef.current,
                     editorElement,

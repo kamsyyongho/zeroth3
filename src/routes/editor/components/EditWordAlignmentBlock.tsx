@@ -107,6 +107,23 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             return;
         }
     };
+
+    const updateWordBeforeBlur = () => {
+        // const copySegment = JSON.parse(JSON.stringify(segment));
+        // const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+        // let transcript = '';
+        // console.log('========wordsInSegment : ', wordsInSegment);
+        // if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
+        //     Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
+        //         const htmlWord = wordEl as HTMLElement;
+        //         transcript += htmlWord.innerHTML;
+        //         copySegment.wordAlignments[index].word = htmlWord.innerText;
+        //     });
+        //     updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
+        //     setIsChanged(false);
+        // }
+    };
+
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
         const selection = window.getSelection();
@@ -369,15 +386,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
-    const handleDoubleClick = () => {
-        // const location = getSegmentAndWordIndex();
-        // updateCaretLocation(location.segmentIndex, location.wordIndex);
-    };
-
-    React.useEffect(() => {
-        console.log('========== readOnly : ', readOnly);
-    }, [readOnly])
-
     React.useEffect(() => {
         if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {
             handleUndo();
@@ -443,7 +451,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
                                  key={`word-${index}`}
-                                 onDoubleClick={handleDoubleClick}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}

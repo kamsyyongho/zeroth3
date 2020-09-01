@@ -167,7 +167,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
-  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 40});
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 60});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>({} as VoiceData);
   const [projectId, setProjectId] = React.useState<string | undefined>('');
@@ -340,10 +340,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       if(timeData) {
         Object.assign(timeData, {timeToSeekTo: time});
         setPlayingTimeData(timeData);
+        setCurrentPlayingLocation(playingLocation);
       }
       setScrollToSegmentIndex(playingLocation.segmentIndex);
     }
-    setIsLoadingAdditionalSegment(false);
+    setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+
   };
 
   const findPlayingLocationFromAdditionalSegments = (prevSegments: SegmentResults, updateSegments: Segment[]) => {
@@ -424,7 +426,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       //   }
       // })
       setSegments([...segmentResults.content, ...additionalSegments.content]);
-      setTimeout(() => setIsLoadingAdditionalSegment(false), 10);
+      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
     }
   };
@@ -452,14 +454,19 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       // })
       setSegments([...segmentResults.content, ...additionalSegments.content]);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
-      setIsLoadingAdditionalSegment(false);
+      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+
     }
   };
 
   const getSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, paginationParams.pageSize, paginationParams.page);
+      const response = await api.voiceData.getSegments(
+          modeProjectId || projectId,
+          voiceDataId || voiceData.id,
+          paginationParams.pageSize,
+          paginationParams.page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -479,7 +486,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
     }
@@ -676,9 +682,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const firstSegmentId = trackSegments[selectedSegmentIndex].id;
-      const secondSegmentId = trackSegments[selectedSegmentIndex + 1].id;
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
+      const segmentToMege = trackSegments[selectedSegmentIndex].id;
+      const segmentToMergeInto = trackSegments[selectedSegmentIndex - 1].id;
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -1223,7 +1229,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     console.log('======match params : ', match.params);
     setPageTitle(translate('path.editor'));
     getShortcuts();
-    if (readOnly && canSeeReadOnlyEditor) {
+    if ((readOnly || isDiff) && modeProjectId && voiceDataId && canSeeReadOnlyEditor) {
+      getDataForModeEditor(modeProjectId, voiceDataId);
       getSegments();
       getAudioUrl();
     } else if (canUseEditor && !isDiff) {
