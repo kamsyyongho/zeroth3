@@ -83,7 +83,7 @@ function App() {
           <Route exact path={PATHS.project.to} component={ProjectDetails} />
           <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
           <Route exact path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
-          <Route exact path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
+          <Route path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
           <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
           <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
           <Route path={PATHS.modelTraining.to} component={ModelTraining} />

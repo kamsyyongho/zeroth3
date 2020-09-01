@@ -135,14 +135,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        // if(!editorAutoScrollDisabled) {
-        //     checkLocationOnScreenAndScroll(
-        //         segmentRef.current,
-        //         editorElement,
-        //         editorContentHeight,
-        //         windowHeight,
-        //         editorAutoScrollDisabled);
-        // }
         isFocused = false;
     };
 
@@ -188,7 +180,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     React.useEffect(() => {
         if(scrollToSegmentIndex !== undefined) {
             if(scrollToSegmentIndex === segmentIndex) {
-                console.log('================ scrollToSegmentIndex : ', scrollToSegmentIndex);
                 checkLocationOnScreenAndScroll(
                     segmentRef.current,
                     editorElement,

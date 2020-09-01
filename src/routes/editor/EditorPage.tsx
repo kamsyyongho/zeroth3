@@ -170,7 +170,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 60});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>({} as VoiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>('');
+  const [projectId, setProjectId] = React.useState<string | undefined>(modeProjectId || '');
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
@@ -507,8 +507,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           important: true,
         });
       }
-      // await getSegments();
-      // await getAudioUrl();
       setVoiceDataLoading(false);
     }
   };
@@ -952,7 +950,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
-    // if(autoSeekDisabled) return;
+    if(autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
     let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
@@ -1191,7 +1189,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
-    if (!readOnly && voiceData && projectId) {
+    if (!isDiff && !readOnly && voiceData && projectId) {
       getSegments();
       getAudioUrl();
     }
@@ -1207,32 +1205,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !readOnly && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
     }
-  }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
-
-  React.useEffect(() => {
-    if(navigationProps) {
-      setVoiceData(navigationProps.voiceData);
-      setProjectId(navigationProps.projectId);
-      // setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly)
+    if((readOnly || isDiff) && !initialFetchDone && voiceData && Object.entries(voiceData).length !== 0) {
+      getSegments();
+      getAudioUrl();
       setInitialFetchDone(true);
     }
-  }, [navigationProps])
+  }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
   // initial fetch and dismount logic
   React.useEffect(() => {
-    console.log('======match params : ', match.params);
     setPageTitle(translate('path.editor'));
     getShortcuts();
     if ((readOnly || isDiff) && modeProjectId && voiceDataId && canSeeReadOnlyEditor) {
-      getDataForModeEditor(modeProjectId, voiceDataId);
-      getSegments();
-      getAudioUrl();
+      if(!voiceDataLoading) getDataForModeEditor(modeProjectId, voiceDataId);
     } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -1244,14 +1234,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
     };
   }, []);
-
-  // React.useEffect(() => {
-  //   if((mode === 'diff' || mode === 'readonly') && modeProjectId && voiceDataId) {
-  //     getDataForModeEditor(modeProjectId, voiceDataId);
-  //     // getSegments();
-  //     // getAudioUrl();
-  //   }
-  // }, [mode, modeProjectId]);
 
   if (canUseEditor && (voiceDataLoading || !initialFetchDone)) {
     return <SiteLoadingIndicator />;
@@ -1304,8 +1286,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               {segmentsLoading ? <BulletList /> :
                   !!segments.length && (<Editor
                       key={voiceData.id}
-                      readOnly={mode === 'readonly'}
-                      isDiff={mode === 'diff'}
+                      readOnly={readOnly}
+                      isDiff={isDiff}
+                      setIsDiff={setIsDiff}
                       responseFromParent={responseToPassToEditor}
                       onParentResponseHandled={handleEditorResponseHandled}
                       onCommandHandled={handleCommandHandled}
@@ -1345,6 +1328,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                       }}
                       getNextSegment={getNextSegment}
                       getPrevSegment={getPrevSegment}
+                      projectId={projectId}
                   />)
               }
             </div>

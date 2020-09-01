@@ -108,37 +108,21 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
-    const updateWordBeforeBlur = () => {
-        // const copySegment = JSON.parse(JSON.stringify(segment));
-        // const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
-        // let transcript = '';
-        // console.log('========wordsInSegment : ', wordsInSegment);
-        // if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
-        //     Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
-        //         const htmlWord = wordEl as HTMLElement;
-        //         transcript += htmlWord.innerHTML;
-        //         copySegment.wordAlignments[index].word = htmlWord.innerText;
-        //     });
-        //     updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
-        //     setIsChanged(false);
-        // }
-    };
-
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
         const selection = window.getSelection();
         const currentNode = element;
-
-        if(!autoSeekDisabled && node) {
-            const playingLocation = node.id.split('-');
-            updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
-        }
 
         range.selectNodeContents(node);
         range.collapse(collapse);
         selection?.removeAllRanges();
         selection?.addRange(range);
         node.focus();
+
+        if(!autoSeekDisabled && node) {
+            const playingLocation = node.id.split('-');
+            updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
+        }
     };
 
     const handleArrowUp = () => {

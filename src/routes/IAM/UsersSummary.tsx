@@ -95,6 +95,9 @@ export function UsersSummary(props: UsersSummaryProps) {
   };
 
   React.useEffect(() => {
+  },[users])
+
+  React.useEffect(() => {
     const getRoles = async () => {
       if (api?.IAM) {
         const response = await api.IAM.getRoles();

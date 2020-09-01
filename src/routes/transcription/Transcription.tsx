@@ -130,6 +130,10 @@ export function Transcription() {
         }
     };
 
+    React.useEffect(() => {
+        console.log('================ roles in transcription : ', roles);
+    }, [roles])
+
     const getAllVoiceData = async () => {
         if (api?.voiceData) {
             const response = await api.voiceData.getHistory();

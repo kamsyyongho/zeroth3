@@ -84,8 +84,8 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
     const theme: CustomTheme = useTheme();
 
     const handleDiffClick = () => {
-        const projectId = voiceData.projectId;
-        setNavigationProps({ voiceData: voiceData, projectId: projectId, isDiff: true, readOnly: false });
+        // const projectId = voiceData.projectId;
+        // setNavigationProps({ voiceData: voiceData, projectId: projectId, isDiff: true, readOnly: false });
         PATHS.editor.to && history.push(`/editor/mode/diff/projectId/${projectId}/voiceDataId/${voiceData.id}`);
     };
 
@@ -103,11 +103,7 @@ export function TranscriptionTableItem(props: TranscriptionTableItemProps) {
                 return '';
         }
     };
-
-    React.useEffect(() => {
-        console.log('========roles in TranscriptionTableItem : ', roles);
-    }, []);
-
+    
     return (
         <TableRow
             className={classes.tableRow}
