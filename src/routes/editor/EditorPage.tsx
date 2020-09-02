@@ -669,20 +669,19 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       return;
     }
 
-    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
     const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const segmentToMege = trackSegments[selectedSegmentIndex].id;
-      const segmentToMergeInto = trackSegments[selectedSegmentIndex - 1].id;
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id,segmentToMergeInto, segmentToMege);
+      const segmentToMege = internalSegmentsTracker[selectedSegmentIndex + 1].id;
+      const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex].id;
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = [...trackSegments];
+        const mergedSegments = [...internalSegmentsTracker];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
         internalSegmentsTracker = mergedSegments;
