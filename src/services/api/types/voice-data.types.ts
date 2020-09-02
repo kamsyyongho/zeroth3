@@ -22,13 +22,13 @@ export interface SearchDataRequest {
   /**
    * in seconds
    */
-  'length-max'?: number;
+  'lengthMax'?: number;
   /**
    * in seconds
    * - from `0`
    */
-  'length-min'?: number;
-  'model-config'?: string;
+  'lengthMin'?: number;
+  'configId'?: string;
   name?: string;
   /**
    * to `100`
@@ -45,7 +45,7 @@ export interface SearchDataRequest {
   page?: number;
   status?: CONTENT_STATUS;
   transcript?: string;
-  transcriber?: string;
+  transcriberId?: string;
   /**
    * in the form of `field.order` with order being `desc` or `asc`
    * - the field values are `VoiceData` keys
