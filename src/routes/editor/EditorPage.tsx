@@ -68,6 +68,8 @@ let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
 let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
+const TIME_PAGE_SIZE = 100;
+const SCROLL_PAGE_SIZE = 60;
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -167,10 +169,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
-  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 60});
+  const [page, setPage] = React.useState<number>(0);
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
   const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>({} as VoiceData);
   const [projectId, setProjectId] = React.useState<string | undefined>(modeProjectId || '');
+  const [isTimeSegment, setIsTimeSegment] = React.useState<boolean>(false);
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
@@ -276,12 +279,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     if (api?.voiceData && projectId && voiceData) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
-      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, paginationParams.pageSize, page, time);
+      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, SCROLL_PAGE_SIZE, page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
         setSegmentResults(response.data);
         // setSegments(response.data.content);
+        setIsTimeSegment(false);
         internalSegmentsTracker = response.data.content;
         if(checkAudioPlaying) setIsAudioPlaying(true);
         return response?.data;
@@ -305,51 +309,76 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const getTimeBasedSegment = async (time: number) => {
     if(time <=  0) return;
     setIsLoadingAdditionalSegment(true);
-    const updateSegments = await getAdditionalSegments(undefined, time);
-    if(updateSegments) {
-      let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
-      const updatePagination = {page: paginationParams.page, pageSize: paginationParams.pageSize};
-      Object.assign(updatePagination, {page: updateSegments.number})
-      setSegmentResults(updateSegments);
-      setSegments(updateSegments.content);
-      internalSegmentsTracker = updateSegments.content;
-      setPrevSegmentResults({} as SegmentResults);
-      setPaginationParams(updatePagination);
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
+    if (api?.voiceData && projectId && voiceData) {
+      if(checkAudioPlaying) setIsAudioPlaying(false);
+      const pageParam = !!time ? null : page;
+      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, TIME_PAGE_SIZE, undefined, time);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
-      for(let i = 0; i < updateSegments.content.length; i++) {
-        const currentSegment = updateSegments.content[i];
-        const nextSegment = updateSegments.content[i + 1];
+      if (response.kind === 'ok') {
+        const updateSegments = response.data;
+        if(updateSegments) {
+          let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
+          setSegmentResults(updateSegments);
+          setSegments(updateSegments.content);
+          internalSegmentsTracker = updateSegments.content;
+          setPrevSegmentResults({} as SegmentResults);
+          setPage(updateSegments.number - 1);
+          setIsTimeSegment(true);
 
-        if(i === 0 && time < currentSegment.start) {
-          Object.assign(playingLocation, {segmentIndex: 0, wordIndex: 0});
-        }
+          for(let i = 0; i < updateSegments.content.length; i++) {
+            const currentSegment = updateSegments.content[i];
+            const nextSegment = updateSegments.content[i + 1];
 
-        if(time > currentSegment.start && time< nextSegment.start) {
-          Object.assign(playingLocation, {segmentIndex: i, wordIndex: 0});
+            if(i === 0 && time < currentSegment.start) {
+              Object.assign(playingLocation, {segmentIndex: 0, wordIndex: 0});
+            }
 
-          // for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
-          //   const currentWord = currentSegment.wordAlignments[j];
-          //   const nextWord = currentSegment.wordAlignments[j + 1];
-          //
-          //   if(time > currentWord.start && time < nextWord.start) {
-          //     Object.assign(playingLocation, {wordIndex: j});
-          //   } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
-          //     const wordIndex = currentSegment.wordAlignments.length - 1;
-          //     Object.assign(playingLocation, {wordIndex})
-          //   }
+            if(time > currentSegment.start && time< nextSegment.start) {
+              Object.assign(playingLocation, {segmentIndex: i, wordIndex: 0});
+
+              // for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
+              //   const currentWord = currentSegment.wordAlignments[j];
+              //   const nextWord = currentSegment.wordAlignments[j + 1];
+              //
+              //   if(time > currentWord.start && time < nextWord.start) {
+              //     Object.assign(playingLocation, {wordIndex: j});
+              //   } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
+              //     const wordIndex = currentSegment.wordAlignments.length - 1;
+              //     Object.assign(playingLocation, {wordIndex})
+              //   }
+              // }
+            }
+          }
+          handleWordClick(playingLocation, true);
+          // const timeData = buildPlayingAudioPlayerSegment(playingLocation);
+          // console.log('====playingLocation && timeData : ', playingLocation, timeData);
+          // if(timeData) {
+          //   Object.assign(timeData, {timeToSeekTo: time});
+          //   setPlayingTimeData(timeData);
+          //   setCurrentPlayingLocation(playingLocation);
+          //   setScrollToSegmentIndex(playingLocation.segmentIndex);
           // }
         }
+        internalSegmentsTracker = response.data.content;
+        if(checkAudioPlaying) setIsAudioPlaying(true);
+      } else if (response.kind !== ProblemKind['bad-data']){
+        log({
+          file: `EditorPage.tsx`,
+          caller: `getSegments - failed to get segments`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
-      const timeData = buildPlayingAudioPlayerSegment(playingLocation);
-      if(timeData) {
-        Object.assign(timeData, {timeToSeekTo: time});
-        setPlayingTimeData(timeData);
-        setCurrentPlayingLocation(playingLocation);
-      }
-      setScrollToSegmentIndex(playingLocation.segmentIndex);
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
     setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
-
   };
 
   const findPlayingLocationFromAdditionalSegments = (prevSegments: SegmentResults, updateSegments: Segment[]) => {
@@ -366,101 +395,118 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
     // const wordToFocus = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`)
     const wordTime = calculateWordTime(updateSegments, playingLocation.segmentIndex, wordIndex);
-    let timeData;
-    const segment = updateSegments[playingLocation.segmentIndex];
-    const wordAlignment = segment.wordAlignments[wordIndex];
-    const startTime = segment.start + wordAlignment.start;
-    const endTime = startTime + wordAlignment.length;
-    const time: Required<Time> = {
-      start: startTime,
-      end: endTime,
-    };
-    // setCurrentlyPlayingWordTime(time);
-    const text = wordAlignment.word.replace('|', '');
-    const color = theme.audioPlayer.wordRange;
-    const currentPlayingWordToDisplay: WordToCreateTimeFor = {
-      color,
-      time,
-      text,
-    };
-    const segmentTime: Required<Time> = {
-      start: segment.start,
-      end: segment.start + segment.length,
-    };
-    const currentPlayingSegmentToDisplay: WordToCreateTimeFor = {
-      color: theme.audioPlayer.segmentRange,
-      time: segmentTime,
-      text: segment.transcript,
-    };
-    timeData = {
-      currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
-    }
-    if(timeData && wordTime) {
-      const timeToSeekTo = {timeToSeekTo: wordTime}
-      Object.assign(timeData, timeToSeekTo);
-      setPlayingTimeData(timeData);
-    }
-    const playingBlock = document.getElementById
-    (`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
-    if(playingBlock) setSelectionRange(playingBlock);
+    // let timeData;
+    // const segment = updateSegments[playingLocation.segmentIndex];
+    // const wordAlignment = segment.wordAlignments[wordIndex];
+    // const startTime = segment.start + wordAlignment.start;
+    // const endTime = startTime + wordAlignment.length;
+    // const time: Required<Time> = {
+    //   start: startTime,
+    //   end: endTime,
+    // };
+    // // setCurrentlyPlayingWordTime(time);
+    // const text = wordAlignment.word.replace('|', '');
+    // const color = theme.audioPlayer.wordRange;
+    // const currentPlayingWordToDisplay: WordToCreateTimeFor = {
+    //   color,
+    //   time,
+    //   text,
+    // };
+    // const segmentTime: Required<Time> = {
+    //   start: segment.start,
+    //   end: segment.start + segment.length,
+    // };
+    // const currentPlayingSegmentToDisplay: WordToCreateTimeFor = {
+    //   color: theme.audioPlayer.segmentRange,
+    //   time: segmentTime,
+    //   text: segment.transcript,
+    // };
+    // timeData = {
+    //   currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
+    // }
+    // if(timeData && wordTime) {
+    //   const timeToSeekTo = {timeToSeekTo: wordTime}
+    //   Object.assign(timeData, timeToSeekTo);
+    //   setPlayingTimeData(timeData);
+    // }
+    // const playingBlock = document.getElementById
+    // (`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
+    // if(playingBlock) setSelectionRange(playingBlock);
     // wordToFocus?.focus();
-    setCurrentPlayingLocation(playingLocation);
+    handleWordClick(playingLocation, true);
+    // setCurrentPlayingLocation(playingLocation);
     setScrollToSegmentIndex(playingLocation.segmentIndex);
   };
 
   const getPrevSegment = async () => {
-    if(segmentResults.first || prevSegmentResults && prevSegmentResults.first) return;
-    const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number ? prevSegmentResults : segmentResults;
+    if(!isTimeSegment && (segmentResults.first || prevSegmentResults && prevSegmentResults.first)) return;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number < segmentResults?.number
+        ? prevSegmentResults : segmentResults;
     const prevPage = prevSegment.number - 1;
     setIsLoadingAdditionalSegment(true);
-    setPrevSegmentResults(segmentResults);
-    setPaginationParams({page: prevPage, pageSize: paginationParams.pageSize});
-    const additionalSegments = await getAdditionalSegments(prevPage);
-    if(additionalSegments) {
-      const updateSegment = [...additionalSegments.content, ...prevSegment.content];
-      internalSegmentsTracker = updateSegment;
-      let playingSegmentIndex;
-      const wordIndex = currentPlayingLocation.wordIndex;
-      // updateSegment.forEach((segment, index) => {
-      //   if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
-      //     playingSegmentIndex =  index;
-      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
-      //   } else if(prevSegment) {
-      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
-      //   }
-      // })
-      setSegments([...segmentResults.content, ...additionalSegments.content]);
-      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+    let additionalSegments;
+    let updateSegment = [] as Segment[];
+
+    if(isTimeSegment) {
+      const firstSegmentNumber = segments[0].number
+      const pageNumber = Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE);
+      const playingLocation = {segmentIndex: firstSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
+      additionalSegments = await getAdditionalSegments(pageNumber);
+      if(additionalSegments) setSegments(additionalSegments.content);
+      console.log('========= getPrevSegment : ', pageNumber, additionalSegments);
+      setPage(pageNumber);
+      setPrevSegmentResults({} as SegmentResults);
+      handleWordClick(playingLocation, true);
+      setScrollToSegmentIndex(playingLocation.segmentIndex);
+      setIsTimeSegment(false);
+      if(additionalSegments) updateSegment = [...additionalSegments.content];
+    } else {
+      additionalSegments = await getAdditionalSegments(prevPage);
+      if(additionalSegments) {
+        updateSegment = [...additionalSegments.content, ...prevSegment.content];
+        setSegments(updateSegment);
+        internalSegmentsTracker = updateSegment;
+      }
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
+      setPage(prevPage);
+      setPrevSegmentResults(segmentResults);
     }
+    setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+
   };
 
   const getNextSegment = async () => {
-    if(segmentResults.last) return;
+    if(!isTimeSegment && segmentResults.last) return;
     const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
     const nextPage = prevSegment.number + 1;
     setIsLoadingAdditionalSegment(true);
-    setPrevSegmentResults(segmentResults);
-    setPaginationParams({page: nextPage, pageSize: paginationParams.pageSize});
-    const additionalSegments = await getAdditionalSegments(nextPage);
-    if(additionalSegments) {
-      const updateSegment = [...prevSegment.content, ...additionalSegments.content];
-      internalSegmentsTracker = updateSegment;
-      let playingSegmentIndex;
-      const wordIndex = currentPlayingLocation.wordIndex;
-      // updateSegment.forEach((segment, index) => {
-      //   if(prevSegment && segment && segment.id == segments[currentPlayingLocation.segmentIndex]['id']) {
-      //     playingSegmentIndex =  index;
-      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: playingSegmentIndex || 0, wordIndex});
-      //   } else if(prevSegment) {
-      //     if(!isAudioPlaying) setCurrentPlayingLocation({segmentIndex: prevSegment.content.length, wordIndex: 0});
-      //   }
-      // })
-      setSegments([...segmentResults.content, ...additionalSegments.content]);
-      findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
-      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
 
+    let additionalSegments = await getAdditionalSegments(nextPage);
+    let updateSegment = [] as Segment[];
+    if(isTimeSegment) {
+      const lastSegmentNumber = segments[segments.length - 1].number;
+      const pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE !== SCROLL_PAGE_SIZE - 1
+          ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
+      const playingLocation = {segmentIndex: lastSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
+      additionalSegments = await getAdditionalSegments(pageNumber);
+      if(additionalSegments) setSegments(additionalSegments.content);
+      setPage(pageNumber);
+      setPrevSegmentResults({} as SegmentResults);
+      handleWordClick(playingLocation, true);
+      setIsTimeSegment(false);
+      if(additionalSegments) updateSegment = [...additionalSegments.content];
+    } else {
+      additionalSegments = await getAdditionalSegments(nextPage);
+      if(additionalSegments) {
+        updateSegment = [...prevSegment.content, ...additionalSegments.content];
+        setSegments(updateSegment);
+        internalSegmentsTracker = updateSegment;
+      }
+      findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
+      setPrevSegmentResults(segmentResults);
+      setPage(nextPage);
     }
+    setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
   };
 
   const getSegments = async () => {
@@ -469,8 +515,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       const response = await api.voiceData.getSegments(
           modeProjectId || projectId,
           voiceDataId || voiceData.id,
-          paginationParams.pageSize,
-          paginationParams.page);
+          SCROLL_PAGE_SIZE,
+          page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -853,7 +899,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const { segmentIndex, wordIndex } = playingLocation;
-    if (!segments.length) return;
+    if (!segments.length && !internalSegmentsTracker.length) return;
+    console.log('======== internalSegmentsTracker : ', internalSegmentsTracker);
     const segment = internalSegmentsTracker[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
@@ -953,21 +1000,21 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    * - sets the seek time in the audio player
    * - sets the current playing location if the audio player isn't locked
    */
-  const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
-    if(autoSeekDisabled) return;
+  const handleWordClick = (wordLocation: SegmentAndWordIndex, forceClick: boolean = false) => {
+    if(!forceClick && autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
     let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
       wordWasClicked = true;
       if(checkAudioPlaying) setIsAudioPlaying(false);
-      const wordTime = calculateWordTime(segments, segmentIndex, wordIndex);
+      const wordTime = calculateWordTime(internalSegmentsTracker, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
       if(timeData && wordTime) {
         const timeToSeekTo = {timeToSeekTo: wordTime}
         Object.assign(timeData, timeToSeekTo);
         setPlayingTimeData(timeData);
       }
-      // setTimeToSeekTo(wordTime + SEEK_SLOP);
+      setTimeToSeekTo(wordTime + SEEK_SLOP);
       setCurrentPlayingLocation(wordLocation);
       if(checkAudioPlaying) setIsAudioPlaying(true);
     }
