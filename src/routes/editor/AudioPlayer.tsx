@@ -403,7 +403,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
         handleTimeChange(currentTimeFixed);
       }
       previouslyFetchedTime = currentTimeFixed
-      console.log('========== currentTime every handleSeek :', currentTime);
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
     } catch (error) {
@@ -1092,12 +1091,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   // set the time segment for the currently playing word
   React.useEffect(() => {
     if (typeof playingTimeData.timeToSeekTo === 'number') {
-      console.log('=========== playingTImeData when it is updated : ', playingTimeData);
       seekToTime(playingTimeData.timeToSeekTo);
     }
     // don't update playing segments if the loop is active or when it should be disabled
     if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
-      console.log('======== parseCurrentlyPlayingWordTime', playingTimeData);
       parseCurrentlyPlayingWordSegment();
     }
 

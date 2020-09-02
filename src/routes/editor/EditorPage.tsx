@@ -334,32 +334,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             if(i === 0 && time < currentSegment.start) {
               Object.assign(playingLocation, {segmentIndex: 0, wordIndex: 0});
             }
-
             if(time > currentSegment.start && time< nextSegment.start) {
               Object.assign(playingLocation, {segmentIndex: i, wordIndex: 0});
-
-              // for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
-              //   const currentWord = currentSegment.wordAlignments[j];
-              //   const nextWord = currentSegment.wordAlignments[j + 1];
-              //
-              //   if(time > currentWord.start && time < nextWord.start) {
-              //     Object.assign(playingLocation, {wordIndex: j});
-              //   } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
-              //     const wordIndex = currentSegment.wordAlignments.length - 1;
-              //     Object.assign(playingLocation, {wordIndex})
-              //   }
-              // }
             }
           }
           handleWordClick(playingLocation, true);
-          // const timeData = buildPlayingAudioPlayerSegment(playingLocation);
-          // console.log('====playingLocation && timeData : ', playingLocation, timeData);
-          // if(timeData) {
-          //   Object.assign(timeData, {timeToSeekTo: time});
-          //   setPlayingTimeData(timeData);
-          //   setCurrentPlayingLocation(playingLocation);
-          //   setScrollToSegmentIndex(playingLocation.segmentIndex);
-          // }
         }
         internalSegmentsTracker = response.data.content;
         if(checkAudioPlaying) setIsAudioPlaying(true);
@@ -393,48 +372,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     if(playingLocation === null) {
       playingLocation = {segmentIndex: prevSegments.content.length - 1, wordIndex: 0};
     }
-    // const wordToFocus = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`)
     const wordTime = calculateWordTime(updateSegments, playingLocation.segmentIndex, wordIndex);
-    // let timeData;
-    // const segment = updateSegments[playingLocation.segmentIndex];
-    // const wordAlignment = segment.wordAlignments[wordIndex];
-    // const startTime = segment.start + wordAlignment.start;
-    // const endTime = startTime + wordAlignment.length;
-    // const time: Required<Time> = {
-    //   start: startTime,
-    //   end: endTime,
-    // };
-    // // setCurrentlyPlayingWordTime(time);
-    // const text = wordAlignment.word.replace('|', '');
-    // const color = theme.audioPlayer.wordRange;
-    // const currentPlayingWordToDisplay: WordToCreateTimeFor = {
-    //   color,
-    //   time,
-    //   text,
-    // };
-    // const segmentTime: Required<Time> = {
-    //   start: segment.start,
-    //   end: segment.start + segment.length,
-    // };
-    // const currentPlayingSegmentToDisplay: WordToCreateTimeFor = {
-    //   color: theme.audioPlayer.segmentRange,
-    //   time: segmentTime,
-    //   text: segment.transcript,
-    // };
-    // timeData = {
-    //   currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
-    // }
-    // if(timeData && wordTime) {
-    //   const timeToSeekTo = {timeToSeekTo: wordTime}
-    //   Object.assign(timeData, timeToSeekTo);
-    //   setPlayingTimeData(timeData);
-    // }
-    // const playingBlock = document.getElementById
-    // (`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
-    // if(playingBlock) setSelectionRange(playingBlock);
-    // wordToFocus?.focus();
     handleWordClick(playingLocation, true);
-    // setCurrentPlayingLocation(playingLocation);
     setScrollToSegmentIndex(playingLocation.segmentIndex);
   };
 
@@ -449,17 +388,20 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     if(isTimeSegment) {
       const firstSegmentNumber = segments[0].number
-      const pageNumber = Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE);
+      const pageNumber = firstSegmentNumber % SCROLL_PAGE_SIZE === 0
+          ? Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: firstSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
       if(additionalSegments) setSegments(additionalSegments.content);
-      console.log('========= getPrevSegment : ', pageNumber, additionalSegments);
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
       setScrollToSegmentIndex(playingLocation.segmentIndex);
       setIsTimeSegment(false);
-      if(additionalSegments) updateSegment = [...additionalSegments.content];
+      if(additionalSegments) {
+        updateSegment = [...additionalSegments.content];
+        internalSegmentsTracker = updateSegment;
+      }
     } else {
       additionalSegments = await getAdditionalSegments(prevPage);
       if(additionalSegments) {
@@ -485,14 +427,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     let updateSegment = [] as Segment[];
     if(isTimeSegment) {
       const lastSegmentNumber = segments[segments.length - 1].number;
-      const pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE !== SCROLL_PAGE_SIZE - 1
-          ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
+      const pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE === 0
+          ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: lastSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
       if(additionalSegments) setSegments(additionalSegments.content);
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
+      setScrollToSegmentIndex(playingLocation.segmentIndex);
       setIsTimeSegment(false);
       if(additionalSegments) updateSegment = [...additionalSegments.content];
     } else {
@@ -766,8 +709,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleSegmentSplitCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    const segmentIndex = caretLocation.segmentIndex;
-    const wordIndex = caretLocation.wordIndex;
+    const { segmentIndex, wordIndex } = caretLocation;
+
     if(typeof segmentIndex !== 'number'
         || typeof wordIndex !== 'number'
         || !caretLocation
@@ -779,17 +722,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       return;
     }
 
-    const trackSegments = segments.length > 0 ? segments : internalSegmentsTracker;
-
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const response = await api.voiceData.splitSegment(projectId, voiceData.id, trackSegments[caretLocation.segmentIndex].id, caretLocation.wordIndex);
+      const response = await api.voiceData.splitSegment(projectId, voiceData.id, internalSegmentsTracker[segmentIndex].id, wordIndex);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         setIsSegmentUpdateError(false);
         //cut out and replace the old segment
-        const splitSegments = [...trackSegments];
+        const splitSegments = [...internalSegmentsTracker];
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
@@ -900,7 +841,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
     const { segmentIndex, wordIndex } = playingLocation;
     if (!segments.length && !internalSegmentsTracker.length) return;
-    console.log('======== internalSegmentsTracker : ', internalSegmentsTracker);
     const segment = internalSegmentsTracker[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
