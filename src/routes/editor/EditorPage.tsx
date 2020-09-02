@@ -320,20 +320,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const currentSegment = updateSegments.content[i];
         const nextSegment = updateSegments.content[i + 1];
 
+        if(i === 0 && time < currentSegment.start) {
+          Object.assign(playingLocation, {segmentIndex: 0, wordIndex: 0});
+        }
+
         if(time > currentSegment.start && time< nextSegment.start) {
-          Object.assign(playingLocation, {segmentIndex: i});
+          Object.assign(playingLocation, {segmentIndex: i, wordIndex: 0});
 
-          for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
-            const currentWord = currentSegment.wordAlignments[j];
-            const nextWord = currentSegment.wordAlignments[j + 1];
-
-            if(time > currentWord.start && time < nextWord.start) {
-              Object.assign(playingLocation, {wordIndex: j});
-            } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
-              const wordIndex = currentSegment.wordAlignments.length - 1;
-              Object.assign(playingLocation, {wordIndex})
-            }
-          }
+          // for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
+          //   const currentWord = currentSegment.wordAlignments[j];
+          //   const nextWord = currentSegment.wordAlignments[j + 1];
+          //
+          //   if(time > currentWord.start && time < nextWord.start) {
+          //     Object.assign(playingLocation, {wordIndex: j});
+          //   } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
+          //     const wordIndex = currentSegment.wordAlignments.length - 1;
+          //     Object.assign(playingLocation, {wordIndex})
+          //   }
+          // }
         }
       }
       const timeData = buildPlayingAudioPlayerSegment(playingLocation);
@@ -671,7 +675,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation || caretLocation.segmentIndex === segments.length -1) {
+    if(!caretLocation || caretLocation.segmentIndex === 0) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
@@ -682,14 +686,14 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       setSaveSegmentsLoading(true);
       const segmentToMege = trackSegments[selectedSegmentIndex].id;
       const segmentToMergeInto = trackSegments[selectedSegmentIndex - 1].id;
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id,segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
         const mergedSegments = [...trackSegments];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
         internalSegmentsTracker = mergedSegments;
@@ -1190,8 +1194,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
     if (!isDiff && !readOnly && voiceData && projectId) {
-      getSegments();
       getAudioUrl();
+      getSegments();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -1211,8 +1215,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       getDataSetsToFetchFrom();
     }
     if((readOnly || isDiff) && !initialFetchDone && voiceData && Object.entries(voiceData).length !== 0) {
-      getSegments();
       getAudioUrl();
+      getSegments();
       setInitialFetchDone(true);
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
@@ -1221,8 +1225,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   React.useEffect(() => {
     setPageTitle(translate('path.editor'));
     getShortcuts();
-    if ((readOnly || isDiff) && modeProjectId && voiceDataId && canSeeReadOnlyEditor) {
-      if(!voiceDataLoading) getDataForModeEditor(modeProjectId, voiceDataId);
+    if ((readOnly || isDiff) && projectId && voiceDataId && canSeeReadOnlyEditor) {
+      if(!voiceDataLoading && !initialFetchDone) getDataForModeEditor(projectId, voiceDataId);
     } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -1239,7 +1243,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     return <SiteLoadingIndicator />;
   }
 
-  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent && !isDiff) {
+  if (!readOnly && !isDiff && initialFetchDone && noAssignedData && !noRemainingContent) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
