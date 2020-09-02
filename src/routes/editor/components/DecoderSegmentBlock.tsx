@@ -49,21 +49,18 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 interface DecoderSegmentBlockProps  {
     segment: Segment;
     segmentIndex: number;
-    editorCommand?: EDITOR_CONTROLS;
-    readOnly?: boolean;
+    readOnly: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
     assignSpeakerForSegment: (segmentIndex:string) => void;
     playingLocation: any;
 }
 
-let isFocused = false;
 
 const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const classes = useStyles();
     const {
         segment,
         segmentIndex,
-        editorCommand,
         readOnly,
         removeHighRiskValueFromSegment,
         assignSpeakerForSegment,
@@ -75,8 +72,6 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
-    const [lengthBeforeBlockArray, setLengthBeforeBlockArray] = React.useState<number[]>([]);
-    const [decoderTranscriptAnimated, setDecoderTranscriptAnimated] = React.useState([]);
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const [isDiff, setIsDiff] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
@@ -86,23 +81,8 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
         return buildStyleMap(theme);
     }, []);
     const memoizedSegmentClassName = React.useMemo(() => isDiff && playingLocation.segmentIndex === segmentIndex ? `${classes.playingSegment} ${DECODER_DIFF_CLASSNAME}`
-        : playingLocation.segmentIndex === segmentIndex ? classes.playingSegment :'', playingLocation)
+        : playingLocation.segmentIndex === segmentIndex ? classes.playingSegment :'', [playingLocation, isDiff])
 
-
-    const setLengthBeforeEachBlockArray = () => {
-        const result = [0];
-        let count = 0;
-        for(let i = 1; i < segment.wordAlignments.length; i ++) {
-            const alignment = segment.wordAlignments[i];
-            count += alignment.word.length;
-            result.push(count);
-        }
-        setLengthBeforeBlockArray(result);
-    };
-
-    const handleFocus = () => {
-        isFocused = true
-    };
 
     const handleBlur = async () => {
         checkLocationOnScreenAndScroll(
@@ -111,7 +91,13 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
             editorContentHeight,
             windowHeight,
             editorAutoScrollDisabled);
-        isFocused = false;
+    };
+
+    const segmentClassName = () => {
+      let className = '';
+      if(isDiff) className += `${DECODER_DIFF_CLASSNAME} `;
+      if(playingLocation.segmentIndex === segmentIndex) className +=  `${classes.playingSegment} `
+      return className;
     };
 
     const renderAnimatedTranscript = () => {
@@ -134,15 +120,14 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                   </span>
               )
               animated.push(animatedText);
-              setIsDiff(true);
           }
       }
       return animated;
     };
 
     React.useEffect(() => {
+        if(segment.decoderTranscript !== segment.transcript) setIsDiff(true);
         setLocalSegment(segment);
-        setLengthBeforeEachBlockArray();
     }, [segment]);
 
     React.useEffect(() => {
@@ -154,9 +139,10 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                 windowHeight,
                 editorAutoScrollDisabled);
         }
-    }, [playingLocation])
+    }, [playingLocation]);
+
     return (
-        <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
+        <div className={classes.root} ref={segmentRef} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2
                 readOnly={readOnly}
                 isChanged={false}
@@ -165,7 +151,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
             />
-            <span className={memoizedSegmentClassName}>{renderAnimatedTranscript()}</span>
+            <span className={segmentClassName()}>{renderAnimatedTranscript()}</span>
         </div>
     );
 };

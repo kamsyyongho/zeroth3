@@ -175,10 +175,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [projectId, setProjectId] = React.useState<string | undefined>(modeProjectId || '');
   const [isTimeSegment, setIsTimeSegment] = React.useState<boolean>(false);
   // get the passed info if we got here via the details page
-
-  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  // const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
-  // const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
   const [isDiff, setIsDiff] = React.useState<boolean>(mode === 'diff');
   const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
@@ -838,7 +834,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    * @params playingLocation
    */
   const buildPlayingAudioPlayerSegment = (playingLocation: SegmentAndWordIndex) => {
-    const { segmentIndex, wordIndex } = playingLocation;
+    const segmentIndex = playingLocation.segmentIndex === -1 ? 0 : playingLocation.segmentIndex;
+    const wordIndex = playingLocation.wordIndex === -1 ? 0 : playingLocation.wordIndex;
     if (!segments.length && !internalSegmentsTracker.length) return;
     const segment = internalSegmentsTracker[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
@@ -1164,7 +1161,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     setCurrentlyPlayingWordTime(undefined);
     setSegmentSplitTimeBoundary(undefined);
     handleWordTimeCreationClose();
-    setNavigationProps({} as NavigationPropsToGet);
   };
 
   React.useEffect(() => {
