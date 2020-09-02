@@ -120,7 +120,7 @@ export const EditorDecorator = (props: EntityContentProps) => {
             color: theme.editor.playing,
             boxShadow: theme.editor.playingShadow,
         };
-        checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
+        // checkLocationOnScreenAndScroll(segmentRef.current, editorElement, editorContentHeight, windowHeight, editorAutoScrollDisabled);
     }
 
     React.useEffect(() => {

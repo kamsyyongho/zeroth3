@@ -114,7 +114,9 @@ interface SegmentSplitOptions {
 
 interface EditorProps {
   height?: number;
-  // readOnly?: boolean;
+  readOnly?: boolean;
+  isDiff?: boolean;
+  setIsDiff: (isDiff: boolean) => void;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -144,12 +146,15 @@ interface EditorProps {
   splitTimePickerRootProps: SplitTimePickerRootProps;
   getNextSegment: () => void;
   getPrevSegment: () => void;
+  projectId?: string;
 }
 
 export function Editor(props: EditorProps) {
   const {
     height,
-    // readOnly,
+    readOnly,
+    isDiff,
+    setIsDiff,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -176,16 +181,13 @@ export function Editor(props: EditorProps) {
     splitTimePickerRootProps,
     getNextSegment,
     getPrevSegment,
+    projectId,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
-  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -504,12 +506,9 @@ export function Editor(props: EditorProps) {
   };
 
   const handleGoToEditMode = () => {
-    // setReadOnly(false);
-    // setIsDiff(false);
-    const projectId = voiceData.projectId;
-    setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: false });
-    // PATHS.editor.to && history.push(PATHS.editor.to);
+    setIsDiff(false);
   };
+
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
@@ -579,14 +578,14 @@ export function Editor(props: EditorProps) {
       // updatePlayingLocation();
     }
   }, [playingLocation, ready]);
-
-  React.useEffect(() => {
-    if(navigationProps) {
-      setProjectId(navigationProps.projectId);
-      setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly);
-    }
-  }, [navigationProps]);
+  //
+  // React.useEffect(() => {
+  //   if(navigationProps) {
+  //     setProjectId(navigationProps.projectId);
+  //     setIsDiff(navigationProps.isDiff);
+  //     setReadOnly(navigationProps.readOnly);
+  //   }
+  // }, [navigationProps]);
 
   // React.useEffect(() => {
   //   setReadOnlyEditorState(isLoadingAdditionalSegment);
@@ -839,9 +838,9 @@ export function Editor(props: EditorProps) {
              isAudioPlaying={isAudioPlaying}
              isDiff={!!isDiff}
               isCommentEnabled={isCommentEnabled}
-               handleTextSelection={handleTextSelection}
+             handleTextSelection={handleTextSelection}
               // onChange={handleChange}
-              readOnly={readOnly}
+              readOnly={!!readOnly}
               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
               updateCaretLocation={updateCaretLocation}
               updateChange={updateChange}

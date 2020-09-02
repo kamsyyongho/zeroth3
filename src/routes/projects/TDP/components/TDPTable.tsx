@@ -169,8 +169,8 @@ export function TDPTable(props: TDPTableProps) {
    * @param voiceData
    */
   const handleRowClick = (voiceData: VoiceData) => {
-    setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: true });
-    PATHS.editor.to && history.push(PATHS.editor.to);
+    // setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: true });
+    PATHS.editor.to && history.push(`/editor/mode/readonly/projectId/${projectId}/voiceDataId/${voiceData.id}`);
   };
 
   const openDeleteConfirmation = (voiceDataId: string, dataIndex: number) => {

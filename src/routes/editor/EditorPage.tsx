@@ -6,6 +6,7 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import {useSnackbar, VariantType} from 'notistack';
 import {BulletList} from 'react-content-loader';
+import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
 import {PERMISSIONS} from '../../constants';
@@ -107,8 +108,15 @@ export interface NavigationPropsToGet {
   readOnly: boolean
 }
 
-export function EditorPage() {
+interface EditorPageProps {
+  mode?: string;
+  modeProjectId?: string;
+  voiceDataId?: string;
+}
+
+export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const { translate } = React.useContext(I18nContext);
+  const { mode, modeProjectId, voiceDataId } = match.params;
   const windowSize = useWindowSize();
   const api = React.useContext(ApiContext);
   const { hasPermission, roles, user } = React.useContext(KeycloakContext);
@@ -159,16 +167,17 @@ export function EditorPage() {
   const [audioUrl, setAudioUrl] = React.useState<string>('');
   const [isSegmentUpdateError, setIsSegmentUpdateError] = React.useState<boolean>(false);
   const [isShortCutPageOpen, setIsShortCutPageOpen] = React.useState<boolean>(false);
-  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 40});
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 60});
   const [isLoadingAdditionalSegment, setIsLoadingAdditionalSegment] = React.useState(false);
-
+  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>({} as VoiceData);
+  const [projectId, setProjectId] = React.useState<string | undefined>(modeProjectId || '');
   // get the passed info if we got here via the details page
 
   const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
+  // const [voiceData, setVoiceData] = React.useState<VoiceData | undefined>(navigationProps?.voiceData);
+  // const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
+  const [isDiff, setIsDiff] = React.useState<boolean>(mode === 'diff');
+  const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -267,7 +276,7 @@ export function EditorPage() {
     if (api?.voiceData && projectId && voiceData) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, page, time);
+      const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, paginationParams.pageSize, page, time);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -299,37 +308,48 @@ export function EditorPage() {
     const updateSegments = await getAdditionalSegments(undefined, time);
     if(updateSegments) {
       let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
+      const updatePagination = {page: paginationParams.page, pageSize: paginationParams.pageSize};
+      Object.assign(updatePagination, {page: updateSegments.number})
+      setSegmentResults(updateSegments);
       setSegments(updateSegments.content);
       internalSegmentsTracker = updateSegments.content;
-      
+      setPrevSegmentResults({} as SegmentResults);
+      setPaginationParams(updatePagination);
+
       for(let i = 0; i < updateSegments.content.length; i++) {
         const currentSegment = updateSegments.content[i];
         const nextSegment = updateSegments.content[i + 1];
-        
+
+        if(i === 0 && time < currentSegment.start) {
+          Object.assign(playingLocation, {segmentIndex: 0, wordIndex: 0});
+        }
+
         if(time > currentSegment.start && time< nextSegment.start) {
-          Object.assign(playingLocation, {segmentIndex: i});
-          
-          for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
-            const currentWord = currentSegment.wordAlignments[j];
-            const nextWord = currentSegment.wordAlignments[j + 1];
-            
-            if(time > currentWord.start && time < nextWord.start) {
-              Object.assign(playingLocation, {wordIndex: j});
-            } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
-              const wordIndex = currentSegment.wordAlignments.length - 1;
-              Object.assign(playingLocation, {wordIndex})
-            }
-          }
+          Object.assign(playingLocation, {segmentIndex: i, wordIndex: 0});
+
+          // for(let j = 0; j < currentSegment.wordAlignments.length - 2; j++) {
+          //   const currentWord = currentSegment.wordAlignments[j];
+          //   const nextWord = currentSegment.wordAlignments[j + 1];
+          //
+          //   if(time > currentWord.start && time < nextWord.start) {
+          //     Object.assign(playingLocation, {wordIndex: j});
+          //   } else if (j === currentSegment.wordAlignments.length - 1 && time >= currentWord.start) {
+          //     const wordIndex = currentSegment.wordAlignments.length - 1;
+          //     Object.assign(playingLocation, {wordIndex})
+          //   }
+          // }
         }
       }
       const timeData = buildPlayingAudioPlayerSegment(playingLocation);
       if(timeData) {
         Object.assign(timeData, {timeToSeekTo: time});
         setPlayingTimeData(timeData);
+        setCurrentPlayingLocation(playingLocation);
       }
       setScrollToSegmentIndex(playingLocation.segmentIndex);
     }
-    setIsLoadingAdditionalSegment(false);
+    setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+
   };
 
   const findPlayingLocationFromAdditionalSegments = (prevSegments: SegmentResults, updateSegments: Segment[]) => {
@@ -410,7 +430,7 @@ export function EditorPage() {
       //   }
       // })
       setSegments([...segmentResults.content, ...additionalSegments.content]);
-      setTimeout(() => setIsLoadingAdditionalSegment(false), 10);
+      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
     }
   };
@@ -438,14 +458,19 @@ export function EditorPage() {
       // })
       setSegments([...segmentResults.content, ...additionalSegments.content]);
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
-      setIsLoadingAdditionalSegment(false);
+      setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
+
     }
   };
 
   const getSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
-      const response = await api.voiceData.getSegments(projectId, voiceData.id, paginationParams.pageSize, paginationParams.page);
+      const response = await api.voiceData.getSegments(
+          modeProjectId || projectId,
+          voiceDataId || voiceData.id,
+          paginationParams.pageSize,
+          paginationParams.page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
@@ -465,9 +490,28 @@ export function EditorPage() {
           snackbarError.errorText = serverError.message || "";
         }
       }
-
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSegmentsLoading(false);
+    }
+  };
+
+  const getDataForModeEditor = async (projectId: string, voiceDataId: string) => {
+    if (api?.voiceData) {
+      setVoiceDataLoading(true);
+      //save the options to allow us to redo a search
+      // in case we delete a row and it would lead us to have no results
+      const response = await api.voiceData.getSelectedVoiceData(projectId, voiceDataId);
+      if (response.kind === 'ok') {
+        setVoiceData(response.voiceData);
+      } else {
+        log({
+          file: `TDP.tsx`,
+          caller: `getVoiceData - failed to get voice data`,
+          value: response,
+          important: true,
+        });
+      }
+      setVoiceDataLoading(false);
     }
   };
 
@@ -631,7 +675,7 @@ export function EditorPage() {
 
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
-    if(!caretLocation || caretLocation.segmentIndex === segments.length -1) {
+    if(!caretLocation || caretLocation.segmentIndex === 0) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
@@ -640,16 +684,16 @@ export function EditorPage() {
     const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const firstSegmentId = trackSegments[selectedSegmentIndex].id;
-      const secondSegmentId = trackSegments[selectedSegmentIndex + 1].id;
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, firstSegmentId, secondSegmentId);
+      const segmentToMege = trackSegments[selectedSegmentIndex].id;
+      const segmentToMergeInto = trackSegments[selectedSegmentIndex - 1].id;
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id,segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
         const mergedSegments = [...trackSegments];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
         internalSegmentsTracker = mergedSegments;
@@ -910,7 +954,7 @@ export function EditorPage() {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex) => {
-    // if(autoSeekDisabled) return;
+    if(autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
     let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
@@ -1149,9 +1193,9 @@ export function EditorPage() {
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
-    if (!readOnly && voiceData && projectId) {
-      getSegments();
+    if (!isDiff && !readOnly && voiceData && projectId) {
       getAudioUrl();
+      getSegments();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -1165,30 +1209,24 @@ export function EditorPage() {
 
   // subsequent fetches
   React.useEffect(() => {
-    if (!isDiff && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
+    if (!isDiff && !readOnly && !voiceDataLoading && !voiceData && initialFetchDone && !noRemainingContent && !noAssignedData) {
       resetVariables();
       getAssignedData();
       getDataSetsToFetchFrom();
     }
-  }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
-
-  React.useEffect(() => {
-    if(navigationProps) {
-      setVoiceData(navigationProps.voiceData);
-      setProjectId(navigationProps.projectId);
-      setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly)
+    if((readOnly || isDiff) && !initialFetchDone && voiceData && Object.entries(voiceData).length !== 0) {
+      getAudioUrl();
+      getSegments();
       setInitialFetchDone(true);
     }
-  }, [navigationProps])
+  }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
   // initial fetch and dismount logic
   React.useEffect(() => {
     setPageTitle(translate('path.editor'));
     getShortcuts();
-    if (readOnly && canSeeReadOnlyEditor) {
-      getSegments();
-      getAudioUrl();
+    if ((readOnly || isDiff) && projectId && voiceDataId && canSeeReadOnlyEditor) {
+      if(!voiceDataLoading && !initialFetchDone) getDataForModeEditor(projectId, voiceDataId);
     } else if (canUseEditor && !isDiff) {
       getAssignedData();
       getDataSetsToFetchFrom();
@@ -1205,7 +1243,7 @@ export function EditorPage() {
     return <SiteLoadingIndicator />;
   }
 
-  if (!readOnly && initialFetchDone && noAssignedData && !noRemainingContent && !isDiff) {
+  if (!readOnly && !isDiff && initialFetchDone && noAssignedData && !noRemainingContent) {
     return <EditorFetchButton onClick={fetchMoreVoiceData} dataSets={dataSets} />;
   }
 
@@ -1252,6 +1290,9 @@ export function EditorPage() {
               {segmentsLoading ? <BulletList /> :
                   !!segments.length && (<Editor
                       key={voiceData.id}
+                      readOnly={readOnly}
+                      isDiff={isDiff}
+                      setIsDiff={setIsDiff}
                       responseFromParent={responseToPassToEditor}
                       onParentResponseHandled={handleEditorResponseHandled}
                       onCommandHandled={handleCommandHandled}
@@ -1291,6 +1332,7 @@ export function EditorPage() {
                       }}
                       getNextSegment={getNextSegment}
                       getPrevSegment={getPrevSegment}
+                      projectId={projectId}
                   />)
               }
             </div>

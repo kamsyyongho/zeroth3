@@ -80,4 +80,10 @@ export const PATHS: { [x: string]: Path; } = {
     Icon: props => <ICONS.Editor {...props} />,
     hasDivider: true,
   },
+  modeEditor: {
+    to: '/editor/mode/:mode/projectId/:modeProjectId/voiceDataId/:voiceDataId',
+    title: 'editor',
+    Icon: props => <ICONS.Editor {...props} />,
+    hasDivider: true,
+  },
 };

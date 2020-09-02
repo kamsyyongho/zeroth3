@@ -69,8 +69,9 @@ export const AppDrawer = (props: AppDrawerProps) => {
     let shouldRender = true;
     if ((key === 'models' && !canSeeModels) ||
       (key === 'modelTraning' && !canSeeModels) ||
+      (key === 'modeEditor') ||
       (key === 'IAM' && !canSeeTranscribers && !canSeeUsers) ||
-        (key === 'transcription' && !canSeeTranscription)) {
+      (key === 'transcription' && !canSeeTranscription)) {
       shouldRender = false;
     }
 
@@ -81,7 +82,7 @@ export const AppDrawer = (props: AppDrawerProps) => {
         let isCurrentPath = false;
         if (location.pathname === PATHS.home.to && to === PATHS.home.to) {
           isCurrentPath = true;
-        } else if (to !== PATHS.home.to && location.pathname.includes(to)) {
+        } else if (to !== PATHS.home.to && location.pathname.includes(to) && to !== PATHS.editor.to) {
           isCurrentPath = true;
         }
         let needsSelectedProject = false;

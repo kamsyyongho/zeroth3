@@ -102,26 +102,27 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleArrowKeyDown = () => {
         const playingLocation = getSegmentAndWordIndex();
-        // if(playingLocation) {
-        //     updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
-        //     return;
-        // }
+        if(playingLocation && !autoSeekDisabled) {
+            updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
+            return;
+        }
     };
+
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
         const selection = window.getSelection();
         const currentNode = element;
-
-        if(!autoSeekDisabled && node) {
-            const playingLocation = node.id.split('-');
-            updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
-        }
 
         range.selectNodeContents(node);
         range.collapse(collapse);
         selection?.removeAllRanges();
         selection?.addRange(range);
         node.focus();
+
+        if(!autoSeekDisabled && node) {
+            const playingLocation = node.id.split('-');
+            updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
+        }
     };
 
     const handleArrowUp = () => {
@@ -369,13 +370,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
-    const handleDoubleClick = () => {
-        // const location = getSegmentAndWordIndex();
-        // updateCaretLocation(location.segmentIndex, location.wordIndex);
-
-
-    };
-
     React.useEffect(() => {
         if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {
             handleUndo();
@@ -441,7 +435,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
                                  key={`word-${index}`}
-                                 onDoubleClick={handleDoubleClick}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}

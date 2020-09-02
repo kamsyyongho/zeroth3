@@ -84,7 +84,7 @@ export class User extends ParentApi {
   async getProfile (name: string): Promise<getProfile> {
     const params = {name};
     const response = await this.apisauce.get<User, ServerError>(
-        '/profile',
+        '/api/profile',
         params,
     );
     if(!response.ok) {
@@ -108,7 +108,7 @@ export class User extends ParentApi {
     const params = {phone}
     // make the api call
     const response = await this.apisauce.patch<User, ServerError>(
-        `/profile/phone`,
+        `/api/profile/phone`,
         params,
     );
     // the typical ways to die when calling an api

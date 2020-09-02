@@ -142,6 +142,10 @@ export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
+export type getSelectedVoiceDataResult =
+    | { kind: 'ok', voiceData: VoiceData; }
+    | GeneralApiProblem;
+
 export type getAssignedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
   | GeneralApiProblem;

@@ -33,7 +33,7 @@ export const en: ResourceLanguage = {
       decode: 'Decode',
       decoded: 'Decoded',
       decoding: 'Decoding',
-      decodingTimeRemaining: '{{length}} Seconds',
+      decodingTimeRemaining: '{{progress}} Seconds',
       forbidden: 'Forbidden',
       view: 'View',
       date: 'Date',
@@ -231,7 +231,7 @@ export const en: ResourceLanguage = {
       originalFilename: 'Filename',
       wordCount: 'Word Count',
       statusChange: 'Status Changes',
-      deleteFailMsg: '삭제요청 실패',
+      deleteFailMsg: 'Failed to Request Delete',
     },
     SET: {
       SET: 'SET',

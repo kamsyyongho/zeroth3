@@ -82,6 +82,7 @@ const ZERO_TIME_SLOP = 0.00500;
 /** the zoom levels for the peaks */
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
+let previouslyFetchedTime: number;
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -394,9 +395,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const { currentTime } = mediaElement;
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
-      if(audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
-          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime) {
+      if(currentTime !== previouslyFetchedTime && (audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
+        previouslyFetchedTime = currentTimeFixed
       }
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
