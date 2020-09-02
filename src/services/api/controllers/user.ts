@@ -33,7 +33,7 @@ export class User extends ParentApi {
   async resetPassword(): Promise<resetPasswordResult> {
     // make the api call
     const response = await this.apisauce.post<undefined, ServerError>(
-      `/reset-password`,
+      `/api/reset-password`,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
