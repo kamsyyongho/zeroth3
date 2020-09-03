@@ -93,10 +93,8 @@ export function UsersSummary(props: UsersSummaryProps) {
       setUsersLoading(false);
     }
   };
-
-  React.useEffect(() => {
-  },[users])
-
+  
+  
   React.useEffect(() => {
     const getRoles = async () => {
       if (api?.IAM) {
