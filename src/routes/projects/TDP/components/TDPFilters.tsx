@@ -139,14 +139,14 @@ export function TDPFilters(props: TDPFiltersProps) {
     const options: SearchDataRequest = {
       from,
       till,
-      lengthMax: maxLength,
-      lengthMin: minLength,
+      'length-max': maxLength,
+      'length-min': minLength,
       transcript,
       status: status === '' ? undefined : status,
-      configId: modelConfigId === '' ? undefined : modelConfigId,
+      'model-config': modelConfigId === '' ? undefined : modelConfigId,
       'dataSetIds': dataSetIds?.length ? dataSetIds : [],
       filename,
-      transcriberId: transcriber,
+      transcriber,
     };
     updateVoiceData(options);
   };
