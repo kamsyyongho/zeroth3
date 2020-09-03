@@ -8,6 +8,7 @@ import { CellProps, useTable } from 'react-table';
 import { Typography } from '@material-ui/core';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
+import { KeycloakContext } from '../../../../hooks/keycloak/KeycloakContext';
 import { Role, ROLES, User } from '../../../../types';
 import { CheckedUsersByUserId } from '../../UsersSummary';
 import { UsersCellCheckbox } from './UsersCellCheckbox';
@@ -82,6 +83,7 @@ export function UsersTable(props: UsersTableProps) {
   }, []);
 
   const { translate, language } = React.useContext(I18nContext);
+  const { user,initializeUserRoles } = React.useContext(KeycloakContext);
   const [allChecked, setAllChecked] = React.useState(false);
   const [selectedRoles, setSelectedRoles] = React.useState<SelectedRoleIdsByIndex>({});
   const [noteLog, setNoteLog] = React.useState({});
@@ -102,6 +104,8 @@ export function UsersTable(props: UsersTableProps) {
   const onUpdateRoleSuccess = (updatedUser: User, userIndex: number): void => {
     handleUpdateSuccess(updatedUser);
     const currentRoles = updatedUser.roles.map(role => role.id);
+    const currentRolesName = updatedUser.roles.map(role => role.name);
+    if(updatedUser.email === user.email) initializeUserRoles(currentRolesName);
     setSelectedRoles((prevSelectedRoles) => {
       return { ...prevSelectedRoles, [userIndex]: currentRoles };
     });
