@@ -1,4 +1,4 @@
-import { FilterParams, SubSet, Transcriber, VoiceData, SubSetCountResults } from '../../../types';
+import { FilterParams, PostDataSetFilterParams, SubSet, Transcriber, VoiceData, SubSetCountResults } from '../../../types';
 import { DataSet } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
@@ -8,7 +8,7 @@ import { GeneralApiProblem } from './api-problem.types';
 
 export interface PostDataSetRequest {
   name: string;
-  filterParams: FilterParams;
+  filterParams: PostDataSetFilterParams;
 }
 
 export interface AssignTranscribersToDataSetRequest {

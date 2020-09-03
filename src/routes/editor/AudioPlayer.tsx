@@ -304,7 +304,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   const seekToTime = (timeToSeekTo: number) => {
-    if (!PeaksPlayer?.player || timeToSeekTo < 0) return;
+    if (!PeaksPlayer?.player || timeToSeekTo < 0 || isLoadingAdditionalSegment) return;
     try {
       PeaksPlayer.player.seek(timeToSeekTo);
     } catch (error) {
@@ -395,14 +395,16 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const { currentTime } = mediaElement;
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
-      if(currentTime !== previouslyFetchedTime && (audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+      if (currentTime === previouslyFetchedTime) return;
+      if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
-        previouslyFetchedTime = currentTimeFixed
+      } else {
+        handleTimeChange(currentTimeFixed);
       }
+      previouslyFetchedTime = currentTimeFixed
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      handleTimeChange(currentTimeFixed);
     } catch (error) {
       handleError(error);
     }

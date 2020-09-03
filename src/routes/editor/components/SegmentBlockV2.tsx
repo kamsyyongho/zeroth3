@@ -190,6 +190,7 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
         }
     }, [scrollToSegmentIndex]);
 
+
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
             <MemoizedSegmentBlockHeadV2

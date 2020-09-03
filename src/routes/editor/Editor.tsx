@@ -509,6 +509,10 @@ export function Editor(props: EditorProps) {
     setIsDiff(false);
   };
 
+  const getDiffCount = () => {
+    return 'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'
+  }
+
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
@@ -558,11 +562,9 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     onReady(true);
-    // containerRef?.current?.addEventListener('scroll', handleScrollEvent);
     return () => {
       onReady(false);
       setEditorFocussed(false);
-      containerRef?.current?.removeEventListener('scroll', handleScrollEvent);
     };
   }, []);
 
@@ -572,12 +574,12 @@ export function Editor(props: EditorProps) {
     setEditorFocussed(focussed);
   }, [focussed]);
 
-  React.useEffect(() => {
-    if(playingLocation && ready &&
-        playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
-      // updatePlayingLocation();
-    }
-  }, [playingLocation, ready]);
+  // React.useEffect(() => {
+  //   if(playingLocation && ready &&
+  //       playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
+  //     updatePlayingLocation();
+  //   }
+  // }, [playingLocation, ready]);
   //
   // React.useEffect(() => {
   //   if(navigationProps) {
@@ -590,7 +592,6 @@ export function Editor(props: EditorProps) {
   // React.useEffect(() => {
   //   setReadOnlyEditorState(isLoadingAdditionalSegment);
   // }, [isLoadingAdditionalSegment]);
-
 
   return (
     <div
@@ -674,7 +675,7 @@ export function Editor(props: EditorProps) {
                     direction='row'
                     style={{ marginTop: '5px' }}>
                   <div style={{ backgroundColor: '#ffe190', width: '30px' }} />
-                  <Typography style={{  paddingLeft: '5px' }}>{'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'}</Typography>
+                  <Typography style={{  paddingLeft: '5px' }}>{getDiffCount()}</Typography>
                 </Grid>
               </Grid>
               <Grid
@@ -725,7 +726,6 @@ export function Editor(props: EditorProps) {
                                                segment={segment}
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
-                                               editorCommand={editorCommand}
                                                readOnly={true}
                                                removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                                                playingLocation={playingLocation} />
@@ -737,7 +737,7 @@ export function Editor(props: EditorProps) {
             {ready &&
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'scroll' }}>
               {
-                segments.map( (segment: Segment, index: number) => {
+                segments.map((segment: Segment, index: number) => {
                   return <MemoizedSegmentBlock key={`segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
@@ -747,7 +747,6 @@ export function Editor(props: EditorProps) {
                                                isAudioPlaying={isAudioPlaying}
                                                isCommentEnabled={isCommentEnabled}
                                                handleTextSelection={handleTextSelection}
-                      // onChange={handleChange}
                                                readOnly={readOnly}
                                                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                                                updateCaretLocation={updateCaretLocation}
@@ -839,7 +838,6 @@ export function Editor(props: EditorProps) {
              isDiff={!!isDiff}
               isCommentEnabled={isCommentEnabled}
              handleTextSelection={handleTextSelection}
-              // onChange={handleChange}
               readOnly={!!readOnly}
               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
               updateCaretLocation={updateCaretLocation}
