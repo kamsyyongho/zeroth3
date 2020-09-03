@@ -109,6 +109,30 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
+    const handleArrowLeft = () => {
+        const selection = window.getSelection();
+        if (!selection) return;
+        const currentLocation = selection?.anchorOffset;
+        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const previousWordNode = document.getElementById
+        (`word-${segmentIndex}-${caretLocation.wordIndex - 1}`) || null;
+        if(previousWordNode &&currentLocation === 1) {
+            setRange(previousWordNode, false);
+        }
+    }
+
+    const handleArrowRight = () => {
+        const selection = window.getSelection();
+        if (!selection) return;
+        const currentLocation = selection?.anchorOffset;
+        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const nextWordNode = document.getElementById
+        (`word-${segmentIndex}-${caretLocation.wordIndex + 1}`) || null;
+        if(nextWordNode &&currentLocation === segment.wordAlignments.length - 1) {
+            setRange(nextWordNode, true);
+        }
+    }
+
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
         const selection = window.getSelection();
@@ -126,16 +150,15 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
-    const handleArrowUp = () => {
+    const handleArrowUp = (event: React.KeyboardEvent) => {
         const selection = window.getSelection();
         if (!selection) return;
-        const currentLocation = selection ?.anchorOffset;
+        const currentLocation = selection?.anchorOffset;
         const playingLocation = getSegmentAndWordIndex() || [0,0];
         const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
         (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
         const previousSegmentNode = document.getElementById
         (`word-${segmentIndex - 1}-${wordAlignmentIndex}`) || null;
-        const range = document.createRange();
         const currentWordElement = document.getElementById
         (`word-${segmentIndex}-${playingLocation.wordIndex}`)
         const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
@@ -170,9 +193,10 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 }
             }
         }
+        event.stopPropagation();
     };
 
-    const handleArrowDown = () => {
+    const handleArrowDown = (event: React.KeyboardEvent) => {
         const selection = window.getSelection();
         if (!selection) return;
         const currentLocation = selection?.anchorOffset;
@@ -220,6 +244,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
             }
         }
+        event.stopPropagation();
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
@@ -257,14 +282,16 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         } else {
             switch (event.key) {
                 case "ArrowUp":
-                    handleArrowUp();
+                    handleArrowUp(event);
                     break;
                 case "ArrowDown":
-                    handleArrowDown();
+                    handleArrowDown(event);
                     break;
                 case "ArrowLeft":
+                    handleArrowLeft();
+                    break;
                 case "ArrowRight":
-                    handleArrowKeyDown();
+                    handleArrowRight();
                     break;
                 default:
                     if(isInputKey(event.nativeEvent)) {
@@ -293,8 +320,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
         if(isDiff) {
             updateCaretLocation(segmentIndex, 0);
+            setIsMouseDown(true);
         }
-        setIsMouseDown(true);
     }
 
     const handleMouseUp = (event: React.MouseEvent) => {
@@ -422,7 +449,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}>
             {
-                isMouseDown ?
+                isDiff && isMouseDown ?
                     <div>
                         {transcriptToRender}
                     </div>
