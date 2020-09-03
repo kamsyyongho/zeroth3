@@ -937,7 +937,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    * - sets the current playing location if the audio player isn't locked
    */
   const handleWordClick = (wordLocation: SegmentAndWordIndex, forceClick: boolean = false) => {
-    if(!forceClick && autoSeekDisabled) return;
+    if(!forceClick && !isDiff && autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
     let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
