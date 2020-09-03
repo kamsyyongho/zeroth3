@@ -28,7 +28,7 @@ export class Organizations extends ParentApi {
    */
   async getOrganizations(): Promise<getOrganizationsResult> {
     const response = await this.apisauce.get<Organization[], ServerError>(
-      `/organizations`
+      `api/organizations`
     );
     // the typical ways to die when calling an api
     if (!response.ok) {

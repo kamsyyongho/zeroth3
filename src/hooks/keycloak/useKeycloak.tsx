@@ -150,5 +150,6 @@ export const useKeycloak = () => {
 
   const parsedKeycloak: ParsedKeycloak = { keycloak, logout, user, roles, hasPermission, initializeUserRoles };
 
+
   return { keycloak: parsedKeycloak, keycloakInitialized, initKeycloak };
 };

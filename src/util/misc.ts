@@ -109,15 +109,15 @@ export function getRandomColor(
   return randomColor(defaultOptions);
 }
 
-export function parseWordKey(key: string): SegmentAndWordIndex {
-  const [segmentIndex, wordIndex] = key.split(WORD_KEY_SEPARATOR);
-  return [Number(segmentIndex), Number(wordIndex)];
-}
-
-export function generateWordKeyString(location: SegmentAndWordIndex) {
-  const key = `${location[0]}${WORD_KEY_SEPARATOR}${location[1]}`;
-  return key;
-}
+// export function parseWordKey(key: string): SegmentAndWordIndex {
+//   const { segmentIndex, wordIndex } = key.split(WORD_KEY_SEPARATOR);
+//   return [Number(segmentIndex), Number(wordIndex)];
+// }
+//
+// export function generateWordKeyString(location: SegmentAndWordIndex) {
+//   const key = `${location[0]}${WORD_KEY_SEPARATOR}${location[1]}`;
+//   return key;
+// }
 
 export const isMacOs = () => navigator.userAgent.includes('Mac');
 

@@ -99,6 +99,10 @@ export const CONTENT_STATUS_VALUES: string[] = Object.keys(CONTENT_STATUS).map(
   statusKey => statusKey,
 );
 
+export interface SegmentResults extends PaginatedResults {
+  content: Segment[];
+}
+
 export interface Segment {
   id: string;
   /** the length in seconds of the segment */

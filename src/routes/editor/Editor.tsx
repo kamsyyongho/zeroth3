@@ -31,7 +31,6 @@ import {
 import log from '../../util/log/logger';
 import {NavigationPropsToGet} from  './EditorPage';
 
-let renderTimes = 0;
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
 const COMMENT_HEIGHT = 40;
@@ -115,7 +114,9 @@ interface SegmentSplitOptions {
 
 interface EditorProps {
   height?: number;
-  // readOnly?: boolean;
+  readOnly?: boolean;
+  isDiff?: boolean;
+  setIsDiff: (isDiff: boolean) => void;
   /** payload from the parent to handle */
   responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
@@ -128,6 +129,7 @@ interface EditorProps {
   onWordTimeCreationClose: () => void;
   onSpeakersUpdate: (speakers: string[]) => void;
   onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
+  isLoadingAdditionalSegment: boolean;
   loading?: boolean;
   setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
@@ -142,12 +144,17 @@ interface EditorProps {
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   timePickerRootProps: TimePickerRootProps;
   splitTimePickerRootProps: SplitTimePickerRootProps;
+  getNextSegment: () => void;
+  getPrevSegment: () => void;
+  projectId?: string;
 }
 
 export function Editor(props: EditorProps) {
   const {
     height,
-    // readOnly,
+    readOnly,
+    isDiff,
+    setIsDiff,
     responseFromParent,
     onParentResponseHandled,
     editorCommand,
@@ -156,6 +163,7 @@ export function Editor(props: EditorProps) {
     onWordTimeCreationClose,
     onSpeakersUpdate,
     onUpdateUndoRedoStack,
+    isLoadingAdditionalSegment,
     loading,
     setLoading,
     isAudioPlaying,
@@ -171,15 +179,15 @@ export function Editor(props: EditorProps) {
     splitSegmentByTime,
     timePickerRootProps,
     splitTimePickerRootProps,
+    getNextSegment,
+    getPrevSegment,
+    projectId,
   } = props;
   const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
   const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
   const [playingWordKey, setPlayingWordKey] = useGlobal('playingWordKey');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
-  const [navigationProps, setNavigationProps] = useGlobal<{ navigationProps: NavigationPropsToGet; }>('navigationProps');
-  const [readOnly, setReadOnly] = React.useState<boolean | undefined>(navigationProps?.readOnly);
-  const [projectId, setProjectId] = React.useState<string | undefined>(navigationProps?.projectId);
-  const [isDiff, setIsDiff] = React.useState<boolean | undefined>(navigationProps?.isDiff);
+  const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const windowSize = useWindowSize();
@@ -214,14 +222,12 @@ export function Editor(props: EditorProps) {
   };
 
   const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
-    //
-    onWordClick([segmentIndex, wordIndex]);
-    // handleClickInsideEditor();
+    onWordClick({ segmentIndex, wordIndex });
   };
 
   const updatePlayingLocation = () => {
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 
@@ -244,7 +250,7 @@ export function Editor(props: EditorProps) {
   const assignSpeakerForSegment = (segmentId: string) => {
     const segmentAndWordIndex = getSegmentAndWordIndex();
     if (segmentAndWordIndex) {
-      assignSpeaker(segmentAndWordIndex[0]);
+      assignSpeaker(segmentAndWordIndex.segmentIndex);
     }
   };
 
@@ -266,20 +272,13 @@ export function Editor(props: EditorProps) {
     return buildStyleMap(theme);
   }, []);
 
-  /** updates the undo/redo button status and rebuilds the entity map */
-  const onEditorStateUpdate = () => {
-  };
-
-  const removeEntitiesAtSelection = () => {
-  };
-
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 
   const openSegmentSplitTimePicker = () => {
       if (playingLocation) {
-        const cursorContent = segments[playingLocation[0]].wordAlignments[playingLocation[1]].word;
+        const cursorContent = segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex].word;
         const segmentSplitOptions: SegmentSplitOptions = {
-          segmentIndex: playingLocation[0],
+          segmentIndex: playingLocation.segmentIndex,
         }
       }
   };
@@ -297,7 +296,7 @@ export function Editor(props: EditorProps) {
 
   const handleClickInsideEditor = () => {
     const playingLocation: SegmentAndWordIndex = getSegmentAndWordIndex();
-    if(playingLocation) onWordClick(playingLocation);
+    if(playingLocation && !autoSeekDisabled) onWordClick(playingLocation);
   };
   /** updates the word alignment data once selected segment / blocks have changed
    * @returns if we should update the editor state
@@ -490,6 +489,16 @@ export function Editor(props: EditorProps) {
     }
   };
 
+  const handleScrollEvent = (event: any) => {
+    const element = event.target;
+    if(!isLoadingAdditionalSegment && Math.floor(element.scrollHeight - element.scrollTop) <= element.clientHeight) {
+      getNextSegment();
+    }
+    if(!isLoadingAdditionalSegment && element.scrollTop === 0) {
+      getPrevSegment();
+    }
+  };
+
   const handleCommentCancel = () => {
     setCommentInfo({});
     setReason('');
@@ -497,16 +506,16 @@ export function Editor(props: EditorProps) {
   };
 
   const handleGoToEditMode = () => {
-    // setReadOnly(false);
-    // setIsDiff(false);
-    const projectId = voiceData.projectId;
-    setNavigationProps({ voiceData, projectId, isDiff: false, readOnly: false });
-    // PATHS.editor.to && history.push(PATHS.editor.to);
+    setIsDiff(false);
   };
+
+  const getDiffCount = () => {
+    return 'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'
+  }
+
   // handle any api requests made by the parent
   // used for updating after the speaker has been set
   React.useEffect(() => {
-    renderTimes++;
     if (responseFromParent && responseFromParent instanceof Object) {
       onParentResponseHandled();
       const { type, payload } = responseFromParent;
@@ -523,8 +532,8 @@ export function Editor(props: EditorProps) {
 
   React.useEffect(() => {
     if(editorCommand) {
-      if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
-        prepareSegmentTimePicker(playingLocation[0]);
+      if(editorCommand === EDITOR_CONTROLS.editSegmentTime && playingLocation?.segmentIndex) {
+        prepareSegmentTimePicker(playingLocation.segmentIndex);
       }
       onCommandHandled();
       if(readOnlyEditorState || readOnly) {
@@ -536,7 +545,6 @@ export function Editor(props: EditorProps) {
   // used to calculate the exact dimensions of the root div
   // so we can make the overlay the exact same size
   React.useEffect(() => {
-    renderTimes++;
     if (containerRef.current) {
       const { offsetHeight, offsetWidth, offsetLeft, offsetTop } = containerRef.current;
       const overlayPositionStyle: React.CSSProperties = {
@@ -566,41 +574,42 @@ export function Editor(props: EditorProps) {
     setEditorFocussed(focussed);
   }, [focussed]);
 
-  React.useEffect(() => {
-    if(playingLocation && ready) {
-      if(playingLocation[0] === 0 && playingLocation[1] === 0) {
-        // updatePlayingLocation();
-      }
-    }
-    if(isAudioPlaying) updatePlayingLocation();
-  }, [playingLocation, ready]);
+  // React.useEffect(() => {
+  //   if(playingLocation && ready &&
+  //       playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
+  //     updatePlayingLocation();
+  //   }
+  // }, [playingLocation, ready]);
+  //
+  // React.useEffect(() => {
+  //   if(navigationProps) {
+  //     setProjectId(navigationProps.projectId);
+  //     setIsDiff(navigationProps.isDiff);
+  //     setReadOnly(navigationProps.readOnly);
+  //   }
+  // }, [navigationProps]);
 
-  React.useEffect(() => {
-    if(navigationProps) {
-      setProjectId(navigationProps.projectId);
-      setIsDiff(navigationProps.isDiff);
-      setReadOnly(navigationProps.readOnly);
-    }
-  }, [navigationProps]);
+  // React.useEffect(() => {
+  //   setReadOnlyEditorState(isLoadingAdditionalSegment);
+  // }, [isLoadingAdditionalSegment]);
 
   return (
     <div
       id={'scroll-container'}
       ref={containerRef}
       onClick={handleClickInsideEditor}
+      onScroll={handleScrollEvent}
       style={{
         height,
         overflowY: 'auto',
-      }}
-    >
+      }}>
       <Backdrop
         className={classes.backdrop}
         style={overlayStyle}
         open={!!readOnlyEditorState}
         onClick={() => {
           return undefined;
-        }}
-      >
+        }}>
         <Draggable
           axis="both"
           defaultPosition={{ x: 0, y: 0 }}
@@ -640,7 +649,7 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
-      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation[0]].wordAlignments[playingLocation[1]]} />}*/}
+      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex]} />}*/}
       {
         isDiff ?
         <>
@@ -666,7 +675,7 @@ export function Editor(props: EditorProps) {
                     direction='row'
                     style={{ marginTop: '5px' }}>
                   <div style={{ backgroundColor: '#ffe190', width: '30px' }} />
-                  <Typography style={{  paddingLeft: '5px' }}>{'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'}</Typography>
+                  <Typography style={{  paddingLeft: '5px' }}>{getDiffCount()}</Typography>
                 </Grid>
               </Grid>
               <Grid
@@ -717,7 +726,6 @@ export function Editor(props: EditorProps) {
                                                segment={segment}
                                                segmentIndex={index}
                                                assignSpeakerForSegment={assignSpeakerForSegment}
-                                               editorCommand={editorCommand}
                                                readOnly={true}
                                                removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                                                playingLocation={playingLocation} />
@@ -729,7 +737,7 @@ export function Editor(props: EditorProps) {
             {ready &&
             <div className={classes.diffTextArea} style={{ height: `${diffTextHeight}px`, overflowY: 'scroll' }}>
               {
-                segments.map( (segment: Segment, index: number) => {
+                segments.map((segment: Segment, index: number) => {
                   return <MemoizedSegmentBlock key={`segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
@@ -739,7 +747,6 @@ export function Editor(props: EditorProps) {
                                                isAudioPlaying={isAudioPlaying}
                                                isCommentEnabled={isCommentEnabled}
                                                handleTextSelection={handleTextSelection}
-                      // onChange={handleChange}
                                                readOnly={readOnly}
                                                onUpdateUndoRedoStack={onUpdateUndoRedoStack}
                                                updateCaretLocation={updateCaretLocation}
@@ -830,9 +837,8 @@ export function Editor(props: EditorProps) {
              isAudioPlaying={isAudioPlaying}
              isDiff={!!isDiff}
               isCommentEnabled={isCommentEnabled}
-               handleTextSelection={handleTextSelection}
-              // onChange={handleChange}
-              readOnly={readOnly}
+             handleTextSelection={handleTextSelection}
+              readOnly={!!readOnly}
               onUpdateUndoRedoStack={onUpdateUndoRedoStack}
               updateCaretLocation={updateCaretLocation}
               updateChange={updateChange}

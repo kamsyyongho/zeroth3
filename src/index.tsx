@@ -9,6 +9,8 @@ setGlobal({
     shortcuts: DEFAULT_SHORTCUTS,
     projectTdpDataShouldRefresh: false,
     showEditorPopups:false,
+    editorAutoScrollDisabled: false,
+    autoSeekDisabled: true,
 });
 
 ReactDOM.render(<App />, document.getElementById('root'));

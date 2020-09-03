@@ -2,6 +2,7 @@ import {
   CONTENT_STATUS,
   HistoryDataResults,
   Segment,
+  SegmentResults,
   VoiceData,
   VoiceDataResults,
   WordAlignment,
@@ -141,6 +142,10 @@ export type searchDataResult =
   | { kind: 'ok'; data: VoiceDataResults }
   | GeneralApiProblem;
 
+export type getSelectedVoiceDataResult =
+    | { kind: 'ok', voiceData: VoiceData; }
+    | GeneralApiProblem;
+
 export type getAssignedDataResult =
   | { kind: 'ok'; voiceData: VoiceData; noContent: boolean }
   | GeneralApiProblem;
@@ -154,7 +159,7 @@ export type fetchUnconfirmedDataResult =
   | GeneralApiProblem;
 
 export type getSegmentsDataResult =
-  | { kind: 'ok'; segments: Segment[] }
+  | { kind: 'ok'; data: SegmentResults }
   | GeneralApiProblem;
 
 export type classifyTdpResult = { kind: 'ok' } | GeneralApiProblem;

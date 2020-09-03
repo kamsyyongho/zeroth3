@@ -21,7 +21,8 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
-import { DEFAULT_SHORTCUTS, renderInputCombination } from '../../../constants'
+import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
+import { SegmentAndWordIndex } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -121,9 +122,10 @@ interface EditorControlsProps {
   onCommandClick: (newMode: EDITOR_CONTROLS) => void;
   onConfirm: () => void;
   disabledControls?: EDITOR_CONTROLS[];
+  isLoadingAdditionalSegment?: boolean;
   loading?: boolean;
   editorReady?: boolean;
-  playingLocation: number[];
+  playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
 }
 
@@ -132,6 +134,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     onCommandClick,
     onConfirm,
     disabledControls = [],
+    isLoadingAdditionalSegment,
     loading,
     editorReady,
     playingLocation,
@@ -160,7 +163,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const handleClick = (command: EDITOR_CONTROLS) => {
     onCommandClick(command);
     if(playingLocation) {
-      const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
+      const playingBlock = document.getElementById(`word-${playingLocation.segmentIndex}-${playingLocation.wordIndex}`);
       const selection = window.getSelection();
       const range = document.createRange();
 
@@ -419,7 +422,8 @@ export const EditorControls = (props: EditorControlsProps) => {
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
-    const key = event.code === "Space" ? "Space" : event.key;
+    const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+
     if(shortcutsStack?.length) {
       shortcutsStack.push(key);
     } else {
@@ -475,8 +479,32 @@ export const EditorControls = (props: EditorControlsProps) => {
         setStatusEl(statusTextEl);
       }, 1500);
     }
-
   }, [loading, isSegmentUpdateError]);
+
+  React.useEffect(() => {
+    const statusTextEl = (
+        <Typography className={classes.status}>
+          {translate('forms.status')}
+        </Typography>
+    )
+    if(isLoadingAdditionalSegment) {
+      const loadingEl = (<ScaleLoader
+          color={theme.palette.common.white}
+          loading={true}
+      />);
+      setStatusEl(loadingEl);
+    } else {
+      const successTextEl = (
+          <Typography className={classes.status}>
+            {translate('editor.loadingAdditonalSegmentSuccess')}
+          </Typography>
+      )
+      setStatusEl(successTextEl);
+      setTimeout(() => {
+        setStatusEl(statusTextEl);
+      }, 2000);
+    }
+  }, [isLoadingAdditionalSegment])
 
   // set on mount and reset values on unmount
   React.useEffect(() => {/**

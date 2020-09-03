@@ -1,9 +1,9 @@
 import {ApisauceInstance} from 'apisauce';
 import {
-  AudioUrlResponse,
   CONTENT_STATUS,
   HistoryDataResults,
   Segment,
+  SegmentResults,
   VoiceData as IVoiceData,
   VoiceDataResults,
   WordAlignment
@@ -20,6 +20,7 @@ import {
   getHistory,
   GetHistoryRequest,
   getSegmentsDataResult,
+  getSelectedVoiceDataResult,
   getVoiceDataStateChanges,
   GetVoiceDataToReviewRequest,
   MergeTwoSegmentsRequest,
@@ -54,7 +55,6 @@ import {
   updateSpeakerResult,
   UpdateStatusRequest,
   updateStatusResult,
-  classifyTdpResult,
 } from '../types';
 import {deleteUnconfirmedVoiceDataResult} from '../types/voice-data.types';
 import {ParentApi} from './parent-api';
@@ -130,6 +130,31 @@ export class VoiceData extends ParentApi {
       return { kind: ProblemKind['bad-data'] };
     }
   }
+
+  async getSelectedVoiceData(
+      projectId: string,
+      voiceDataId: string,
+  ): Promise<getSelectedVoiceDataResult> {
+    const response = await this.apisauce.get<IVoiceData, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data/${voiceDataId}`)
+    );
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    try {
+      const voiceData = response.data as IVoiceData;
+
+      return { kind: 'ok', voiceData };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+};
 
   /**
    * Gets the current voice data assigned to the current user
@@ -335,11 +360,18 @@ export class VoiceData extends ParentApi {
   async getSegments(
     projectId: string,
     dataId: string,
+    size: number,
+    page?: number,
+    time?: number,
   ): Promise<getSegmentsDataResult> {
-    const response = await this.apisauce.get<Segment[], ServerError>(
-      this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments`,
-      ),
+    const params = {
+      page,
+      size,
+      time,
+    }
+    const response = await this.apisauce.get<SegmentResults, ServerError>(
+      this.getPathWithOrganization(`/projects/${projectId}/data/${dataId}/segments`,),
+        params
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -353,8 +385,8 @@ export class VoiceData extends ParentApi {
     }
     // transform the data into the format we are expecting
     try {
-      const segments = response.data as Segment[];
-      return { kind: 'ok', segments };
+      const data = response.data as SegmentResults;
+      return { kind: 'ok', data };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }
@@ -1050,7 +1082,6 @@ export class VoiceData extends ParentApi {
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);
       if(problem) {
-        debugger;
         if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }

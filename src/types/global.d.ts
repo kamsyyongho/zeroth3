@@ -26,6 +26,8 @@ declare module 'reactn/default' {
     editorFocussed?: boolean;
     editorContentHeight?: number;
     editorAutoScrollDisabled?: boolean;
+    autoSeekDisabled?: boolean;
     shortcuts: Shortcuts;
+    scrollToSegmentIndex?: number;
   }
 }

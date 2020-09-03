@@ -67,7 +67,6 @@ const inputKeys = [
   "SemiColon",
   "Space",
   "Backspace",
-
 ];
 
 export const isInputKey = (keyEvent: KeyboardEvent) => {
@@ -127,46 +126,12 @@ export const getSegmentAndWordIndex = () => {
   const selectedBlock: any = window.getSelection();
   const selectedBlockNode: any = selectedBlock.anchorNode || selectedBlock.focusNode;
   const selectedBlockId: string = selectedBlockNode?.id || selectedBlockNode?.parentNode?.id;
-  if(!selectedBlockNode || !selectedBlockId) return [0,0];
+  if(!selectedBlockNode || !selectedBlockId) return { segmentIndex: 0, wordIndex: 0 };
 
   const segmentAndWordIndex = selectedBlockId.split('-');
   segmentAndWordIndex.shift();
 
-  return segmentAndWordIndex.map(index => Number(index));
-};
-
-/** generates the custom entity components */
-export const generateDecorators = () =>
-  new CompositeDecorator([
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.IMMUTABLE),
-      component: EntityContent,
-      props: {},
-    },
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.MUTABLE),
-      component: EntityContent,
-      props: {},
-    },
-    {
-      strategy: getEntityStrategy(MUTABILITY_TYPE.SEGMENTED),
-      component: EntityContent,
-      props: {},
-    },
-  ]);
-
-/**
- * Creates a new state from the old one with the same selection
- * @param incomingEditorState
- */
-export const cloneEditorState = (
-  incomingEditorState: EditorState,
-): EditorState => {
-  const newEditorStateWithSameContentAndSelection = EditorState.forceSelection(
-    incomingEditorState,
-    incomingEditorState.getSelection(),
-  );
-  return newEditorStateWithSameContentAndSelection;
+  return { segmentIndex: Number(segmentAndWordIndex[0]), wordIndex: Number(segmentAndWordIndex[1]) };
 };
 
 export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
@@ -185,24 +150,6 @@ export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
   });
 
   return selection;
-};
-
-export const updatePlayingLocation = (playingLocation: any) => {
-  if(playingLocation) {
-    const playingBlock = document.getElementById(`word-${playingLocation[0]}-${playingLocation[1]}`);
-    const selection = window.getSelection();
-    const range = document.createRange();
-
-    if(playingBlock) {
-      range.selectNodeContents(playingBlock);
-      range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-  }
-  // if(playingBlock) {
-  //   playingBlock.focus();
-  // }
 };
 
 const removeStyleFromSelection = (
@@ -287,7 +234,7 @@ export class WordKeyStore {
     wordLocation: SegmentAndWordIndex,
     insert = false,
   ) => {
-    const [segmentIndex, wordIndex] = wordLocation;
+    const { segmentIndex, wordIndex } = wordLocation;
     const tempWordKeyLocations = [...this.wordKeyLocations];
     const tempSegmentWordKeys = tempWordKeyLocations[segmentIndex];
     if (!tempSegmentWordKeys) {
@@ -319,9 +266,9 @@ export class WordKeyStore {
     let newLocation: SegmentAndWordIndex | undefined;
     while (currentWordKeyAtLocation !== undefined) {
       if (!newLocation) {
-        newLocation = [wordLocation[0], wordLocation[1] + 1];
+        newLocation = { segmentIndex: wordLocation.segmentIndex, wordIndex: wordLocation.wordIndex + 1};
       } else {
-        newLocation = [newLocation[0], newLocation[1] + 1];
+        newLocation = { segmentIndex: newLocation.segmentIndex, wordIndex: newLocation.wordIndex + 1 };
       }
       this.keys[currentWordKeyAtLocation] = newLocation;
       currentWordKeyAtLocation = this.getKey(newLocation);
@@ -381,7 +328,7 @@ export class WordKeyStore {
   /** Generates a key that for a word that will replace all existing keys in the segment
    */
   generateKeyAndClearSegment = (segmentIndex: number): number => {
-    const wordLocation: SegmentAndWordIndex = [segmentIndex, 0];
+    const wordLocation: SegmentAndWordIndex = { segmentIndex, wordIndex: 0 };
     const wordKey = this.generateKey(wordLocation);
     const tempWordKeyLocations = [...this.wordKeyLocations];
     const numberOfWords = tempWordKeyLocations[segmentIndex].length;
@@ -394,7 +341,7 @@ export class WordKeyStore {
    */
   generateKeyForEndOfSegment = (segmentIndex: number): number => {
     const nextWordIndex = this.wordKeyLocations[segmentIndex].length;
-    const nextWordLocation: SegmentAndWordIndex = [segmentIndex, nextWordIndex];
+    const nextWordLocation: SegmentAndWordIndex = {segmentIndex, wordIndex: nextWordIndex};
     return this.generateKey(nextWordLocation);
   };
 
@@ -414,7 +361,7 @@ export class WordKeyStore {
 
   /** Get the word key from the word location */
   getKey = (wordLocation: SegmentAndWordIndex) => {
-    const [segmentIndex, wordIndex] = wordLocation;
+    const { segmentIndex, wordIndex } = wordLocation;
     return this.wordKeyLocations[segmentIndex][wordIndex];
   };
 
@@ -436,10 +383,10 @@ export class WordKeyStore {
       // to update the moved key locations
       let numberOfWordsInSegmentToMergeInto = segmentToMergeInto.length;
       segmentToMerge.forEach(wordKey => {
-        const newLocation: SegmentAndWordIndex = [
-          prevSegmentIndex,
-          numberOfWordsInSegmentToMergeInto,
-        ];
+        const newLocation: SegmentAndWordIndex = {
+          segmentIndex: prevSegmentIndex,
+          wordIndex: numberOfWordsInSegmentToMergeInto,
+        };
         this.keys[wordKey] = newLocation;
         numberOfWordsInSegmentToMergeInto++;
       });
@@ -447,11 +394,11 @@ export class WordKeyStore {
       const shiftedSegments = locationsAfterMerge.slice(removedSegmentIndex);
       shiftedSegments.forEach(segment => {
         segment.forEach(wordKey => {
-          const [prevSegmentIndex, prevWordIndex] = this.keys[wordKey];
-          const updatedLocation: SegmentAndWordIndex = [
-            prevSegmentIndex - 1,
-            prevWordIndex,
-          ];
+          const { segmentIndex:prevSegmentIndex, wordIndex: prevWordIndex } = this.keys[wordKey];
+          const updatedLocation: SegmentAndWordIndex = {
+            segmentIndex: prevSegmentIndex - 1,
+            wordIndex: prevWordIndex,
+          };
           this.keys[wordKey] = updatedLocation;
         });
       });
@@ -478,18 +425,18 @@ export class WordKeyStore {
 
     // update the moved locations for word key object
     newSegmentContent.forEach((wordKey, index) => {
-      const updatedLocation: SegmentAndWordIndex = [segmentIndexToSplit, index];
+      const updatedLocation: SegmentAndWordIndex = { segmentIndex: segmentIndexToSplit, wordIndex: index };
       this.keys[wordKey] = updatedLocation;
     });
     // update the shifted locations for word key object
     const shiftedSegments = wordLocations.slice(segmentIndexToInsert);
     shiftedSegments.forEach(segment => {
       segment.forEach(wordKey => {
-        const [prevSegmentIndex, prevWordIndex] = this.getLocation(wordKey);
-        const updatedLocation: SegmentAndWordIndex = [
-          prevSegmentIndex + 1,
-          prevWordIndex,
-        ];
+        const {segmentIndex, wordIndex} = this.getLocation(wordKey);
+        const updatedLocation: SegmentAndWordIndex = {
+          segmentIndex: segmentIndex + 1,
+          wordIndex,
+        };
         this.keys[wordKey] = updatedLocation;
       });
     });

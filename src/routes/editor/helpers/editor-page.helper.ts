@@ -2,6 +2,18 @@ import { Segment } from '../../../types';
 import log from '../../../util/log/logger';
 import { EDITOR_CONTROLS } from '../components/EditorControls';
 
+export const setSelectionRange = (playingBlock: HTMLElement) => {
+  const selection = window.getSelection();
+  const range = document.createRange();
+
+  if(playingBlock) {
+    range.selectNodeContents(playingBlock);
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+};
+
 /** gets the time in segments of a word alignment item */
 export const calculateWordTime = (
   segments: Segment[],
@@ -29,26 +41,28 @@ export const getDisabledControls = (
   saveSegmentsLoading?: boolean,
   confirmSegmentsLoading?: boolean,
 ) => {
-  const disabledControls: EDITOR_CONTROLS[] = [];
-  const mergeDisabled = segments.length < 2;
-  if (!canUndo) {
-    disabledControls.push(EDITOR_CONTROLS.undo);
+  if(segments?.length) {
+    const disabledControls: EDITOR_CONTROLS[] = [];
+    const mergeDisabled = segments.length < 2;
+    if (!canUndo) {
+      disabledControls.push(EDITOR_CONTROLS.undo);
+    }
+    if (!canRedo) {
+      disabledControls.push(EDITOR_CONTROLS.redo);
+    }
+    if (mergeDisabled) {
+      disabledControls.push(EDITOR_CONTROLS.merge);
+    }
+    const splitDisabled = !segments.some(
+        segment => segment.wordAlignments.length > 0,
+    );
+    if (splitDisabled) {
+      disabledControls.push(EDITOR_CONTROLS.split);
+    }
+    if (saveSegmentsLoading || confirmSegmentsLoading) {
+      disabledControls.push(EDITOR_CONTROLS.save);
+      disabledControls.push(EDITOR_CONTROLS.approvalRequest);
+    }
+    return disabledControls;
   }
-  if (!canRedo) {
-    disabledControls.push(EDITOR_CONTROLS.redo);
-  }
-  if (mergeDisabled) {
-    disabledControls.push(EDITOR_CONTROLS.merge);
-  }
-  const splitDisabled = !segments.some(
-    segment => segment.wordAlignments.length > 0,
-  );
-  if (splitDisabled) {
-    disabledControls.push(EDITOR_CONTROLS.split);
-  }
-  if (saveSegmentsLoading || confirmSegmentsLoading) {
-    disabledControls.push(EDITOR_CONTROLS.save);
-    disabledControls.push(EDITOR_CONTROLS.approvalRequest);
-  }
-  return disabledControls;
 };

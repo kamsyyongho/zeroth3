@@ -33,7 +33,7 @@ export class User extends ParentApi {
   async resetPassword(): Promise<resetPasswordResult> {
     // make the api call
     const response = await this.apisauce.post<undefined, ServerError>(
-      `/reset-password`,
+      `/api/reset-password`,
     );
     // the typical ways to die when calling an api
     if (!response.ok) {
@@ -84,7 +84,7 @@ export class User extends ParentApi {
   async getProfile (name: string): Promise<getProfile> {
     const params = {name};
     const response = await this.apisauce.get<User, ServerError>(
-        '/profile',
+        '/api/profile',
         params,
     );
     if(!response.ok) {
@@ -108,7 +108,7 @@ export class User extends ParentApi {
     const params = {phone}
     // make the api call
     const response = await this.apisauce.patch<User, ServerError>(
-        `/profile/phone`,
+        `/api/profile/phone`,
         params,
     );
     // the typical ways to die when calling an api
@@ -132,7 +132,7 @@ export class User extends ParentApi {
 
   async getShortcuts (): Promise<getShortcuts> {
     const response = await this.apisauce.get<any, ServerError>(
-        '/shortcuts',
+        '/api/shortcuts',
     );
 
     if(!response.ok) {
@@ -158,7 +158,7 @@ export class User extends ParentApi {
     const JSONShortcuts = JSON.stringify(shortcuts)
     const params = {shortcuts: JSONShortcuts};
     const response = await this.apisauce.post<undefined, ServerError>(
-        '/shortcuts',
+        'api/shortcuts',
         params,
     );
 

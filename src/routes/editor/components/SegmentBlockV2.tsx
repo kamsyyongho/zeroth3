@@ -94,6 +94,8 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const segmentRef = React.useRef<HTMLDivElement | null>(null);
     const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+    const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
+    const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
@@ -133,18 +135,23 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             await updateSegment(segment.id, localSegment.wordAlignments, localSegment.transcript, segmentIndex);
             setIsChanged(false);
         }
-        checkLocationOnScreenAndScroll(
-            segmentRef.current,
-            editorElement,
-            editorContentHeight,
-            windowHeight,
-            editorAutoScrollDisabled);
         isFocused = false;
     };
 
     const resetState = () => {
         setIsChanged(false);
     };
+
+    React.useEffect(() => {
+        if(!editorAutoScrollDisabled && isAudioPlaying && playingLocation.segmentIndex === segmentIndex) {
+            checkLocationOnScreenAndScroll(
+                segmentRef.current,
+                editorElement,
+                editorContentHeight,
+                windowHeight,
+                editorAutoScrollDisabled);
+        }
+    },[playingLocation]);
 
     React.useEffect(() => {
         return () => {
@@ -168,6 +175,21 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             resetState();
         }
     }, [segment]);
+
+    React.useEffect(() => {
+        if(scrollToSegmentIndex !== undefined) {
+            if(scrollToSegmentIndex === segmentIndex) {
+                checkLocationOnScreenAndScroll(
+                    segmentRef.current,
+                    editorElement,
+                    editorContentHeight,
+                    windowHeight,
+                    false);
+                setScrollToSegmentIndex(undefined);
+            }
+        }
+    }, [scrollToSegmentIndex]);
+
 
     return (
         <div className={classes.root} ref={segmentRef} onFocus={handleFocus} onBlur={handleBlur}>
