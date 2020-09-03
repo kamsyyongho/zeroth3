@@ -291,6 +291,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             event.preventDefault();
             return;
         }
+        if(isDiff) {
+            updateCaretLocation(segmentIndex, 0);
+        }
         setIsMouseDown(true);
     }
 
