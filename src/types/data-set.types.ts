@@ -33,6 +33,21 @@ export interface FilterParams {
   modelConfig?: string;
   status?: CONTENT_STATUS;
   transcript?: string;
+  transcriber?: string[];
+}
+
+export interface PostDataSetFilterParams {
+  from?: Date;
+  till?: Date;
+  filename?: string;
+  
+  lengthMax?: number;
+  lengthMin?: number;
+  dataSetIds?: string[];
+  configId?: string;
+  status?: CONTENT_STATUS;
+  transcript?: string;
+  transcriber?: string[];
 }
 
 export interface SubSet {

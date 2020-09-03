@@ -106,7 +106,17 @@ export class DataSet extends ParentApi {
     // build the request
     const request: PostDataSetRequest = {
       name,
-      filterParams,
+    filterParams: {
+      from: filterParams.from,
+      till: filterParams.till,
+      lengthMax: filterParams["length-max"],
+      lengthMin: filterParams["length-min"],
+      dataSetIds: filterParams.dataSetIds,
+      configId: filterParams.modelConfig,
+      status: filterParams.status,
+      transcript: filterParams.transcript,
+      transcriber: filterParams.transcriber,
+    },
     };
     const response = await this.apisauce.post<undefined, ServerError>(
       this.getPathWithOrganization(`/projects/${projectId}/data-sets`),
