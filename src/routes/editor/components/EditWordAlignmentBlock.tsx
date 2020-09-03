@@ -73,6 +73,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         segmentIndex,
         isAbleToComment,
         isCommentEnabled,
+        isDiff,
         isShowComment,
         readOnly,
         playingLocation,
@@ -251,21 +252,21 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const location = getSegmentAndWordIndex();
-        switch (event.key) {
-            case "ArrowUp":
-                handleArrowUp();
-                break;
-            case "ArrowDown":
-                handleArrowDown();
-                break;
-            case "ArrowLeft":
-            case "ArrowRight":
-                handleArrowKeyDown();
-                break;
-            default:
-                if(readOnly || isMouseDown) {
-                    event.preventDefault();
-                } else {
+        if(readOnly || isDiff || isMouseDown) {
+            event.preventDefault();
+        } else {
+            switch (event.key) {
+                case "ArrowUp":
+                    handleArrowUp();
+                    break;
+                case "ArrowDown":
+                    handleArrowDown();
+                    break;
+                case "ArrowLeft":
+                case "ArrowRight":
+                    handleArrowKeyDown();
+                    break;
+                default:
                     if(isInputKey(event.nativeEvent)) {
                         const word = document.getElementById(`word-${segmentIndex}-${location.segmentIndex}`);
                         const updateUndoStack = undoStack.slice(0);
@@ -280,15 +281,13 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                             setUndoStack(updateUndoStack);
                         }
                     }
-                }
-                return;
+                    return;
+            }
         }
     };
 
     const handleMouseDown = (event: React.MouseEvent) => {
-        // handleArrowKeyDown();
-        if(!isCommentEnabled) return;
-        if(isSelected) {
+        if(isCommentEnabled || isSelected) {
             event.preventDefault();
             return;
         }
@@ -300,7 +299,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const commentField = document.getElementById('comment-text-field');
         let indexFrom;
         let indexTo;
-        if(!isCommentEnabled) return;
+        if(isCommentEnabled) return;
         if(selection) {
             if(selection?.anchorOffset === selection?.focusOffset) {
                 // setIsMouseDown(false);
@@ -387,11 +386,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         setWordAlignments(segment.wordAlignments);
     }, [segment])
 
-    React.useEffect(() => {
-        if(!isAbleToComment && isMouseDown) {
-            setIsMouseDown(false);
-        }
-    }, [isAbleToComment])
 
     React.useEffect(() => {
         if(!isCommentEnabled) {
@@ -425,7 +419,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}>
             {
-                isAbleToComment && isMouseDown ?
+                isMouseDown ?
                     <div>
                         {transcriptToRender}
                     </div>
