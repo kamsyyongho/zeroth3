@@ -314,8 +314,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     };
 
     const handleMouseDown = (event: React.MouseEvent) => {
-
-
         if(isCommentEnabled || isSelected) {
             event.preventDefault();
             return;
@@ -331,7 +329,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const commentField = document.getElementById('comment-text-field');
         const caretLocation = getSegmentAndWordIndex() || {segmentIndex, wordIndex : 0};
 
-        updateCaretLocation(caretLocation.segmentIndex, caretLocation.wordIndex, true);
         setAutoSeekDisabled(true);
 
         let indexFrom;

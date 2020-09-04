@@ -1353,6 +1353,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   setIsAudioPlaying={setIsAudioPlaying}
                   playingTimeData={playingTimeData}
                   getTimeBasedSegment={getTimeBasedSegment}
+                  handleWordClick={handleWordClick}
+                  currentPlayingLocation={currentPlayingLocation}
               />
             </ErrorBoundary>}
           </Paper>
