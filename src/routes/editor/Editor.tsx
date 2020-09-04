@@ -140,7 +140,7 @@ interface EditorProps {
   updateSegmentTime: (segmentId: string, segmentIndex: number, start: number, length: number) => void;
   assignSpeaker: (segmentIndex: number) => void;
   removeHighRiskFromSegment: (segmentIndex: number, segmentId: string) => void;
-  onWordClick: (wordLocation: SegmentAndWordIndex) => void;
+  onWordClick: (wordLocation: SegmentAndWordIndex, onForce?: boolean) => void;
   splitSegmentByTime: (segmentId: string, segmentIndex: number, time: number, wordStringSplitIndex: number, onSuccess: (updatedSegments: [Segment, Segment]) => void, ) => Promise<void>;
   timePickerRootProps: TimePickerRootProps;
   splitTimePickerRootProps: SplitTimePickerRootProps;
@@ -221,8 +221,8 @@ export function Editor(props: EditorProps) {
     return indexLocation[0];
   };
 
-  const updateCaretLocation = (segmentIndex: number, wordIndex: number) => {
-    onWordClick({ segmentIndex, wordIndex });
+  const updateCaretLocation = (segmentIndex: number, wordIndex: number, isForce: boolean = false) => {
+    onWordClick({ segmentIndex, wordIndex }, isForce);
   };
 
   const updatePlayingLocation = () => {

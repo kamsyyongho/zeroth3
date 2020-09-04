@@ -13,7 +13,6 @@ import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React, { useRef, useGlobal } from 'reactn';
-import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { postSubGraphResult } from '../../../services/api/types';
@@ -118,8 +117,8 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
         }
     };
 
-    const handleKeyDown = (event: any) => {
-        const key = event.code === "Space" ? "Space" : event.key;
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        const key = event.nativeEvent.code === "Space" ? "Space" : event.key;
         if(allowKeyDown) {
             event.preventDefault();
             setIsUnique(true);
@@ -131,7 +130,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
         }
     };
 
-    const handleKeyUp = (event: KeyboardEvent) => {
+    const handleKeyUp = (event: React.KeyboardEvent) => {
         const isUnique = isUniqueInputCombination();
         if(isUnique) {
             setLocalInput(updateLocalInput);
@@ -141,15 +140,6 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
             setIsUnique(false);
         }
     };
-
-    React.useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('keyup', handleKeyUp);
-        }
-    },[]);
 
     React.useEffect(() => {
         if(selectedShortCut?.length && !localInput?.length) {
@@ -185,6 +175,8 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                             <TextField
                                 id="shortcut-input"
                                 label={translate('editor.input')}
+                                onKeyDown={handleKeyDown}
+                                onKeyUp={handleKeyUp}
                                 value={inputCombination}
                                 helperText={!isUnique && translate("editor.duplicateShortcut")}
                                 error={!isUnique}
