@@ -572,7 +572,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         StreamPlayer.pause();
       } else {
         const caretLocation = getSegmentAndWordIndex();
-        if(!loop && caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
+        if(!isLoop && caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
           handleWordClick({segmentIndex: caretLocation.segmentIndex, wordIndex: 0}, true);
         }
         StreamPlayer.play();
