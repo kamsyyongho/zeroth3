@@ -98,7 +98,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     // const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
     const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
     const handleSpeakerPress = () => {
-        if (id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
+        if (showEditorPopups && id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
             assignSpeakerForSegment(id);
         }
     };

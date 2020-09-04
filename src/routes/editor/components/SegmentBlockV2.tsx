@@ -49,7 +49,7 @@ interface SegmentBlockProps  {
     assignSpeakerForSegment: (segmentIndex: string) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     onCommandHandled: () => void;
-    updateCaretLocation: (segmentIndex: number, wordIndex: number) => void;
+    updateCaretLocation: (segmentIndex: number, wordIndex: number, isForce?: boolean) => void;
     updateChange: (segmentIndex: number, wordIndex: number, word: string) => void;
     updateSegment: (segmentId:string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
     handleTextSelection: (segmentId: string, indexFrom: number, indexTo: number) => void;
