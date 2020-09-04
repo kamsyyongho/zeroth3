@@ -33,12 +33,14 @@ import {
   Segment as SegmentEditor,
   Time,
   WAVEFORM_DOM_IDS,
-  WordToCreateTimeFor
+  WordToCreateTimeFor,
+  SegmentAndWordIndex,
 } from '../../types';
 import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
 import {formatSecondsDuration, isMacOs} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
+import {getSegmentAndWordIndex} from './helpers/editor.helper';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -83,6 +85,7 @@ const ZERO_TIME_SLOP = 0.00500;
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
 let previouslyFetchedTime: number;
+let trackPlayingLocation: SegmentAndWordIndex;
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -152,6 +155,8 @@ interface AudioPlayerProps {
   setIsAudioPlaying: (isAudioPlaying: boolean) => void;
   playingTimeData: PlayingTimeData;
   getTimeBasedSegment: (time: number) => void;
+  handleWordClick: (wordLocation: SegmentAndWordIndex, forceClick?: boolean) => void;
+  currentPlayingLocation: SegmentAndWordIndex;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -185,6 +190,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setIsAudioPlaying,
     playingTimeData,
     getTimeBasedSegment,
+    handleWordClick,
+    currentPlayingLocation,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -212,8 +219,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const handlePause = () =>  setIsAudioPlaying(false);
 
-  const handlePlay = () =>   setIsAudioPlaying(true);
-
+  const handlePlay = () => setIsAudioPlaying(true);
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
@@ -226,6 +232,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     playing = isAudioPlaying;
   }, [isAudioPlaying]);
+
 
   // to prevent the keypress listeners from firing twice
   // the editor will handle the shortcuts when it is focussed
@@ -250,7 +257,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const handleStop = () => {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
-      setIsAudioPlaying(false);
       setIsAudioPlaying(false);
       StreamPlayer.pause();
       PeaksPlayer.player.seek(0);
@@ -351,6 +357,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     const decimalIndex = currentTimeString.indexOf('.');
     const decimals = currentTimeString.substring(decimalIndex);
     const formattedCurrentTime = formatSecondsDuration(currentTime);
+
     return Number(currentTime) ? (formattedCurrentTime + decimals) : DEFAULT_EMPTY_TIME;
   };
 
@@ -546,17 +553,28 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  //Keep strack of currentPlayingLocation so that we can refer to it when audio plays from paused state and sync to caret location
+  React.useEffect(() => {
+    trackPlayingLocation = currentPlayingLocation;
+  }, [currentPlayingLocation]);
+
   /**
    * toggle player state via the `VideoJsPlayer`
    * - toggleing via other methods does not resume play
    * when the player is stuck when buffering
    */
+
+
   const handlePlayPause = () => {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
       if (playing) {
         StreamPlayer.pause();
       } else {
+        const caretLocation = getSegmentAndWordIndex();
+        if(caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
+          handleWordClick({segmentIndex: caretLocation.segmentIndex, wordIndex: 0}, true);
+        }
         StreamPlayer.play();
       }
     } catch (error) {
@@ -795,42 +813,57 @@ export function AudioPlayer(props: AudioPlayerProps) {
         !StreamPlayer ||
         (internaDisabledTimesTracker && internaDisabledTimesTracker.length)
     ) return;
-    try {
-      const loopSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
-      const transcriptionSegmentSegment = PeaksPlayer.segments.getSegment(PLAYER_SEGMENT_IDS.SEGMENT);
-      if (isLoop) {
-        PeaksPlayer.segments.removeById(PLAYER_SEGMENT_IDS.LOOP);
-        setLoop(false);
-        parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
-      } else if (!loopSegment) {
-        const color = theme.audioPlayer.loop;
-        // use the current green audio segment times
-        // defaulting to current time and 5 second length
-        let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
-        let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
-        if (endTime > duration) {
-          endTime = duration;
-          startTime = endTime - DEFAULT_LOOP_LENGTH;
-          if (startTime < 0) {
-            startTime = 0;
-          }
-        }
-        const segmentOptions: SegmentAddOptions = {
-          startTime,
-          endTime,
-          editable: true,
-          id: PLAYER_SEGMENT_IDS.LOOP,
-          color,
-        };
-        // only have the loop segment visible
-        PeaksPlayer.segments.removeAll();
-        PeaksPlayer.segments.add(segmentOptions);
-        setLoop(true);
-      }
-      isLoop = !isLoop;
-    } catch (error) {
-      handleError(error);
+    const caretLocation = getSegmentAndWordIndex();
+
+    if(!isLoop && caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
+      handleWordClick({segmentIndex: caretLocation.segmentIndex, wordIndex: 0}, true);
     }
+
+    if(autoSeekDisabled) setAutoSeekDisabled(true);
+
+    setTimeout(() => {
+      try {
+        const loopSegment = PeaksPlayer?.segments.getSegment(PLAYER_SEGMENT_IDS.LOOP);
+        const transcriptionSegmentSegment = PeaksPlayer?.segments.getSegment(PLAYER_SEGMENT_IDS.SEGMENT);
+
+        if (isLoop) {
+          PeaksPlayer?.segments.removeById(PLAYER_SEGMENT_IDS.LOOP);
+          setLoop(false);
+          parseCurrentlyPlayingWordSegment(savedCurrentPlayingWordPlayerSegment);
+        } else if (!loopSegment) {
+          const color = theme.audioPlayer.loop;
+          // use the current green audio segment times
+          // defaulting to current time and 5 second length
+          let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
+          let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
+
+
+          if (endTime > duration) {
+            endTime = duration;
+            startTime = endTime - DEFAULT_LOOP_LENGTH;
+            if (startTime < 0) {
+              startTime = 0;
+            }
+          }
+          const segmentOptions: SegmentAddOptions = {
+            startTime,
+            endTime,
+            editable: true,
+            id: PLAYER_SEGMENT_IDS.LOOP,
+            color,
+          };
+          // only have the loop segment visible
+          PeaksPlayer?.segments.removeAll();
+          PeaksPlayer?.segments.add(segmentOptions);
+          setLoop(true);
+        }
+        isLoop = !isLoop;
+      } catch (error) {
+        handleError(error);
+      }
+    }, 0)
+
+
   };
 
   const updateSegmentTime = (updateSegmentId: string, start: number, end: number) => {
