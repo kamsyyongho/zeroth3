@@ -109,30 +109,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         }
     };
 
-    const handleArrowLeft = () => {
-        const selection = window.getSelection();
-        if (!selection) return;
-        const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
-        const previousWordNode = document.getElementById
-        (`word-${segmentIndex}-${caretLocation.wordIndex - 1}`) || null;
-        if(previousWordNode &&currentLocation === 1) {
-            setRange(previousWordNode, false);
-        }
-    }
-
-    const handleArrowRight = () => {
-        const selection = window.getSelection();
-        if (!selection) return;
-        const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
-        const nextWordNode = document.getElementById
-        (`word-${segmentIndex}-${caretLocation.wordIndex + 1}`) || null;
-        if(nextWordNode &&currentLocation === segment.wordAlignments.length - 1) {
-            setRange(nextWordNode, true);
-        }
-    }
-
     const setRange = (node: HTMLElement, collapse: boolean) => {
         const range = document.createRange();
         const selection = window.getSelection();
@@ -147,6 +123,30 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         if(!autoSeekDisabled && node) {
             const playingLocation = node.id.split('-');
             updateCaretLocation(Number(playingLocation[1]), Number(playingLocation[2]));
+        }
+    };
+
+    const handleArrowLeft = () => {
+        const selection = window.getSelection();
+        if (!selection) return;
+        const currentLocation = selection?.anchorOffset;
+        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const previousWordNode = document.getElementById
+        (`word-${segmentIndex}-${caretLocation.wordIndex - 1}`) || null;
+        if(previousWordNode && currentLocation === 1) {
+            setRange(previousWordNode, false);
+        }
+    };
+
+    const handleArrowRight = () => {
+        const selection = window.getSelection();
+        if (!selection) return;
+        const currentLocation = selection?.anchorOffset;
+        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const nextWordNode = document.getElementById
+        (`word-${segmentIndex}-${caretLocation.wordIndex + 1}`) || null;
+        if(nextWordNode &&currentLocation === segment.wordAlignments[caretLocation.wordIndex].word.length) {
+            setRange(nextWordNode, true);
         }
     };
 
