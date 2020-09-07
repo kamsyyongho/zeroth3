@@ -678,8 +678,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const segmentToMege = internalSegmentsTracker[selectedSegmentIndex + 1].id;
-      const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex].id;
+      const segmentToMege = internalSegmentsTracker[selectedSegmentIndex].id;
+      const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex - 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -687,12 +687,14 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         //cut out and replace the old segments
         const mergedSegments = [...internalSegmentsTracker];
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        mergedSegments.splice(selectedSegmentIndex, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        const newSegmentToFocus = document.getElementById(`segment-${selectedSegmentIndex - 1}`);
+        mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
         setSegments(mergedSegments);
         internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
+        newSegmentToFocus?.focus();
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -722,7 +724,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         || !caretLocation.segmentIndex
         || !caretLocation.wordIndex) {return;}
     if(segmentIndex === 0 ||
-        wordIndex === segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
+        wordIndex > segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
     }
@@ -1175,7 +1177,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           return;
         }
       }
-      if (matchCount === shortcutsStack.length) {
+      if (matchCount === shortcutsStack.length && matchCount === combination.length) {
         resultIndex = index;
         event.preventDefault();
         event.stopPropagation();
@@ -1243,18 +1245,17 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   };
 
   const handleKeyUp = (event: React.KeyboardEvent) => {
-    if(shortcutsStack.length < 2) {
-      return;
-    } else {
-      handleShortcut(event.nativeEvent);
-      shortcutsStack = [];
-    }
+    handleShortcut(event.nativeEvent);
+    shortcutsStack = [];
   }
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
-      event.preventDefault();
       return;
+    }
+    if(event.metaKey || event.ctrlKey || event.altKey
+        || (event.shiftKey && event.key !== "ArrowLeft") && event.key !== "ArrowRight") {
+      event.preventDefault();
     }
     const key = event.nativeEvent.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
 
