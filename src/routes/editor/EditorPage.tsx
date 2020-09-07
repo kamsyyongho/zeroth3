@@ -9,7 +9,7 @@ import {BulletList} from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, convertKoreanKeyToEnglish} from '../../constants';
+import {PERMISSIONS, convertKoreanKeyToEnglish, DEFAULT_SHORTCUTS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -517,7 +517,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
-        setShortcuts(response.shortcuts);
+        const updateShortcuts = JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS));
+        Object.assign(updateShortcuts, response.shortcuts);
+        setShortcuts(updateShortcuts);
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
