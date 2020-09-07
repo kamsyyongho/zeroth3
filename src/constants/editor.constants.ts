@@ -24,8 +24,7 @@ export const DEFAULT_SHORTCUTS = {
         //     debug: [],
     };
 
-export const renderInputCombination = (input: []) => {
-    // if(!input.length) return;
+export const renderInputCombination = (input: any) => {
     let result = '';
     input.forEach((input: string, index: number) => {
         if(index > 0) result += ' + '
