@@ -85,6 +85,9 @@ export enum EDITOR_CONTROLS {
   rewindAudio,
   forwardAudio,
   audioPlayPause,
+  toggleAutoSeek,
+  toggleAutoScroll,
+  loop,
 }
 
 const EDITOR_STATUS = {
@@ -127,6 +130,7 @@ interface EditorControlsProps {
   editorReady?: boolean;
   playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
+  editorCommand?: EDITOR_CONTROLS;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -139,6 +143,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     editorReady,
     playingLocation,
     isSegmentUpdateError,
+    editorCommand,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -172,6 +177,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         range.collapse(true);
         selection?.removeAllRanges();
         selection?.addRange(range);
+        playingBlock.focus();
       }
     }
   }
@@ -355,60 +361,78 @@ export const EditorControls = (props: EditorControlsProps) => {
     const functionArray = Object.keys(localShortcuts);
     let resultIndex: number = -1;
     keyCombinationArray.forEach((combination: any, index: number) => {
+      let matchCount = 0;
       for(let i = 0; i < shortcutsStack.length; i++) {
-        if(!combination.includes(shortcutsStack[i])) {
+        if(combination.includes(shortcutsStack[i])) {
+          matchCount += 1;
+        } else {
           return;
         }
       }
-      resultIndex = index;
+      if (matchCount === shortcutsStack.length) {
+        resultIndex = index;
+      }
     });
     const command = functionArray[resultIndex];
 
     switch (command) {
       case 'confirm':
         onCommandClick(EDITOR_CONTROLS.approvalRequest);
+        event.preventDefault();
         break;
       case 'save':
         handleClick(EDITOR_CONTROLS.save);
+        event.preventDefault();
         break;
       case 'undo':
         onCommandClick(EDITOR_CONTROLS.undo);
+        event.preventDefault();
         break;
       case 'redo':
         onCommandClick(EDITOR_CONTROLS.redo);
+        event.preventDefault();
         break;
       case 'merge':
         onCommandClick(EDITOR_CONTROLS.merge);
+        event.preventDefault();
         break;
       case 'split':
         onCommandClick(EDITOR_CONTROLS.split);
+        event.preventDefault();
         break;
       case 'toggleMore':
         onCommandClick(EDITOR_CONTROLS.toggleMore);
+        event.preventDefault();
         break;
       case 'editSegmentTime':
         onCommandClick(EDITOR_CONTROLS.editSegmentTime);
+        event.preventDefault();
         break;
       case 'setThreshold':
         handleClick(EDITOR_CONTROLS.setThreshold);
+        event.preventDefault();
         break;
       case 'shortcuts':
         onCommandClick(EDITOR_CONTROLS.shortcuts);
+        event.preventDefault();
         break;
       case 'speaker':
         onCommandClick(EDITOR_CONTROLS.speaker);
+        event.preventDefault();
         break;
       case 'rewindAudio':
         onCommandClick(EDITOR_CONTROLS.rewindAudio);
+        event.preventDefault();
         break;
       case 'forwardAudio':
         onCommandClick(EDITOR_CONTROLS.forwardAudio);
+        event.preventDefault();
         break;
       case 'audioPlayPause':
         onCommandClick(EDITOR_CONTROLS.audioPlayPause);
+        event.preventDefault();
         break;
     }
-    event.preventDefault();
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
@@ -421,16 +445,32 @@ export const EditorControls = (props: EditorControlsProps) => {
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
+    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
     const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
 
-    if(shortcutsStack?.length) {
-      shortcutsStack.push(key);
-    } else {
-      shortcutsStack.push(key);
-    }
-    event.preventDefault();
+    if(event.metaKey) shortcutsStack.push('Meta');
+    if(event.ctrlKey) shortcutsStack.push('Control');
+    if(event.altKey) shortcutsStack.push('Alt');
+    if(event.shiftKey) shortcutsStack.push('Shift');
+
+    shortcutsStack.push(key);
   };
+
+  React.useEffect(() => {
+    if(!!editorCommand) {
+      switch (editorCommand) {
+        case EDITOR_CONTROLS.save:
+          handleClick(EDITOR_CONTROLS.save);
+          break;
+        case EDITOR_CONTROLS.setThreshold:
+          handleClick(EDITOR_CONTROLS.setThreshold);
+          break;
+        default:
+          break;
+      }
+    }
+
+  }, [editorCommand])
 
   React.useEffect(() => {
     localShortcuts = shortcuts;
@@ -507,64 +547,12 @@ export const EditorControls = (props: EditorControlsProps) => {
   }, [isLoadingAdditionalSegment])
 
   // set on mount and reset values on unmount
-  React.useEffect(() => {/**
-    * handle shortcut key presses
-    */
-    const handleKeyPress1 = (event: KeyboardEvent) => {
-      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-      const { key, shiftKey } = event;
-      switch (key) {
-        case 'h':
-          return;
-        case 'x':
-          if (shiftKey && event[keyName]) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.speaker);
-          }
-          break;
-        case 's':
-          if (event[keyName]) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.save);
-          }
-          break;
-        case 'z':
-          if (event[keyName] && !editorInFocus) {
-            event.preventDefault();
-            if (shiftKey) {
-              onCommandClick(EDITOR_CONTROLS.redo);
-            } else {
-              onCommandClick(EDITOR_CONTROLS.undo);
-            }
-          }
-          break;
-        case 'Backspace':
-          if (shiftKey && !editorInFocus) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.merge);
-          }
-          break;
-        case 'Enter':
-          if (shiftKey && !editorInFocus) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.split);
-          }
-          break;
-        case 'Alt':
-          event.preventDefault();
-          if (shiftKey && !editorInFocus) {
-            onCommandClick(EDITOR_CONTROLS.editSegmentTime);
-          } else {
-            onCommandClick(EDITOR_CONTROLS.toggleMore);
-          }
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    document.addEventListener('keyup', handleKeyUp);
+  React.useEffect(() => {
+    // document.addEventListener('keydown', handleKeyPress);
+    // document.addEventListener('keyup', handleKeyUp);
     return () => {
-      document.removeEventListener('keydown', handleKeyPress);
+      // document.removeEventListener('keydown', handleKeyPress);
+      // document.removeEventListener('keyup', handleKeyUp);
       setEditorDebugMode(false);
       setShowEditorPopups(false);
       editorInFocus = false;
@@ -573,44 +561,44 @@ export const EditorControls = (props: EditorControlsProps) => {
 
 
   return (
-    <Grid
-      container
-      justify='space-between'
-      direction="row"
-      alignItems="center"
-      className={classes.container}
-    >
-      <ButtonGroup
-        variant="contained"
-        aria-label="primary editor buttons"
-        className={classes.buttonGroup}
+      <Grid
+          container
+          justify='space-between'
+          direction="row"
+          alignItems="center"
+          className={classes.container}
       >
-        {renderButtons(primaryControlOrder)}
-      </ButtonGroup>
-      {/*{loading && <ScaleLoader
-        color={theme.palette.common.white}
-        loading={true}
-      />}*/}
-      {statusEl}
-      <ButtonGroup
-        variant="contained"
-        aria-label="secondary editor buttons"
-        className={classes.buttonGroup}
-      >
-        {renderButtons(secondaryControlOrder)}
-      </ButtonGroup>
-      <ClickAwayListener onClickAway={handleClickAway} >
-        <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
-          {({ TransitionProps }) => (
-            <Fade {...TransitionProps} >
-              <ConfidenceSlider
-                isOpen={open}
-                setSliderOpen={setSliderOpen}
-              />
-            </Fade>
-          )}
-        </Popper>
-      </ClickAwayListener>
-    </Grid>
+        <ButtonGroup
+            variant="contained"
+            aria-label="primary editor buttons"
+            className={classes.buttonGroup}
+        >
+          {renderButtons(primaryControlOrder)}
+        </ButtonGroup>
+        {/*{loading && <ScaleLoader
+      color={theme.palette.common.white}
+      loading={true}
+    />}*/}
+        {statusEl}
+        <ButtonGroup
+            variant="contained"
+            aria-label="secondary editor buttons"
+            className={classes.buttonGroup}
+        >
+          {renderButtons(secondaryControlOrder)}
+        </ButtonGroup>
+        <ClickAwayListener onClickAway={handleClickAway} >
+          <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
+            {({ TransitionProps }) => (
+                <Fade {...TransitionProps} >
+                  <ConfidenceSlider
+                      isOpen={open}
+                      setSliderOpen={setSliderOpen}
+                  />
+                </Fade>
+            )}
+          </Popper>
+        </ClickAwayListener>
+      </Grid>
   );
 };
