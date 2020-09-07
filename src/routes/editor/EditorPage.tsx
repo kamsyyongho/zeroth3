@@ -1,4 +1,4 @@
-import {Container} from '@material-ui/core';
+import {CardHeader, Container, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 /* eslint import/no-webpack-loader-syntax: off */
@@ -9,7 +9,7 @@ import {BulletList} from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS} from '../../constants';
+import {PERMISSIONS, convertKoreanKeyToEnglish} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -53,6 +53,12 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       container: {
         marginTop: 25,
       },
+      readOnlyHeader: {
+        display: 'flex',
+        flexDirection: 'row',
+
+
+      }
     }),
 );
 
@@ -70,6 +76,8 @@ let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
 const TIME_PAGE_SIZE = 100;
 const SCROLL_PAGE_SIZE = 60;
+let shortcutsStack: string[] = [];
+let localShortcuts: any = {};
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -128,6 +136,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
+  const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
@@ -1146,8 +1155,114 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const handleShortcut = (event: KeyboardEvent) => {
+    const keyCombinationArray = Object.values(shortcuts);
+    const functionArray = Object.keys(shortcuts);
+    let resultIndex: number = -1;
+    keyCombinationArray.forEach((combination: any, index: number) => {
+      let matchCount = 0;
+      for(let i = 0; i < shortcutsStack.length; i++) {
+        if(combination.includes(shortcutsStack[i])) {
+          matchCount += 1;
+        } else {
+          return;
+        }
+      }
+      if (matchCount === shortcutsStack.length) {
+        resultIndex = index;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+    const command = functionArray[resultIndex];
+
+    if(!readOnly) {
+      switch (command) {
+        case 'confirm':
+          setEditorCommand(EDITOR_CONTROLS.approvalRequest);
+          break;
+        case 'save':
+          setEditorCommand(EDITOR_CONTROLS.save);
+          break;
+        case 'undo':
+          setEditorCommand(EDITOR_CONTROLS.undo);
+          break;
+        case 'redo':
+          setEditorCommand(EDITOR_CONTROLS.redo);
+          break;
+        case 'merge':
+          handleSegmentMergeCommand();
+          break;
+        case 'split':
+          handleSegmentSplitCommand();
+          break;
+        case 'toggleMore':
+          setEditorCommand(EDITOR_CONTROLS.toggleMore);
+          break;
+        case 'editSegmentTime':
+          setEditorCommand(EDITOR_CONTROLS.editSegmentTime);
+          break;
+        case 'setThreshold':
+          setEditorCommand(EDITOR_CONTROLS.setThreshold);
+          break;
+        case 'shortcuts':
+          setIsShortCutPageOpen(!isShortCutPageOpen);
+          break;
+        case 'speaker':
+          setEditorCommand(EDITOR_CONTROLS.speaker);
+          break;
+      }
+    }
+    switch (command) {
+      case 'rewindAudio':
+        setEditorCommand(EDITOR_CONTROLS.rewindAudio);
+        break;
+      case 'forwardAudio':
+        setEditorCommand(EDITOR_CONTROLS.forwardAudio);
+        break;
+      case 'audioPlayPause':
+        setEditorCommand(EDITOR_CONTROLS.audioPlayPause);
+        break;
+      case 'toggleAutoSeek':
+        setAutoSeekDisabled(!autoSeekDisabled);
+        break;
+      case 'toggleAutoScroll':
+        setEditorAutoScrollDisabled(!editorAutoScrollDisabled);
+        break
+      case 'loop':
+        setEditorCommand(EDITOR_CONTROLS.loop);
+        break;
+    }
+  };
+
+  const handleKeyUp = (event: React.KeyboardEvent) => {
+    if(shortcutsStack.length < 2) {
+      return;
+    } else {
+      handleShortcut(event.nativeEvent);
+      shortcutsStack = [];
+    }
+  }
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
+      event.preventDefault();
+      return;
+    }
+    const key = event.nativeEvent.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+
+    if(event.metaKey) shortcutsStack.push('Meta');
+    if(event.ctrlKey) shortcutsStack.push('Control');
+    if(event.altKey) shortcutsStack.push('Alt');
+    if(event.shiftKey) shortcutsStack.push('Shift');
+
+    shortcutsStack.push(key);
+  };
+
   const resetVariables = () => {
     internalSegmentsTracker = [];
+    shortcutsStack = [];
+    localShortcuts = [];
     wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
@@ -1213,6 +1328,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       getAssignedData();
       getDataSetsToFetchFrom();
     }
+
     return () => {
       resetVariables();
       if (RemoteWorker) {
@@ -1248,7 +1364,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   };
 
   return (
-      <>
+      <div onKeyDown={handleKeyPress} onKeyUp={handleKeyUp}>
         {!readOnly && !isDiff && <EditorControls
             onCommandClick={handleEditorCommand}
             onConfirm={onConfirmClick}
@@ -1258,12 +1374,21 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             editorReady={editorReady}
             playingLocation={currentPlayingLocation}
             isSegmentUpdateError={isSegmentUpdateError}
+            editorCommand={editorCommand}
         />}
         <Container >
-          {readOnly && <StarRating
-              voiceData={voiceData}
-              projectId={projectId}
-          />}
+          {
+            readOnly && voiceData &&
+                <div className={classes.readOnlyHeader}>
+                  <CardHeader
+                      title={<Typography variant='h4'>{voiceData.originalFilename}</Typography>}
+                  />
+                  <StarRating
+                      voiceData={voiceData}
+                      projectId={projectId}
+                  />
+                </div>
+          }
           <Paper
               className={classes.container}
               elevation={5}
@@ -1379,6 +1504,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             onSuccess={handleSpeakerAssignSuccess}
         />
         <HelperPage open={isShortCutPageOpen} onClose={() => setIsShortCutPageOpen(false)} onCommandClick={handleEditorCommand} />
-      </>
+      </div>
   );
 }

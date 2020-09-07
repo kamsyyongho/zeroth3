@@ -54,8 +54,6 @@ interface AssignShortCutDialogProps {
     onConfirm: (input: string[]) => void;
 }
 
-let updateLocalInput: string[] = [];
-let allowKeyDown: boolean = false;
 
 export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     const { open, hideBackdrop, onClose, selectedShortCut, selectedFunction, onConfirm } = props;
@@ -64,11 +62,11 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     const { translate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
     const [loading, setLoading] = React.useState(false);
-    const [isError, setIsError] = React.useState(false);
-    const [isReset, setIsReset] = React.useState(false);
     const [inputCombination, setInputCombination] = React.useState('');
     const [localInput, setLocalInput] = React.useState<string[]>([]);
     const [isUnique, setIsUnique] = React.useState<boolean>(true);
+    const [isInvalid, setIsInvalid] = React.useState<boolean>(true);
+    const [errorMsg, setErrorMsg] = React.useState<string>('');
 
     const functionArray = React.useMemo(() => Object.keys(shortcuts), [shortcuts]);
     const inputArray = React.useMemo(() => Object.values(shortcuts), [shortcuts])
@@ -82,12 +80,9 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     };
 
     const init = () => {
-        allowKeyDown = false;
-        updateLocalInput = [];
         setLocalInput([]);
         setInputCombination('');
-        setIsError(false);
-        setIsReset(false);
+        setIsInvalid(true);
     };
 
     // to expand to fullscreen on small displays
@@ -95,65 +90,78 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
 
     const isUniqueInputCombination = () => {
         let isUnique = true;
-
         for(let i = 0; i < inputArray.length; i++) {
-            if(renderInputCombination(inputArray[i]) === renderInputCombination(updateLocalInput)){
+            if(renderInputCombination(inputArray[i]) === renderInputCombination(localInput)){
                 isUnique = false;
             }
         }
         return isUnique;
     };
 
-    const handleSubmit = () => {
-        if(!isReset) {
-            allowKeyDown = true;
-            setIsReset(true);
-            updateLocalInput = [];
-            setLocalInput([]);
-            setInputCombination('');
+    const isFirstKeyMeta = () => {
+        const firstKeyOptions = ['Meta', 'Control', 'Shift', 'Opt', 'Alt'];
+        if(!firstKeyOptions.includes(localInput[0])) {
+            return false;
         } else {
-            onConfirm(localInput);
-            handleClose();
+            return true;
         }
+    };
+
+    const validateInputCombination = () => {
+      const isUnique = isUniqueInputCombination();
+      const isValidInitialKey = isFirstKeyMeta();
+
+      if(!isUnique) {
+          setIsInvalid(true);
+          setErrorMsg(translate("editor.duplicateShortcut"));
+      } else if (!isValidInitialKey) {
+          setIsInvalid(true);
+          setErrorMsg(translate('editor.invalidInitialKey'));
+      } else if (localInput.length > 3) {
+          setIsInvalid(true);
+          setErrorMsg(translate('editor.maxLength'));
+      } else {
+          setIsInvalid(false);
+      }
+    };
+
+    const handleSubmit = () => {
+        onConfirm(localInput);
+        handleClose();
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
         const key = event.nativeEvent.code === "Space" ? "Space" : event.key;
-        if(allowKeyDown) {
-            event.preventDefault();
-            setIsUnique(true);
-            if(key === 'Backspace' && updateLocalInput.length) {
-                updateLocalInput.pop();
-            } else {
-                updateLocalInput.push(key);
-            }
+        const copyLocalInput = localInput.slice();
+
+        if(key === 'Backspace' && localInput.length) {
+            copyLocalInput.pop();
+            setLocalInput(copyLocalInput);
+        } else if (copyLocalInput.length <= 3) {
+            copyLocalInput.push(key);
+            setLocalInput(copyLocalInput);
         }
+        setInputCombination(renderInputCombination(copyLocalInput));
+        event.preventDefault();
+        event.stopPropagation();
     };
 
     const handleKeyUp = (event: React.KeyboardEvent) => {
-        const isUnique = isUniqueInputCombination();
-        if(isUnique) {
-            setLocalInput(updateLocalInput);
-            setInputCombination(renderInputCombination(updateLocalInput));
-        } else {
-            updateLocalInput = [];
-            setIsUnique(false);
-        }
+        validateInputCombination();
     };
 
     React.useEffect(() => {
         if(selectedShortCut?.length && !localInput?.length) {
             setLocalInput(selectedShortCut);
-            updateLocalInput = selectedShortCut;
             setInputCombination(renderInputCombination(selectedShortCut));
         }
     }, [selectedShortCut]);
 
     React.useEffect(() => {
-        if(!open) {
-            init()
+        return () => {
+            init();
         }
-    }, [open]);
+    }, [])
 
     return (
         <Dialog
@@ -178,7 +186,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                 onKeyDown={handleKeyDown}
                                 onKeyUp={handleKeyUp}
                                 value={inputCombination}
-                                helperText={!isUnique && translate("editor.duplicateShortcut")}
+                                helperText={isInvalid && errorMsg}
                                 error={!isUnique}
                                 // onKeyPress={handleKeyDown}
                                 className={clsx(classes.textField, classes.apiInfo)}
@@ -191,7 +199,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                 {translate("common.cancel")}
                             </Button>
                             <Button
-                                disabled={!localInput.length}
+                                disabled={isInvalid}
                                 onClick={handleSubmit}
                                 color="primary"
                                 variant="outlined"
@@ -201,9 +209,9 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                         size={15}
                                         color={theme.palette.primary.main}
                                         loading={true}
-                                    /> : (isReset ? <AddIcon /> : <EditIcon />)}
+                                    /> : <EditIcon />}
                             >
-                                {translate(isReset ? "common.edit" : "common.reset")}
+                                {translate("common.edit")}
                             </Button>
                         </DialogActions>
                     </>

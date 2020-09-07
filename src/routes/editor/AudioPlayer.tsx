@@ -31,14 +31,14 @@ import {
   PLAYER_SEGMENT_IDS,
   PlayingTimeData,
   Segment as SegmentEditor,
+  SegmentAndWordIndex,
   Time,
   WAVEFORM_DOM_IDS,
   WordToCreateTimeFor,
-  SegmentAndWordIndex,
 } from '../../types';
 import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
-import {formatSecondsDuration, isMacOs} from '../../util/misc';
+import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
 import {getSegmentAndWordIndex} from './helpers/editor.helper';
 
@@ -1207,6 +1207,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         case EDITOR_CONTROLS.audioPlayPause:
           handlePlayPause();
           break;
+        case EDITOR_CONTROLS.loop:
+          handleLoopClick();
+          break;
         default:
           break;
       }
@@ -1215,38 +1218,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
-    /**
-     * handle shortcut key presses
-     */
-    // const handleKeyPress = (event: KeyboardEvent) => {
-    //   if (!isReady) return;
-    //   const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    //
-    //   ('=============event in audioPlayer : ', event);
-    //   const { key, shiftKey } = event;
-    //   switch (key) {
-    //     case 'a':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handleSkip(true);
-    //       }
-    //       break;
-    //     case 'd':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handleSkip();
-    //       }
-    //       break;
-    //     case 's':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handlePlayPause();
-    //       }
-    //       break;
-    //   }
-    // };
-
-
     /**
      * start playing on double click
      * - there is no easy way to prevent selecting text

@@ -12,11 +12,14 @@ export const DEFAULT_SHORTCUTS = {
         toggleMore: ['Alt', 'Shift'],
         editSegmentTime: ['Alt', 'Enter'],
         setThreshold: ['Control', "t"],
-        shortcuts: ['Control', "h"],
+        shortcuts: ['Alt', "h"],
         speaker: ['Shift', 'Control', "X"],
         rewindAudio: ['Alt', 'ArrowLeft'],
         forwardAudio: ['Alt', 'ArrowRight'],
         audioPlayPause: ['Alt', "Space"],
+        toggleAutoSeek: ['Control', 'm'],
+        toggleAutoScroll: ['Control', 'n'],
+        loop: ['Control', 'l'],
         //     createWord: ['Control', 'Enter'],
         //     debug: [],
     };
@@ -69,6 +72,7 @@ export const renderInputCombination = (input: any) => {
     });
     return result;
 }
+
 //ㅂㅈㄷㄱ쇼ㅕㅑㅐㅔㅁㄴㅇㄹ호ㅓㅏㅣㅋㅌㅊ퓨ㅜ
 export const convertKoreanKeyToEnglish = (keycode: string) => {
     switch(keycode) {
