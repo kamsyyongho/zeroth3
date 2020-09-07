@@ -78,6 +78,7 @@ const TIME_PAGE_SIZE = 100;
 const SCROLL_PAGE_SIZE = 60;
 let shortcutsStack: string[] = [];
 let localShortcuts: any = {};
+let trackSeekToTime: boolean = false;
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -891,6 +892,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
           setCurrentPlayingLocation(playingLocation);
+          if (trackSeekToTime) handleWordClick(playingLocation, true);
         }
         if (playingLocation && (initialSegmentLoad ||
             JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
@@ -920,7 +922,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    * - sets the segment index and word index of the currently playing word
    * @params time
    */
-  const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false) => {
+  const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false, seekToTime: boolean = false) => {
     // prevents seeking again if we changed because of clicking a word
     const currentPlayingWordPlayerSegment = playingTimeData?.currentPlayingWordPlayerSegment;
 
@@ -930,6 +932,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       setPlaybackTime(time);
       RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
     }
+    trackSeekToTime = seekToTime;
+
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
     if(currentlyPlayingWordTime && currentPlayingWordPlayerSegment) {
@@ -961,6 +965,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
       setTimeToSeekTo(wordTime + SEEK_SLOP);
       setCurrentPlayingLocation(wordLocation);
+      setTimeout(() => {
+        if(forceClick) setScrollToSegmentIndex(segmentIndex);
+      }, 0)
       if(checkAudioPlaying) setIsAudioPlaying(true);
     }
   };

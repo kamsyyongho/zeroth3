@@ -142,7 +142,7 @@ interface AudioPlayerProps {
   segmentSplitTimeBoundary?: Required<Time>;
   segmentSplitTime?: number;
   onSegmentSplitTimeChanged: (time: number) => void;
-  onTimeChange: (timeInSeconds: number) => void;
+  onTimeChange: (timeInSeconds: number, initialSegmentLoad?: boolean, seekToTime?: boolean) => void;
   onSectionChange: (time: Time, wordKey: string) => void;
   onSegmentDelete: () => void;
   onSegmentCreate: () => void;
@@ -345,9 +345,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setPeaksReady(true);
   };
 
-  const handleTimeChange = async (time: number) => {
+  const handleTimeChange = async (time: number, seekToTime: boolean = false) => {
     if (onTimeChange && typeof onTimeChange === 'function') {
-      onTimeChange(time);
+      onTimeChange(time, false, seekToTime);
     }
 
   };
@@ -407,7 +407,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
       } else {
-        handleTimeChange(currentTimeFixed);
+        handleTimeChange(currentTimeFixed, true);
       }
       previouslyFetchedTime = currentTimeFixed
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
