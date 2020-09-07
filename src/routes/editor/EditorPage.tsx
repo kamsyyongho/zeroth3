@@ -851,7 +851,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const segmentIndex = playingLocation.segmentIndex === -1 ? 0 : playingLocation.segmentIndex;
     const wordIndex = playingLocation.wordIndex === -1 ? 0 : playingLocation.wordIndex;
     if (!segments.length && !internalSegmentsTracker.length) return;
-    console.log('======== internalSegmentsTracker : ', internalSegmentsTracker);
     const segment = internalSegmentsTracker[segmentIndex];
     const wordAlignment = segment.wordAlignments[wordIndex];
     const startTime = segment.start + wordAlignment.start;
