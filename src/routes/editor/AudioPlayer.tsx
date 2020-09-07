@@ -1420,7 +1420,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           <ZoomOutIcon />
         </Button>
     )}
-    {renderControlWithTooltip(translate('audioPlayer.loop'),
+    {renderControlWithTooltip(translate('audioPlayer.loop') + ` (${renderInputCombination(shortcuts.loop)})`,
         <Button
             aria-label="create-loop"
             disabled={!!internaDisabledTimesTracker}
@@ -1457,7 +1457,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         </Button>
     )}
     {renderControlWithTooltip(autoSeekDisabled ?
-        translate('audioPlayer.syncAudioCursorLocation') : translate('audioPlayer.unsyncAudioCursorLocation'),
+        translate('audioPlayer.syncAudioCursorLocation') : translate('audioPlayer.unsyncAudioCursorLocation')
+        + ` (${renderInputCombination(shortcuts.toggleAutoSeek)})`,
         <Button
             aria-label="seek-lock"
             onClick={toggleLockSeek}
@@ -1473,7 +1474,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         </Button>
     )}
     {renderControlWithTooltip(editorAutoScrollDisabled ?
-        translate('audioPlayer.enableAutoScroll') : translate('audioPlayer.disableAutoScroll'),
+        translate('audioPlayer.enableAutoScroll') : translate('audioPlayer.disableAutoScroll')
+        + ` (${renderInputCombination(shortcuts.toggleAutoScroll)})`,
         <Button
             aria-label="scroll-lock"
             onClick={toggleLockScroll}
