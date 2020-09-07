@@ -31,14 +31,14 @@ import {
   PLAYER_SEGMENT_IDS,
   PlayingTimeData,
   Segment as SegmentEditor,
+  SegmentAndWordIndex,
   Time,
   WAVEFORM_DOM_IDS,
   WordToCreateTimeFor,
-  SegmentAndWordIndex,
 } from '../../types';
 import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
-import {formatSecondsDuration, isMacOs} from '../../util/misc';
+import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
 import {getSegmentAndWordIndex} from './helpers/editor.helper';
 
@@ -142,7 +142,7 @@ interface AudioPlayerProps {
   segmentSplitTimeBoundary?: Required<Time>;
   segmentSplitTime?: number;
   onSegmentSplitTimeChanged: (time: number) => void;
-  onTimeChange: (timeInSeconds: number) => void;
+  onTimeChange: (timeInSeconds: number, initialSegmentLoad?: boolean, seekToTime?: boolean) => void;
   onSectionChange: (time: Time, wordKey: string) => void;
   onSegmentDelete: () => void;
   onSegmentCreate: () => void;
@@ -345,9 +345,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setPeaksReady(true);
   };
 
-  const handleTimeChange = async (time: number) => {
+  const handleTimeChange = async (time: number, seekToTime: boolean = false) => {
     if (onTimeChange && typeof onTimeChange === 'function') {
-      onTimeChange(time);
+      onTimeChange(time, false, seekToTime);
     }
 
   };
@@ -407,7 +407,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
       } else {
-        handleTimeChange(currentTimeFixed);
+        handleTimeChange(currentTimeFixed, true);
       }
       previouslyFetchedTime = currentTimeFixed
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
@@ -1207,6 +1207,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         case EDITOR_CONTROLS.audioPlayPause:
           handlePlayPause();
           break;
+        case EDITOR_CONTROLS.loop:
+          handleLoopClick();
+          break;
         default:
           break;
       }
@@ -1215,38 +1218,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // initial mount and unmount logic
   React.useEffect(() => {
-    /**
-     * handle shortcut key presses
-     */
-    // const handleKeyPress = (event: KeyboardEvent) => {
-    //   if (!isReady) return;
-    //   const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-    //
-    //   ('=============event in audioPlayer : ', event);
-    //   const { key, shiftKey } = event;
-    //   switch (key) {
-    //     case 'a':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handleSkip(true);
-    //       }
-    //       break;
-    //     case 'd':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handleSkip();
-    //       }
-    //       break;
-    //     case 's':
-    //       if (event[keyName] && shiftKey) {
-    //         event.preventDefault();
-    //         handlePlayPause();
-    //       }
-    //       break;
-    //   }
-    // };
-
-
     /**
      * start playing on double click
      * - there is no easy way to prevent selecting text

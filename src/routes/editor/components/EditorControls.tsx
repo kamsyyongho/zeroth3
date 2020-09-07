@@ -85,6 +85,9 @@ export enum EDITOR_CONTROLS {
   rewindAudio,
   forwardAudio,
   audioPlayPause,
+  toggleAutoSeek,
+  toggleAutoScroll,
+  loop,
 }
 
 const EDITOR_STATUS = {
@@ -127,6 +130,7 @@ interface EditorControlsProps {
   editorReady?: boolean;
   playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
+  editorCommand?: EDITOR_CONTROLS;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -139,6 +143,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     editorReady,
     playingLocation,
     isSegmentUpdateError,
+    editorCommand,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -172,6 +177,7 @@ export const EditorControls = (props: EditorControlsProps) => {
         range.collapse(true);
         selection?.removeAllRanges();
         selection?.addRange(range);
+        playingBlock.focus();
       }
     }
   }
@@ -350,87 +356,21 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
-  const handleShortcut = (event: KeyboardEvent) => {
-    const keyCombinationArray = Object.values(localShortcuts);
-    const functionArray = Object.keys(localShortcuts);
-    let resultIndex: number = -1;
-    keyCombinationArray.forEach((combination: any, index: number) => {
-      for(let i = 0; i < shortcutsStack.length; i++) {
-        if(!combination.includes(shortcutsStack[i])) {
-          return;
-        }
+  React.useEffect(() => {
+    if(!!editorCommand) {
+      switch (editorCommand) {
+        case EDITOR_CONTROLS.save:
+          handleClick(EDITOR_CONTROLS.save);
+          break;
+        case EDITOR_CONTROLS.setThreshold:
+          handleClick(EDITOR_CONTROLS.setThreshold);
+          break;
+        default:
+          break;
       }
-      resultIndex = index;
-    });
-    const command = functionArray[resultIndex];
-
-    switch (command) {
-      case 'confirm':
-        onCommandClick(EDITOR_CONTROLS.approvalRequest);
-        break;
-      case 'save':
-        handleClick(EDITOR_CONTROLS.save);
-        break;
-      case 'undo':
-        onCommandClick(EDITOR_CONTROLS.undo);
-        break;
-      case 'redo':
-        onCommandClick(EDITOR_CONTROLS.redo);
-        break;
-      case 'merge':
-        onCommandClick(EDITOR_CONTROLS.merge);
-        break;
-      case 'split':
-        onCommandClick(EDITOR_CONTROLS.split);
-        break;
-      case 'toggleMore':
-        onCommandClick(EDITOR_CONTROLS.toggleMore);
-        break;
-      case 'editSegmentTime':
-        onCommandClick(EDITOR_CONTROLS.editSegmentTime);
-        break;
-      case 'setThreshold':
-        handleClick(EDITOR_CONTROLS.setThreshold);
-        break;
-      case 'shortcuts':
-        onCommandClick(EDITOR_CONTROLS.shortcuts);
-        break;
-      case 'speaker':
-        onCommandClick(EDITOR_CONTROLS.speaker);
-        break;
-      case 'rewindAudio':
-        onCommandClick(EDITOR_CONTROLS.rewindAudio);
-        break;
-      case 'forwardAudio':
-        onCommandClick(EDITOR_CONTROLS.forwardAudio);
-        break;
-      case 'audioPlayPause':
-        onCommandClick(EDITOR_CONTROLS.audioPlayPause);
-        break;
     }
-    event.preventDefault();
-  };
 
-  const handleKeyUp = (event: KeyboardEvent) => {
-    if(shortcutsStack.length < 2) {
-      return;
-    } else {
-      handleShortcut(event);
-      shortcutsStack = [];
-    }
-  }
-
-  const handleKeyPress = (event: KeyboardEvent) => {
-    if(!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey && shortcutsStack?.length) {return;}
-    const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
-
-    if(shortcutsStack?.length) {
-      shortcutsStack.push(key);
-    } else {
-      shortcutsStack.push(key);
-    }
-    event.preventDefault();
-  };
+  }, [editorCommand])
 
   React.useEffect(() => {
     localShortcuts = shortcuts;
@@ -507,64 +447,8 @@ export const EditorControls = (props: EditorControlsProps) => {
   }, [isLoadingAdditionalSegment])
 
   // set on mount and reset values on unmount
-  React.useEffect(() => {/**
-    * handle shortcut key presses
-    */
-    const handleKeyPress1 = (event: KeyboardEvent) => {
-      const keyName = isMacOs() ? 'metaKey' : 'ctrlKey';
-      const { key, shiftKey } = event;
-      switch (key) {
-        case 'h':
-          return;
-        case 'x':
-          if (shiftKey && event[keyName]) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.speaker);
-          }
-          break;
-        case 's':
-          if (event[keyName]) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.save);
-          }
-          break;
-        case 'z':
-          if (event[keyName] && !editorInFocus) {
-            event.preventDefault();
-            if (shiftKey) {
-              onCommandClick(EDITOR_CONTROLS.redo);
-            } else {
-              onCommandClick(EDITOR_CONTROLS.undo);
-            }
-          }
-          break;
-        case 'Backspace':
-          if (shiftKey && !editorInFocus) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.merge);
-          }
-          break;
-        case 'Enter':
-          if (shiftKey && !editorInFocus) {
-            event.preventDefault();
-            onCommandClick(EDITOR_CONTROLS.split);
-          }
-          break;
-        case 'Alt':
-          event.preventDefault();
-          if (shiftKey && !editorInFocus) {
-            onCommandClick(EDITOR_CONTROLS.editSegmentTime);
-          } else {
-            onCommandClick(EDITOR_CONTROLS.toggleMore);
-          }
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    document.addEventListener('keyup', handleKeyUp);
+  React.useEffect(() => {
     return () => {
-      document.removeEventListener('keydown', handleKeyPress);
       setEditorDebugMode(false);
       setShowEditorPopups(false);
       editorInFocus = false;
@@ -573,44 +457,44 @@ export const EditorControls = (props: EditorControlsProps) => {
 
 
   return (
-    <Grid
-      container
-      justify='space-between'
-      direction="row"
-      alignItems="center"
-      className={classes.container}
-    >
-      <ButtonGroup
-        variant="contained"
-        aria-label="primary editor buttons"
-        className={classes.buttonGroup}
+      <Grid
+          container
+          justify='space-between'
+          direction="row"
+          alignItems="center"
+          className={classes.container}
       >
-        {renderButtons(primaryControlOrder)}
-      </ButtonGroup>
-      {/*{loading && <ScaleLoader
-        color={theme.palette.common.white}
-        loading={true}
-      />}*/}
-      {statusEl}
-      <ButtonGroup
-        variant="contained"
-        aria-label="secondary editor buttons"
-        className={classes.buttonGroup}
-      >
-        {renderButtons(secondaryControlOrder)}
-      </ButtonGroup>
-      <ClickAwayListener onClickAway={handleClickAway} >
-        <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
-          {({ TransitionProps }) => (
-            <Fade {...TransitionProps} >
-              <ConfidenceSlider
-                isOpen={open}
-                setSliderOpen={setSliderOpen}
-              />
-            </Fade>
-          )}
-        </Popper>
-      </ClickAwayListener>
-    </Grid>
+        <ButtonGroup
+            variant="contained"
+            aria-label="primary editor buttons"
+            className={classes.buttonGroup}
+        >
+          {renderButtons(primaryControlOrder)}
+        </ButtonGroup>
+        {/*{loading && <ScaleLoader
+      color={theme.palette.common.white}
+      loading={true}
+    />}*/}
+        {statusEl}
+        <ButtonGroup
+            variant="contained"
+            aria-label="secondary editor buttons"
+            className={classes.buttonGroup}
+        >
+          {renderButtons(secondaryControlOrder)}
+        </ButtonGroup>
+        <ClickAwayListener onClickAway={handleClickAway} >
+          <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
+            {({ TransitionProps }) => (
+                <Fade {...TransitionProps} >
+                  <ConfidenceSlider
+                      isOpen={open}
+                      setSliderOpen={setSliderOpen}
+                  />
+                </Fade>
+            )}
+          </Popper>
+        </ClickAwayListener>
+      </Grid>
   );
 };
