@@ -356,106 +356,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
-  const handleShortcut = (event: KeyboardEvent) => {
-    const keyCombinationArray = Object.values(localShortcuts);
-    const functionArray = Object.keys(localShortcuts);
-    let resultIndex: number = -1;
-    keyCombinationArray.forEach((combination: any, index: number) => {
-      let matchCount = 0;
-      for(let i = 0; i < shortcutsStack.length; i++) {
-        if(combination.includes(shortcutsStack[i])) {
-          matchCount += 1;
-        } else {
-          return;
-        }
-      }
-      if (matchCount === shortcutsStack.length) {
-        resultIndex = index;
-      }
-    });
-    const command = functionArray[resultIndex];
-
-    switch (command) {
-      case 'confirm':
-        onCommandClick(EDITOR_CONTROLS.approvalRequest);
-        event.preventDefault();
-        break;
-      case 'save':
-        handleClick(EDITOR_CONTROLS.save);
-        event.preventDefault();
-        break;
-      case 'undo':
-        onCommandClick(EDITOR_CONTROLS.undo);
-        event.preventDefault();
-        break;
-      case 'redo':
-        onCommandClick(EDITOR_CONTROLS.redo);
-        event.preventDefault();
-        break;
-      case 'merge':
-        onCommandClick(EDITOR_CONTROLS.merge);
-        event.preventDefault();
-        break;
-      case 'split':
-        onCommandClick(EDITOR_CONTROLS.split);
-        event.preventDefault();
-        break;
-      case 'toggleMore':
-        onCommandClick(EDITOR_CONTROLS.toggleMore);
-        event.preventDefault();
-        break;
-      case 'editSegmentTime':
-        onCommandClick(EDITOR_CONTROLS.editSegmentTime);
-        event.preventDefault();
-        break;
-      case 'setThreshold':
-        handleClick(EDITOR_CONTROLS.setThreshold);
-        event.preventDefault();
-        break;
-      case 'shortcuts':
-        onCommandClick(EDITOR_CONTROLS.shortcuts);
-        event.preventDefault();
-        break;
-      case 'speaker':
-        onCommandClick(EDITOR_CONTROLS.speaker);
-        event.preventDefault();
-        break;
-      case 'rewindAudio':
-        onCommandClick(EDITOR_CONTROLS.rewindAudio);
-        event.preventDefault();
-        break;
-      case 'forwardAudio':
-        onCommandClick(EDITOR_CONTROLS.forwardAudio);
-        event.preventDefault();
-        break;
-      case 'audioPlayPause':
-        onCommandClick(EDITOR_CONTROLS.audioPlayPause);
-        event.preventDefault();
-        break;
-    }
-  };
-
-  const handleKeyUp = (event: KeyboardEvent) => {
-    if(shortcutsStack.length < 2) {
-      return;
-    } else {
-      handleShortcut(event);
-      shortcutsStack = [];
-    }
-  }
-
-  const handleKeyPress = (event: KeyboardEvent) => {
-    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
-    const key = event.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
-
-    if(event.metaKey) shortcutsStack.push('Meta');
-    if(event.ctrlKey) shortcutsStack.push('Control');
-    if(event.altKey) shortcutsStack.push('Alt');
-    if(event.shiftKey) shortcutsStack.push('Shift');
-
-    shortcutsStack.push(key);
-  };
-
   React.useEffect(() => {
     if(!!editorCommand) {
       switch (editorCommand) {
@@ -548,11 +448,7 @@ export const EditorControls = (props: EditorControlsProps) => {
 
   // set on mount and reset values on unmount
   React.useEffect(() => {
-    // document.addEventListener('keydown', handleKeyPress);
-    // document.addEventListener('keyup', handleKeyUp);
     return () => {
-      // document.removeEventListener('keydown', handleKeyPress);
-      // document.removeEventListener('keyup', handleKeyUp);
       setEditorDebugMode(false);
       setShowEditorPopups(false);
       editorInFocus = false;

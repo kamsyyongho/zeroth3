@@ -723,7 +723,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         || !caretLocation
         || !caretLocation.segmentIndex
         || !caretLocation.wordIndex) {return;}
-    if(segmentIndex === 0 ||
+    if(wordIndex === 0 ||
         wordIndex > segments?.[segmentIndex]?.['wordAlignments'].length - 1) {
       displayMessage(translate('editor.validation.invalidSplitLocation'));
       return;
