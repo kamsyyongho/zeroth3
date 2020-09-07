@@ -75,6 +75,7 @@ const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
 let audioSegmentsTracker: SegmentEditor[] = [];
+let previousAudioUrl: string;
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -1310,7 +1311,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     };
 
     // only initialize if we have a valid url
-    if (audioUrl) {
+    if (audioUrl && audioUrl !== previousAudioUrl) {
       initPlayer();
     }
 
@@ -1364,6 +1365,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       validTimeBondaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
       editorInFocus = false;
+      previousAudioUrl = audioUrl;
     };
   }, [audioUrl]);
 
