@@ -896,6 +896,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         // compare strings generated from the tuples because we can't compare the tuples to each other
         if (playingLocation) {
           setCurrentPlayingLocation(playingLocation);
+          // console.log('========== trackSeekToTime  after worker : ', trackSeekToTime);
           if (trackSeekToTime) handleWordClick(playingLocation, true);
         }
         if (playingLocation && (initialSegmentLoad ||
@@ -1291,12 +1292,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   React.useEffect(() => {
     internalSegmentsTracker = segments;
   }, [segments]);
-
-  // React.useEffect(() => {
-  //   if(voiceData && audioUrl.length) {
-  //     getAudioUrl();
-  //   }
-  // }, [voiceData]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {

@@ -408,6 +408,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
       } else {
+        // console.log('=========== handleTimeCHange in currentTimeFixed : ', currentTimeFixed, event);
         handleTimeChange(currentTimeFixed, true);
       }
       previouslyFetchedTime = currentTimeFixed
@@ -755,7 +756,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof wordInfo.time?.start !== 'number' ||
           typeof wordInfo.time?.end !== 'number' ||
           typeof segmentInfo.time?.start !== 'number' ||
-          typeof segmentInfo.time?.end !== 'number'
+          typeof segmentInfo.time?.end !== 'number' ||
+          segmentInfo.time?.start < 0
       ) {
         return;
       }
@@ -764,7 +766,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // like creating segments at exactly `0`
       let startTime = wordInfo.time.start;
       if (startTime === 0) {
-        startTime = startTime - ZERO_TIME_SLOP;
+        startTime = startTime;
       }
       let endTime = wordInfo.time.end;
       if (endTime > duration && duration > 0) {
@@ -772,7 +774,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       let segmentStartTime = segmentInfo.time.start;
       if (segmentStartTime === 0) {
-        segmentStartTime = segmentStartTime - ZERO_TIME_SLOP;
+        segmentStartTime = segmentStartTime;
       }
       let segmentEndTime = segmentInfo.time.end;
       if (segmentEndTime > duration && duration > 0) {
