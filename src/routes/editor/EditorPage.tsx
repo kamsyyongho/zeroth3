@@ -72,13 +72,13 @@ const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = {segmentIndex: 0, wordInd
 let internalSegmentsTracker: Segment[] = [];
 let internalShowEditorPopup: boolean = false;
 /** used to debounce navigation when we change time after word click */
-let wordWasClicked = false;
 const AUDIO_PLAYER_HEIGHT = 384;
 const TIME_PAGE_SIZE = 100;
 const SCROLL_PAGE_SIZE = 60;
 let shortcutsStack: string[] = [];
 let localShortcuts: any = {};
 let trackSeekToTime: boolean = false;
+let trackCurrentlyPlayingWordTime: any = {};
 
 export enum PARENT_METHOD_TYPES {
   speaker,
@@ -880,6 +880,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       currentPlayingWordPlayerSegment: [currentPlayingWordToDisplay, currentPlayingSegmentToDisplay],
     }
     setCurrentlyPlayingWordTime(time);
+    trackCurrentlyPlayingWordTime = time;
     // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
     // setPlayingTimeData(timeData);
     return timeData
@@ -894,22 +895,38 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const initialSegmentLoad: boolean = message.data.initialSegmentLoad;
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
+
         if (playingLocation) {
-          setCurrentPlayingLocation(playingLocation);
-          // console.log('========== trackSeekToTime  after worker : ', trackSeekToTime);
-          if (trackSeekToTime) handleWordClick(playingLocation, true);
-        }
-        if (playingLocation && (initialSegmentLoad ||
-            JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
-          const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
-          let timeData = buildPlayingAudioPlayerSegment(playingLocation);
-          if(timeData && wordTime) {
-            const timeToSeekTo = {timeToSeekTo: wordTime}
-            Object.assign(timeData, timeToSeekTo);
-            // timeData.timeToSeekTo = wordTime;
-            setPlayingTimeData(timeData)
+          if (trackSeekToTime) {
+            // setCurrentPlayingLocation(playingLocation);
+            // setTimeout(() => {
+            //   setScrollToSegmentIndex(playingLocation.segmentIndex);
+            // }, 0)
+            handleWordClick(playingLocation, true);
+          }
+          if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
+            const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
+            let timeData = buildPlayingAudioPlayerSegment(playingLocation);
+            if(timeData && wordTime) {
+              const timeToSeekTo = {timeToSeekTo: wordTime}
+              Object.assign(timeData, timeToSeekTo);
+              // timeData.timeToSeekTo = wordTime;
+              setPlayingTimeData(timeData)
+            }
           }
         }
+
+        // if (playingLocation && (initialSegmentLoad ||
+        //     JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
+        //   const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
+        //   let timeData = buildPlayingAudioPlayerSegment(playingLocation);
+        //   if(timeData && wordTime) {
+        //     const timeToSeekTo = {timeToSeekTo: wordTime}
+        //     Object.assign(timeData, timeToSeekTo);
+        //     // timeData.timeToSeekTo = wordTime;
+        //     setPlayingTimeData(timeData)
+        //   }
+        // }
       });
       return worker;
     };
@@ -929,15 +946,10 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
    */
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false, seekToTime: boolean = false) => {
     // prevents seeking again if we changed because of clicking a word
-    const currentPlayingWordPlayerSegment = playingTimeData?.currentPlayingWordPlayerSegment;
-
-    if (wordWasClicked) {
-      wordWasClicked = false;
-    } else {
-      setPlaybackTime(time);
-      RemoteWorker?.postMessage({ time, segments, initialSegmentLoad, currentlyPlayingWordTime });
-    }
+    const currentPlayingWordPlayerSegment = trackCurrentlyPlayingWordTime;
     trackSeekToTime = seekToTime;
+    setPlaybackTime(time);
+    RemoteWorker?.postMessage({ time, segments: internalSegmentsTracker, initialSegmentLoad, currentlyPlayingWordTime: trackCurrentlyPlayingWordTime });
 
     // to allow us to continue to force seeking the same word during playback
     // setTimeToSeekTo(undefined);
@@ -958,11 +970,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     if(!forceClick && !isDiff && autoSeekDisabled) return;
     const { segmentIndex, wordIndex } = wordLocation;
     let checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
+
     if (typeof segmentIndex === 'number' && typeof wordIndex === 'number') {
-      wordWasClicked = true;
       if(checkAudioPlaying) setIsAudioPlaying(false);
+
       const wordTime = calculateWordTime(internalSegmentsTracker, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
+
       if(timeData && wordTime) {
         const timeToSeekTo = {timeToSeekTo: wordTime}
         Object.assign(timeData, timeToSeekTo);
@@ -1274,7 +1288,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     internalSegmentsTracker = [];
     shortcutsStack = [];
     localShortcuts = [];
-    wordWasClicked = false;
     setSegmentsLoading(true);
     setSegments([]);
     internalSegmentsTracker = [];
