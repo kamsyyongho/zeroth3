@@ -85,7 +85,7 @@ export const ko: ResourceLanguage = {
       organization_plural: '기관명',
       fullName: '{{family}} {{given}}',
       resetPassword: '비밀번호 재생성',
-      changeOrganization: '기관명 변경',
+      changeOrganization: '기관 변경',
       updatePhoneTitle: '전화번호 수정',
       updatePhoneText: '전화번호를 수정하시겠습니까?',
     },
