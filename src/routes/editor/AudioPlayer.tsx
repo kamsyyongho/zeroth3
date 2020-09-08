@@ -398,7 +398,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setWaiting(false);
   };
 
-  async function handleSeek(event: any) {
+  async function handleSeek() {
     if (!PeaksPlayer?.player || !mediaElement) return;
     try {
       const { currentTime } = mediaElement;
