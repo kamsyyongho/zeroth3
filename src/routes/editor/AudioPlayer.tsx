@@ -87,6 +87,7 @@ const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
 let previouslyFetchedTime: number;
 let trackPlayingLocation: SegmentAndWordIndex;
+let clicked: boolean = false;
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -408,12 +409,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
       } else {
-        // console.log('=========== handleTimeCHange in currentTimeFixed : ', currentTimeFixed, event);
         handleTimeChange(currentTimeFixed, true);
       }
       previouslyFetchedTime = currentTimeFixed
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
+      clicked = false;
     } catch (error) {
       handleError(error);
     }
@@ -1131,7 +1132,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
     // don't update playing segments if the loop is active or when it should be disabled
     if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
-      parseCurrentlyPlayingWordSegment();
+      parseCurrentlyPlayingWordSegment(playingTimeData.currentPlayingWordPlayerSegment);
     }
 
   }, [playingTimeData]);
@@ -1244,6 +1245,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
     mediaElement?.addEventListener('seeking', handleSeek);
+    mediaElement?.addEventListener('seeked', handleSeek);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1339,10 +1341,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
           mediaElement.removeEventListener('seeking', handleSeek);
+          mediaElement.removeEventListener('seeked', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
         audioPlayerContainer?.removeEventListener('dblclick', handleDoubleClick);
+
       } catch (error) {
         log({
           file: `AudioPlayer.tsx`,
@@ -1460,8 +1464,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(autoSeekDisabled ?
-        translate('audioPlayer.syncAudioCursorLocation') : translate('audioPlayer.unsyncAudioCursorLocation')
+    {renderControlWithTooltip((autoSeekDisabled ?
+        translate('audioPlayer.syncAudioCursorLocation') : translate('audioPlayer.unsyncAudioCursorLocation'))
         + ` (${renderInputCombination(shortcuts.toggleAutoSeek)})`,
         <Button
             aria-label="seek-lock"
@@ -1477,8 +1481,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           />
         </Button>
     )}
-    {renderControlWithTooltip(editorAutoScrollDisabled ?
-        translate('audioPlayer.enableAutoScroll') : translate('audioPlayer.disableAutoScroll')
+    {renderControlWithTooltip((editorAutoScrollDisabled ?
+        translate('audioPlayer.enableAutoScroll') : translate('audioPlayer.disableAutoScroll'))
         + ` (${renderInputCombination(shortcuts.toggleAutoScroll)})`,
         <Button
             aria-label="scroll-lock"
