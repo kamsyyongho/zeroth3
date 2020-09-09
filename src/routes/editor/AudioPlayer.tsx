@@ -399,7 +399,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeek() {
-    if (!PeaksPlayer?.player || !mediaElement) return;
+    if (!PeaksPlayer?.player || !mediaElement || playing) return;
     try {
       const { currentTime } = mediaElement;
       if (typeof currentTime !== 'number' || !currentTime) return;
@@ -410,11 +410,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
         await getTimeBasedSegment(currentTimeFixed);
       } else {
         handleTimeChange(currentTimeFixed, true);
+        clicked = true;
       }
       previouslyFetchedTime = currentTimeFixed
       setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
       setCurrentTime(currentTime);
-      clicked = false;
     } catch (error) {
       handleError(error);
     }
@@ -575,10 +575,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
         StreamPlayer.pause();
       } else {
         const caretLocation = getSegmentAndWordIndex();
-        if(!isLoop && caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
+        if(!isLoop && !clicked && caretLocation && autoSeekDisabled && trackPlayingLocation.segmentIndex !== caretLocation.segmentIndex) {
           handleWordClick({segmentIndex: caretLocation.segmentIndex, wordIndex: 0}, true);
         }
         StreamPlayer.play();
+        clicked = false;
       }
     } catch (error) {
       handleError(error);
@@ -1245,7 +1246,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
     mediaElement?.addEventListener('seeking', handleSeek);
-    mediaElement?.addEventListener('seeked', handleSeek);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1341,7 +1341,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
           mediaElement.removeEventListener('seeking', handleSeek);
-          mediaElement.removeEventListener('seeked', handleSeek);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
