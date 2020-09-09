@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         playingWord: {
             backgroundColor: pink[200],
+            boxShadow: theme.editor.playingShadow,
         },
         caret: {
             borderLeft: '8px solid transparent',
@@ -86,6 +87,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
+    const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -468,9 +470,17 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     :
                     wordAlignments && wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
                         const text = wordAlignment.word.replace('|', ' ');
+                        const isLongWord = wordAlignment.word.length > 15;
+                        const confidence = wordAlignment?.confidence ?? 0;
+                        const LC = confidence < (wordConfidenceThreshold ?? 0.85);
+                        let style: React.CSSProperties = {};
+                        if (LC) {
+                            style = { backgroundImage: theme.editor.LowConfidenceGradient };
+                        }
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
                                  key={`word-${index}`}
+                                 style={style}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
                                 {text}
