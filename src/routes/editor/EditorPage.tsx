@@ -1372,6 +1372,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             playingLocation={currentPlayingLocation}
             isSegmentUpdateError={isSegmentUpdateError}
             editorCommand={editorCommand}
+            segments={segments}
         />}
         <Container >
           {

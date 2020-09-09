@@ -473,7 +473,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const confidence = wordAlignment?.confidence ?? 0;
                         const LC = confidence < (wordConfidenceThreshold ?? 0.85);
                         let style: React.CSSProperties = {};
-                        if (!isDiff && LC) {
+                        if (!isDiff && playingLocation.segmentIndex !== segmentIndex && LC) {
                             style = { backgroundImage: theme.editor.LowConfidenceGradient, border: 'none' };
                         }
                         return (
