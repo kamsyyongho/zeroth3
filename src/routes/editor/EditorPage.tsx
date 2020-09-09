@@ -881,8 +881,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
     setCurrentlyPlayingWordTime(time);
     trackCurrentlyPlayingWordTime = time;
-    // setCurrentPlayingWordPlayerSegment([currentlyPlayingWordToDisplay, currentlyPlayingSegmentToDisplay]);
-    // setPlayingTimeData(timeData);
     return timeData
   };
 
@@ -893,40 +891,20 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       worker.addEventListener('message', message => {
         const playingLocation: SegmentAndWordIndex | undefined = message.data.playingLocation;
         const initialSegmentLoad: boolean = message.data.initialSegmentLoad;
+
         // to only update if the word has changed
         // compare strings generated from the tuples because we can't compare the tuples to each other
-
         if (playingLocation) {
+          setCurrentPlayingLocation(playingLocation);
           if (trackSeekToTime) {
-            // setCurrentPlayingLocation(playingLocation);
-            // setTimeout(() => {
-            //   setScrollToSegmentIndex(playingLocation.segmentIndex);
-            // }, 0)
             handleWordClick(playingLocation, true);
-          }
-          if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
-            const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
+          } else if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
+            const wordTime = calculateWordTime(internalSegmentsTracker, playingLocation.segmentIndex, playingLocation.wordIndex);
             let timeData = buildPlayingAudioPlayerSegment(playingLocation);
-            if(timeData && wordTime) {
-              const timeToSeekTo = {timeToSeekTo: wordTime}
-              Object.assign(timeData, timeToSeekTo);
-              // timeData.timeToSeekTo = wordTime;
-              setPlayingTimeData(timeData)
-            }
+
+            if(timeData) setPlayingTimeData(timeData);
           }
         }
-
-        // if (playingLocation && (initialSegmentLoad ||
-        //     JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation))) {
-        //   const wordTime = calculateWordTime(segments, playingLocation.segmentIndex, playingLocation.wordIndex);
-        //   let timeData = buildPlayingAudioPlayerSegment(playingLocation);
-        //   if(timeData && wordTime) {
-        //     const timeToSeekTo = {timeToSeekTo: wordTime}
-        //     Object.assign(timeData, timeToSeekTo);
-        //     // timeData.timeToSeekTo = wordTime;
-        //     setPlayingTimeData(timeData)
-        //   }
-        // }
       });
       return worker;
     };
