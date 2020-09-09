@@ -898,6 +898,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setCurrentPlayingLocation(playingLocation);
           if (trackSeekToTime) {
             handleWordClick(playingLocation, true);
+            trackSeekToTime = false;
           } else if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
             const wordTime = calculateWordTime(internalSegmentsTracker, playingLocation.segmentIndex, playingLocation.wordIndex);
             let timeData = buildPlayingAudioPlayerSegment(playingLocation);
