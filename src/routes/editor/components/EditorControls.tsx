@@ -10,6 +10,11 @@ import MultilineChartIcon from '@material-ui/icons/MultilineChart';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import DescriptionIcon from '@material-ui/icons/Description';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import IconButton from '@material-ui/core/IconButton';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -22,7 +27,12 @@ import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
 import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
-import { SegmentAndWordIndex, Segment } from '../../../types';
+import { SegmentAndWordIndex, Segment, VoiceData } from '../../../types';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -63,6 +73,19 @@ const useStyles = makeStyles((theme) =>
       color: theme.palette.common.white,
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
+    },
+    voiceDataDetail: {
+      color: theme.palette.common.white,
+      backgroundColor: theme.palette.secondary.dark,
+      marginLeft: '20 px',
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    voiceDataTypography :{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
       alignItems: 'center',
     }
   }),
@@ -132,6 +155,7 @@ interface EditorControlsProps {
   isSegmentUpdateError: boolean;
   editorCommand?: EDITOR_CONTROLS;
   segments: Segment[];
+  voiceData: VoiceData;
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -146,6 +170,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     isSegmentUpdateError,
     editorCommand,
     segments,
+    voiceData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -155,6 +180,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
+  const [isVoiceDataDetailOpen, setIsVoiceDataDetailOpen] = React.useState<boolean>(false)
   // const [shortcutsStack, setShortcutStack] = React.useState<string[]>();
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -358,6 +384,30 @@ export const EditorControls = (props: EditorControlsProps) => {
     });
   };
 
+  const renderVoiceDataDetailList = () => {
+    const spacingSpan = () =>{ return (<span style={{ width: '20px' }} />)};
+    const voiceDataInfo = `${translate('TDP.originalFilename')} : ${voiceData.originalFilename}${<span style={{ width: '20px' }} />}${translate('forms.status')} : ${voiceData.status}${<span style={{ width: '20px' }} />}${translate('TDP.wordCount')} : ${voiceData.wordCount}`
+
+    return (
+        <Accordion expanded={isVoiceDataDetailOpen} className={classes.voiceDataTypography} onChange={() => '=========onCHange======='}>
+            <Typography className={classes.voiceDataDetail}>
+              <p style={{ width: '15px' }} />
+              {
+                `${translate('TDP.originalFilename')} : ${voiceData.originalFilename}                  `
+              }
+              <p style={{ width: '30px' }} />
+              {
+                `${translate('forms.status')} : ${voiceData.status}`
+              }
+              <p style={{ width: '30px' }} />
+              {
+                `${translate('TDP.wordCount')} : ${voiceData.wordCount}`
+              }
+            </Typography>
+        </Accordion>
+    )
+  }
+
   React.useEffect(() => {
     if(!!editorCommand) {
       switch (editorCommand) {
@@ -462,41 +512,76 @@ export const EditorControls = (props: EditorControlsProps) => {
       <Grid
           container
           justify='space-between'
-          direction="row"
+          direction="column"
           alignItems="center"
           className={classes.container}
       >
-        <ButtonGroup
-            variant="contained"
-            aria-label="primary editor buttons"
-            className={classes.buttonGroup}
+        <Grid
+            container
+            justify='space-between'
+            direction="row"
+            alignItems="center"
+            className={classes.container}
         >
-          {renderButtons(primaryControlOrder)}
-        </ButtonGroup>
-        {/*{loading && <ScaleLoader
+          <ButtonGroup
+              variant="contained"
+              aria-label="primary editor buttons"
+              className={classes.buttonGroup}
+          >
+            {renderButtons(primaryControlOrder)}
+          </ButtonGroup>
+          {/*{loading && <ScaleLoader
       color={theme.palette.common.white}
       loading={true}
     />}*/}
-        {statusEl}
-        <ButtonGroup
-            variant="contained"
-            aria-label="secondary editor buttons"
-            className={classes.buttonGroup}
-        >
-          {renderButtons(secondaryControlOrder)}
-        </ButtonGroup>
-        <ClickAwayListener onClickAway={handleClickAway} >
-          <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
-            {({ TransitionProps }) => (
-                <Fade {...TransitionProps} >
-                  <ConfidenceSlider
-                      isOpen={open}
-                      setSliderOpen={setSliderOpen}
-                  />
-                </Fade>
-            )}
-          </Popper>
-        </ClickAwayListener>
+
+          <IconButton
+              onClick={() => setIsVoiceDataDetailOpen(!isVoiceDataDetailOpen)}
+              color={"inherit"}
+              edge='start'
+              // className={classes.menuButton}
+          >
+            {statusEl}
+            {
+              isVoiceDataDetailOpen ?
+                  <ExpandLessIcon style={{ color: 'white', marginLeft: '10px' }} />
+                  :
+                  <ExpandMoreIcon style={{ color: 'white', marginLeft: '10px' }} />
+            }
+          </IconButton>
+          <ButtonGroup
+              variant="contained"
+              aria-label="secondary editor buttons"
+              className={classes.buttonGroup}
+          >
+            {renderButtons(secondaryControlOrder)}
+          </ButtonGroup>
+          <ClickAwayListener onClickAway={handleClickAway} >
+            <Popper open={open} anchorEl={anchorEl} transition className={classes.popper} >
+              {({ TransitionProps }) => (
+                  <Fade {...TransitionProps} >
+                    <ConfidenceSlider
+                        isOpen={open}
+                        setSliderOpen={setSliderOpen}
+                    />
+                  </Fade>
+              )}
+            </Popper>
+          </ClickAwayListener>
+          <ICONS.Menu/>
+
+        </Grid>
+        <Grid
+          container
+          justify='space-between'
+          direction="row"
+          alignItems="center"
+          className={classes.container} >
+          {
+            isVoiceDataDetailOpen && renderVoiceDataDetailList()
+          }
+        </Grid>
       </Grid>
+
   );
 };
