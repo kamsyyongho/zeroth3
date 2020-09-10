@@ -22,7 +22,7 @@ import { ICONS } from '../../../theme/icons';
 import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
 import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
-import { SegmentAndWordIndex } from '../../../types';
+import { SegmentAndWordIndex, Segment } from '../../../types';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -131,6 +131,7 @@ interface EditorControlsProps {
   playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
   editorCommand?: EDITOR_CONTROLS;
+  segments: Segment[];
 }
 
 export const EditorControls = (props: EditorControlsProps) => {
@@ -144,6 +145,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     playingLocation,
     isSegmentUpdateError,
     editorCommand,
+    segments,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -242,7 +244,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
-            disabled: disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
+            disabled: segments.length > 0 && disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
           };
           break;
         case EDITOR_CONTROLS.undo:
