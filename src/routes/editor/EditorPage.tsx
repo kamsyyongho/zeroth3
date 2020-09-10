@@ -1373,6 +1373,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             isSegmentUpdateError={isSegmentUpdateError}
             editorCommand={editorCommand}
             segments={segments}
+            voiceData={voiceData}
         />}
         <Container >
           {
