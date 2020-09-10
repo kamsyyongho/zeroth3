@@ -30,7 +30,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         playingWord: {
             backgroundColor: pink[200],
-            boxShadow: theme.editor.playingShadow,
         },
         caret: {
             borderLeft: '8px solid transparent',
@@ -474,8 +473,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         const confidence = wordAlignment?.confidence ?? 0;
                         const LC = confidence < (wordConfidenceThreshold ?? 0.85);
                         let style: React.CSSProperties = {};
-                        if (LC) {
-                            style = { backgroundImage: theme.editor.LowConfidenceGradient };
+                        if (!isDiff && playingLocation.segmentIndex !== segmentIndex && LC) {
+                            style = { backgroundImage: theme.editor.LowConfidenceGradient, border: 'none' };
                         }
                         return (
                             <div id={`word-${segmentIndex}-${index}`}
