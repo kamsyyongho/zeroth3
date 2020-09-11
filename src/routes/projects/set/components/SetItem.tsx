@@ -311,23 +311,6 @@ export function SetItem(props: SetItemProps) {
               </IconButton>
             </Tooltip>
             {renderEvaluationRequest()}
-            {/*{*/}
-            {/*  dataSet.evaluationProgress === null || !dataSet?.evaluationUrl*/}
-            {/*      ?*/}
-            {/*      <IconButton color='primary' disabled={true}>*/}
-            {/*        <LaunchIcon />*/}
-            {/*      </IconButton>*/}
-            {/*      :*/}
-            {/*      <Tooltip*/}
-            {/*          placement='top'*/}
-            {/*          title={<Typography>{translate('SET.showEvaluationDetail')}</Typography>}*/}
-            {/*          arrow={true}>*/}
-            {/*        <IconButton color='primary'*/}
-            {/*                    onClick={() => {if (dataSet.evaluationUrl) window.location.href = dataSet.evaluationUrl}}>*/}
-            {/*          <LaunchIcon />*/}
-            {/*        </IconButton>*/}
-            {/*      </Tooltip>*/}
-            {/*}*/}
             <IconButton
                 color='primary'
                 size='medium'
@@ -339,7 +322,6 @@ export function SetItem(props: SetItemProps) {
         </TableRow>
         {expanded &&
         <SetDetail
-            setDetailLoading={setDetailLoading}
             displaySubSetInTDP={displaySubSetInTDP}
             projectId={projectId}
             dataSetId={dataSet.id}

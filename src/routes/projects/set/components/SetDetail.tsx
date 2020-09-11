@@ -6,7 +6,7 @@ import TableRow from '@material-ui/core/TableRow';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
 import { CustomTheme } from '../../../../theme';
-import { CONTENT_STATUS, VoiceData, VoiceDataResults, DataSet, SubSetCountResults } from '../../../../types';
+import { VoiceDataResults, SubSetCountResults } from '../../../../types';
 import { SUB_SET_TYPES } from '../../../../constants'
 import { ApiContext } from '../../../../hooks/api/ApiContext';
 
@@ -49,7 +49,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 interface SetDetailProps {
-    setDetailLoading: boolean;
     projectId: string;
     displaySubSetInTDP: (setId: string, subSetType: string) => void;
     dataSetId: string;
@@ -60,17 +59,12 @@ interface SetDetailProps {
 export function SetDetail(props: SetDetailProps) {
     const classes = useStyles();
     const { isTestSetCreated, setIsTestSetCreated } = props;
-    const { translate, formatDate } = React.useContext(I18nContext);
     const api = React.useContext(ApiContext);
-    const [testSet, setTestSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
-    const [validationSet, setValidationSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
-    const [trainingSet, setTrainingSet] = React.useState<VoiceDataResults>({} as VoiceDataResults);
     const [subSetCount, setSubSetCount] = React.useState<SubSetCountResults>({testCount: 0, trainCount: 0, validationCount: 0} as SubSetCountResults);
 
     const {
         // row,
         projectId,
-        setDetailLoading,
         displaySubSetInTDP,
         dataSetId,
     } = props;
