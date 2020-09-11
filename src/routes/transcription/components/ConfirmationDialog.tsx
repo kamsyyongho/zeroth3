@@ -5,27 +5,11 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import DeleteIcon from '@material-ui/icons/Delete';
-import DoneIcon from '@material-ui/icons/Done';
-import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { ModelConfig, GenericById, DataSet } from '../../../types';
-import { SelectFormField, SelectFormFieldOptions } from '../../shared/form-fields/SelectFormField';
-import Select from '@material-ui/core/Select';
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { CustomTheme } from '../../../theme';
-import Table from '@material-ui/core/Table';
-import TableRow from '@material-ui/core/TableRow';
-import {Grid, TableCell, TableBody, Tooltip, Typography} from '@material-ui/core';
-import { ProgressBar } from '../../shared/ProgressBar';
-import ThumbDownIcon from '@material-ui/icons/ThumbDown';
-import { TextFormField } from '../../shared/form-fields/TextFormField';
 import * as yup from 'yup';
-import { Field, Form, Formik } from 'formik';
 
 interface CreateSetFormDialogProps {
     open: boolean;
@@ -76,7 +60,6 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
     const theme = useTheme();
     // to expand to fullscreen on small displays
     const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
-    const requiredTranslationText = translate("forms.validation.required");
 
     const handleClose = () => {
         setLoading(false);

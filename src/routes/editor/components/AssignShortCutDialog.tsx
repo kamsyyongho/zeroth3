@@ -6,23 +6,13 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { TextField } from '@material-ui/core';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import clsx from 'clsx';
-import { Field, Form, Formik } from 'formik';
 import { useSnackbar } from 'notistack';
 import MoonLoader from 'react-spinners/MoonLoader';
-import React, { useRef, useGlobal } from 'reactn';
-import { ApiContext } from '../../../hooks/api/ApiContext';
+import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
-import { postSubGraphResult } from '../../../services/api/types';
-import { SnackbarError,
-    SNACKBAR_VARIANTS,
-    SubGraph,
-    TopGraph,
-    TRAINING_DATA_TYPE_SUB_GRAPH,
-    TRAINING_DATA_TYPE_SUB_GRAPH_VALUES } from '../../../types';
-import log from '../../../util/log/logger';
+import { SnackbarError, SNACKBAR_VARIANTS} from '../../../types';
 import {renderInputCombination} from '../../../constants';
 
 const useStyles = makeStyles((theme) =>
@@ -60,15 +50,12 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     const { enqueueSnackbar } = useSnackbar();
     const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
     const { translate } = React.useContext(I18nContext);
-    const api = React.useContext(ApiContext);
-    const [loading, setLoading] = React.useState(false);
     const [inputCombination, setInputCombination] = React.useState('');
     const [localInput, setLocalInput] = React.useState<string[]>([]);
     const [isUnique, setIsUnique] = React.useState<boolean>(true);
     const [isInvalid, setIsInvalid] = React.useState<boolean>(true);
     const [errorMsg, setErrorMsg] = React.useState<string>('');
 
-    const functionArray = React.useMemo(() => Object.keys(shortcuts), [shortcuts]);
     const inputArray = React.useMemo(() => Object.values(shortcuts), [shortcuts])
 
     const theme = useTheme();
@@ -166,8 +153,6 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
     return (
         <Dialog
             fullScreen={fullScreen}
-            disableBackdropClick={loading}
-            disableEscapeKeyDown={loading}
             open={open}
             onClose={handleClose}
             aria-labelledby="sub-graph-dialog"
@@ -195,7 +180,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                             />
                         </DialogContent>
                         <DialogActions>
-                            <Button disabled={loading} onClick={handleClose} color="primary">
+                            <Button onClick={handleClose} color="primary">
                                 {translate("common.cancel")}
                             </Button>
                             <Button
@@ -203,13 +188,7 @@ export function AssignShortCutDialog(props: AssignShortCutDialogProps) {
                                 onClick={handleSubmit}
                                 color="primary"
                                 variant="outlined"
-                                startIcon={loading ?
-                                    <MoonLoader
-                                        sizeUnit={"px"}
-                                        size={15}
-                                        color={theme.palette.primary.main}
-                                        loading={true}
-                                    /> : <EditIcon />}
+                                startIcon={<EditIcon />}
                             >
                                 {translate("common.edit")}
                             </Button>

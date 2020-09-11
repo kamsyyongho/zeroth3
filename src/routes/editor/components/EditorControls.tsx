@@ -29,8 +29,6 @@ import { ConfidenceSlider } from './ConfidenceSlider';
 import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
 import { SegmentAndWordIndex, Segment, VoiceData } from '../../../types';
 import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 
@@ -389,7 +387,7 @@ export const EditorControls = (props: EditorControlsProps) => {
     const voiceDataInfo = `${translate('TDP.originalFilename')} : ${voiceData.originalFilename}${<span style={{ width: '20px' }} />}${translate('forms.status')} : ${voiceData.status}${<span style={{ width: '20px' }} />}${translate('TDP.wordCount')} : ${voiceData.wordCount}`
 
     return (
-        <Accordion expanded={isVoiceDataDetailOpen} className={classes.voiceDataTypography} onChange={() => '=========onCHange======='}>
+        <Accordion expanded={isVoiceDataDetailOpen} className={classes.voiceDataTypography}>
             <Typography className={classes.voiceDataDetail}>
               <p style={{ width: '15px' }} />
               {
@@ -568,8 +566,6 @@ export const EditorControls = (props: EditorControlsProps) => {
               )}
             </Popper>
           </ClickAwayListener>
-          <ICONS.Menu/>
-
         </Grid>
         <Grid
           container

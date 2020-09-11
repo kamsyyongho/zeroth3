@@ -7,18 +7,15 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import PulseLoader from 'react-spinners/PulseLoader';
 import {
-  CellProps,
-  ColumnInterface,
   ColumnInstance,
   HeaderGroup,
   Row,
   useFilters,
   usePagination,
   useTable } from 'react-table';
-// import { CellProps } from '@types/react-table';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
-import { LOCAL_STORAGE_KEYS, PaginatedResults, TranscriberStats, VoiceData } from '../../../../types';
+import { LOCAL_STORAGE_KEYS, PaginatedResults, TranscriberStats } from '../../../../types';
 import { Pagination } from '../../../shared/Pagination';
 import { RatingDisplay } from '../../../shared/RatingDisplay';
 
@@ -97,13 +94,8 @@ export function TranscribersTable(props: TranscribersTableProps) {
     headerGroups,
     prepareRow,
     page,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
     pageCount,
     gotoPage,
-    nextPage,
-    previousPage,
     setPageSize,
     rows,
     // Get the state from the instance

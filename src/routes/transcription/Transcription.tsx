@@ -31,7 +31,6 @@ import {
     PaginatedResults,
     TranscriberStats,
     SnackbarError } from '../../types';
-import { TabPanel } from '../shared/TabPanel';
 import SET from '../projects/set/SET';
 import { TDP } from '../projects/TDP/TDP';
 import { TranscriptionTable } from './components/TranscriptionTable';
