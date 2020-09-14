@@ -4,17 +4,11 @@ import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Fade from '@material-ui/core/Fade';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
-import DeveloperModeIcon from '@material-ui/icons/DeveloperMode';
 import MultilineChartIcon from '@material-ui/icons/MultilineChart';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import DescriptionIcon from '@material-ui/icons/Description';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import IconButton from '@material-ui/core/IconButton';
-import ListItem from '@material-ui/core/ListItem';
-import Divider from '@material-ui/core/Divider';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -24,9 +18,8 @@ import ScaleLoader from 'react-spinners/ScaleLoader';
 import React, { useGlobal } from 'reactn';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
-import { isMacOs } from '../../../util/misc';
 import { ConfidenceSlider } from './ConfidenceSlider';
-import { DEFAULT_SHORTCUTS, renderInputCombination, convertKoreanKeyToEnglish } from '../../../constants'
+import { renderInputCombination } from '../../../constants'
 import { SegmentAndWordIndex, Segment, VoiceData } from '../../../types';
 import Accordion from '@material-ui/core/Accordion';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -111,12 +104,6 @@ export enum EDITOR_CONTROLS {
   loop,
 }
 
-const EDITOR_STATUS = {
-  loading: 'loading',
-  saved: 'saved',
-  error: 'error',
-}
-
 const primaryControlOrder = [
   EDITOR_CONTROLS.save,
   EDITOR_CONTROLS.undo,
@@ -138,8 +125,6 @@ const secondaryControlOrder = [
 /** keeps track of the editor state for the keyboard listener
  * - outside the component to keep it out of the react lifecycle
  */
-let editorInFocus = false;
-let shortcutsStack: string[] = [];
 let localShortcuts: any = {};
 
 interface EditorControlsProps {
@@ -179,7 +164,6 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
   const [isVoiceDataDetailOpen, setIsVoiceDataDetailOpen] = React.useState<boolean>(false)
-  // const [shortcutsStack, setShortcutStack] = React.useState<string[]>();
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -212,12 +196,6 @@ export const EditorControls = (props: EditorControlsProps) => {
 
   const classes = useStyles();
   const theme = useTheme();
-
-  // to prevent the keypress listeners from firing twice
-  // the editor will handle the shortcuts when it is focussed
-  React.useEffect(() => {
-    editorInFocus = !!editorFocussed;
-  }, [editorFocussed]);
 
   const renderButton = (label: string, Icon: JSX.Element | null, tooltipText: string, buttonProps?: ButtonProps, selected?: boolean) => (
     <Button
@@ -383,7 +361,6 @@ export const EditorControls = (props: EditorControlsProps) => {
   };
 
   const renderVoiceDataDetailList = () => {
-    const spacingSpan = () =>{ return (<span style={{ width: '20px' }} />)};
     const voiceDataInfo = `${translate('TDP.originalFilename')} : ${voiceData.originalFilename}${<span style={{ width: '20px' }} />}${translate('forms.status')} : ${voiceData.status}${<span style={{ width: '20px' }} />}${translate('TDP.wordCount')} : ${voiceData.wordCount}`
 
     return (
@@ -501,7 +478,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     return () => {
       setEditorDebugMode(false);
       setShowEditorPopups(false);
-      editorInFocus = false;
     };
   }, []);
 
@@ -528,10 +504,6 @@ export const EditorControls = (props: EditorControlsProps) => {
           >
             {renderButtons(primaryControlOrder)}
           </ButtonGroup>
-          {/*{loading && <ScaleLoader
-      color={theme.palette.common.white}
-      loading={true}
-    />}*/}
 
           <IconButton
               onClick={() => setIsVoiceDataDetailOpen(!isVoiceDataDetailOpen)}

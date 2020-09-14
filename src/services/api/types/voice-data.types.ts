@@ -112,7 +112,9 @@ export interface UpdateSegmentRequest {
 }
 
 export interface UpdateSpeakerRequest {
-  speaker: string;
+  annotation: string;
+  indices: any;
+  value: string;
 }
 
 export interface UpdateSegmentTimeRequest {

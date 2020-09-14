@@ -46,7 +46,7 @@ interface SegmentBlockProps  {
     isAudioPlaying: boolean;
     isDiff: boolean;
     isCommentEnabled: boolean;
-    assignSpeakerForSegment: (segmentIndex: string) => void;
+    assignSpeakerForSegment: (segmentIndex: number) => void;
     onUpdateUndoRedoStack: (canUndo: boolean, canRedo: boolean) => void;
     onCommandHandled: () => void;
     updateCaretLocation: (segmentIndex: number, wordIndex: number, isForce?: boolean) => void;
@@ -200,12 +200,12 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
                 setIsShowComment={setIsShowComment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
+                segmentIndex={segmentIndex}
             />
             <EditWordAlignmentBlock
                 editorCommand={editorCommand}
                 segment={localSegment}
                 segmentIndex={segmentIndex}
-                isAbleToComment={isAbleToComment}
                 isCommentEnabled={isCommentEnabled}
                 isShowComment={isShowComment}
                 readOnly={readOnly}

@@ -61,7 +61,6 @@ let fatalError = false;
 /** keeps track of the editor state for the click listener
  * - outside the component to keep it out of the react lifecycle
  */
-let editorInFocus = false;
 let mediaElement: HTMLAudioElement | null = null;
 let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
@@ -70,7 +69,6 @@ let validTimeBondaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
-const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
@@ -128,12 +126,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 interface AudioPlayerProps {
-  audioPlayerTimeIndex?: number[];
   segments: SegmentEditor[];
   audioUrl: string;
   waveformUrl: string;
   disabledTimes?: Time[];
-  timeToSeekTo?: number;
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
@@ -150,7 +146,6 @@ interface AudioPlayerProps {
   onSegmentCreate: () => void;
   onSegmentUpdate: () => void;
   onPlayingSegmentCreate: () => void;
-  onSegmentStatusEditChange: () => void;
   onReady: () => void;
   isAudioPlaying: boolean;
   isLoadingAdditionalSegment:boolean;
@@ -163,11 +158,9 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const {
-    audioPlayerTimeIndex,
     segments,
     audioUrl,
     waveformUrl,
-    timeToSeekTo,
     editorCommand,
     onTimeChange,
     onSectionChange,
@@ -185,7 +178,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentCreate,
     onSegmentUpdate,
     onPlayingSegmentCreate,
-    onSegmentStatusEditChange,
     onReady,
     isAudioPlaying,
     isLoadingAdditionalSegment,
@@ -195,7 +187,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     handleWordClick,
     currentPlayingLocation,
   } = props;
-  const { translate, osText } = React.useContext(I18nContext);
+  const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
@@ -234,13 +226,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     playing = isAudioPlaying;
   }, [isAudioPlaying]);
-
-
-  // to prevent the keypress listeners from firing twice
-  // the editor will handle the shortcuts when it is focussed
-  React.useEffect(() => {
-    editorInFocus = !!editorFocussed;
-  }, [editorFocussed]);
 
   const checkIfFinished = () => {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -1012,13 +997,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [duration, ready]);
 
-  // set the seek location based on the parent
-  // React.useEffect(() => {
-  //   if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
-  //     seekToTime(playingTimeData.timeToSeekTo);
-  //   }
-  // }, [playingTimeData.timeToSeekTo]);
-
   // delete a word segment based on the parent
   React.useEffect(() => {
     if (typeof segmentIdToDelete === 'string') {
@@ -1369,7 +1347,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
-      editorInFocus = false;
       previousAudioUrl = audioUrl;
     };
   }, [audioUrl]);

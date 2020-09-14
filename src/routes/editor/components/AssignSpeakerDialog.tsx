@@ -56,7 +56,6 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
   // to expand to fullscreen on small displays
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-
   const formSchema = yup.object({
     speaker: yup.string().trim(),
   });
@@ -70,7 +69,8 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
       setLoading(true);
       setIsError(false);
       const speaker = values.speaker.trim();
-      const response = await api.voiceData.updateSpeaker(projectId, dataId, segmentId, speaker);
+      const indices = segment.wordAlignments.map((word: WordAlignment, index: number) => index);
+      const response = await api.voiceData.updateSpeaker(projectId, dataId, segmentId, speaker, indices);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -80,7 +80,8 @@ export function AssignSpeakerDialog(props: AssignSpeakerDialogProps) {
           speakers.push(speaker);
           onSpeakersUpdate(speakers);
         }
-        const updatedSegment = { ...segment, speaker: speaker };
+        const updatedSegment = { ...segment };
+        updatedSegment.wordAlignments.forEach(word => word.speaker = speaker);
         onSuccess(updatedSegment, segmentIndex);
         onClose();
       } else {

@@ -93,10 +93,6 @@ export function SegmentTimePicker(props: SegmentTimePickerProps) {
   React.useEffect(() => {
     createWordSegmentBoundaries();
     document.addEventListener("keydown", escapeKeyListener);
-  }, []);
-
-  // remove listener on unmount
-  React.useEffect(() => {
     return () => {
       document.removeEventListener("keydown", escapeKeyListener);
     };
