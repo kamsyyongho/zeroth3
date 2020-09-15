@@ -51,7 +51,7 @@ interface DecoderSegmentBlockProps  {
     segmentIndex: number;
     readOnly: boolean;
     removeHighRiskValueFromSegment: (segmentId: string) => void;
-    assignSpeakerForSegment: (segmentIndex:string) => void;
+    assignSpeakerForSegment: (segmentIndex:number) => void;
     playingLocation: any;
 }
 
@@ -150,6 +150,7 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
                 setIsShowComment={setIsShowComment}
                 removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                 segment={localSegment}
+                segmentIndex={segmentIndex}
             />
             <span className={segmentClassName()}>{renderAnimatedTranscript()}</span>
         </div>

@@ -1,7 +1,6 @@
 import {Backdrop, TextField, Typography, Grid, Button} from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import LaunchIcon from '@material-ui/icons/Launch';
-import IconButton from '@material-ui/core/IconButton';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import clsx from 'clsx';
 import 'draft-js/dist/Draft.css';
@@ -14,7 +13,7 @@ import {useWindowSize} from '../../hooks/window/useWindowSize';
 import {CustomTheme} from '../../theme/index';
 import { useHistory } from 'react-router-dom';
 import {CONTENT_STATUS, Segment, SegmentAndWordIndex, SNACKBAR_VARIANTS, WordAlignment, Time, VoiceData, SnackbarError, PATHS} from '../../types';
-import {CursorContent, SegmentBlockData, Word, WordAlignmentEntityData} from '../../types/editor.types';
+import { Word } from '../../types/editor.types';
 import {DECODER_DIFF_CLASSNAME} from "../../constants";
 import {EDITOR_CONTROLS} from './components/EditorControls';
 import {SegmentSplitPicker} from './components/SegmentSplitPicker';
@@ -29,7 +28,6 @@ import {
   buildStyleMap,
   getSegmentAndWordIndex } from './helpers/editor.helper';
 import log from '../../util/log/logger';
-import {NavigationPropsToGet} from  './EditorPage';
 
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
@@ -95,8 +93,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }),
 );
 
-
-
 interface WordPickerOptions {
   word: Word;
   segmentIndex: number;
@@ -117,10 +113,7 @@ interface EditorProps {
   readOnly?: boolean;
   isDiff?: boolean;
   setIsDiff: (isDiff: boolean) => void;
-  /** payload from the parent to handle */
-  responseFromParent?: ParentMethodResponse;
   /** let the parent know that we've handled the request */
-  onParentResponseHandled: () => void;
   editorCommand?: EDITOR_CONTROLS;
   /** let the parent know that we've handled the request */
   onCommandHandled: () => void;
@@ -155,8 +148,6 @@ export function Editor(props: EditorProps) {
     readOnly,
     isDiff,
     setIsDiff,
-    responseFromParent,
-    onParentResponseHandled,
     editorCommand,
     onCommandHandled,
     onReady,
@@ -247,7 +238,7 @@ export function Editor(props: EditorProps) {
   /**
    * used in the custom block to open the speaker dialog
    */
-  const assignSpeakerForSegment = (segmentId: string) => {
+  const assignSpeakerForSegment = (segmentIndex: string) => {
     const segmentAndWordIndex = getSegmentAndWordIndex();
     if (segmentAndWordIndex) {
       assignSpeaker(segmentAndWordIndex.segmentIndex);
@@ -266,6 +257,10 @@ export function Editor(props: EditorProps) {
    * used in the custom block to delete high-risk segment value
    */
   const removeHighRiskValueFromSegment = (segmentId: string) => {
+    const segmentIndex = getIndexOfSegmentId(segmentId);
+    if (typeof segmentIndex === 'number') {
+      removeHighRiskFromSegment(segmentIndex, segmentId);
+    }
   };
 
   const styleMap = React.useMemo(() => {
@@ -381,7 +376,7 @@ export function Editor(props: EditorProps) {
   };
 
   const prepareSegmentTimePicker = (segmentIndex: number) => {
-    if(segmentIndex === undefined) return;
+    if(!segmentIndex) return;
     const segment = segments[segmentIndex];
     if (segment) {
       const start = segment.start;
@@ -511,29 +506,20 @@ export function Editor(props: EditorProps) {
 
   const getDiffCount = () => {
     return 'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'
-  }
-
-  // handle any api requests made by the parent
-  // used for updating after the speaker has been set
-  React.useEffect(() => {
-    if (responseFromParent && responseFromParent instanceof Object) {
-      onParentResponseHandled();
-      const { type, payload } = responseFromParent;
-      const segment = payload?.segment;
-      switch (type) {
-        case PARENT_METHOD_TYPES.speaker:
-        case PARENT_METHOD_TYPES.highRisk:
-          break;
-        case PARENT_METHOD_TYPES.speakerCancel:
-          break;
-      }
-    }
-  }, [responseFromParent]);
+  };
 
   React.useEffect(() => {
     if(editorCommand) {
-      if(editorCommand === EDITOR_CONTROLS.editSegmentTime && playingLocation?.segmentIndex) {
-        prepareSegmentTimePicker(playingLocation.segmentIndex);
+      if(editorCommand === EDITOR_CONTROLS.editSegmentTime) {
+        let editTimeSegmentIndex;
+        if(!playingLocation?.segmentIndex) {
+          const cursorLocation = getSegmentAndWordIndex()
+          editTimeSegmentIndex = cursorLocation.segmentIndex;
+          onWordClick(cursorLocation, true);
+        } else {
+          editTimeSegmentIndex = playingLocation.segmentIndex;
+        }
+        prepareSegmentTimePicker(editTimeSegmentIndex);
       }
       onCommandHandled();
       if(readOnlyEditorState || readOnly) {
@@ -573,25 +559,6 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setEditorFocussed(focussed);
   }, [focussed]);
-
-  // React.useEffect(() => {
-  //   if(playingLocation && ready &&
-  //       playingLocation.segmentIndex === 0 && playingLocation.wordIndex === 0) {
-  //     updatePlayingLocation();
-  //   }
-  // }, [playingLocation, ready]);
-  //
-  // React.useEffect(() => {
-  //   if(navigationProps) {
-  //     setProjectId(navigationProps.projectId);
-  //     setIsDiff(navigationProps.isDiff);
-  //     setReadOnly(navigationProps.readOnly);
-  //   }
-  // }, [navigationProps]);
-
-  // React.useEffect(() => {
-  //   setReadOnlyEditorState(isLoadingAdditionalSegment);
-  // }, [isLoadingAdditionalSegment]);
 
   return (
     <div
@@ -725,7 +692,7 @@ export function Editor(props: EditorProps) {
                   return <MemoizedDecoderSegmentBlock key={`decoder-segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
-                                               assignSpeakerForSegment={assignSpeakerForSegment}
+                                               assignSpeakerForSegment={assignSpeaker}
                                                readOnly={true}
                                                removeHighRiskValueFromSegment={removeHighRiskValueFromSegment}
                                                playingLocation={playingLocation} />
@@ -741,7 +708,7 @@ export function Editor(props: EditorProps) {
                   return <MemoizedSegmentBlock key={`segment-block-${index}`}
                                                segment={segment}
                                                segmentIndex={index}
-                                               assignSpeakerForSegment={assignSpeakerForSegment}
+                                               assignSpeakerForSegment={assignSpeaker}
                                                isDiff={isDiff}
                                                editorCommand={editorCommand}
                                                isAudioPlaying={isAudioPlaying}
@@ -832,7 +799,7 @@ export function Editor(props: EditorProps) {
               key={`segment-block-${index}`}
               segment={segment}
               segmentIndex={index}
-              assignSpeakerForSegment={assignSpeakerForSegment}
+              assignSpeakerForSegment={assignSpeaker}
               editorCommand={editorCommand}
              isAudioPlaying={isAudioPlaying}
              isDiff={!!isDiff}

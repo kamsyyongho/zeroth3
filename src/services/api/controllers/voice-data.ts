@@ -883,15 +883,18 @@ export class VoiceData extends ParentApi {
     dataId: string,
     segmentId: string,
     speaker: string,
+    indices: any,
   ): Promise<updateSpeakerResult> {
     // compile data
     const request: UpdateSpeakerRequest = {
-      speaker,
+      annotation: 'SPEAKER',
+      indices,
+      value: speaker,
     };
     // make the api call
     const response = await this.apisauce.patch<undefined, ServerError>(
       this.getPathWithOrganization(
-        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/speaker`,
+        `/projects/${projectId}/data/${dataId}/segments/${segmentId}/annotation`,
       ),
       request,
     );
