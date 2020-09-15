@@ -74,6 +74,7 @@ const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
 let audioSegmentsTracker: SegmentEditor[] = [];
 let previousAudioUrl: string;
+let isSkip: boolean = false;
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -383,10 +384,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setWaiting(false);
   };
 
-  async function handleSeek() {
-    if (!PeaksPlayer?.player || !mediaElement || playing) return;
+  async function handleSeeking() {
+    if (!PeaksPlayer?.player || !mediaElement || playing || isSkip) return;
     try {
       const { currentTime } = mediaElement;
+
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if (currentTime === previouslyFetchedTime) return;
@@ -403,6 +405,30 @@ export function AudioPlayer(props: AudioPlayerProps) {
     } catch (error) {
       handleError(error);
     }
+  };
+
+  async function handleSeeked() {
+    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
+    try {
+      const { currentTime } = mediaElement;
+
+      if (typeof currentTime !== 'number' || !currentTime) return;
+      const currentTimeFixed = Number(currentTime.toFixed(2));
+      if (currentTime === previouslyFetchedTime) return;
+      if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
+        await getTimeBasedSegment(currentTimeFixed);
+      } else {
+        handleTimeChange(currentTimeFixed, true);
+        clicked = true;
+      }
+      previouslyFetchedTime = currentTimeFixed
+      setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
+      setCurrentTime(currentTime);
+    } catch (error) {
+      handleError(error);
+    }
+    isSkip = false;
   };
 
 
@@ -599,6 +625,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!duration) return;
     const interval = rewind ? -5 : 5;
     let timeToSeekTo = currentPlaybackTime + interval;
+    isSkip = true;
     if (timeToSeekTo < 0) {
       timeToSeekTo = 0;
     } else if (timeToSeekTo > duration) {
@@ -1223,7 +1250,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('canplay', handleStreamReady);
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
-    mediaElement?.addEventListener('seeking', handleSeek);
+    mediaElement?.addEventListener('seeking', handleSeeking);
+    mediaElement?.addEventListener('seeking', handleSeeked);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1318,7 +1346,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('canplay', handleStreamReady);
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
-          mediaElement.removeEventListener('seeking', handleSeek);
+          mediaElement.removeEventListener('seeking', handleSeeking);
+          mediaElement.removeEventListener('seeking', handleSeeked);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
