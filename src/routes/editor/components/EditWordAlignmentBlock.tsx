@@ -428,6 +428,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         <div
             contentEditable
+            suppressContentEditableWarning={true}
             id={`segment-${segmentIndex}`}
             className={playingLocation.segmentIndex === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment}
             ref={element}
@@ -462,6 +463,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         )
                     })
             }
-        </div>
+        </div>g
     );
 };
