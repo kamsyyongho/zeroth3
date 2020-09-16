@@ -4,7 +4,6 @@ import {CustomTheme} from '../../../theme/index';
 import {green, pink} from '@material-ui/core/colors';
 import {Segment, UndoRedoStack, WordAlignment} from "../../../types";
 import {EDITOR_CONTROLS} from './EditorControls';
-import {ApiContext} from '../../../hooks/api/ApiContext';
 import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor.helper';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -48,7 +47,6 @@ interface EditWordAlignmentBlockProps  {
     editorCommand?: EDITOR_CONTROLS;
     segment: Segment;
     segmentIndex: number;
-    isAbleToComment: boolean;
     isDiff: boolean;
     isCommentEnabled: boolean;
     isShowComment: boolean;
@@ -62,7 +60,6 @@ interface EditWordAlignmentBlockProps  {
     lengthBeforeBlock: number[],
 }
 
-let isFocused = false;
 let localWordForLengthComparison = '';
 
 export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
@@ -71,7 +68,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         editorCommand,
         segment,
         segmentIndex,
-        isAbleToComment,
         isCommentEnabled,
         isDiff,
         isShowComment,
@@ -83,7 +79,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         updateCaretLocation,
         handleTextSelection,
         lengthBeforeBlock, } = props;
-    const api = React.useContext(ApiContext);
     const theme: CustomTheme = useTheme();
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
@@ -100,14 +95,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const initTranscriptToRender = () => {
         const inititalTranscript = (<span>{segment.transcript}</span>)
         setTranscriptToRender(inititalTranscript);
-    };
-
-    const handleArrowKeyDown = () => {
-        const playingLocation = getSegmentAndWordIndex();
-        if(playingLocation && !autoSeekDisabled) {
-            updateCaretLocation(playingLocation.segmentIndex, playingLocation.wordIndex);
-            return;
-        }
     };
 
     const setRange = (node: HTMLElement, collapse: boolean) => {
@@ -179,7 +166,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
                 const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
                 const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
-                const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
 
                 if((wordElementPosition?.bottom || 0) > currentWordPosition.bottom) {
                     const prevSegment = wordsInSegment[i] as HTMLElement;
@@ -228,7 +214,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
                 const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
                 const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
-                const absoluteDiff = currentDiff < 0 ? -currentDiff : currentDiff;
 
                 if((wordElementPosition?.bottom || 0) < currentWordPosition.bottom) {
                     const nextSegment = wordsInSegment[i] as HTMLElement;
@@ -270,10 +255,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         })
         let transcript = <span>{styledWords.map(word => word)}</span>
         setTranscriptToRender(transcript);
-    };
-
-    const handleSelectionChange = (event: React.KeyboardEvent) => {
-        return;
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -327,8 +308,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleMouseUp = (event: React.MouseEvent) => {
         const selection = window.getSelection();
-        const commentField = document.getElementById('comment-text-field');
-        const caretLocation = getSegmentAndWordIndex() || {segmentIndex, wordIndex : 0};
 
         setAutoSeekDisabled(true);
 
@@ -363,11 +342,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleBlur = () => {
         const copySegment = JSON.parse(JSON.stringify(segment));
         const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
-        let transcript = '';
         if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
             Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
                 const htmlWord = wordEl as HTMLElement;
-                transcript += htmlWord.innerHTML;
                 copySegment.wordAlignments[index].word = htmlWord.innerText;
             });
             updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
@@ -378,7 +355,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleUndo = () => {
         if(undoStack.length > 0) {
             const updateUndoStack = undoStack.slice();
-            const updateRedoStack = redoStack.slice();
             const updateWordAlignments = wordAlignments.slice();
             const undoData = updateUndoStack.pop();
 
@@ -395,7 +371,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleRedo = () => {
         if(redoStack.length > 0) {
-            const updateUndoStack = undoStack.slice();
             const updateRedoStack = redoStack.slice();
             const updateWordAlignments = wordAlignments.slice();
             const redoData = updateRedoStack.pop();
@@ -453,6 +428,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
         <div
             contentEditable
+            suppressContentEditableWarning={true}
             id={`segment-${segmentIndex}`}
             className={playingLocation.segmentIndex === segmentIndex ? `${classes.segment} ${classes.playingSegment}` : classes.segment}
             ref={element}

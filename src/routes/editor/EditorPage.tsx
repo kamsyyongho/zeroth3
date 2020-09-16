@@ -138,7 +138,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
-  const [responseToPassToEditor, setResponseToPassToEditor] = React.useState<ParentMethodResponse | undefined>();
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
@@ -823,7 +822,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           type: PARENT_METHOD_TYPES.highRisk,
           payload: { segment: updatedSegment, index: segmentIndex },
         };
-        setResponseToPassToEditor(dispatchResponse);
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -989,7 +987,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleSpeakerAssignSuccess = (updatedSegment: Segment, segmentIndex: number) => {
     const responseToPassToEditor = updateEditorAfterSpeakerAssign(updatedSegment, segmentIndex);
-    setResponseToPassToEditor(responseToPassToEditor);
     handleSegmentUpdate(updatedSegment, segmentIndex);
   };
 
@@ -1010,10 +1007,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const dispatchResponse: ParentMethodResponse = {
       type: PARENT_METHOD_TYPES.speakerCancel,
     };
-    setResponseToPassToEditor(dispatchResponse);
   };
-
-  const handleEditorResponseHandled = () => setResponseToPassToEditor(undefined);
 
   const createTimeSection = (wordToAddTimeTo: Word, wordKey: string) => {
     setWordToCreateTimeFor({ ...wordToAddTimeTo, wordKey });
@@ -1216,6 +1210,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         case 'speaker':
           setEditorCommand(EDITOR_CONTROLS.speaker);
           break;
+        case 'approvalRequest':
+          onConfirmClick();
+          break;
       }
     }
     switch (command) {
@@ -1399,8 +1396,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                       readOnly={readOnly}
                       isDiff={isDiff}
                       setIsDiff={setIsDiff}
-                      responseFromParent={responseToPassToEditor}
-                      onParentResponseHandled={handleEditorResponseHandled}
                       onCommandHandled={handleCommandHandled}
                       height={editorHeight}
                       segments={segments}
@@ -1453,7 +1448,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   audioUrl={audioUrl}
                   waveformUrl={voiceData.waveformUrl}
                   editorCommand={editorCommand}
-                  timeToSeekTo={timeToSeekTo}
                   disabledTimes={disabledTimes}
                   segmentIdToDelete={segmentIdToDelete}
                   wordsClosed={wordsClosed}
@@ -1462,7 +1456,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   onSegmentCreate={handleAudioSegmentCreate}
                   onSegmentUpdate={handleAudioSegmentUpdate}
                   onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
-                  onSegmentStatusEditChange={handleSegmentStatusEditChange}
                   // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
                   wordToCreateTimeFor={wordToCreateTimeFor}
                   wordToUpdateTimeFor={wordToUpdateTimeFor}

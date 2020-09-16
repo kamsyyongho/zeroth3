@@ -61,7 +61,6 @@ let fatalError = false;
 /** keeps track of the editor state for the click listener
  * - outside the component to keep it out of the react lifecycle
  */
-let editorInFocus = false;
 let mediaElement: HTMLAudioElement | null = null;
 let StreamPlayer: VideoJsPlayer | undefined;
 let PeaksPlayer: PeaksInstance | undefined;
@@ -70,12 +69,12 @@ let validTimeBondaries: Required<Time> | undefined;
 let tempDragStartSegmentResetOptions: SegmentAddOptions | undefined;
 let isLoop = false;
 let disableLoop = false;
-const SEEK_SLOP = 0.00001;
 const SEGMENT_IDS_ARRAY = Object.keys(PLAYER_SEGMENT_IDS);
 const DEFAULT_LOOP_LENGTH = 5;
 const STARTING_WORD_LOOP_LENGTH = 0.5;
 let audioSegmentsTracker: SegmentEditor[] = [];
 let previousAudioUrl: string;
+let isSkip: boolean = false;
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -128,12 +127,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 );
 
 interface AudioPlayerProps {
-  audioPlayerTimeIndex?: number[];
   segments: SegmentEditor[];
   audioUrl: string;
   waveformUrl: string;
   disabledTimes?: Time[];
-  timeToSeekTo?: number;
   segmentIdToDelete?: string;
   deleteAllWordSegments?: boolean;
   wordsClosed?: boolean;
@@ -150,7 +147,6 @@ interface AudioPlayerProps {
   onSegmentCreate: () => void;
   onSegmentUpdate: () => void;
   onPlayingSegmentCreate: () => void;
-  onSegmentStatusEditChange: () => void;
   onReady: () => void;
   isAudioPlaying: boolean;
   isLoadingAdditionalSegment:boolean;
@@ -163,11 +159,9 @@ interface AudioPlayerProps {
 
 export function AudioPlayer(props: AudioPlayerProps) {
   const {
-    audioPlayerTimeIndex,
     segments,
     audioUrl,
     waveformUrl,
-    timeToSeekTo,
     editorCommand,
     onTimeChange,
     onSectionChange,
@@ -185,7 +179,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     onSegmentCreate,
     onSegmentUpdate,
     onPlayingSegmentCreate,
-    onSegmentStatusEditChange,
     onReady,
     isAudioPlaying,
     isLoadingAdditionalSegment,
@@ -195,7 +188,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     handleWordClick,
     currentPlayingLocation,
   } = props;
-  const { translate, osText } = React.useContext(I18nContext);
+  const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
@@ -234,13 +227,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
   React.useEffect(() => {
     playing = isAudioPlaying;
   }, [isAudioPlaying]);
-
-
-  // to prevent the keypress listeners from firing twice
-  // the editor will handle the shortcuts when it is focussed
-  React.useEffect(() => {
-    editorInFocus = !!editorFocussed;
-  }, [editorFocussed]);
 
   const checkIfFinished = () => {
     if (!PeaksPlayer?.player || !mediaElement) return;
@@ -398,10 +384,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
     setWaiting(false);
   };
 
-  async function handleSeek() {
-    if (!PeaksPlayer?.player || !mediaElement || playing) return;
+  async function handleSeeking() {
+    if (!PeaksPlayer?.player || !mediaElement || playing || isSkip) return;
     try {
       const { currentTime } = mediaElement;
+      console.log('========== seeking : ', currentTime);
+
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if (currentTime === previouslyFetchedTime) return;
@@ -418,6 +406,31 @@ export function AudioPlayer(props: AudioPlayerProps) {
     } catch (error) {
       handleError(error);
     }
+  };
+
+  async function handleSeeked() {
+    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
+    try {
+      const { currentTime } = mediaElement;
+      console.log('========== seeked : ', currentTime);
+
+      if (typeof currentTime !== 'number' || !currentTime) return;
+      const currentTimeFixed = Number(currentTime.toFixed(2));
+      if (currentTime === previouslyFetchedTime) return;
+      if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
+          audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
+        await getTimeBasedSegment(currentTimeFixed);
+      } else {
+        handleTimeChange(currentTimeFixed, true);
+        clicked = true;
+      }
+      previouslyFetchedTime = currentTimeFixed
+      setCurrentTimeDisplay(getCurrentTimeDisplay(currentTime));
+      setCurrentTime(currentTime);
+    } catch (error) {
+      handleError(error);
+    }
+    isSkip = false;
   };
 
 
@@ -611,14 +624,16 @@ export function AudioPlayer(props: AudioPlayerProps) {
   }
 
   const handleSkip = (rewind = false) => {
-    if (!duration) return;
+    if (!duration || isSkip) return;
     const interval = rewind ? -5 : 5;
     let timeToSeekTo = currentPlaybackTime + interval;
+    isSkip = true;
     if (timeToSeekTo < 0) {
       timeToSeekTo = 0;
     } else if (timeToSeekTo > duration) {
       timeToSeekTo = duration;
     }
+    console.log('========= handleSkip : ', interval);
     seekToTime(timeToSeekTo);
   };
 
@@ -1012,13 +1027,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   }, [duration, ready]);
 
-  // set the seek location based on the parent
-  // React.useEffect(() => {
-  //   if (typeof playingTimeData.timeToSeekTo === 'number' && !autoSeekDisabled) {
-  //     seekToTime(playingTimeData.timeToSeekTo);
-  //   }
-  // }, [playingTimeData.timeToSeekTo]);
-
   // delete a word segment based on the parent
   React.useEffect(() => {
     if (typeof segmentIdToDelete === 'string') {
@@ -1245,7 +1253,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('canplay', handleStreamReady);
     mediaElement?.addEventListener('loadeddata', handleLoaded);
     mediaElement?.addEventListener('pause', checkIfFinished);
-    mediaElement?.addEventListener('seeking', handleSeek);
+    mediaElement?.addEventListener('seeking', handleSeeking);
+    mediaElement?.addEventListener('seeked', handleSeeked);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
 
@@ -1340,7 +1349,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
           mediaElement.removeEventListener('canplay', handleStreamReady);
           mediaElement.removeEventListener('loadeddata', handleLoaded);
           mediaElement.removeEventListener('pause', checkIfFinished);
-          mediaElement.removeEventListener('seeking', handleSeek);
+          mediaElement.removeEventListener('seeking', handleSeeking);
+          mediaElement.removeEventListener('seeked', handleSeeked);
           mediaElement.removeEventListener('playing', handlePlaying);
           mediaElement.removeEventListener('error', handleStreamingError);
         }
@@ -1369,7 +1379,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       internaDisabledTimesTracker = undefined;
       validTimeBondaries = undefined;
       tempDragStartSegmentResetOptions = undefined;
-      editorInFocus = false;
       previousAudioUrl = audioUrl;
     };
   }, [audioUrl]);

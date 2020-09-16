@@ -78,7 +78,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 
 interface SegmentBlockHeadPropsV2 {
     segment: Segment;
-    assignSpeakerForSegment: (segmentIndex: string) => void;
+    segmentIndex: number;
+    assignSpeakerForSegment: (segmentIndex: number) => void;
     isChanged: boolean;
     setIsShowComment: (isShowComment: boolean) => void;
     readOnly?: boolean;
@@ -90,16 +91,17 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
     const classes = useStyles();
     const { translate, osText } = React.useContext(I18nContext);
     const [showEditorPopups, setShowEditorPopups] = useGlobal('showEditorPopups');
-    const { readOnly, assignSpeakerForSegment, isChanged, setIsShowComment, removeHighRiskValueFromSegment, segment } = props;
+    const { readOnly, assignSpeakerForSegment, isChanged, setIsShowComment, removeHighRiskValueFromSegment, segment, segmentIndex } = props;
     const { id, transcript, decoderTranscript, start, highRisk } = segment;
     const [isRejectReason, setIsRejectReason] = React.useState<boolean>(false);
     const [rejectReason, setRejectReason] = React.useState<string>('');
+    const [speaker, setSpeaker] = React.useState<string>('');
     const displayTextChangedHover = (!readOnly && isChanged && !!decoderTranscript?.trim());
     // const displayTextChangedHover = (!readOnly && (transcript?.trim() !== decoderTranscript?.trim()) && !!decoderTranscript?.trim());
     const displayTime = typeof start === 'number' ? formatSecondsDuration(start) : `${translate('editor.calculating')}..`;
     const handleSpeakerPress = () => {
-        if (showEditorPopups && id && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
-            assignSpeakerForSegment(id);
+        if (showEditorPopups && segmentIndex && assignSpeakerForSegment && typeof assignSpeakerForSegment === 'function') {
+            assignSpeakerForSegment(segmentIndex);
         }
     };
     const handleHighRiskDelete = () => {
@@ -108,7 +110,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
         }
     };
     const speakerReducer = (accumulator: string, currentValue: WordAlignment) => currentValue.speaker || '';
-    const speaker = segment?.wordAlignments.reduce(speakerReducer, '') || '';
+    // const speaker = segment?.wordAlignments.reduce(speakerReducer, '') || '';
     const iconHidden = !speaker && !showEditorPopups;
     const showChip = highRisk && showEditorPopups;
     const icon = <SvgIcon className={iconHidden ? classes.hiddenIcon : undefined} fontSize='small' component={speaker ? MdPersonPin : MdPersonAdd} />;
@@ -136,6 +138,7 @@ const SegmentBlockHeadV2 = (props: SegmentBlockHeadPropsV2) => {
                 return;
             }
         })
+        setSpeaker(segment.wordAlignments.reduce(speakerReducer, ''));
         return () => {
             setIsRejectReason(false);
         }
