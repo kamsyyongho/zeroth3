@@ -463,6 +463,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         )
                     })
             }
-        </div>g
+        </div>
     );
 };
