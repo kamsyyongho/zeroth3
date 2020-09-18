@@ -239,7 +239,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             }
         }, 0);
 
-        console.log('event & segmentIndex: ', event.key, segmentIndex);
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
@@ -344,7 +343,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleDoubleClick = () => {
         const caretLocation = getSegmentAndWordIndex() || {segmentIndex, wordIndex : 0};
-        console.log('=====caretLocation : ', caretLocation);
         setAutoSeekDisabled(false);
         setShouldSeek(false);
         updateCaretLocation(caretLocation.segmentIndex, caretLocation.wordIndex, true);

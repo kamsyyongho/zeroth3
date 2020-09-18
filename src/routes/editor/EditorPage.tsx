@@ -895,7 +895,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         if (playingLocation) {
           setCurrentPlayingLocation(playingLocation);
           if (trackSeekToTime) {
-            console.log('=======trackSeekToTime in worker : ', trackSeekToTime);
             handleWordClick(playingLocation, true);
             trackSeekToTime = false;
           } else if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
@@ -925,7 +924,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false, seekToTime: boolean = false) => {
     // prevents seeking again if we changed because of clicking a word
     const currentPlayingWordPlayerSegment = trackCurrentlyPlayingWordTime;
-    console.log('======== seekToTime : ', seekToTime, time);
     trackSeekToTime = seekToTime;
     setPlaybackTime(time);
     RemoteWorker?.postMessage({ time, segments: internalSegmentsTracker, initialSegmentLoad, currentlyPlayingWordTime: trackCurrentlyPlayingWordTime });
@@ -956,7 +954,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       const wordTime = calculateWordTime(internalSegmentsTracker, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
 
-      console.log('======== timeData in handleWordClick : ', timeData);
       if(timeData && wordTime) {
         const timeToSeekTo = {timeToSeekTo: wordTime}
         Object.assign(timeData, timeToSeekTo);

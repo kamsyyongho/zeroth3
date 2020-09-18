@@ -393,7 +393,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if(Math.floor(currentTimeFixed) === Math.floor(previouslyFetchedTime)) return;
-      console.log('========== seeking : ', currentTimeFixed, previouslyFetchedTime, Math.floor(currentTimeFixed), Math.floor(previouslyFetchedTime));
 
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
@@ -418,7 +417,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       const seekingTimeDiff = currentTimeFixed - previouslyFetchedTime;
-      console.log('======== seeked : ', currentTimeFixed, previouslyFetchedTime);
       if (seekingTimeDiff > -2 && seekingTimeDiff < 2) return;
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
@@ -636,7 +634,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     } else if (timeToSeekTo > duration) {
       timeToSeekTo = duration;
     }
-    console.log('========= handleSkip : ', interval);
     seekToTime(timeToSeekTo);
   };
 
