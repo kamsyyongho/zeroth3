@@ -75,6 +75,7 @@ const STARTING_WORD_LOOP_LENGTH = 0.5;
 let audioSegmentsTracker: SegmentEditor[] = [];
 let previousAudioUrl: string;
 let isSkip: boolean = false;
+let localShouldSeek: boolean;
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -194,6 +195,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [editorFocussed, setEditorFocussed] = useGlobal('editorFocussed');
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
+  const [shouldSeek, setShouldSeek] = useGlobal('shouldSeek');
   const [errorText, setErrorText] = React.useState('');
   const [peaksReady, setPeaksReady] = React.useState(false);
   const [ready, setReady] = React.useState(false);
@@ -385,14 +387,14 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeking() {
-    if (!PeaksPlayer?.player || !mediaElement || playing || isSkip) return;
+    if (!PeaksPlayer?.player || !mediaElement || playing || isSkip || !localShouldSeek) return;
     try {
       const { currentTime } = mediaElement;
-      console.log('========== seeking : ', currentTime);
-
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
-      if (currentTime === previouslyFetchedTime) return;
+      if(Math.floor(currentTimeFixed) === Math.floor(previouslyFetchedTime)) return;
+      console.log('========== seeking : ', currentTimeFixed, previouslyFetchedTime, Math.floor(currentTimeFixed), Math.floor(previouslyFetchedTime));
+
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
@@ -409,14 +411,15 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeked() {
-    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
+    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip || !localShouldSeek) return;
     try {
       const { currentTime } = mediaElement;
-      console.log('========== seeked : ', currentTime);
 
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
-      if (currentTime === previouslyFetchedTime) return;
+      const seekingTimeDiff = currentTimeFixed - previouslyFetchedTime;
+      console.log('======== seeked : ', currentTimeFixed, previouslyFetchedTime);
+      if (seekingTimeDiff > -2 && seekingTimeDiff < 2) return;
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
@@ -1014,6 +1017,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   React.useEffect(() => {
+    localShouldSeek = shouldSeek;
+  }, [shouldSeek])
+
+  React.useEffect(() => {
     audioSegmentsTracker = segments;
     return () => {
       audioSegmentsTracker = [];
@@ -1257,6 +1264,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     mediaElement?.addEventListener('seeked', handleSeeked);
     mediaElement?.addEventListener('playing', handlePlaying);
     mediaElement?.addEventListener('error', handleStreamingError);
+    mediaElement?.addEventListener('click', () => setShouldSeek(true));
 
     const peaksJsInit = () => {
       const options: PeaksOptions = {

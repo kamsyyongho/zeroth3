@@ -29,5 +29,6 @@ declare module 'reactn/default' {
     autoSeekDisabled?: boolean;
     shortcuts: Shortcuts;
     scrollToSegmentIndex?: number;
+    shouldSeek: boolean;
   }
 }

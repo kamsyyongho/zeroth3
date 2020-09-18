@@ -82,6 +82,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const theme: CustomTheme = useTheme();
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
+    const [shouldSeek, setShouldSeek] = useGlobal('shouldSeek');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -141,7 +142,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleArrowUp = (event: React.KeyboardEvent) => {
         event.preventDefault();
         event.stopPropagation();
-
         setTimeout(() => {
             const selection = window.getSelection();
             if (!selection) return;
@@ -190,7 +190,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleArrowDown = (event: React.KeyboardEvent) => {
         event.preventDefault();
         event.stopPropagation();
-
         setTimeout(() => {
             const selection = window.getSelection();
             if (!selection) return;
@@ -345,7 +344,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
 
     const handleDoubleClick = () => {
         const caretLocation = getSegmentAndWordIndex() || {segmentIndex, wordIndex : 0};
+        console.log('=====caretLocation : ', caretLocation);
         setAutoSeekDisabled(false);
+        setShouldSeek(false);
         updateCaretLocation(caretLocation.segmentIndex, caretLocation.wordIndex, true);
     };
 

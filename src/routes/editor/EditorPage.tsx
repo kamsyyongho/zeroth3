@@ -67,7 +67,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  * highlighted when setting the audio player seek
  * from a text input focus
  */
-const SEEK_SLOP = 0.00001;
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = {segmentIndex: 0, wordIndex: 0};
 let internalSegmentsTracker: Segment[] = [];
 let internalShowEditorPopup: boolean = false;
@@ -683,6 +682,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex - 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
@@ -895,6 +895,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         if (playingLocation) {
           setCurrentPlayingLocation(playingLocation);
           if (trackSeekToTime) {
+            console.log('=======trackSeekToTime in worker : ', trackSeekToTime);
             handleWordClick(playingLocation, true);
             trackSeekToTime = false;
           } else if(initialSegmentLoad || JSON.stringify(playingLocation) !== JSON.stringify(currentPlayingLocation)) {
@@ -924,6 +925,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const handlePlaybackTimeChange = (time: number, initialSegmentLoad = false, seekToTime: boolean = false) => {
     // prevents seeking again if we changed because of clicking a word
     const currentPlayingWordPlayerSegment = trackCurrentlyPlayingWordTime;
+    console.log('======== seekToTime : ', seekToTime, time);
     trackSeekToTime = seekToTime;
     setPlaybackTime(time);
     RemoteWorker?.postMessage({ time, segments: internalSegmentsTracker, initialSegmentLoad, currentlyPlayingWordTime: trackCurrentlyPlayingWordTime });
@@ -954,12 +956,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       const wordTime = calculateWordTime(internalSegmentsTracker, segmentIndex, wordIndex);
       let timeData = buildPlayingAudioPlayerSegment(wordLocation);
 
+      console.log('======== timeData in handleWordClick : ', timeData);
       if(timeData && wordTime) {
         const timeToSeekTo = {timeToSeekTo: wordTime}
         Object.assign(timeData, timeToSeekTo);
         setPlayingTimeData(timeData);
       }
-      setTimeToSeekTo(wordTime + SEEK_SLOP);
+      setTimeToSeekTo(wordTime);
       setCurrentPlayingLocation(wordLocation);
       setTimeout(() => {
         if(forceClick) setScrollToSegmentIndex(segmentIndex);
