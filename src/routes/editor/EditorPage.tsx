@@ -67,7 +67,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
  * highlighted when setting the audio player seek
  * from a text input focus
  */
-const SEEK_SLOP = 0.00001;
 const STARTING_PLAYING_LOCATION: SegmentAndWordIndex = {segmentIndex: 0, wordIndex: 0};
 let internalSegmentsTracker: Segment[] = [];
 let internalShowEditorPopup: boolean = false;
@@ -683,6 +682,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex - 1].id;
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
@@ -959,7 +959,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         Object.assign(timeData, timeToSeekTo);
         setPlayingTimeData(timeData);
       }
-      setTimeToSeekTo(wordTime + SEEK_SLOP);
+      setTimeToSeekTo(wordTime);
       setCurrentPlayingLocation(wordLocation);
       setTimeout(() => {
         if(forceClick) setScrollToSegmentIndex(segmentIndex);
@@ -1107,10 +1107,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
-      case EDITOR_CONTROLS.save:
-        setEditorCommand(command);
-        // updateSegmentOnChange(editorState, undefined, true);
-        break;
       case EDITOR_CONTROLS.toggleMore:
         internalShowEditorPopup = !internalShowEditorPopup
         setShowEditorPopups(internalShowEditorPopup);
@@ -1121,31 +1117,19 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       case EDITOR_CONTROLS.merge:
         handleSegmentMergeCommand();
         break;
+      case EDITOR_CONTROLS.shortcuts:
+        setIsShortCutPageOpen(!isShortCutPageOpen);
+        break;
       // case EDITOR_CONTROLS.createWord:
       //   // createWordTime(editorState);
       //   break;
       case EDITOR_CONTROLS.editSegmentTime:
-        setEditorCommand(command);
-        // prepareSegmentTimePicker(editorState);
-        break;
       case EDITOR_CONTROLS.undo:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.redo:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.speaker:
-        // assignSpeakerFromShortcut(editorState);
-        break;
-      case EDITOR_CONTROLS.shortcuts:
-        setIsShortCutPageOpen(!isShortCutPageOpen);
-        break;
+      case EDITOR_CONTROLS.save:
       case EDITOR_CONTROLS.rewindAudio:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.forwardAudio:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.audioPlayPause:
         setEditorCommand(command);
         break;

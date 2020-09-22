@@ -11,6 +11,7 @@ setGlobal({
     showEditorPopups:false,
     editorAutoScrollDisabled: false,
     autoSeekDisabled: true,
+    shouldSeek: true,
 });
 
 ReactDOM.render(<App />, document.getElementById('root'));
