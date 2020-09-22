@@ -82,6 +82,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const theme: CustomTheme = useTheme();
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
+    const [shouldSeek, setShouldSeek] = useGlobal('shouldSeek');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -139,98 +140,105 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     };
 
     const handleArrowUp = (event: React.KeyboardEvent) => {
-        const selection = window.getSelection();
-        if (!selection) return;
-        const currentLocation = selection?.anchorOffset;
-        const playingLocation = getSegmentAndWordIndex() || [0,0];
-        const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
-        (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
-        const previousSegmentNode = document.getElementById
-        (`word-${segmentIndex - 1}-${wordAlignmentIndex}`) || null;
-        const currentWordElement = document.getElementById
-        (`word-${segmentIndex}-${playingLocation.wordIndex}`)
-        const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
-        const wordElementPosition = currentWordElement?.getBoundingClientRect();
+        event.preventDefault();
+        event.stopPropagation();
+        setTimeout(() => {
+            const selection = window.getSelection();
+            if (!selection) return;
+            const currentLocation = selection?.anchorOffset;
+            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
+            (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
+            const previousSegmentNode = document.getElementById
+            (`word-${segmentIndex - 1}-${wordAlignmentIndex}`) || null;
+            const currentWordElement = document.getElementById
+            (`word-${segmentIndex}-${playingLocation.wordIndex}`)
+            const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
+            const wordElementPosition = currentWordElement?.getBoundingClientRect();
 
-        if (!previousSegmentNode) { return; }
+            if (!previousSegmentNode) { return; }
 
-        if(Math.floor(segmentElementPosition?.top || 0) === Math.floor(wordElementPosition?.top || 0)) {
-            setRange(previousSegmentNode, false);
-        } else {
-            const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
-            let previousDiff = Math.abs((wordElementPosition?.x || 0)
-                - wordsInSegment[0].getBoundingClientRect().x);
+            if(Math.floor(segmentElementPosition?.top || 0) === Math.floor(wordElementPosition?.top || 0)) {
+                setRange(previousSegmentNode, false);
+            } else {
+                const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+                let previousDiff = Math.abs((wordElementPosition?.x || 0)
+                    - wordsInSegment[0].getBoundingClientRect().x);
 
-            for(let i = 1; i < wordsInSegment.length - 1; i++) {
-                const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
-                const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
-                const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
-                const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
+                for(let i = 1; i < wordsInSegment.length - 1; i++) {
+                    const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
+                    const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
+                    const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
+                    const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
 
-                if((wordElementPosition?.bottom || 0) > currentWordPosition.bottom) {
-                    const prevSegment = wordsInSegment[i] as HTMLElement;
-                    if(currentDiff < previousDiff && currentDiff < nextDiff) {
-                        setRange(prevSegment, false);
-                        return
-                    } else if(i === wordsInSegment.length - 2) {
-                        setRange(prevSegment, false);
-                    } else {
-                        previousDiff = currentDiff;
+                    if((wordElementPosition?.bottom || 0) > currentWordPosition.bottom) {
+                        const prevSegment = wordsInSegment[i] as HTMLElement;
+                        if(currentDiff < previousDiff && currentDiff < nextDiff) {
+                            setRange(prevSegment, false);
+                            return
+                        } else if(i === wordsInSegment.length - 2) {
+                            setRange(prevSegment, false);
+                        } else {
+                            previousDiff = currentDiff;
+                        }
                     }
                 }
             }
-        }
-        event.stopPropagation();
+        }, 0);
     };
 
     const handleArrowDown = (event: React.KeyboardEvent) => {
-        const selection = window.getSelection();
-        if (!selection) return;
-        const currentLocation = selection?.anchorOffset;
-        const playingLocation = getSegmentAndWordIndex() || [0,0];
-        const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
-        (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]);
-        const nextSegmentNode = document.getElementById
-        (`word-${segmentIndex + 1}-${wordAlignmentIndex}`);
-        const currentNode = element;
-        selection ?.removeAllRanges();
-        const range = document.createRange();
-        const currentWordElement = document.getElementById
-        (`word-${segmentIndex}-${playingLocation.wordIndex}`)
-        const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
-        const wordElementPosition = currentWordElement?.getBoundingClientRect();
-
-        if (!nextSegmentNode) { return; }
-
-        if(Math.floor(segmentElementPosition?.bottom || 0) === Math.floor(wordElementPosition?.bottom || 0)) {
-            setRange(nextSegmentNode, false);
-        } else {
-            const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
-            let previousDiff = Math.abs((wordElementPosition?.x || 0)
-                - wordsInSegment[0].getBoundingClientRect().x);
-
-            for(let i = 1; i < wordsInSegment.length - 1; i++) {
-                const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
-                const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
-                const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
-                const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
-
-                if((wordElementPosition?.bottom || 0) < currentWordPosition.bottom) {
-                    const nextSegment = wordsInSegment[i] as HTMLElement;
-
-                    if(currentDiff < previousDiff && currentDiff < nextDiff) {
-                        setRange(nextSegment, false);
-                        return
-                    } else if(i === wordsInSegment.length - 2) {
-                        setRange(nextSegment, false);
-                    } else {
-                        previousDiff = currentDiff;
-                    }
-                }
-
-            }
-        }
+        event.preventDefault();
         event.stopPropagation();
+        setTimeout(() => {
+            const selection = window.getSelection();
+            if (!selection) return;
+            const currentLocation = selection?.anchorOffset;
+            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
+            (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]);
+            const nextSegmentNode = document.getElementById
+            (`word-${segmentIndex + 1}-${wordAlignmentIndex}`);
+            const currentNode = element;
+            selection ?.removeAllRanges();
+            const range = document.createRange();
+            const currentWordElement = document.getElementById
+            (`word-${segmentIndex}-${playingLocation.wordIndex}`)
+            const segmentElementPosition = document.getElementById(`segment-${segmentIndex}`)?.getBoundingClientRect();
+            const wordElementPosition = currentWordElement?.getBoundingClientRect();
+
+            if (!nextSegmentNode) { return; }
+
+            if(Math.floor(segmentElementPosition?.bottom || 0) === Math.floor(wordElementPosition?.bottom || 0)) {
+                setRange(nextSegmentNode, false);
+            } else {
+                const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+                let previousDiff = Math.abs((wordElementPosition?.x || 0)
+                    - wordsInSegment[0].getBoundingClientRect().x);
+
+                for(let i = 1; i < wordsInSegment.length - 1; i++) {
+                    const currentWordPosition = wordsInSegment[i].getBoundingClientRect();
+                    const nextWordPosition = wordsInSegment[i+1].getBoundingClientRect();
+                    const currentDiff = Math.abs((wordElementPosition?.x || 0) - currentWordPosition.x);
+                    const nextDiff = Math.abs((wordElementPosition?.x || 0) - nextWordPosition.x);
+
+                    if((wordElementPosition?.bottom || 0) < currentWordPosition.bottom) {
+                        const nextSegment = wordsInSegment[i] as HTMLElement;
+
+                        if(currentDiff < previousDiff && currentDiff < nextDiff) {
+                            setRange(nextSegment, false);
+                            return
+                        } else if(i === wordsInSegment.length - 2) {
+                            setRange(nextSegment, false);
+                        } else {
+                            previousDiff = currentDiff;
+                        }
+                    }
+
+                }
+            }
+        }, 0);
+
     };
 
     const hightlightSelectionAfterBlur = (indexFrom: number, indexTo: number) => {
@@ -336,6 +344,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleDoubleClick = () => {
         const caretLocation = getSegmentAndWordIndex() || {segmentIndex, wordIndex : 0};
         setAutoSeekDisabled(false);
+        setShouldSeek(false);
         updateCaretLocation(caretLocation.segmentIndex, caretLocation.wordIndex, true);
     };
 
@@ -351,6 +360,17 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             setIsChanged(false);
         }
     };
+
+    const handleSegmentUpdate = () => {
+        const copySegment = JSON.parse(JSON.stringify(segment));
+        const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
+        Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
+            const htmlWord = wordEl as HTMLElement;
+            copySegment.wordAlignments[index].word = htmlWord.innerText;
+        });
+        updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
+        setIsChanged(false);
+    }
 
     const handleUndo = () => {
         if(undoStack.length > 0) {
