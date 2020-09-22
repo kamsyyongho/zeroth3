@@ -1107,10 +1107,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
-      case EDITOR_CONTROLS.save:
-        setEditorCommand(command);
-        // updateSegmentOnChange(editorState, undefined, true);
-        break;
       case EDITOR_CONTROLS.toggleMore:
         internalShowEditorPopup = !internalShowEditorPopup
         setShowEditorPopups(internalShowEditorPopup);
@@ -1121,31 +1117,19 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       case EDITOR_CONTROLS.merge:
         handleSegmentMergeCommand();
         break;
+      case EDITOR_CONTROLS.shortcuts:
+        setIsShortCutPageOpen(!isShortCutPageOpen);
+        break;
       // case EDITOR_CONTROLS.createWord:
       //   // createWordTime(editorState);
       //   break;
       case EDITOR_CONTROLS.editSegmentTime:
-        setEditorCommand(command);
-        // prepareSegmentTimePicker(editorState);
-        break;
       case EDITOR_CONTROLS.undo:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.redo:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.speaker:
-        // assignSpeakerFromShortcut(editorState);
-        break;
-      case EDITOR_CONTROLS.shortcuts:
-        setIsShortCutPageOpen(!isShortCutPageOpen);
-        break;
+      case EDITOR_CONTROLS.save:
       case EDITOR_CONTROLS.rewindAudio:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.forwardAudio:
-        setEditorCommand(command);
-        break;
       case EDITOR_CONTROLS.audioPlayPause:
         setEditorCommand(command);
         break;

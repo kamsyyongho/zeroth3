@@ -81,7 +81,6 @@ let localShouldSeek: boolean;
  * for adding a bit of slop because `Peaks.js` does
  * not like creating segments at exactly `0`
  */
-const ZERO_TIME_SLOP = 0.00500;
 /** the zoom levels for the peaks */
 const DEFAULT_ZOOM_LEVELS: [number, number, number] = [64, 128, 256];
 const DEFAULT_CONTAINER_HEIGHT = 64;
@@ -393,7 +392,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
       if(Math.floor(currentTimeFixed) === Math.floor(previouslyFetchedTime)) return;
-
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
@@ -410,14 +408,12 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeked() {
-    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip || !localShouldSeek) return;
+    if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
     try {
       const { currentTime } = mediaElement;
 
       if (typeof currentTime !== 'number' || !currentTime) return;
       const currentTimeFixed = Number(currentTime.toFixed(2));
-      const seekingTimeDiff = currentTimeFixed - previouslyFetchedTime;
-      if (seekingTimeDiff > -2 && seekingTimeDiff < 2) return;
       if((audioSegmentsTracker[audioSegmentsTracker.length - 1].start +
           audioSegmentsTracker[audioSegmentsTracker.length - 1].length < currentTimeFixed || audioSegmentsTracker[0].start > currentTime)) {
         await getTimeBasedSegment(currentTimeFixed);
@@ -433,7 +429,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
     isSkip = false;
   };
-
 
 
   function handleZoom(zoomIn = false) {
@@ -1077,7 +1072,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
         // the valid segment is the first one
       } else {
         validTimeBondaries = {
-          start: 0 + ZERO_TIME_SLOP,
+          start: 0,
           end: disabledTimes[0].start as number,
         };
       }
@@ -1113,9 +1108,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
       // adding a bit of slop because `Peaks.js` does not
       // like creating segments at exactly `0`
       let startTime = time.start;
-      if (startTime === 0) {
-        startTime = startTime + ZERO_TIME_SLOP;
-      }
       let endTime = time?.end as number;
       if (typeof endTime !== 'number') {
         endTime = time.start + STARTING_WORD_LOOP_LENGTH;
@@ -1159,12 +1151,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       }
       let { start, end } = time;
       const isValidTime = checkIfValidSegmentArea(start, end);
-      if (isValidTime) {
-        if (start === 0) {
-          start = start + ZERO_TIME_SLOP;
-        }
-        updateSegmentTime(wordKey as string, start, end);
-      } else if (typeof validTimeBondaries?.start === 'number' &&
+      if (typeof validTimeBondaries?.start === 'number' &&
           typeof validTimeBondaries?.end === 'number') {
         // to reset to the valid limits if outside the valid range
         if (start < validTimeBondaries.start) {
@@ -1173,8 +1160,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
         if (end > validTimeBondaries.end) {
           end = validTimeBondaries.end;
         }
-        updateSegmentTime(wordKey as string, start, end);
       }
+      updateSegmentTime(wordKey as string, start, end);
     }
   }, [wordToUpdateTimeFor]);
 
@@ -1198,7 +1185,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
       const length = end - start;
       const midpointTime = start + (length / 2);
       if (start === 0) {
-        start = start + ZERO_TIME_SLOP;
+        start = start;
       }
       validTimeBondaries = {
         start,
@@ -1216,10 +1203,18 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if(editorCommand) {
       switch (editorCommand) {
         case EDITOR_CONTROLS.rewindAudio:
-          handleSkip(true);
+          setShouldSeek(true);
+          localShouldSeek = true;
+          setTimeout(() => {
+            handleSkip(true);
+          }, 0)
           break;
         case EDITOR_CONTROLS.forwardAudio:
-          handleSkip();
+          setShouldSeek(true);
+          localShouldSeek = true;
+          setTimeout(() => {
+            handleSkip();
+          }, 0)
           break;
         case EDITOR_CONTROLS.audioPlayPause:
           handlePlayPause();
@@ -1586,7 +1581,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
               />
             </Grid>
         )}
-        <div className={(errorText || !peaksReady) ? classes.hidden : classes.content}>
+        <div className={(errorText || !peaksReady) ? classes.hidden : classes.content} onClick={() => localShouldSeek = true}>
           <div id={WAVEFORM_DOM_IDS['zoomview-container']} className={classes.zoomView} />
           <div id={WAVEFORM_DOM_IDS['overview-container']} />
         </div>
