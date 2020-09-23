@@ -75,16 +75,6 @@ export const isInputKey = (keyEvent: KeyboardEvent) => {
   return false;
 }
 
-// Custom overrides for "playing" style.
-export const buildStyleMap = (theme: CustomTheme) => {
-  return {
-    [INLINE_STYLE_TYPE.PLAYING]: {
-      color: theme.editor.playing,
-      boxShadow: `0px 0px 0px 1px ${theme.editor.playing}`,
-    },
-  };
-};
-
 /**
  * adds custom key binding types that will be picked up by the editor
  */
@@ -149,54 +139,6 @@ export const getSelectionOfAll = (editorState: EditorState): SelectionState => {
   });
 
   return selection;
-};
-
-const removeStyleFromSelection = (
-  editorState: EditorState,
-  selectionState: SelectionState,
-  styleType: INLINE_STYLE_TYPE,
-): EditorState => {
-  // to not allow any changes into the stack
-  const noUndoEditorState = EditorState.set(editorState, { allowUndo: false });
-  const editorStateWithSelection = EditorState.forceSelection(
-    noUndoEditorState,
-    selectionState,
-  );
-  const contentState = editorStateWithSelection.getCurrentContent();
-  const updatedContentState = Modifier.removeInlineStyle(
-    contentState,
-    selectionState,
-    styleType,
-  );
-  // add the content change to the editor state
-  const updatedEditorState = EditorState.push(
-    editorStateWithSelection,
-    updatedContentState,
-    EDITOR_CHANGE_TYPE['change-inline-style'],
-  );
-  return updatedEditorState;
-};
-
-export const getEditorStateWithAllStylingRemoved = (
-  editorState: EditorState,
-) => {
-  // to remove the playing style from all content
-  const selectAllState = getSelectionOfAll(editorState);
-  const editorStateWithNoStyling = removeStyleFromSelection(
-    editorState,
-    selectAllState,
-    INLINE_STYLE_TYPE.PLAYING,
-  );
-  return editorStateWithNoStyling;
-};
-
-/** calculates the time within the segment from overall time */
-export const getWithinSegmentTimes = (
-  absoluteTime: number,
-  segment: Segment,
-): number => {
-  const adjustedTime = absoluteTime - segment.start;
-  return adjustedTime;
 };
 
 /** prevents changing of the editor state */

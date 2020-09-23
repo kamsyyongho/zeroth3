@@ -24,9 +24,7 @@ import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
 import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import { getRandomColor } from '../../util/misc';
-import {
-  buildStyleMap,
-  getSegmentAndWordIndex } from './helpers/editor.helper';
+import { getSegmentAndWordIndex } from './helpers/editor.helper';
 import log from '../../util/log/logger';
 
 const AUDIO_PLAYER_HEIGHT = 384;
@@ -262,10 +260,6 @@ export function Editor(props: EditorProps) {
       removeHighRiskFromSegment(segmentIndex, segmentId);
     }
   };
-
-  const styleMap = React.useMemo(() => {
-    return buildStyleMap(theme);
-  }, []);
 
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 

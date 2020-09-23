@@ -7,7 +7,6 @@ import {Segment, WordAlignment, UndoRedoData} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
 import { INLINE_STYLE_TYPE } from '../../../types';
-import { buildStyleMap } from '../helpers/editor.helper';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { ApiContext } from '../../../hooks/api/ApiContext';
@@ -99,10 +98,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const [isShowComment, setIsShowComment] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
-
-    const styleMap = React.useMemo(() => {
-        return buildStyleMap(theme);
-    }, []);
 
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];

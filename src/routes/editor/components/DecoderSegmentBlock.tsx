@@ -7,7 +7,6 @@ import {Segment, WordAlignment, UndoRedoData} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
 import { INLINE_STYLE_TYPE } from '../../../types';
-import { buildStyleMap } from '../helpers/editor.helper';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { ApiContext } from '../../../hooks/api/ApiContext';
@@ -76,10 +75,6 @@ const DecoderSegmentBlock = (props: DecoderSegmentBlockProps) => {
     const [isDiff, setIsDiff] = React.useState<boolean>(false);
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
-
-    const styleMap = React.useMemo(() => {
-        return buildStyleMap(theme);
-    }, []);
     const memoizedSegmentClassName = React.useMemo(() => isDiff && playingLocation.segmentIndex === segmentIndex ? `${classes.playingSegment} ${DECODER_DIFF_CLASSNAME}`
         : playingLocation.segmentIndex === segmentIndex ? classes.playingSegment :'', [playingLocation, isDiff])
 
