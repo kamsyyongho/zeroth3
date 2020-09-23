@@ -2,6 +2,7 @@ import { Segment } from '../../../types';
 import log from '../../../util/log/logger';
 import { EDITOR_CONTROLS } from '../components/EditorControls';
 import {isMacOs} from '../../../util/misc';
+import {META_KEYS} from '../../../constants'
 
 export const setSelectionRange = (playingBlock: HTMLElement) => {
   const selection = window.getSelection();
@@ -68,12 +69,12 @@ export const getDisabledControls = (
   }
 };
 const enabledMacShortcuts = {
-  copy: ['Meta', 'c'],
-  paste: ['Meta', 'v'],
+  copy: [META_KEYS.META, "c"],
+  paste: [META_KEYS.META, "v"],
 };
 const enabledWinShortcuts = {
-  copy: ['Control', 'c'],
-  paste: ['Control', 'v'],
+  copy: [META_KEYS.CONTROL, "c"],
+  paste: [META_KEYS.CONTROL, "v"],
 };
 
 export const getNativeShortcuts = () => {
@@ -85,59 +86,105 @@ export const getNativeShortcuts = () => {
   }
 };
 
-export const convertKoreanKeyToEnglish = (keycode: string) => {
+export const checkNativeShortcuts = (inputKeys: string[]) => {
+  const nativeCodeToCheck = Object.values(getNativeShortcuts());
+  let isNativeShortcut = false;
+  nativeCodeToCheck.forEach(shortcut => {
+    let matchCount = 0;
+    for(let i = 0; i < inputKeys.length; i++) {
+      if(shortcut.includes(inputKeys[i])) {
+        matchCount += 1;
+      }
+    }
+
+    if (matchCount === shortcut.length && matchCount === inputKeys.length) {
+      isNativeShortcut = true;
+    }
+  });
+
+  return isNativeShortcut;
+};
+
+// alt and english œ∑´®†¥¨ˆøπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜µ
+export const convertNonEnglishKeyToEnglish = (keycode: string) => {
   switch(keycode) {
-    case 'ㅂ' :
+    case 'ㅂ':
+    case 'œ':
       return 'q';
     case 'ㅈ':
+    case '∑':
       return 'w';
     case 'ㄷ':
+    case '´':
       return 'e';
     case 'ㄱ':
+    case '®':
       return 'r';
     case 'ㅅ':
+    case '†':
       return 't';
     case 'ㅛ':
+    case '¥':
       return 'y';
     case 'ㅕ':
+    case '¨':
       return 'u';
     case 'ㅑ':
+    case 'ˆ':
       return 'i';
     case 'ㅐ':
+    case 'ø':
       return 'o';
     case 'ㅔ':
+    case 'π':
       return 'p';
     case 'ㅁ':
+    case 'å':
       return 'a';
     case 'ㄴ':
+    case 'ß':
       return 's';
     case 'ㅇ':
+    case '∂':
       return 'd';
     case 'ㄹ':
+    case 'ƒ':
       return 'f';
     case 'ㅎ':
+    case '©':
       return 'g';
     case 'ㅗ':
+    case '˙':
       return 'h';
     case 'ㅓ':
+    case '∆':
       return 'j';
     case 'ㅏ':
+    case '˚':
       return 'k';
     case 'ㅣ':
+    case '¬':
       return 'l';
     case 'ㅋ':
+    case 'Ω':
       return 'z';
     case 'ㅌ':
+    case '≈':
       return 'x';
     case 'ㅊ':
+    case 'ç':
       return 'c';
     case 'ㅍ':
+    case '√':
       return 'v';
     case 'ㅠ':
+    case '∫':
       return 'b';
     case 'ㅜ':
+    case '˜':
       return 'n';
     case 'ㅡ':
+    case 'µ':
       return 'm';
     default:
       return keycode;

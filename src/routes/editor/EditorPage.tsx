@@ -9,7 +9,7 @@ import {BulletList} from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, DEFAULT_SHORTCUTS} from '../../constants';
+import {PERMISSIONS, DEFAULT_SHORTCUTS, META_KEYS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -49,8 +49,9 @@ import {
   getDisabledControls,
   getNativeShortcuts,
   setSelectionRange,
-  convertKoreanKeyToEnglish,
-  getSegmentAndWordIndex } from './helpers/editor-page.helper';
+  convertNonEnglishKeyToEnglish,
+  getSegmentAndWordIndex,
+  checkNativeShortcuts } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -1147,6 +1148,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const keyCombinationArray = Object.values(shortcuts);
     const functionArray = Object.keys(shortcuts);
     let resultIndex: number = -1;
+
+    if(checkNativeShortcuts(shortcutsStack)) {return;}
     keyCombinationArray.forEach((combination: any, index: number) => {
       let matchCount = 0;
       for(let i = 0; i < shortcutsStack.length; i++) {
@@ -1235,18 +1238,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
       return;
     }
-    if(event.metaKey || event.ctrlKey || event.altKey
-        || (event.shiftKey && event.key !== "ArrowLeft") && event.key !== "ArrowRight") {
-      event.preventDefault();
-    }
-    const key = event.nativeEvent.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
 
-    if(event.metaKey) shortcutsStack.push('Meta');
-    if(event.ctrlKey) shortcutsStack.push('Control');
-    if(event.altKey) shortcutsStack.push('Alt');
-    if(event.shiftKey) shortcutsStack.push('Shift');
+
+
+    const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
+
+
+
+    if(event.metaKey) shortcutsStack.push(META_KEYS.META);
+    if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
+    if(event.altKey) shortcutsStack.push(META_KEYS.ALT);
+    if(event.shiftKey) shortcutsStack.push(META_KEYS.SHIFT);
 
     shortcutsStack.push(key);
+
+    if((event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
+        && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && !checkNativeShortcuts(shortcutsStack)) {
+      event.preventDefault();
+    }
   };
 
   const resetVariables = () => {

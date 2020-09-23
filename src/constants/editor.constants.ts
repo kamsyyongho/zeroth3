@@ -2,27 +2,34 @@ export const SPLIT_CHARACTER = '•';
 export const SPLITTABLE_CHARACTERS = [SPLIT_CHARACTER, ' '];
 export const SPLIT_CHARACTER_REGEX = new RegExp(SPLIT_CHARACTER, 'g');
 export const DECODER_DIFF_CLASSNAME = 'decoderDiff';
+export const META_KEYS = {
+    META: "Meta",
+    CONTROL: "Control",
+    ALT: "Alt",
+    SHIFT: "Shift",
+};
+
 export const DEFAULT_SHORTCUTS = {
-        approvalRequest: ['Control',"a"],
-        save: ['Control',"s"],
-        undo: ['Control', "z"],
-        redo: ['Control','Shift', "Z"],
-        merge: ['Shift', "Space"],
-        split: ['Shift', 'Enter'],
-        toggleMore: ['Alt', 'Shift'],
-        editSegmentTime: ['Alt', 'Enter'],
-        setThreshold: ['Control', "t"],
-        shortcuts: ['Alt', "h"],
-        speaker: ['Shift', 'Control', "X"],
-        rewindAudio: ['Alt', 'ArrowLeft'],
-        forwardAudio: ['Alt', 'ArrowRight'],
-        audioPlayPause: ['Alt', "Space"],
-        toggleAutoSeek: ['Control', 'm'],
-        toggleAutoScroll: ['Control', 'n'],
-        loop: ['Control', 'l'],
-        //     createWord: ['Control', 'Enter'],
-        //     debug: [],
-    };
+    approvalRequest: [META_KEYS.CONTROL,"a"],
+    save: [META_KEYS.CONTROL,"s"],
+    undo: [META_KEYS.CONTROL, "z"],
+    redo: [META_KEYS.CONTROL,'Shift', "Z"],
+    merge: [META_KEYS.SHIFT, "Space"],
+    split: [META_KEYS.SHIFT, 'Enter'],
+    toggleMore: [META_KEYS.ALT, 'Shift'],
+    editSegmentTime: [META_KEYS.ALT, 'Enter'],
+    setThreshold: [META_KEYS.CONTROL, "t"],
+    shortcuts: [META_KEYS.ALT, "h"],
+    speaker: [META_KEYS.SHIFT, 'Control', "X"],
+    rewindAudio: [META_KEYS.ALT, 'ArrowLeft'],
+    forwardAudio: [META_KEYS.ALT, 'ArrowRight'],
+    audioPlayPause: [META_KEYS.ALT, "Space"],
+    toggleAutoSeek: [META_KEYS.CONTROL, 'm'],
+    toggleAutoScroll: [META_KEYS.CONTROL, 'n'],
+    loop: [META_KEYS.CONTROL, 'l'],
+    //     createWord: ['Control', 'Enter'],
+    //     debug: [],
+};
 
 export const renderInputCombination = (input: any) => {
     let result = '';
