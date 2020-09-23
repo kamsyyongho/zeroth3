@@ -71,10 +71,14 @@ export const getDisabledControls = (
 const enabledMacShortcuts = {
   copy: [META_KEYS.META, "c"],
   paste: [META_KEYS.META, "v"],
+  selectArrowRight: [META_KEYS.SHIFT, "ArrowRight"],
+  selectArrowLeft: [META_KEYS.SHIFT, "ArrowLeft"],
 };
 const enabledWinShortcuts = {
   copy: [META_KEYS.CONTROL, "c"],
   paste: [META_KEYS.CONTROL, "v"],
+  selectArrowRight: [META_KEYS.SHIFT, "ArrowRight"],
+  selectArrowLeft: [META_KEYS.SHIFT, "ArrowLeft"],
 };
 
 export const getNativeShortcuts = () => {

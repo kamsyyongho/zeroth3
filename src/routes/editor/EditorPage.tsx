@@ -1235,15 +1235,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   }
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
-      return;
-    }
-
-
-
+    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
     const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
-
-
 
     if(event.metaKey) shortcutsStack.push(META_KEYS.META);
     if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
@@ -1252,8 +1245,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     shortcutsStack.push(key);
 
-    if((event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
-        && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && !checkNativeShortcuts(shortcutsStack)) {
+    if((event.metaKey || event.ctrlKey || event.altKey) && !checkNativeShortcuts(shortcutsStack)) {
       event.preventDefault();
     }
   };
