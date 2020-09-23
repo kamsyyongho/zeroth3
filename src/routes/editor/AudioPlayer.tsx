@@ -40,7 +40,7 @@ import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
 import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {getSegmentAndWordIndex} from './helpers/editor-page.helper';
 
 /** total duration of the file in seconds */
 let duration = 0;

@@ -9,7 +9,7 @@ import {BulletList} from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, convertKoreanKeyToEnglish, DEFAULT_SHORTCUTS} from '../../constants';
+import {PERMISSIONS, DEFAULT_SHORTCUTS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -44,8 +44,13 @@ import {EDITOR_CONTROLS, EditorControls} from './components/EditorControls';
 import {EditorFetchButton} from './components/EditorFetchButton';
 import {StarRating} from './components/StarRating';
 import {Editor} from './Editor';
-import {calculateWordTime, getDisabledControls, setSelectionRange} from './helpers/editor-page.helper';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {
+  calculateWordTime,
+  getDisabledControls,
+  getNativeShortcuts,
+  setSelectionRange,
+  convertKoreanKeyToEnglish,
+  getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>

@@ -4,7 +4,7 @@ import {CustomTheme} from '../../../theme/index';
 import {green, pink} from '@material-ui/core/colors';
 import {Segment, UndoRedoStack, WordAlignment} from "../../../types";
 import {EDITOR_CONTROLS} from './EditorControls';
-import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor.helper';
+import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor-page.helper';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({

@@ -24,7 +24,7 @@ import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
 import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import { getRandomColor } from '../../util/misc';
-import { getSegmentAndWordIndex } from './helpers/editor.helper';
+import { getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import log from '../../util/log/logger';
 
 const AUDIO_PLAYER_HEIGHT = 384;
