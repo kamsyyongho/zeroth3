@@ -625,6 +625,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!duration || isSkip) return;
     const interval = rewind ? -5 : 5;
     let timeToSeekTo = currentPlaybackTime + interval;
+    console.log(currentPlaybackTime);
     isSkip = true;
     if (timeToSeekTo < 0) {
       timeToSeekTo = 0;
