@@ -9,7 +9,7 @@ import {BulletList} from 'react-content-loader';
 import { RouteComponentProps } from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, convertKoreanKeyToEnglish, DEFAULT_SHORTCUTS} from '../../constants';
+import {PERMISSIONS, DEFAULT_SHORTCUTS, META_KEYS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -44,8 +44,14 @@ import {EDITOR_CONTROLS, EditorControls} from './components/EditorControls';
 import {EditorFetchButton} from './components/EditorFetchButton';
 import {StarRating} from './components/StarRating';
 import {Editor} from './Editor';
-import {calculateWordTime, getDisabledControls, setSelectionRange} from './helpers/editor-page.helper';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {
+  calculateWordTime,
+  getDisabledControls,
+  getNativeShortcuts,
+  setSelectionRange,
+  convertNonEnglishKeyToEnglish,
+  getSegmentAndWordIndex,
+  checkNativeShortcuts } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -56,8 +62,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       readOnlyHeader: {
         display: 'flex',
         flexDirection: 'row',
-
-
       }
     }),
 );
@@ -1142,6 +1146,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const keyCombinationArray = Object.values(shortcuts);
     const functionArray = Object.keys(shortcuts);
     let resultIndex: number = -1;
+
+    if(checkNativeShortcuts(shortcutsStack)) {return;}
     keyCombinationArray.forEach((combination: any, index: number) => {
       let matchCount = 0;
       for(let i = 0; i < shortcutsStack.length; i++) {
@@ -1227,21 +1233,19 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   }
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
-      return;
-    }
-    if(event.metaKey || event.ctrlKey || event.altKey
-        || (event.shiftKey && event.key !== "ArrowLeft") && event.key !== "ArrowRight") {
-      event.preventDefault();
-    }
-    const key = event.nativeEvent.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
+    const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
 
-    if(event.metaKey) shortcutsStack.push('Meta');
-    if(event.ctrlKey) shortcutsStack.push('Control');
-    if(event.altKey) shortcutsStack.push('Alt');
-    if(event.shiftKey) shortcutsStack.push('Shift');
+    if(event.metaKey) shortcutsStack.push(META_KEYS.META);
+    if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
+    if(event.altKey) shortcutsStack.push(META_KEYS.ALT);
+    if(event.shiftKey) shortcutsStack.push(META_KEYS.SHIFT);
 
     shortcutsStack.push(key);
+
+    if((event.metaKey || event.ctrlKey || event.altKey) && !checkNativeShortcuts(shortcutsStack)) {
+      event.preventDefault();
+    }
   };
 
   const resetVariables = () => {

@@ -40,7 +40,7 @@ import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
 import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {getSegmentAndWordIndex} from './helpers/editor-page.helper';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -301,6 +301,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const seekToTime = (timeToSeekTo: number) => {
     if (!PeaksPlayer?.player || timeToSeekTo < 0 || isLoadingAdditionalSegment) return;
     try {
+      localShouldSeek = false;
       PeaksPlayer.player.seek(timeToSeekTo);
     } catch (error) {
       handleError(error);
@@ -408,6 +409,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeked() {
+    localShouldSeek = false;
     if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
     try {
       const { currentTime } = mediaElement;
@@ -851,7 +853,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           // defaulting to current time and 5 second length
           let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
           let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
-
 
           if (endTime > duration) {
             endTime = duration;
