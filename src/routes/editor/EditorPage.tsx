@@ -189,6 +189,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   // get the passed info if we got here via the details page
   const [isDiff, setIsDiff] = React.useState<boolean>(mode === 'diff');
   const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
+  const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
 
   const theme: CustomTheme = useTheme();
@@ -282,15 +283,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  const getAdditionalSegments = async (page?: number, time?: number) => {
-    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
-    if (api?.voiceData && projectId && voiceData) {
+  const getAdditionalSegments = async (page: number) => {
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
+    if(segmentResultsCache[page]) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
-      const pageParam = !!time ? null : page;
+      setSegmentResults(segmentResultsCache[page]);
+      setIsTimeSegment(false);
+      internalSegmentsTracker = segmentResultsCache[page].content;
+      if(checkAudioPlaying) setIsAudioPlaying(true);
+      return segmentResultsCache[page];
+    } else if (api?.voiceData && projectId && voiceData) {
+      if(checkAudioPlaying) setIsAudioPlaying(false);
       const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, SCROLL_PAGE_SIZE, page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
+        const updateSegmentResultsCache = segmentResultsCache.slice();
+        updateSegmentResultsCache[response.data.number] = response.data;
+        setSegmentResultsCache(updateSegmentResultsCache)
         setSegmentResults(response.data);
         // setSegments(response.data.content);
         setIsTimeSegment(false);
@@ -312,7 +322,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
-  }
+  };
 
   const getTimeBasedSegment = async (time: number) => {
     if(time <=  0) return;
@@ -433,9 +443,10 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     let additionalSegments = await getAdditionalSegments(nextPage);
     let updateSegment = [] as Segment[];
+    let pageNumber: number;
     if(isTimeSegment) {
       const lastSegmentNumber = segments[segments.length - 1].number;
-      const pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE === 0
+      pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE === 0
           ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: lastSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
@@ -447,7 +458,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       setIsTimeSegment(false);
       if(additionalSegments) updateSegment = [...additionalSegments.content];
     } else {
-      additionalSegments = await getAdditionalSegments(nextPage);
+      pageNumber = prevSegment.number + 1;
+      additionalSegments = await getAdditionalSegments(pageNumber);
       if(additionalSegments) {
         updateSegment = [...prevSegment.content, ...additionalSegments.content];
         setSegments(updateSegment);
@@ -460,7 +472,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
   };
 
-  const getSegments = async () => {
+  const getInitialSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
       const response = await api.voiceData.getSegments(
@@ -471,13 +483,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
+        const initSegmentResultCache = new Array(response.data.totalPages);
         setSegmentResults(response.data);
         setSegments(response.data.content);
         internalSegmentsTracker = response.data.content;
+        initSegmentResultCache[0] = response.data;
+        setSegmentResultsCache(initSegmentResultCache);
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
-          caller: `getSegments - failed to get segments`,
+          caller: `getInitialSegments - failed to get segments`,
           value: response,
           important: true,
         });
@@ -1274,7 +1289,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   React.useEffect(() => {
     if (!isDiff && !readOnly && voiceData && projectId) {
       getAudioUrl();
-      getSegments();
+      getInitialSegments();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -1295,7 +1310,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
     if((readOnly || isDiff) && !initialFetchDone && voiceData && Object.entries(voiceData).length !== 0) {
       getAudioUrl();
-      getSegments();
+      getInitialSegments();
       setInitialFetchDone(true);
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
