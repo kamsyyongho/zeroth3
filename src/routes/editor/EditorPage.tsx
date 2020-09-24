@@ -62,8 +62,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       readOnlyHeader: {
         display: 'flex',
         flexDirection: 'row',
-
-
       }
     }),
 );

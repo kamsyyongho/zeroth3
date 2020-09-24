@@ -301,6 +301,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const seekToTime = (timeToSeekTo: number) => {
     if (!PeaksPlayer?.player || timeToSeekTo < 0 || isLoadingAdditionalSegment) return;
     try {
+      localShouldSeek = false;
       PeaksPlayer.player.seek(timeToSeekTo);
     } catch (error) {
       handleError(error);
@@ -408,6 +409,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeked() {
+    localShouldSeek = false;
     if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
     try {
       const { currentTime } = mediaElement;
@@ -851,7 +853,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           // defaulting to current time and 5 second length
           let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
           let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
-
 
           if (endTime > duration) {
             endTime = duration;
