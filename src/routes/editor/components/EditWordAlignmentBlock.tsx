@@ -19,6 +19,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
             textShadow: '0 0 4x #888',
             WebkiTextFillColor: 'transparent',
             whiteSpace: 'pre-wrap',
+            paddingLeft: '5px',
             // -webkit-text-fill-color: 'transparent'
         },
         highlight: {
@@ -464,7 +465,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     </div>
                     :
                     wordAlignments && wordAlignments.map((wordAlignment: WordAlignment, index: number) => {
-                        const text = wordAlignment.word.replace('|', ' ');
                         const isLongWord = wordAlignment.word.length > 15;
                         const confidence = wordAlignment?.confidence ?? 0;
                         const LC = confidence < (wordConfidenceThreshold ?? 0.85);
@@ -478,7 +478,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                                  style={style}
                                  className={playingLocation.segmentIndex === segmentIndex && playingLocation.wordIndex === index
                                      ? `word segment-${segmentIndex} ${classes.playingWord}` : `word segment-${segmentIndex}`}>
-                                {text}
+                                {wordAlignment.word}
                             </div>
                         )
                     })
