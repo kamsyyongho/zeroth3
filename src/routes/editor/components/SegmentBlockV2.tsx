@@ -160,7 +160,10 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
             for(let i = 0; i < copySegment.length -1; i++) {
                 const wordAlignment = copySegment.wordAlignments[i];
                 if(wordAlignment) {
-                    copySegment.wordAlignments[i]['word'] = segment.wordAlignments[i]['word'].replace('|', ' ');
+                    const currentWord = copySegment.wordAlignments[i]['word'];
+                    const removeInitialPipe = i === 0 && currentWord[0] === '|'
+                        ? currentWord.slice(1) : currentWord;
+                    copySegment.wordAlignments[i]['word'] = removeInitialPipe.replace('|', ' ');
                 }
             }
             setLocalSegment(copySegment);
