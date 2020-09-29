@@ -316,10 +316,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     }
 
     const handleMouseUp = (event: React.MouseEvent) => {
-        const selection = window.getSelection();
-
         setAutoSeekDisabled(true);
-
+        const selection = window.getSelection();
         let indexFrom;
         let indexTo;
         if(isCommentEnabled || !isDiff) return;
