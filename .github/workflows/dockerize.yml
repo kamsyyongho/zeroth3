@@ -1,0 +1,25 @@
+name: dockerize worflow
+on: 
+  push:
+    tags:
+      - v1.*
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-latest
+    steps:
+    - name: npm install
+      run: npm install
+
+    - name: npm build
+      run: npm run build:docker
+
+    - name: upload image to ECR
+      uses: appleboy/docker-ecr-action@master
+      with:
+        access_key: AKIASLNRD65NW7LX323F
+        secret_key: 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
+        repo: zeroth/zeroth-ee-dashboard
+        registry: 161969600347.dkr.ecr.ap-northeast-2.amazonaws.com
+        tags: "action-test"
+        region: ap-northeast-2
