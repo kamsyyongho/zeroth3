@@ -33,7 +33,7 @@ jobs:
         variableNamesByFilter: ^REACT_(APP.*)
 
     - name: npm build
-      run: npm run action
+      run: CI= npm run action
 
     - name: upload image to ECR
       uses: appleboy/docker-ecr-action@master
