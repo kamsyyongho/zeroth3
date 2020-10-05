@@ -1,6 +1,8 @@
 name: dockerize worflow
 on: 
   push:
+    branchs:
+      - dev
     tags:
       - v1.*
 jobs:
@@ -10,6 +12,9 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@master
+   
+    - name: debug
+      run: ls -al
 
     - name: npm install
       run: npm install
