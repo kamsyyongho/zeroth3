@@ -5,6 +5,14 @@ on:
       - dev
     tags:
       - v1.*
+
+env:
+  REACT_APP_KEYCLOAK_URL: REACT_APP_KEYCLOAK_URL
+  REACT_APP_KEYCLOAK_REALM: REACT_APP_KEYCLOAK_REALM
+  REACT_APP_KEYCLOAK_CLIENT_ID: REACT_APP_KEYCLOAK_CLIENT_ID
+  REACT_APP_BACKEND_URL: REACT_APP_BACKEND_URL
+  REACT_APP_HOME_URL: REACT_APP_HOME_URL
+
 jobs:
   build:
     name: Hello world action
@@ -18,9 +26,14 @@ jobs:
 
     - name: npm install
       run: npm install
+  
+    - name: Variable to dotenv
+      uses: CallePuzzle/envvar-to-dotenv-action@0.1.0
+      with:
+        variableNamesByFilter: ^REACT_(APP.*)
 
     - name: npm build
-      run: npm run build:docker
+      run: npm run build
 
     - name: upload image to ECR
       uses: appleboy/docker-ecr-action@master
