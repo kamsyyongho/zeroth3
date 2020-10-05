@@ -27,7 +27,6 @@ npm run
 .env.production.local
 .env.dev
 .env.staging
-.env.docker
 
 npm-debug.log*
 yarn-debug.log*
