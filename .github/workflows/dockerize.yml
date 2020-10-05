@@ -1,7 +1,7 @@
 name: dockerize worflow
 on: 
   push:
-    branchs:
+    branches:
       - dev
     tags:
       - v1.*
