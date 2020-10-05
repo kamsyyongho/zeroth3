@@ -32,6 +32,7 @@
     "@material-ui/icons": "^4.4.3",
     "@material-ui/lab": "^4.0.0-alpha.42",
     "@material-ui/pickers": "^3.2.7",
+    "@reduxjs/toolkit": "^1.4.0",
     "@videojs/http-streaming": "^1.11.2",
     "apisauce": "^1.1.1",
     "date-fns": "^2.6.0",
