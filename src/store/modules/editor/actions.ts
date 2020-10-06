@@ -1,11 +1,26 @@
-import { EditorStore } from '../../../types';
+import {
+    CONTENT_STATUS,
+    DataSet,
+    PlayingTimeData,
+    Segment,
+    SegmentResults,
+    SegmentAndWordIndex,
+    SNACKBAR_VARIANTS,
+    SnackbarError,
+    Time,
+    VoiceData,
+    Word,
+    WordAlignment,
+    WordToCreateTimeFor,
+    EditorStore,
+} from '../../../types';
 
 export default {
-    setNav: (navConfig: EditorStore) => {
-        return {type: 'set_nav', payload: navConfig};
+    setSegments: (segments: Segment[]) => {
+        return {type: 'SET_SEGMENTS', payload: segments};
     },
-    close: () => {
-        return {type: 'close'};
+    setPlayingLocation: (playingLocation: SegmentAndWordIndex) => {
+        return {type: 'SET_PLAYING_LOCATION', payload: playingLocation};
     },
     open: () => {
         return {type: 'open'};

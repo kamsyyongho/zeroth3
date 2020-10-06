@@ -1,12 +1,21 @@
+import {
+    PlayingTimeData,
+    SegmentAndWordIndex,
+    Time,
+    Word,
+    WordToCreateTimeFor,
+} from './editor.types';
+import {
+    CONTENT_STATUS,
+    SegmentResults,
+    VoiceData,
+    WordAlignment,
+    Segment,
+} from './voice-data.types';
+import {DataSet} from './data-set.types'
+
 export interface EditorStore {
-    show?: boolean;
-    title: string;
-    icon?: string;
-    useBack?: boolean;
-    useSearch?: boolean;
-    onSearch?: any;
-    onSelectCategory?: any;
-    onSelectFilter?: any;
-    selectedFilter?: string;
-    initFilter?: any;
+    segments: Segment[];
+    PlayingTimeData: PlayingTimeData;
+    playingLocation: SegmentAndWordIndex;
 }

@@ -132,7 +132,7 @@ interface EditorPageProps {
   voiceDataId?: string;
 }
 
-function EditorPageFunc({ match }: RouteComponentProps<EditorPageProps>) {
+function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
   const { translate } = React.useContext(I18nContext);
   const { mode, modeProjectId, voiceDataId } = match.params;
   const windowSize = useWindowSize();
@@ -1512,4 +1512,4 @@ export const EditorPage = connect(
     (dispatch: Dispatch) => ({
       EditorActions: bindActionCreators(editorActions, dispatch),
     })
-)(EditorPageFunc);
+)(EditorPageComponent);

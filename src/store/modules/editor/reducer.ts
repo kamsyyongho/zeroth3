@@ -1,20 +1,34 @@
 import { handleActions } from 'redux-actions';
 // import {TYPE} from "./actions";
+import {
+    CONTENT_STATUS,
+    DataSet,
+    PlayingTimeData,
+    Segment,
+    SegmentResults,
+    SegmentAndWordIndex,
+    SNACKBAR_VARIANTS,
+    SnackbarError,
+    Time,
+    VoiceData,
+    Word,
+    WordAlignment,
+    WordToCreateTimeFor,
+    EditorStore,
+} from '../../../types';
 
-const initialState: any = {
-    show: false,
-    title: '',
-    icon: '',
-    useBack: false,
-    useSearch: false,
+const initialState: EditorStore = {
+    segments: [],
+    PlayingTimeData: {},
+    playingLocation: {segmentIndex: 0, wordIndex: 0},
 };
 
 export default handleActions({
-    'set_nav': (state: any, actions: any) => {
-        return {show: state.show, ...actions.payload};
+    'SET_SEGMENTS': (state: any, actions: any) => {
+        return {segments: state.segments, ...actions.payload};
     },
-    'close': (state: any) => {
-        return {...state, show: false};
+    'SET_PLAYING_LOCATION': (state: any, action: any) => {
+        return {playingLocation: state.playingLocation, ...action.payload};
     },
     'toggle': (state: any) => {
         return {...state, show: !state.show};
