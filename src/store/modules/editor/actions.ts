@@ -1,25 +1,16 @@
-import { handleActions } from 'redux-actions';
-// import {TYPE} from "./actions";
+import { EditorStore } from '../../../types';
 
-const initialState: any = {
-    show: false,
-    title: '',
-    icon: '',
-    useBack: false,
-    useSearch: false,
-};
-
-export default handleActions({
-    'set_nav': (state: any, actions: any) => {
-        return {show: state.show, ...actions.payload};
+export default {
+    setNav: (navConfig: EditorStore) => {
+        return {type: 'set_nav', payload: navConfig};
     },
-    'close': (state: any) => {
-        return {...state, show: false};
+    close: () => {
+        return {type: 'close'};
     },
-    'toggle': (state: any) => {
-        return {...state, show: !state.show};
+    open: () => {
+        return {type: 'open'};
     },
-    'open': (state: any) => {
-        return {...state, show: true};
-    },
-}, initialState);
+    toggle: () => {
+        return {type: 'toggle'};
+    }
+}

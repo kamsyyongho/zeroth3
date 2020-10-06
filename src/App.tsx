@@ -22,6 +22,9 @@ import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { Transcription } from './routes/transcription/Transcription';
 import { History } from './routes/history/History';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
+import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch} from "redux";
+import editorActions from './store/modules/editor/actions';
 
 const history = createBrowserHistory();
 
@@ -96,4 +99,10 @@ function App() {
   );
 }
 
-export default App;
+// export default App;
+export default connect(
+    (state: any) => state,
+    (dispatch: Dispatch) => ({
+      EditorActions: bindActionCreators(editorActions, dispatch),
+    })
+)(App);

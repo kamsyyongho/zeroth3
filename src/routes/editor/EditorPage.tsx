@@ -53,6 +53,10 @@ import {
   getSegmentAndWordIndex,
   checkNativeShortcuts } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
+import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch} from "redux";
+import editorActions from '../../store/modules/editor/actions';
+
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -128,7 +132,7 @@ interface EditorPageProps {
   voiceDataId?: string;
 }
 
-export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
+function EditorPageFunc({ match }: RouteComponentProps<EditorPageProps>) {
   const { translate } = React.useContext(I18nContext);
   const { mode, modeProjectId, voiceDataId } = match.params;
   const windowSize = useWindowSize();
@@ -1502,3 +1506,10 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       </div>
   );
 }
+
+export const EditorPage = connect(
+    (state: any) => state,
+    (dispatch: Dispatch) => ({
+      EditorActions: bindActionCreators(editorActions, dispatch),
+    })
+)(EditorPageFunc);
