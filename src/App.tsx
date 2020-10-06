@@ -71,7 +71,7 @@ function App() {
 
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
+    <RootProvider keycloak={keycloak} api={api} i18n={i18n}>
       <Router history={history}>
         <ErrorBoundary FallbackComponent={PageErrorFallback}>
           <Header />
