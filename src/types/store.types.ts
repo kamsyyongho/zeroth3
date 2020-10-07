@@ -17,5 +17,5 @@ import {DataSet} from './data-set.types'
 export interface EditorStore {
     segments: Segment[];
     PlayingTimeData: PlayingTimeData;
-    playingLocation: SegmentAndWordIndex;
+    playingLocation?: SegmentAndWordIndex;
 }

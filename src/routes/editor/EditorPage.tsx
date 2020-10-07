@@ -56,6 +56,7 @@ import {HelperPage} from './components/HelperPage';
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
 import editorActions from '../../store/modules/editor/actions';
+import { useSelector, useDispatch } from 'react-redux';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -195,6 +196,7 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
   const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
   const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
+  const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
