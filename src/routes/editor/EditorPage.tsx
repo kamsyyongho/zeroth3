@@ -643,7 +643,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         // setSegments(updatedSegments);
-        dispatch(setSegments({ type: 'SET_SEGMENTS', payload: updatedSegments }));
+        dispatch(setSegments(updatedSegments));
         internalSegmentsTracker = updatedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
@@ -1352,7 +1352,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
 
     return () => {
-      resetVariables();
+      // resetVariables();
       if (RemoteWorker) {
         RemoteWorker.terminate();
       }
@@ -1397,7 +1397,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             playingLocation={currentPlayingLocation}
             isSegmentUpdateError={isSegmentUpdateError}
             editorCommand={editorCommand}
-            segments={segments}
             voiceData={voiceData}
         />}
         <Container >

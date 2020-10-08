@@ -24,6 +24,7 @@ import { SegmentAndWordIndex, Segment, VoiceData } from '../../../types';
 import Accordion from '@material-ui/core/Accordion';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import { useSelector, useDispatch } from 'react-redux';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -137,7 +138,6 @@ interface EditorControlsProps {
   playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
   editorCommand?: EDITOR_CONTROLS;
-  segments: Segment[];
   voiceData: VoiceData;
 }
 
@@ -152,7 +152,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     playingLocation,
     isSegmentUpdateError,
     editorCommand,
-    segments,
     voiceData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
@@ -164,6 +163,7 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
   const [isVoiceDataDetailOpen, setIsVoiceDataDetailOpen] = React.useState<boolean>(false)
+  const segments = useSelector((state: any) => state.segments);
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -246,7 +246,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
-            disabled: segments.length > 0 && disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
+            disabled: segments?.length > 0 && disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
           };
           break;
         case EDITOR_CONTROLS.undo:
