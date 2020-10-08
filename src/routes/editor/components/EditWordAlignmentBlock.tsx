@@ -120,7 +120,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const selection = window.getSelection();
         if (!selection) return;
         const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const caretLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
         const previousWordNode = document.getElementById
         (`word-${segmentIndex}-${caretLocation.wordIndex - 1}`) || null;
         if(previousWordNode && currentLocation === 1) {
@@ -132,7 +132,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const selection = window.getSelection();
         if (!selection) return;
         const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const caretLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
         const nextWordNode = document.getElementById
         (`word-${segmentIndex}-${caretLocation.wordIndex + 1}`) || null;
         if(nextWordNode &&currentLocation === segment.wordAlignments[caretLocation.wordIndex].word.length) {
@@ -147,7 +147,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             const selection = window.getSelection();
             if (!selection) return;
             const currentLocation = selection?.anchorOffset;
-            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const playingLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
             const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
             (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
             const previousSegmentNode = document.getElementById
@@ -195,7 +195,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             const selection = window.getSelection();
             if (!selection) return;
             const currentLocation = selection?.anchorOffset;
-            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const playingLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
             const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
             (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]);
             const nextSegmentNode = document.getElementById

@@ -55,8 +55,8 @@ import {
 import {HelperPage} from './components/HelperPage';
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
-import editorActions from '../../store/modules/editor/actions';
 import { useSelector, useDispatch } from 'react-redux';
+import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -133,7 +133,7 @@ interface EditorPageProps {
   voiceDataId?: string;
 }
 
-function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
+export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const { translate } = React.useContext(I18nContext);
   const { mode, modeProjectId, voiceDataId } = match.params;
   const windowSize = useWindowSize();
@@ -176,7 +176,6 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
-  const [segments, setSegments] = React.useState<Segment[]>([]);
   const [segmentResults, setSegmentResults] = React.useState<SegmentResults>({} as SegmentResults);
   const [prevSegmentResults, setPrevSegmentResults] = React.useState<SegmentResults | undefined>();
   const [speakers, setSpeakers] = React.useState<string[]>([]);
@@ -196,6 +195,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
   const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
   const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
+  // const [segments, setSegments] = React.useState<Segment[]>([]);
+  const segments = useSelector((state: any) => state.segments);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -219,7 +220,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
   const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
-    setSegments(updatedSegments);
+    // setSegments(updatedSegments);
+    dispatch(setSegments(updatedSegments));
     internalSegmentsTracker = updatedSegments
   };
 
@@ -345,7 +347,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         if(updateSegments) {
           let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
           setSegmentResults(updateSegments);
-          setSegments(updateSegments.content);
+          // setSegments(updateSegments.content);
+          dispatch(setSegments(updateSegments.content));
           internalSegmentsTracker = updateSegments.content;
           setPrevSegmentResults({} as SegmentResults);
           setPage(updateSegments.number - 1);
@@ -416,7 +419,7 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
           ? Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: firstSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
-      if(additionalSegments) setSegments(additionalSegments.content);
+      if(additionalSegments) dispatch(setSegments(additionalSegments.content));
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
@@ -430,7 +433,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
       additionalSegments = await getAdditionalSegments(prevPage);
       if(additionalSegments) {
         updateSegment = [...additionalSegments.content, ...prevSegment.content];
-        setSegments(updateSegment);
+        // setSegments(updateSegment);
+        dispatch(setSegments(updateSegment));
         internalSegmentsTracker = updateSegment;
       }
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
@@ -456,7 +460,10 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
           ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: lastSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
-      if(additionalSegments) setSegments(additionalSegments.content);
+      if(additionalSegments) {
+        // setSegments(additionalSegments.content);
+        dispatch(setSegments(additionalSegments.content));
+      }
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
@@ -468,7 +475,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
       additionalSegments = await getAdditionalSegments(pageNumber);
       if(additionalSegments) {
         updateSegment = [...prevSegment.content, ...additionalSegments.content];
-        setSegments(updateSegment);
+        // setSegments(updateSegment);
+        dispatch(setSegments(updateSegment));
         internalSegmentsTracker = updateSegment;
       }
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
@@ -491,7 +499,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
       if (response.kind === 'ok') {
         const initSegmentResultCache = new Array(response.data.totalPages);
         setSegmentResults(response.data);
-        setSegments(response.data.content);
+        // setSegments(response.data.content);
+        dispatch(setSegments(response.data.content));
         internalSegmentsTracker = response.data.content;
         initSegmentResultCache[0] = response.data;
         setSegmentResultsCache(initSegmentResultCache);
@@ -633,7 +642,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         const updatedSegment: Segment = { ...segments[segmentIndex], wordAlignments: [...wordAlignments], transcript };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
-        setSegments(updatedSegments);
+        // setSegments(updatedSegments);
+        dispatch(setSegments({ type: 'SET_SEGMENTS', payload: updatedSegments }));
         internalSegmentsTracker = updatedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
@@ -670,7 +680,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
-        setSegments(updatedSegments);
+        // setSegments(updatedSegments);
+        dispatch({ type: 'SET_SEGMENTS', payload: updatedSegments });
         internalSegmentsTracker = updatedSegments;
         onUpdateUndoRedoStack(false, false);
 
@@ -716,7 +727,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         const newSegmentToFocus = document.getElementById(`segment-${selectedSegmentIndex - 1}`);
         mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         // reset our new default baseline
-        setSegments(mergedSegments);
+        // setSegments(mergedSegments);
+        dispatch({ type: 'SET_SEGMENTS', payload: mergedSegments });
         internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
@@ -769,7 +781,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
 
         // reset our new default baseline
-        setSegments(splitSegments);
+        // setSegments(splitSegments);
+        dispatch(setSegments(splitSegments));
         internalSegmentsTracker = splitSegments;
         onUpdateUndoRedoStack(false, false);
         // update the editor
@@ -810,7 +823,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
-        setSegments(splitSegments);
+        // setSegments(splitSegments);
+        dispatch(setSegments(splitSegments));
         internalSegmentsTracker = splitSegments;
         // update the editor
         onSuccess(response.segments);
@@ -1130,6 +1144,10 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  React.useEffect(() => {
+    console.log('====segments : ', segments);
+  }, [segments])
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.toggleMore:
@@ -1274,7 +1292,8 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
     shortcutsStack = [];
     localShortcuts = [];
     setSegmentsLoading(true);
-    setSegments([]);
+    // setSegments([]);
+    dispatch(setSegments([]));
     internalSegmentsTracker = [];
     setSpeakers([]);
     setDataSets([]);
@@ -1508,10 +1527,3 @@ function EditorPageComponent({ match }: RouteComponentProps<EditorPageProps>) {
       </div>
   );
 }
-
-export const EditorPage = connect(
-    (state: any) => state,
-    (dispatch: Dispatch) => ({
-      EditorActions: bindActionCreators(editorActions, dispatch),
-    })
-)(EditorPageComponent);

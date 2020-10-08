@@ -24,7 +24,6 @@ import { History } from './routes/history/History';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 import {connect, Provider} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
-import editorActions from './store/modules/editor/actions';
 import store from './store/store';
 
 const history = createBrowserHistory();
@@ -100,10 +99,10 @@ function App() {
   );
 }
 
-// export default App;
-export default connect(
-    (state: any) => state,
-    (dispatch: Dispatch) => ({
-      EditorActions: bindActionCreators(editorActions, dispatch),
-    })
-)(App);
+export default App;
+// export default connect(
+//     (state: any) => state,
+//     (dispatch: Dispatch) => ({
+//       EditorActions: bindActionCreators(editorActions, dispatch),
+//     })
+// )(App);
