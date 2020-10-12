@@ -26,6 +26,10 @@ import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import { getRandomColor } from '../../util/misc';
 import { getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import log from '../../util/log/logger';
+import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch} from "redux";
+import { useSelector, useDispatch } from 'react-redux';
+import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
 
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
@@ -124,7 +128,6 @@ interface EditorProps {
   loading?: boolean;
   setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
-  segments: Segment[];
   voiceData: VoiceData;
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
@@ -156,7 +159,6 @@ export function Editor(props: EditorProps) {
     loading,
     setLoading,
     isAudioPlaying,
-    segments,
     voiceData,
     playingLocation,
     handleSegmentUpdate,
@@ -195,6 +197,8 @@ export function Editor(props: EditorProps) {
   const [isCommentEnabled, setIsCommentEnabled] = React.useState<boolean>(false);
   const [commentInfo, setCommentInfo] = React.useState<any>({});
   const [reason, setReason] = React.useState<string>('');
+  const segments = useSelector((state: any) => state.editor.segments);
+  const dispatch = useDispatch();
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const commentRef = React.useRef<HTMLInputElement | null>(null);
@@ -542,6 +546,7 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     onReady(true);
+    console.log('===== segments in Editor : ', segments);
     return () => {
       onReady(false);
       setEditorFocussed(false);

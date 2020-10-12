@@ -53,7 +53,6 @@ import {
   getSegmentAndWordIndex,
   checkNativeShortcuts } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
-import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
 import { useSelector, useDispatch } from 'react-redux';
 import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
@@ -196,7 +195,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
   // const [segments, setSegments] = React.useState<Segment[]>([]);
-  const segments = useSelector((state: any) => state.segments);
+  const segments = useSelector((state: any) => state.editor.segments);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -1352,7 +1351,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
 
     return () => {
-      // resetVariables();
+      resetVariables();
       if (RemoteWorker) {
         RemoteWorker.terminate();
       }
@@ -1418,14 +1417,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           >
             <div style={editorContainerStyle}>
               {segmentsLoading ? <BulletList /> :
-                  !!segments.length && (<Editor
+                  !!segments?.length && (<Editor
                       key={voiceData.id}
                       readOnly={readOnly}
                       isDiff={isDiff}
                       setIsDiff={setIsDiff}
                       onCommandHandled={handleCommandHandled}
                       height={editorHeight}
-                      segments={segments}
                       voiceData={voiceData}
                       onReady={setEditorReady}
                       playingLocation={currentPlayingLocation}
