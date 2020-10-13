@@ -5,7 +5,9 @@ import ContentEditable from "react-contenteditable";
 import localForage from 'localforage';
 import { UNDO_SEGMENT_STACK, REDO_SEGMENT_STACK } from "../../../common/constants";
 import { INLINE_STYLE_TYPE } from '../../../types';
-
+import {bindActionCreators, Dispatch} from "redux";
+import { useSelector, useDispatch } from 'react-redux';
+import { setSegments, setPlayingLocation } from '../../../store/modules/editor/actions';
 
 const styles = (theme: CustomTheme) => ({
     root: {

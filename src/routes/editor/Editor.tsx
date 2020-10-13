@@ -26,8 +26,6 @@ import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import { getRandomColor } from '../../util/misc';
 import { getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import log from '../../util/log/logger';
-import {connect} from 'react-redux';
-import {bindActionCreators, Dispatch} from "redux";
 import { useSelector, useDispatch } from 'react-redux';
 import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
 

@@ -15,7 +15,7 @@ import {
     WordAlignment,
     WordToCreateTimeFor,
     EditorStore,
-} from '../../../types';
+} from '../../../../types';
 
 const initialState: EditorStore = {
     segments: [],
@@ -23,28 +23,21 @@ const initialState: EditorStore = {
     playingLocation: {segmentIndex: 0, wordIndex: 0},
 };
 
-// export default handleActions({
-//     'SET_SEGMENTS': (state: any, actions: any) => {
-//         console.log('===== segments in setSegments : ', actions);
-//         return {segments: state.segments, ...actions.payload};
-//     },
-//     'SET_PLAYING_LOCATION': (state: any, action: any) => {
-//         return {playingLocation: state.playingLocation, ...action.payload};
-//     },
-//     'toggle': (state: any) => {
-//         return {...state, show: !state.show};
-//     },
-//     'open': (state: any) => {
-//         return {...state, show: true};
-//     },
-// }, initialState);
-
 export default function reducer( state = initialState, action) {
     switch (action.type) {
         case 'SET_SEGMENTS' :
             return {...state, segments: action.payload};
         case 'SET_PLAYING_LOCATION' :
             return {playingLocation: state.playingLocation, ...action.payload};
+        case 'EDITOR_UNDO' :
+            console.log('======EDITOR.UNDO : ', action);
+            // return {...state, segments: }
+            return;
+        case 'UPDATE_SEGMENT_WORD' :
+            const updatedSegments = state.segments.slice();
+            updatedSegments[action.payload.segmentIndex]['wordAlignments'][action.payload.wordIndex]['word'] = action.payload.word;
+            return { ...state, segments: updatedSegments };
+
         default:
             return state;
     }

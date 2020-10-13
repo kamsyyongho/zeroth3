@@ -20,6 +20,10 @@ export interface EditorStore {
     playingLocation?: SegmentAndWordIndex;
 }
 
+export interface UndoHistory {
+    undoData?: UndoData;
+}
+
 export interface UndoData {
     segment: Segment;
     undoAction: string;

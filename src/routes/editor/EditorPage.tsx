@@ -55,7 +55,8 @@ import {
 import {HelperPage} from './components/HelperPage';
 import {bindActionCreators, Dispatch} from "redux";
 import { useSelector, useDispatch } from 'react-redux';
-import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
+import { setSegments, setPlayingLocation } from '../../store/modules/editor/common/actions';
+import { ActionCreators } from 'redux-undo';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -1212,10 +1213,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setEditorCommand(EDITOR_CONTROLS.save);
           break;
         case 'undo':
-          setEditorCommand(EDITOR_CONTROLS.undo);
+          dispatch(ActionCreators.undo());
+          // setEditorCommand(EDITOR_CONTROLS.undo);
           break;
         case 'redo':
-          setEditorCommand(EDITOR_CONTROLS.redo);
+          dispatch(ActionCreators.redo());
+          // setEditorCommand(EDITOR_CONTROLS.redo);
           break;
         case 'merge':
           handleSegmentMergeCommand();
