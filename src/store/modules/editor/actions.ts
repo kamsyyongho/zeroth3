@@ -13,6 +13,7 @@ import {
     WordAlignment,
     WordToCreateTimeFor,
     EditorStore,
+    UndoData,
 } from '../../../types';
 
 export const SET_SEGMENTS = 'SET_SEGMENTS';

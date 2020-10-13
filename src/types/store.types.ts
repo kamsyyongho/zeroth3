@@ -19,3 +19,9 @@ export interface EditorStore {
     PlayingTimeData: PlayingTimeData;
     playingLocation?: SegmentAndWordIndex;
 }
+
+export interface UndoData {
+    segment: Segment;
+    undoAction: string;
+    segmentAndWordIndex: SegmentAndWordIndex;
+}

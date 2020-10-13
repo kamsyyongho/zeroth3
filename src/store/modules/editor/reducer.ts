@@ -42,7 +42,6 @@ const initialState: EditorStore = {
 export default function reducer( state = initialState, action) {
     switch (action.type) {
         case 'SET_SEGMENTS' :
-            console.log('====== segments in reducer : ', action);
             return {...state, segments: action.payload};
         case 'SET_PLAYING_LOCATION' :
             return {playingLocation: state.playingLocation, ...action.payload};
