@@ -18,14 +18,21 @@ export interface EditorStore {
     segments: Segment[];
     PlayingTimeData: PlayingTimeData;
     playingLocation?: SegmentAndWordIndex;
+    undoStack?: RevertData[];
+    redoStack?: RevertData[];
+    revertData?: RevertData;
+    unsavedSegmentIds?: string[];
 }
 
-export interface UndoHistory {
-    undoData?: UndoData;
+export enum EDIT_TYPE {
+    text,
+    split,
+    merge,
+    createSegment,
 }
 
-export interface UndoData {
+export interface RevertData {
     segment: Segment;
-    undoAction: string;
+    editType: EDIT_TYPE;
     segmentAndWordIndex: SegmentAndWordIndex;
 }

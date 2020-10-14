@@ -13,8 +13,8 @@ import {
     WordAlignment,
     WordToCreateTimeFor,
     EditorStore,
-    UndoData,
-} from '../../../../types';
+    EDIT_TYPE,
+} from '../../../types';
 
 export const SET_SEGMENTS = 'SET_SEGMENTS';
 export const SET_PLAYING_LOCATION = 'SET_PLAYING_LOCATION';
@@ -30,10 +30,19 @@ export const updateSegmentWord = (segmentIndex: number, wordIndex: number, word:
     return {type: 'UPDATE_SEGMENT_WORD', payload: {segmentIndex, wordIndex, word}}
 };
 
-export const open = () => {
-    return {type: 'open'};
+export const setUndo = (segmentIndex: number, wordIndex: number, editType: EDIT_TYPE, word?: string) => {
+    return {type: 'SET_UNDO', payload: {segmentIndex, wordIndex, editType, word}};
 };
 
-export const toggle = () => {
-    return {type: 'toggle'};
-};
+export const activateUndo = () => {
+    return {type: 'ACTIVATE_UNDO'};
+}
+
+export const activateRedo = () => {
+    return {type: 'ACTIVATE_REDO'};
+}
+
+export const initRevertData = () => {
+    return {type: 'INIT_REVERT_DATA'};
+}
+

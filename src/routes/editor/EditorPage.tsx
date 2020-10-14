@@ -28,7 +28,8 @@ import {
   VoiceData,
   Word,
   WordAlignment,
-  WordToCreateTimeFor
+  WordToCreateTimeFor,
+  EDIT_TYPE,
 } from '../../types';
 import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
@@ -55,7 +56,12 @@ import {
 import {HelperPage} from './components/HelperPage';
 import {bindActionCreators, Dispatch} from "redux";
 import { useSelector, useDispatch } from 'react-redux';
-import { setSegments, setPlayingLocation } from '../../store/modules/editor/common/actions';
+import {
+  setSegments,
+  setPlayingLocation,
+  activateUndo,
+  activateRedo,
+  initRevertData } from '../../store/modules/editor/actions';
 import { ActionCreators } from 'redux-undo';
 
 
@@ -197,6 +203,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
   // const [segments, setSegments] = React.useState<Segment[]>([]);
   const segments = useSelector((state: any) => state.editor.segments);
+  const revertData = useSelector((state: any) => state.editor.revertData);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -1144,10 +1151,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  React.useEffect(() => {
-    console.log('====segments : ', segments);
-  }, [segments])
-
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.toggleMore:
@@ -1213,11 +1216,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setEditorCommand(EDITOR_CONTROLS.save);
           break;
         case 'undo':
-          dispatch(ActionCreators.undo());
+          dispatch(activateUndo());
           // setEditorCommand(EDITOR_CONTROLS.undo);
           break;
         case 'redo':
-          dispatch(ActionCreators.redo());
+          console.log('======= handleRedo : ');
+          dispatch(activateRedo());
           // setEditorCommand(EDITOR_CONTROLS.redo);
           break;
         case 'merge':
@@ -1267,6 +1271,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         break;
     }
   };
+
+  const revertTextUpdate = () => {
+    const updateSegments = segments.slice(0);
+    updateSegments[revertData.segmentAndWordIndex.segmentIndex] = revertData.segment;
+    dispatch(setSegments(updateSegments));
+    dispatch(initRevertData());
+  };
+
+  React.useEffect(() => {
+    if(!revertData) return;
+    switch(revertData.editType) {
+      case EDIT_TYPE.text :
+        revertTextUpdate();
+        break;
+      default:
+        return;
+    }
+  }, [revertData])
 
   const handleKeyUp = (event: React.KeyboardEvent) => {
     handleShortcut(event.nativeEvent);
