@@ -50,11 +50,17 @@ import {
   checkNativeShortcuts,
   convertNonEnglishKeyToEnglish,
   getDisabledControls,
-  getSegmentAndWordIndex
+  getSegmentAndWordIndex,
 } from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
 import {useDispatch, useSelector} from 'react-redux';
-import {activateRedo, activateUndo, initRevertData, setSegments, setUndo} from '../../store/modules/editor/actions';
+import {
+  activateRedo,
+  activateUndo,
+  initRevertData,
+  setSegments,
+  setUndo,
+  initUnsavedSegmentIds} from '../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -198,6 +204,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const revertData = useSelector((state: any) => state.editor.revertData);
   const undoStack = useSelector((state: any) => state.editor.undoStack);
   const redoStack = useSelector((state: any) => state.editor.redoStack);
+  const unsavedSegmentIds = useSelector((state: any) => state.editor.unsavedSegmentIds);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -1162,6 +1169,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     selection.collapse(wordLocation.childNodes[0], offset);
   };
 
+  const saveUnsavedChanges = () => {
+    unsavedSegmentIds.forEach((segmentId) => {
+      segments.forEach(async (segment: Segment, index: number) => {
+        const { id, transcript, wordAlignments } = segment
+        if(segment.id === segmentId) await submitSegmentUpdate(id, wordAlignments, transcript, index);
+      });
+    });
+    dispatch(initUnsavedSegmentIds());
+  };
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     const caretLocation = getSegmentAndWordIndex();
 
@@ -1227,7 +1244,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setEditorCommand(EDITOR_CONTROLS.approvalRequest);
           break;
         case 'save':
-          setEditorCommand(EDITOR_CONTROLS.save);
+          if(unsavedSegmentIds.length) saveUnsavedChanges();
           break;
         case 'undo':
           if(undoStack.length) dispatch(activateUndo());

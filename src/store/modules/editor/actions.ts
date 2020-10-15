@@ -46,3 +46,7 @@ export const initRevertData = () => {
     return {type: 'INIT_REVERT_DATA'};
 }
 
+export const initUnsavedSegmentIds = () => {
+    return {type: 'INIT_UNSAVED_SEGMENT_IDS'}
+};
+
