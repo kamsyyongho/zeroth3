@@ -680,12 +680,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         setIsSegmentUpdateError(false);
         const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
         const updatedSegments = [...segments];
+
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
-        // setSegments(updatedSegments);
-        dispatch({ type: 'SET_SEGMENTS', payload: updatedSegments });
+        dispatch(setSegments(updatedSegments))
         internalSegmentsTracker = updatedSegments;
         onUpdateUndoRedoStack(false, false);
-
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -707,7 +706,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleSegmentMergeCommand = async (caretLocation: SegmentAndWordIndex, isUndoAction: boolean = false) => {
     const { segmentIndex, wordIndex } = caretLocation;
-
     if(!caretLocation || caretLocation.segmentIndex === 0) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
@@ -715,27 +713,27 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const segmentToMege = internalSegmentsTracker[segmentIndex];
+      const segmentToMerge = internalSegmentsTracker[segmentIndex];
       const segmentToMergeInto = internalSegmentsTracker[segmentIndex - 1];
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto.id, segmentToMege.id);
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto.id, segmentToMerge.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = [...internalSegmentsTracker];
+        const mergedSegments = segments.slice();
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
         const newSegmentToFocus = document.getElementById(`segment-${segmentIndex - 1}`);
+
+        mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        dispatch(setSegments(mergedSegments));
         if(!isUndoAction) {
           dispatch(setUndo(
-              segmentIndex,
+              segmentIndex - 1,
               segmentToMergeInto.wordAlignments.length,
               0,
               EDIT_TYPE.merge));
         }
-        mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
-        dispatch(setSegments(mergedSegments));
-        console.log('======merge segment Id :', response.segment.id);
         // reset our new default baseline
         // setSegments(mergedSegments);
         internalSegmentsTracker = mergedSegments;
@@ -787,12 +785,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-        console.log('========split first segmentId : ', firstSegment.id);
         // reset our new default baseline
         dispatch(setSegments(splitSegments));
         if(!isUndoAction) {
           dispatch(setUndo(
-              segmentIndex + 1,
+              segmentIndex,
               firstSegment.wordAlignments.length,
               0,
               EDIT_TYPE.split));
@@ -1159,9 +1156,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   };
 
   const updateCaretLocation = (segmentIndex, wordIndex, offset) => {
-    console.log('======= segmentINdex, wordIndex offset : ', segmentIndex, wordIndex, offset);
     const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
-    console.log('====== wordLocation : ', wordLocation);
     const selection = window.getSelection();
 
     selection.collapse(wordLocation.childNodes[0], offset);
@@ -1236,8 +1231,10 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           break;
         case 'undo':
           if(undoStack.length) dispatch(activateUndo());
+          break;
         case 'redo':
           if(redoStack.length) dispatch(activateRedo());
+          break;
         case 'merge':
           handleSegmentMergeCommand(caretLocation);
           break;
@@ -1299,9 +1296,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const revertSegmentSplit = async () => {
     const { segmentIndex, wordIndex, offset } = revertData.textLocation;
-    await handleSegmentMergeCommand({segmentIndex, wordIndex}, true);
+    await handleSegmentMergeCommand({segmentIndex: segmentIndex + 1, wordIndex}, true);
     setTimeout(() => {
-      updateCaretLocation(segmentIndex - 1, wordIndex, offset);
+      updateCaretLocation(segmentIndex, wordIndex, offset);
     }, 0);
     dispatch(initRevertData());
   };
@@ -1310,7 +1307,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const { segmentIndex, wordIndex, offset } = revertData.textLocation;
     await handleSegmentSplitCommand({segmentIndex, wordIndex}, true);
     setTimeout(() => {
-      updateCaretLocation(segmentIndex - 1, wordIndex, offset);
+      updateCaretLocation(segmentIndex, wordIndex - 1, segments[segmentIndex].wordAlignments[wordIndex - 1].word.length);
     }, 0);
     dispatch(initRevertData());
   };
