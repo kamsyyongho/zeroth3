@@ -6,6 +6,7 @@ import {
     SegmentAndWordIndex,
     EditorStore,
     RevertData,
+    EDIT_TYPE,
 } from '../../../types';
 
 const initialState: EditorStore = {
@@ -25,12 +26,13 @@ export default function reducer( state = initialState, action) {
         case 'SET_PLAYING_LOCATION' :
             return {playingLocation: state.playingLocation, ...action.payload};
         case 'SET_UNDO' :
-            const updateSegment = JSON.parse(JSON.stringify(state.segments[action.payload.segmentIndex]));
-            updateSegment.wordAlignments[action.payload.wordIndex].word = action.payload.word;
+            const { segmentIndex, wordIndex, offset, editType, word } = action.payload;
+            const updateSegment = JSON.parse(JSON.stringify(state.segments[segmentIndex]));
+            if(editType === EDIT_TYPE.text) updateSegment.wordAlignments[wordIndex].word = word;
             const undoData: RevertData = {
                 segment: updateSegment,
-                editType: action.payload.editType,
-                segmentAndWordIndex: {segmentIndex: action.payload.segmentIndex, wordIndex: action.payload.wordIndex},
+                editType: editType,
+                textLocation: {segmentIndex, wordIndex, offset},
             }
             return {...state, undoStack: [...state.undoStack, undoData]};
         case 'ACTIVATE_UNDO' :
@@ -49,7 +51,7 @@ export default function reducer( state = initialState, action) {
             const updateRedoStack = state.redoStack.slice(0);
             const lastRedoItem = updateRedoStack.pop();
             const unsavedRedoSegmentId = !state.unsavedSegmentIds.includes(lastRedoItem.segment.id)
-                ? [...state.unsavedSegmentIds, lastUndoItem.segment.id] : state.unsavedSegmentIds;
+                ? [...state.unsavedSegmentIds, lastRedoItem.segment.id] : state.unsavedSegmentIds;
             return {
                 ...state,
                 revertData: lastRedoItem,

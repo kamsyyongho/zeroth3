@@ -544,7 +544,6 @@ export function Editor(props: EditorProps) {
   React.useEffect(() => {
     setReady(true);
     onReady(true);
-    console.log('===== segments in Editor : ', segments);
     return () => {
       onReady(false);
       setEditorFocussed(false);

@@ -292,6 +292,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                 default:
                     if(isInputKey(event.nativeEvent)) {
                         const word = document.getElementById(`word-${segmentIndex}-${location.wordIndex}`);
+                        const position = window.getSelection();
                         const updateUndoStack = undoStack.slice(0);
 
                         if(localWordForLengthComparison.length === 0) {
@@ -299,9 +300,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            // dispatch(updateSegmentWord(segmentIndex, location.wordIndex, word?.innerText || ''))
-                            dispatch(setUndo(segmentIndex, location.wordIndex, EDIT_TYPE.text, word?.innerText || ''));
-                            // setUndoStack(updateUndoStack);
+                            dispatch(setUndo(segmentIndex, location.wordIndex, position.focusOffset, EDIT_TYPE.text, word?.innerText || ''));
                         }
                     }
                     return;
@@ -381,7 +380,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     }, []);
 
     React.useEffect(() => {
-        console.log('=====segment change : ', segment, segmentIndex);
         setWordAlignments(segment.wordAlignments);
     }, [segment]);
 

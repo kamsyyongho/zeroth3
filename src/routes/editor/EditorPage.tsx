@@ -6,10 +6,10 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
 import {useSnackbar, VariantType} from 'notistack';
 import {BulletList} from 'react-content-loader';
-import { RouteComponentProps } from "react-router";
+import {RouteComponentProps} from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, DEFAULT_SHORTCUTS, META_KEYS} from '../../constants';
+import {DEFAULT_SHORTCUTS, META_KEYS, PERMISSIONS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -18,10 +18,11 @@ import {CustomTheme} from '../../theme/index';
 import {
   CONTENT_STATUS,
   DataSet,
+  EDIT_TYPE,
   PlayingTimeData,
   Segment,
-  SegmentResults,
   SegmentAndWordIndex,
+  SegmentResults,
   SNACKBAR_VARIANTS,
   SnackbarError,
   Time,
@@ -29,7 +30,6 @@ import {
   Word,
   WordAlignment,
   WordToCreateTimeFor,
-  EDIT_TYPE,
 } from '../../types';
 import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
@@ -47,22 +47,14 @@ import {StarRating} from './components/StarRating';
 import {Editor} from './Editor';
 import {
   calculateWordTime,
-  getDisabledControls,
-  getNativeShortcuts,
-  setSelectionRange,
+  checkNativeShortcuts,
   convertNonEnglishKeyToEnglish,
-  getSegmentAndWordIndex,
-  checkNativeShortcuts } from './helpers/editor-page.helper';
+  getDisabledControls,
+  getSegmentAndWordIndex
+} from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
-import {bindActionCreators, Dispatch} from "redux";
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  setSegments,
-  setPlayingLocation,
-  activateUndo,
-  activateRedo,
-  initRevertData } from '../../store/modules/editor/actions';
-import { ActionCreators } from 'redux-undo';
+import {useDispatch, useSelector} from 'react-redux';
+import {activateRedo, activateUndo, initRevertData, setSegments, setUndo} from '../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -204,6 +196,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   // const [segments, setSegments] = React.useState<Segment[]>([]);
   const segments = useSelector((state: any) => state.editor.segments);
   const revertData = useSelector((state: any) => state.editor.revertData);
+  const undoStack = useSelector((state: any) => state.editor.undoStack);
+  const redoStack = useSelector((state: any) => state.editor.redoStack);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -713,6 +707,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const handleSegmentMergeCommand = async () => {
     const caretLocation = getSegmentAndWordIndex();
+    const { segmentIndex, wordIndex } = caretLocation;
+
     if(!caretLocation || caretLocation.segmentIndex === 0) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
@@ -733,9 +729,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
         const newSegmentToFocus = document.getElementById(`segment-${selectedSegmentIndex - 1}`);
         mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        console.log('======merge segment Id :', response.segment.id);
         // reset our new default baseline
         // setSegments(mergedSegments);
-        dispatch({ type: 'SET_SEGMENTS', payload: mergedSegments });
+        dispatch(setSegments(mergedSegments));
+        dispatch(setUndo(
+            segmentIndex,
+            0,
+            0,
+            EDIT_TYPE.merge));
         internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
@@ -786,10 +788,14 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-
+        console.log('========split first segmentId : ', firstSegment.id);
         // reset our new default baseline
-        // setSegments(splitSegments);
         dispatch(setSegments(splitSegments));
+        dispatch(setUndo(
+            segmentIndex + 1,
+            segments[segmentIndex].wordAlignments.length,
+            0,
+            EDIT_TYPE.split));
         internalSegmentsTracker = splitSegments;
         onUpdateUndoRedoStack(false, false);
         // update the editor
@@ -1151,6 +1157,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const updateCaretLocation = (segmentIndex, wordIndex, offset) => {
+    const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
+    const selection = window.getSelection();
+    selection.collapse(wordLocation.childNodes[0], offset);
+  };
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
     switch (command) {
       case EDITOR_CONTROLS.toggleMore:
@@ -1216,12 +1228,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setEditorCommand(EDITOR_CONTROLS.save);
           break;
         case 'undo':
-          dispatch(activateUndo());
+          if(undoStack.length) dispatch(activateUndo());
           // setEditorCommand(EDITOR_CONTROLS.undo);
           break;
         case 'redo':
-          console.log('======= handleRedo : ');
-          dispatch(activateRedo());
+          if(redoStack.length) dispatch(activateRedo());
           // setEditorCommand(EDITOR_CONTROLS.redo);
           break;
         case 'merge':
@@ -1274,9 +1285,21 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const revertTextUpdate = () => {
     const updateSegments = segments.slice(0);
-    updateSegments[revertData.segmentAndWordIndex.segmentIndex] = revertData.segment;
+    const { segmentIndex, wordIndex, offset } = revertData.textLocation;
+    updateSegments[segmentIndex] = revertData.segment;
+    setTimeout(() => {
+      updateCaretLocation(segmentIndex, wordIndex, offset);
+    }, 0)
     dispatch(setSegments(updateSegments));
     dispatch(initRevertData());
+  };
+
+  const revertSegmentSplit = () => {
+    const { segmentIndex, wordIndex, offset } = revertData.textLocation;
+  };
+
+  const revertSegmentMerge = () => {
+
   };
 
   React.useEffect(() => {
@@ -1284,6 +1307,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     switch(revertData.editType) {
       case EDIT_TYPE.text :
         revertTextUpdate();
+        break;
+      case EDIT_TYPE.merge :
+        revertSegmentMerge();
+        break;
+      case EDIT_TYPE.split :
+        revertSegmentSplit();
         break;
       default:
         return;

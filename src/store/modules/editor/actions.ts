@@ -30,8 +30,8 @@ export const updateSegmentWord = (segmentIndex: number, wordIndex: number, word:
     return {type: 'UPDATE_SEGMENT_WORD', payload: {segmentIndex, wordIndex, word}}
 };
 
-export const setUndo = (segmentIndex: number, wordIndex: number, editType: EDIT_TYPE, word?: string) => {
-    return {type: 'SET_UNDO', payload: {segmentIndex, wordIndex, editType, word}};
+export const setUndo = (segmentIndex: number, wordIndex: number, offset: number, editType: EDIT_TYPE, word?: string) => {
+    return {type: 'SET_UNDO', payload: {segmentIndex, wordIndex, offset, editType, word}};
 };
 
 export const activateUndo = () => {

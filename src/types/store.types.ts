@@ -31,8 +31,15 @@ export enum EDIT_TYPE {
     createSegment,
 }
 
+export interface TextLocation {
+    segmentIndex: number;
+    wordIndex: number;
+    offset: number;
+}
+
 export interface RevertData {
     segment: Segment;
     editType: EDIT_TYPE;
-    segmentAndWordIndex: SegmentAndWordIndex;
+    textLocation: TextLocation;
 }
+

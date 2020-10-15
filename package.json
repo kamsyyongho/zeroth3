@@ -68,7 +68,6 @@
     "react-visibility-sensor": "^5.1.1",
     "reactn": "^2.2.5",
     "redux-actions": "^2.6.5",
-    "redux-undo": "^1.0.1",
     "typescript": "^3.7.0",
     "video.js": "^7.6.6",
     "yup": "^0.27.0"
