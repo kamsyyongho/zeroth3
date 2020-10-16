@@ -33,6 +33,7 @@
     "@material-ui/icons": "^4.4.3",
     "@material-ui/lab": "^4.0.0-alpha.42",
     "@material-ui/pickers": "^3.2.7",
+    "@reduxjs/toolkit": "^1.4.0",
     "@videojs/http-streaming": "^1.11.2",
     "apisauce": "^1.1.1",
     "date-fns": "^2.6.0",
@@ -59,6 +60,7 @@
     "react-i18next": "^10.13.1",
     "react-icons": "^3.7.0",
     "react-input-autosize": "^2.2.2",
+    "react-redux": "^7.2.1",
     "react-router-dom": "^5.1.0",
     "react-scripts": "^3.4.3",
     "react-spinners": "^0.6.1",
@@ -66,6 +68,7 @@
     "react-truncate-markup": "^4.1.0",
     "react-visibility-sensor": "^5.1.1",
     "reactn": "^2.2.5",
+    "redux-actions": "^2.6.5",
     "typescript": "^3.7.0",
     "video.js": "^7.6.6",
     "yup": "^0.27.0"
@@ -81,8 +84,10 @@
     "@types/react": "16.9.2",
     "@types/react-dom": "^16.9.0",
     "@types/react-input-autosize": "^2.0.1",
+    "@types/react-redux": "^7.1.9",
     "@types/react-router-dom": "^5.1.0",
     "@types/react-table": "6.8.5",
+    "@types/redux-actions": "^2.6.1",
     "@types/video.js": "^7.3.3",
     "@types/yup": "^0.26.24",
     "@typescript-eslint/eslint-plugin": "^2.3.1",
@@ -92,6 +97,7 @@
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^2.0.1",
     "nodemon": "^2.0.3",
-    "prettier": "^1.18.2"
+    "prettier": "^1.18.2",
+    "redux-devtools-extension": "^2.13.8"
   }
 }

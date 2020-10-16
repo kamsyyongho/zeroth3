@@ -13,3 +13,4 @@ export * from './snackbar.types';
 export * from './transcriber.types';
 export * from './users.types';
 export * from './voice-data.types';
+export * from './store.types';

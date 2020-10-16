@@ -20,10 +20,11 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ICONS } from '../../../theme/icons';
 import { ConfidenceSlider } from './ConfidenceSlider';
 import { renderInputCombination } from '../../../constants'
-import { SegmentAndWordIndex, Segment, VoiceData } from '../../../types';
+import { SegmentAndWordIndex, Segment, VoiceData, EDIT_TYPE } from '../../../types';
 import Accordion from '@material-ui/core/Accordion';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import { useSelector, useDispatch } from 'react-redux';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -137,7 +138,6 @@ interface EditorControlsProps {
   playingLocation: SegmentAndWordIndex;
   isSegmentUpdateError: boolean;
   editorCommand?: EDITOR_CONTROLS;
-  segments: Segment[];
   voiceData: VoiceData;
 }
 
@@ -152,7 +152,6 @@ export const EditorControls = (props: EditorControlsProps) => {
     playingLocation,
     isSegmentUpdateError,
     editorCommand,
-    segments,
     voiceData,
   } = props;
   const { translate, osText } = React.useContext(I18nContext);
@@ -164,6 +163,10 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
   const [isVoiceDataDetailOpen, setIsVoiceDataDetailOpen] = React.useState<boolean>(false)
+  const segments = useSelector((state: any) => state.editor.segments);
+  const undoStack = useSelector((state: any) => state.editor.undoStack);
+  const redoStack = useSelector((state: any) => state.editor.redoStack);
+  const unsavedSegmentIds = useSelector((state: any) => state.editor.unsavedSegmentIds);
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -238,7 +241,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           tooltipText = renderInputCombination(shortcuts.save);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.save),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.save),
+            disabled: !unsavedSegmentIds.length,
           };
           break;
         case EDITOR_CONTROLS.approvalRequest:
@@ -246,7 +249,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           icon = <PublishIcon />;
           props = {
             onClick: onConfirm,
-            disabled: segments.length > 0 && disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
+            disabled: segments?.length > 0 && disabledControls.includes(EDITOR_CONTROLS.approvalRequest),
           };
           break;
         case EDITOR_CONTROLS.undo:
@@ -255,7 +258,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           tooltipText = renderInputCombination(shortcuts.undo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.undo),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.undo),
+            disabled: !undoStack.length,
           };
           break;
         case EDITOR_CONTROLS.redo:
@@ -264,7 +267,7 @@ export const EditorControls = (props: EditorControlsProps) => {
           tooltipText = renderInputCombination(shortcuts.redo);
           props = {
             onClick: () => handleClick(EDITOR_CONTROLS.redo),
-            disabled: disabledControls.includes(EDITOR_CONTROLS.redo),
+            disabled: !redoStack.length,
           };
           break;
         case EDITOR_CONTROLS.merge:

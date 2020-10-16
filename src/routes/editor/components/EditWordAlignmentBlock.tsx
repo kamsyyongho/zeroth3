@@ -1,10 +1,13 @@
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
-import React, {useRef, useGlobal} from 'reactn';
+import React, {useGlobal, useRef} from 'reactn';
 import {CustomTheme} from '../../../theme/index';
 import {green, pink} from '@material-ui/core/colors';
-import {Segment, UndoRedoStack, WordAlignment} from "../../../types";
+import {EDIT_TYPE, Segment, UndoRedoStack, WordAlignment} from "../../../types";
 import {EDITOR_CONTROLS} from './EditorControls';
 import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor-page.helper';
+import {useDispatch, useSelector} from 'react-redux';
+import {setUndo, updateSegmentWord} from '../../../store/modules/editor/actions';
+
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -93,6 +96,8 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [isChanged, setIsChanged] = React.useState<boolean>(false);
     const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
     const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
+    const segments = useSelector((state: any) => state.editor.segments);
+    const dispatch = useDispatch();
 
     const initTranscriptToRender = () => {
         const inititalTranscript = (<span>{segment.transcript}</span>)
@@ -120,7 +125,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const selection = window.getSelection();
         if (!selection) return;
         const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const caretLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
         const previousWordNode = document.getElementById
         (`word-${segmentIndex}-${caretLocation.wordIndex - 1}`) || null;
         if(previousWordNode && currentLocation === 1) {
@@ -132,7 +137,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         const selection = window.getSelection();
         if (!selection) return;
         const currentLocation = selection?.anchorOffset;
-        const caretLocation = getSegmentAndWordIndex() || [0,0];
+        const caretLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
         const nextWordNode = document.getElementById
         (`word-${segmentIndex}-${caretLocation.wordIndex + 1}`) || null;
         if(nextWordNode &&currentLocation === segment.wordAlignments[caretLocation.wordIndex].word.length) {
@@ -147,7 +152,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             const selection = window.getSelection();
             if (!selection) return;
             const currentLocation = selection?.anchorOffset;
-            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const playingLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
             const wordAlignmentIndex = segmentIndex > 0 ? findWordAlignmentIndexToPrevSegment
             (segmentIndex - 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]) : null;
             const previousSegmentNode = document.getElementById
@@ -195,7 +200,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
             const selection = window.getSelection();
             if (!selection) return;
             const currentLocation = selection?.anchorOffset;
-            const playingLocation = getSegmentAndWordIndex() || [0,0];
+            const playingLocation = getSegmentAndWordIndex() || {segmentIndex : 0, wordIndex: 0};
             const wordAlignmentIndex = findWordAlignmentIndexToPrevSegment
             (segmentIndex + 1, currentLocation + lengthBeforeBlock[playingLocation.wordIndex]);
             const nextSegmentNode = document.getElementById
@@ -286,17 +291,16 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     break;
                 default:
                     if(isInputKey(event.nativeEvent)) {
-                        const word = document.getElementById(`word-${segmentIndex}-${location.segmentIndex}`);
+                        const word = document.getElementById(`word-${segmentIndex}-${location.wordIndex}`);
+                        const position = window.getSelection();
                         const updateUndoStack = undoStack.slice(0);
+
                         if(localWordForLengthComparison.length === 0) {
                             localWordForLengthComparison = wordAlignments[location.wordIndex]['word'];
                         }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            updateUndoStack.push({ wordIndex: location.wordIndex, word: word?.innerText || '' });
-                            localWordForLengthComparison = word?.innerText || '';
-                            onUpdateUndoRedoStack(true, false);
-                            setUndoStack(updateUndoStack);
+                            dispatch(setUndo(segmentIndex, location.wordIndex, position.focusOffset, EDIT_TYPE.text, word?.innerText || ''));
                         }
                     }
                     return;
@@ -369,58 +373,15 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         });
         updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
         setIsChanged(false);
-    }
-
-    const handleUndo = () => {
-        if(undoStack.length > 0) {
-            const updateUndoStack = undoStack.slice();
-            const updateWordAlignments = wordAlignments.slice();
-            const undoData = updateUndoStack.pop();
-
-            if(!!undoData?.wordIndex) {
-                const wordNode = document.getElementById(`word-${segmentIndex}-${undoData.wordIndex}`);
-                if(wordNode) wordNode.innerHTML = undoData.word;
-                setWordAlignments(updateWordAlignments);
-                setUndoStack(updateUndoStack);
-                setRedoStack([...redoStack, undoData]);
-                onUpdateUndoRedoStack(updateUndoStack.length > 0, true);
-            }
-        }
     };
-
-    const handleRedo = () => {
-        if(redoStack.length > 0) {
-            const updateRedoStack = redoStack.slice();
-            const updateWordAlignments = wordAlignments.slice();
-            const redoData = updateRedoStack.pop();
-
-            if(!!redoData?.wordIndex) {
-                const wordNode = document.getElementById(`word-${segmentIndex}-${redoData.wordIndex}`);
-                if(wordNode) wordNode.innerHTML = redoData.word;
-                setWordAlignments(updateWordAlignments);
-                setRedoStack(updateRedoStack);
-                setUndoStack([...redoStack, redoData]);
-                onUpdateUndoRedoStack(true, updateRedoStack.length > 0);
-            }
-        }
-    };
-
-    React.useEffect(() => {
-        if(undoStack.length > 0 && editorCommand === EDITOR_CONTROLS.undo) {
-            handleUndo();
-        };
-        if(redoStack.length > 0 && editorCommand === EDITOR_CONTROLS.redo) {
-            handleRedo();
-        }
-    },[editorCommand]);
 
     React.useEffect(() => {
         if(!isSelected) initTranscriptToRender();
-    }, [])
+    }, []);
 
     React.useEffect(() => {
         setWordAlignments(segment.wordAlignments);
-    }, [segment])
+    }, [segment]);
 
 
     React.useEffect(() => {

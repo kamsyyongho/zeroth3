@@ -157,15 +157,15 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     React.useEffect(() => {
         if(segment?.wordAlignments.length) {
             let copySegment = {...segment};
-            for(let i = 0; i < copySegment.length -1; i++) {
-                const wordAlignment = copySegment.wordAlignments[i];
-                if(wordAlignment) {
-                    const currentWord = copySegment.wordAlignments[i]['word'];
-                    const removeInitialPipe = i === 0 && currentWord[0] === '|'
+            copySegment.wordAlignments.forEach((word: WordAlignment, index: number) => {
+                if(word) {
+                    const currentWord = copySegment.wordAlignments[index]['word'];
+                    const removeInitialPipe = index === 0 && currentWord[0] === '|'
                         ? currentWord.slice(1) : currentWord;
-                    copySegment.wordAlignments[i]['word'] = removeInitialPipe.replace('|', ' ');
+
+                    copySegment.wordAlignments[index]['word'] = removeInitialPipe.replace('|', ' ');
                 }
-            }
+            });
             setLocalSegment(copySegment);
             setLengthBeforeEachBlockArray();
         }

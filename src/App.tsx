@@ -22,6 +22,9 @@ import { SiteLoadingIndicator } from './routes/shared/SiteLoadingIndicator';
 import { Transcription } from './routes/transcription/Transcription';
 import { History } from './routes/history/History';
 import { LOCAL_STORAGE_KEYS, PATHS } from './types';
+import {connect, Provider} from 'react-redux';
+import {bindActionCreators, Dispatch} from "redux";
+import store from './store/store';
 
 const history = createBrowserHistory();
 
@@ -71,29 +74,35 @@ function App() {
 
 
   return (
-    <RootProvider keycloak={keycloak} api={api} i18n={i18n} >
-      <Router history={history}>
-        <ErrorBoundary FallbackComponent={PageErrorFallback}>
-          <Header />
-        </ErrorBoundary>
-        <Switch>
-          //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
-          <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
-          <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
-          <Route exact path={PATHS.project.to} component={ProjectDetails} />
-          <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
-          <Route exact path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
-          <Route path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
-          <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
-          <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
-          <Route path={PATHS.modelTraining.to} component={ModelTraining} />
-          <Route path={PATHS.transcription.to} component={Transcription} />
-          <Route path={PATHS.history.to} component={withErrorBoundary(History, PageErrorFallback)} />
-          <Route component={NotFound} />
-        </Switch>
-      </Router>
-    </RootProvider>
+      <RootProvider keycloak={keycloak} api={api} i18n={i18n}>
+        <Router history={history}>
+          <ErrorBoundary FallbackComponent={PageErrorFallback}>
+            <Header />
+          </ErrorBoundary>
+          <Switch>
+            //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
+            <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
+            <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
+            <Route exact path={PATHS.project.to} component={ProjectDetails} />
+            <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
+            <Route exact path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
+            <Route path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
+            <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
+            <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
+            <Route path={PATHS.modelTraining.to} component={ModelTraining} />
+            <Route path={PATHS.transcription.to} component={Transcription} />
+            <Route path={PATHS.history.to} component={withErrorBoundary(History, PageErrorFallback)} />
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
+      </RootProvider>
   );
 }
 
 export default App;
+// export default connect(
+//     (state: any) => state,
+//     (dispatch: Dispatch) => ({
+//       EditorActions: bindActionCreators(editorActions, dispatch),
+//     })
+// )(App);
