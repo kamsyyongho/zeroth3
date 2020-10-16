@@ -455,7 +455,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const getNextSegment = async () => {
     if(!isTimeSegment && segmentResults.last) return;
-    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number
+        ? prevSegmentResults : segmentResults;
     const nextPage = prevSegment.number + 1;
     setIsLoadingAdditionalSegment(true);
 
