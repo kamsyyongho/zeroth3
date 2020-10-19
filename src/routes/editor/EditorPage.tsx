@@ -1163,15 +1163,17 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  const updateCaretLocation = (segmentIndex, wordIndex, offset) => {
+  const updateCaretLocation = (segmentIndex: number, wordIndex: number, offset: number) => {
     const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
     const selection = window.getSelection();
 
-    selection.collapse(wordLocation.childNodes[0], offset);
+    if(selection && wordLocation) {
+      selection.collapse(wordLocation?.childNodes[0], offset);
+    }
   };
 
   const saveUnsavedChanges = () => {
-    unsavedSegmentIds.forEach((segmentId) => {
+    unsavedSegmentIds.forEach((segmentId: string) => {
       segments.forEach(async (segment: Segment, index: number) => {
         const { id, transcript, wordAlignments } = segment
         if(segment.id === segmentId) await submitSegmentUpdate(id, wordAlignments, transcript, index);

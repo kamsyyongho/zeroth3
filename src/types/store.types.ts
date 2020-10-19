@@ -18,10 +18,10 @@ export interface EditorStore {
     segments: Segment[];
     PlayingTimeData: PlayingTimeData;
     playingLocation?: SegmentAndWordIndex;
-    undoStack?: RevertData[];
-    redoStack?: RevertData[];
-    revertData?: RevertData;
-    unsavedSegmentIds?: string[];
+    undoStack: RevertData[];
+    redoStack: RevertData[];
+    revertData: RevertData;
+    unsavedSegmentIds: string[];
 }
 
 export enum EDIT_TYPE {
