@@ -65,9 +65,9 @@ export default function reducer( state = initialState, action: any) {
                 };
             };
             break;
-        case 'INIT_REVERT_DATA':
+        case 'INIT_REVERT_DATA' :
             return{...state, revertData: null};
-        case 'INIT_UNSAVED_SEGMENT_IDS':
+        case 'INIT_UNSAVED_SEGMENT_IDS' :
             return {...state, unsavedSegmentIds: []};
         case 'UPDATE_SEGMENT_WORD' :
             const updatedSegments = state.segments.slice();
