@@ -13,13 +13,13 @@ const initialState: EditorStore = {
     segments: [],
     PlayingTimeData: {},
     playingLocation: {segmentIndex: 0, wordIndex: 0},
-    undoStack: [],
-    redoStack: [],
-    revertData: null,
+    undoStack: [] as RevertData[],
+    redoStack: [] as RevertData[],
+    revertData: {} as RevertData,
     unsavedSegmentIds: [],
 };
 
-export default function reducer( state = initialState, action) {
+export default function reducer( state = initialState, action: any) {
     switch (action.type) {
         case 'SET_SEGMENTS' :
             return {...state, segments: action.payload};
@@ -38,27 +38,33 @@ export default function reducer( state = initialState, action) {
         case 'ACTIVATE_UNDO' :
             const updateUndoStack = state.undoStack.slice(0);
             const lastUndoItem = updateUndoStack.pop();
-            const unsavedUndoSegmentId = !state.unsavedSegmentIds.includes(lastUndoItem.segment.id)
-                ? [...state.unsavedSegmentIds, lastUndoItem.segment.id] : state.unsavedSegmentIds;
-            return {
-                ...state,
-                revertData: lastUndoItem,
-                undoStack: updateUndoStack,
-                redoStack: [...state.redoStack, lastUndoItem],
-                unsavedSegmentIds: unsavedUndoSegmentId,
-            };
+            if(lastUndoItem) {
+                const unsavedUndoSegmentId = !state.unsavedSegmentIds.includes(lastUndoItem.segment.id)
+                    ? [...state.unsavedSegmentIds, lastUndoItem.segment.id] : state.unsavedSegmentIds;
+                return {
+                    ...state,
+                    revertData: lastUndoItem,
+                    undoStack: updateUndoStack,
+                    redoStack: [...state.redoStack, lastUndoItem],
+                    unsavedSegmentIds: unsavedUndoSegmentId,
+                };
+            }
+            break;
         case 'ACTIVATE_REDO' :
             const updateRedoStack = state.redoStack.slice(0);
             const lastRedoItem = updateRedoStack.pop();
-            const unsavedRedoSegmentId = !state.unsavedSegmentIds.includes(lastRedoItem.segment.id)
-                ? [...state.unsavedSegmentIds, lastRedoItem.segment.id] : state.unsavedSegmentIds;
-            return {
-                ...state,
-                revertData: lastRedoItem,
-                undoStack: [...state.undoStack, lastRedoItem],
-                redoStack: updateRedoStack,
-                unsavedSegmentIds: unsavedRedoSegmentId,
+            if(lastRedoItem) {
+                const unsavedRedoSegmentId = !state.unsavedSegmentIds.includes(lastRedoItem.segment.id)
+                    ? [...state.unsavedSegmentIds, lastRedoItem.segment.id] : state.unsavedSegmentIds;
+                return {
+                    ...state,
+                    revertData: lastRedoItem,
+                    undoStack: [...state.undoStack, lastRedoItem],
+                    redoStack: updateRedoStack,
+                    unsavedSegmentIds: unsavedRedoSegmentId,
+                };
             };
+            break;
         case 'INIT_REVERT_DATA':
             return{...state, revertData: null};
         case 'INIT_UNSAVED_SEGMENT_IDS':

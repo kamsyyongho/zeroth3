@@ -300,7 +300,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         }
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            dispatch(setUndo(segmentIndex, location.wordIndex, position.focusOffset, EDIT_TYPE.text, word?.innerText || ''));
+                            dispatch(setUndo(segmentIndex, location.wordIndex, position?.focusOffset || 0, EDIT_TYPE.text, word?.innerText || ''));
                         }
                     }
                     return;
