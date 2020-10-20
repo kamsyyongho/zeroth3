@@ -58,9 +58,10 @@ import {
   activateRedo,
   activateUndo,
   initRevertData,
+  initUnsavedSegmentIds,
   setSegments,
-  setUndo,
-  initUnsavedSegmentIds} from '../../store/modules/editor/actions';
+  setUndo
+} from '../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -743,11 +744,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               EDIT_TYPE.merge));
         }
         // reset our new default baseline
-        // setSegments(mergedSegments);
-        internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
-        onUpdateUndoRedoStack(false, false);
-        newSegmentToFocus?.focus();
+        setTimeout(() => {
+          updateCaretLocation(segmentIndex - 1, internalSegmentsTracker[segmentIndex - 1].wordAlignments.length, 0);
+          internalSegmentsTracker = mergedSegments;
+        }, 0);
+        // newSegmentToFocus?.focus();
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -1166,6 +1168,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const updateCaretLocation = (segmentIndex: number, wordIndex: number, offset: number) => {
     const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
     const selection = window.getSelection();
+    console.log('======= updateCaretLocation : ', wordLocation, selection, segments[segmentIndex], wordIndex);
 
     if(selection && wordLocation) {
       selection.collapse(wordLocation?.childNodes[0], offset);
@@ -1210,6 +1213,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       case EDITOR_CONTROLS.rewindAudio:
       case EDITOR_CONTROLS.forwardAudio:
       case EDITOR_CONTROLS.audioPlayPause:
+      case EDITOR_CONTROLS.createWord:
         setEditorCommand(command);
         break;
       default:
@@ -1354,10 +1358,21 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     shortcutsStack = [];
   }
 
+  const handleEnterPress = () => {
+    const caretLocation = getSegmentAndWordIndex();
+    const selection = window.getSelection();
+
+
+  }
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
     const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
+    const caretLocation = getSegmentAndWordIndex();
+    const selection = window.getSelection();
 
+    if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
+    if(key === 'Enter') handleEnterPress();
     if(event.metaKey) shortcutsStack.push(META_KEYS.META);
     if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
     if(event.altKey) shortcutsStack.push(META_KEYS.ALT);
@@ -1389,9 +1404,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     handleWordTimeCreationClose();
   };
 
-  React.useEffect(() => {
-    internalSegmentsTracker = segments;
-  }, [segments]);
+  // React.useEffect(() => {
+  //   internalSegmentsTracker = segments;
+  // }, [segments]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
