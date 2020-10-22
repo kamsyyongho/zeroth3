@@ -713,6 +713,43 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const handleCreateSegment = async (caretLocation: SegmentAndWordIndex) => {
+    const { segmentIndex, wordIndex } = caretLocation;
+    const prevSegment = segments[segmentIndex];
+
+    if(api.voiceData && projectId && voiceData) {
+      const response = await api.voiceData.createNewSegment(projectId, voiceData.id, prevSegment.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if(response.kind === 'ok') {
+        const updateSegment = segments.slice(0);
+        const initialWord = {confidence: 100, speaker: null, length: 1.00, start: 0, word: ''};
+        response.segment.wordAlignments.push(initialWord);
+        updateSegment.splice(segmentIndex + 1, 0, response.segment)
+        dispatch(setSegments(updateSegment));
+        dispatch(setUndo(
+            segmentIndex + 1,
+            0,
+            0,
+            EDIT_TYPE.createSegment));
+        updateCaretLocation(segmentIndex + 1 , 0, 0);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `handleCreateSegment - failed to create segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+    }
+  };
+
   const handleSegmentMergeCommand = async (caretLocation: SegmentAndWordIndex, isUndoAction: boolean = false) => {
     const { segmentIndex, wordIndex } = caretLocation;
     if(!caretLocation || caretLocation.segmentIndex === 0) {
@@ -732,7 +769,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         //cut out and replace the old segments
         const mergedSegments = segments.slice();
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        const newSegmentToFocus = document.getElementById(`segment-${segmentIndex - 1}`);
 
         mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         dispatch(setSegments(mergedSegments));
@@ -745,11 +781,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         }
         // reset our new default baseline
         setIsSegmentUpdateError(false);
-        setTimeout(() => {
-          updateCaretLocation(segmentIndex - 1, internalSegmentsTracker[segmentIndex - 1].wordAlignments.length, 0);
-          internalSegmentsTracker = mergedSegments;
-        }, 0);
-        // newSegmentToFocus?.focus();
+        updateCaretLocation(segmentIndex - 1, internalSegmentsTracker[segmentIndex - 1].wordAlignments.length, 0);
+        internalSegmentsTracker = mergedSegments;
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -1168,7 +1201,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const updateCaretLocation = (segmentIndex: number, wordIndex: number, offset: number) => {
     const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
     const selection = window.getSelection();
-    console.log('======= updateCaretLocation : ', wordLocation, selection, segments[segmentIndex], wordIndex);
 
     if(selection && wordLocation) {
       selection.collapse(wordLocation?.childNodes[0], offset);
@@ -1359,10 +1391,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   }
 
   const handleEnterPress = () => {
-    const caretLocation = getSegmentAndWordIndex();
+    const { segmentIndex, wordIndex } = getSegmentAndWordIndex();
     const selection = window.getSelection();
+    const segment = segments[segmentIndex].wordAlignments
 
-
+    if(wordIndex === segment.length - 1 && selection?.anchorOffset === segment[segment.length - 1].word.length) {
+      handleCreateSegment({segmentIndex, wordIndex});
+    }
   }
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -1371,7 +1406,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const caretLocation = getSegmentAndWordIndex();
     const selection = window.getSelection();
 
-    if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
+    // if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
     if(key === 'Enter') handleEnterPress();
     if(event.metaKey) shortcutsStack.push(META_KEYS.META);
     if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);

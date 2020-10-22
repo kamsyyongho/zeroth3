@@ -12,6 +12,7 @@ import {getGeneralApiProblem} from '../api-problem';
 import {
   approveDataResult,
   confirmDataResult,
+  createNewSegment,
   deleteAllDataSet,
   fetchUnconfirmedDataResult,
   getAssignedDataResult,
@@ -579,6 +580,28 @@ export class VoiceData extends ParentApi {
     try {
       const segments = response.data as [Segment, Segment];
       return { kind: 'ok', segments };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  async createNewSegment(projectId: string, dataId: string, segmentId: string): Promise<createNewSegment> {
+    const response = await this.apisauce.post<Segment, ServerError>(
+        this.getPathWithOrganization(
+            `/projects/${projectId}/data/${dataId}/segments/${segmentId}/empty`,
+        ),
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem.kind === ProblemKind['unauthorized']) {
+        this.logout();
+      }
+      return problem;
+    }
+    try {
+      const segment = response.data as Segment;
+      return { kind: 'ok', segment };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

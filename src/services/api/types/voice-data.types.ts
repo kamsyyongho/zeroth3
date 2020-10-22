@@ -182,6 +182,10 @@ export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }
   | GeneralApiProblem;
 
+export type createNewSegment =
+    | { kind: 'ok'; segment: Segment }
+    | GeneralApiProblem;  
+
 export type updateStatusResult =
   | { kind: 'ok'; data: VoiceData }
   | GeneralApiProblem;
