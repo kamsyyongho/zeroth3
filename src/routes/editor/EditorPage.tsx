@@ -838,7 +838,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               EDIT_TYPE.split));
         }
         internalSegmentsTracker = splitSegments;
-        onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
         log({
@@ -1390,13 +1389,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     shortcutsStack = [];
   }
 
-  const handleEnterPress = () => {
+  const handleEnterPress = async () => {
     const { segmentIndex, wordIndex } = getSegmentAndWordIndex();
     const selection = window.getSelection();
     const segment = segments[segmentIndex].wordAlignments
 
     if(wordIndex === segment.length - 1 && selection?.anchorOffset === segment[segment.length - 1].word.length) {
       handleCreateSegment({segmentIndex, wordIndex});
+    } else if (wordIndex > 0) {
+      await handleSegmentSplitCommand({segmentIndex, wordIndex});
+      updateCaretLocation(segmentIndex + 1, 0, 0);
     }
   }
 
@@ -1406,7 +1408,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const caretLocation = getSegmentAndWordIndex();
     const selection = window.getSelection();
 
-    // if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
+    if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
     if(key === 'Enter') handleEnterPress();
     if(event.metaKey) shortcutsStack.push(META_KEYS.META);
     if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
