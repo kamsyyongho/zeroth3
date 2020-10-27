@@ -264,9 +264,13 @@ export class IAM extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async updateVoiceMaskingRequiredFlag(voiceMaskingFlag: boolean): Promise<updateVoiceMaskingRequiredFlag> {
+  async updateVoiceMaskingRequiredFlag(voiceMaskingRequired: boolean): Promise<updateVoiceMaskingRequiredFlag> {
+    const request = {
+      voiceMaskingRequired,
+    };
     const response: ApiResponse<undefined, ServerError> = await this.apisauce.post(
-        this.getPathWithOrganization(`/vm-re-quired`)
+        this.getPathWithOrganization(`/vm-required`),
+        request,
     );
 
     if(!response.ok) {

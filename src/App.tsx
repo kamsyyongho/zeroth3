@@ -39,9 +39,7 @@ function App() {
     initKeycloak();
     initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
-    console.log('======== keycloack.keycloak : ', keycloak.keycloak);
     const globalCallback = addCallback(globalState => {
-      console.log('======= globalState in App.tsx : ', globalState);
       if (globalState.currentProject?.id) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_ID, globalState.currentProject.id);
       }

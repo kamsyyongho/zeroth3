@@ -9,7 +9,7 @@ import { I18nContext } from '../../hooks/i18n/I18nContext';
 
 interface ConfirmationDialogProps {
   open: boolean;
-  onSubmit: () => void;
+  onSubmit?: () => void;
   onCancel: () => void;
   /**
    * determines the button's confirmation color

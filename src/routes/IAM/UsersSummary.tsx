@@ -61,6 +61,9 @@ export function UsersSummary(props: UsersSummaryProps) {
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
   const [userEmails, setUserEmails] = React.useState<UserEmailsByUserId>({});
+  const [confirmationTitle, setConfirmationTitle] = React.useState('');
+  const [confirmationSubmit, setConfirmationSubmit] = React.useState('');
+  const [onConfirm, setOnConfirm] = React.useState();
   const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
 
   const dispatch = useDispatch();
@@ -105,15 +108,35 @@ export function UsersSummary(props: UsersSummaryProps) {
   const requestVoiceMasking = async () => {
     if(api?.IAM) {
       const response = await api.IAM.updateVoiceMaskingRequiredFlag(!currentOrganization.voiceMaskingRequired);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if(response.kind === 'ok') {
         const updatedOrginzation = Object.assign(
             {},
             currentOrganization,
             {voiceMaskingRequired: !currentOrganization.voiceMaskingRequired});
         dispatch(setCurrentOrganization(updatedOrginzation));
+        enqueueSnackbar(translate('common.success'), { variant: 'success', preventDuplicate: true });
+      } else {
+        if(response.kind === ProblemKind['forbidden']) {
+          setIsForbidden(true);
+        }
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if(serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
-
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
+  };
+
+  const handleVoiceMaskingRequest = () => {
+    setConfirmationTitle(currentOrganization.voiceMaskingRequired ?
+         translate('IAM.deactivateVoiceMasking') : translate('IAM.confirmVoiceMasking'));
+    setConfirmationSubmit(translate('common.okay'));
+    setOnConfirm(() => requestVoiceMasking);
+    setConfirmationOpen(true);
   };
 
 
@@ -190,7 +213,13 @@ export function UsersSummary(props: UsersSummaryProps) {
     }
   });
 
-  const confirmDelete = () => setConfirmationOpen(true);
+  const confirmDelete = () => {
+    setConfirmationTitle(`${translate('IAM.deleteUser', { count: usersToDelete.length })}?`);
+    setConfirmationSubmit(translate('common.delete'));
+    setOnConfirm(() => handleUserDelete);
+    setConfirmationOpen(true);
+  };
+
   const closeConfirmation = () => setConfirmationOpen(false);
 
   /**
@@ -263,7 +292,8 @@ export function UsersSummary(props: UsersSummaryProps) {
                   usersToDelete={usersToDelete}
                   confirmDelete={confirmDelete}
                   handleInviteOpen={handleInviteOpen}
-                  deleteLoading={deleteLoading}/>
+                  deleteLoading={deleteLoading}
+                  handleVoiceMaskingRequest={handleVoiceMaskingRequest}/>
               <UsersTable
                   users={users}
                   roles={roles}
@@ -277,10 +307,10 @@ export function UsersSummary(props: UsersSummaryProps) {
       <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />
       <ConfirmationDialog
         destructive
-        titleText={`${translate('IAM.deleteUser', { count: usersToDelete.length })}?`}
-        submitText={translate('common.delete')}
+        titleText={confirmationTitle}
+        submitText={confirmationSubmit}
         open={confirmationOpen}
-        onSubmit={handleUserDelete}
+        onSubmit={onConfirm}
         onCancel={closeConfirmation}
       />
     </Card>

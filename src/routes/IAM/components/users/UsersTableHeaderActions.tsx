@@ -25,10 +25,11 @@ interface UsersTableHeaderActionsProps {
   confirmDelete: () => void;
   handleInviteOpen: () => void;
   deleteLoading: boolean;
+  handleVoiceMaskingRequest: () => void;
 }
 
 export default function UsersTableHeaderActions(props: UsersTableHeaderActionsProps) {
-  const { users, usersToDelete, confirmDelete, handleInviteOpen, deleteLoading } = props;
+  const { users, usersToDelete, confirmDelete, handleInviteOpen, deleteLoading, handleVoiceMaskingRequest } = props;
   const { translate } = React.useContext(I18nContext);
 
   const classes = useStyles();
@@ -66,7 +67,7 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
           <Button
               variant="contained"
               color="primary"
-              onClick={handleInviteOpen}
+              onClick={handleVoiceMaskingRequest}
               startIcon={<GraphicEqIcon />}
           >{translate("IAM.requestVoiceMasking")}
           </Button>
