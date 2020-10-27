@@ -12,6 +12,7 @@ import {
   ProblemKind,
   resetPasswordOfUserResult,
   ServerError,
+  updateVoiceMaskingRequiredFlag,
 } from '../types';
 import { InviteUserRequest } from '../types/iam.types';
 import { ParentApi } from './parent-api';
@@ -262,4 +263,21 @@ export class IAM extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async updateVoiceMaskingRequiredFlag(voiceMaskingFlag: boolean): Promise<updateVoiceMaskingRequiredFlag> {
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.post(
+        this.getPathWithOrganization(`/vm-re-quired`)
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+}
 }

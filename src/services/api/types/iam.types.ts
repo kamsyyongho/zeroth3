@@ -24,3 +24,4 @@ export type assignRolesToUserResult =
 export type deleteRoleResult = { kind: 'ok' } | GeneralApiProblem;
 export type inviteUserResult = { kind: 'ok' } | GeneralApiProblem;
 export type resetPasswordOfUserResult = { kind: 'ok' } | GeneralApiProblem;
+export type updateVoiceMaskingRequiredFlag = { kind: 'ok' } | GeneralApiProblem;

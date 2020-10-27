@@ -1,5 +1,3 @@
-import { handleActions } from 'redux-actions';
-// import {TYPE} from "./actions";
 import {
     Segment,
     SegmentResults,

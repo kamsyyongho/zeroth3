@@ -14,7 +14,12 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { Forbidden } from '../shared/Forbidden';
 import { InviteFormDialog } from './components/users/InviteFormDialog';
 import { UsersTable } from './components/users/UsersTable';
-
+import UsersTableHeaderActions from './components/users/UsersTableHeaderActions';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setOrganizations,
+  setCurrentOrganization,
+} from '../../store/modules/common/actions';
 
 export interface CheckedUsersByUserId {
   [index: string]: boolean;
@@ -56,6 +61,9 @@ export function UsersSummary(props: UsersSummaryProps) {
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [checkedUsers, setCheckedUsers] = React.useState<CheckedUsersByUserId>({});
   const [userEmails, setUserEmails] = React.useState<UserEmailsByUserId>({});
+  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+
+  const dispatch = useDispatch();
 
   const classes = useStyles();
 
@@ -93,8 +101,22 @@ export function UsersSummary(props: UsersSummaryProps) {
       setUsersLoading(false);
     }
   };
-  
-  
+
+  const requestVoiceMasking = async () => {
+    if(api?.IAM) {
+      const response = await api.IAM.updateVoiceMaskingRequiredFlag(!currentOrganization.voiceMaskingRequired);
+      if(response.kind === 'ok') {
+        const updatedOrginzation = Object.assign(
+            {},
+            currentOrganization,
+            {voiceMaskingRequired: !currentOrganization.voiceMaskingRequired});
+        dispatch(setCurrentOrganization(updatedOrginzation));
+      }
+
+    }
+  };
+
+
   React.useEffect(() => {
     const getRoles = async () => {
       if (api?.IAM) {
@@ -235,17 +257,21 @@ export function UsersSummary(props: UsersSummaryProps) {
     <Card elevation={0} className={classes.card} >
       <CardContent className={classes.cardContent} >
         {usersLoading || rolesLoading ? <BulletList /> :
-          <UsersTable
-            users={users}
-            roles={roles}
-            usersToDelete={usersToDelete}
-            confirmDelete={confirmDelete}
-            handleInviteOpen={handleInviteOpen}
-            deleteLoading={deleteLoading}
-            setCheckedUsers={setCheckedUsers}
-            handleUpdateSuccess={handleUpdateSuccess}
-            onTranscriberAssign={onTranscriberAssign}
-          />
+            <>
+              <UsersTableHeaderActions
+                  users={users}
+                  usersToDelete={usersToDelete}
+                  confirmDelete={confirmDelete}
+                  handleInviteOpen={handleInviteOpen}
+                  deleteLoading={deleteLoading}/>
+              <UsersTable
+                  users={users}
+                  roles={roles}
+                  setCheckedUsers={setCheckedUsers}
+                  handleUpdateSuccess={handleUpdateSuccess}
+                  onTranscriberAssign={onTranscriberAssign}
+              />
+            </>
         }
       </CardContent>
       <InviteFormDialog open={inviteOpen} onClose={handleInviteClose} />

@@ -25,6 +25,7 @@ import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 import {connect, Provider} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
 import store from './store/store';
+import {useSelector} from 'react-redux';
 
 const history = createBrowserHistory();
 
@@ -32,12 +33,15 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
+  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
 
   React.useEffect(() => {
     initKeycloak();
     initApi(keycloak.keycloak, keycloak.logout);
     // update local storage on change
+    console.log('======== keycloack.keycloak : ', keycloak.keycloak);
     const globalCallback = addCallback(globalState => {
+      console.log('======= globalState in App.tsx : ', globalState);
       if (globalState.currentProject?.id) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_ID, globalState.currentProject.id);
       }
@@ -100,9 +104,3 @@ function App() {
 }
 
 export default App;
-// export default connect(
-//     (state: any) => state,
-//     (dispatch: Dispatch) => ({
-//       EditorActions: bindActionCreators(editorActions, dispatch),
-//     })
-// )(App);

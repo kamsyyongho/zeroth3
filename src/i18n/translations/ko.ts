@@ -202,6 +202,7 @@ export const ko: ResourceLanguage = {
       deleteUser: '사용자 삭제',
       deleteUser_plural: '{{count}} 명의 사용자 삭제',
       resetUserPassword: `({{email}}) - 비밀번호 초기화`,
+      requestVoiceMasking: '보이스 마스킹',
     },
     projects: {
       noProjects: '프로젝트 없음',

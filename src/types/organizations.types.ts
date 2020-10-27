@@ -4,4 +4,5 @@ export interface Organization {
   name: string;
   createdAt: Date;
   roles: Role[];
+  voiceMaskingRequired: boolean;
 }
