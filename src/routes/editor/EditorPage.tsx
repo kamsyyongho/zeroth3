@@ -30,6 +30,7 @@ import {
   Word,
   WordAlignment,
   WordToCreateTimeFor,
+  LOCAL_STORAGE_KEYS,
 } from '../../types';
 import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
@@ -151,6 +152,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+  const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
@@ -1477,6 +1479,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   // initial fetch and dismount logic
   React.useEffect(() => {
+    const savedThreshold = localStorage.getItem(LOCAL_STORAGE_KEYS.WORD_CONFIDENCE_THRESHOLD);
+    const confidence = readOnly ? 0 : Number(savedThreshold);
+    setWordConfidenceThreshold(confidence);
     setPageTitle(translate('path.editor'));
     getShortcuts();
     if ((readOnly || isDiff) && projectId && voiceDataId && canSeeReadOnlyEditor) {
