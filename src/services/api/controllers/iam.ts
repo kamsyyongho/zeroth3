@@ -268,7 +268,7 @@ export class IAM extends ParentApi {
     const request = {
       voiceMaskingRequired,
     };
-    const response: ApiResponse<undefined, ServerError> = await this.apisauce.post(
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.patch(
         this.getPathWithOrganization(`/vm-required`),
         request,
     );
