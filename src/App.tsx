@@ -25,6 +25,7 @@ import { LOCAL_STORAGE_KEYS, PATHS } from './types';
 import {connect, Provider} from 'react-redux';
 import {bindActionCreators, Dispatch} from "redux";
 import store from './store/store';
+import {useSelector} from 'react-redux';
 
 const history = createBrowserHistory();
 
@@ -32,6 +33,7 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
+  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
 
   React.useEffect(() => {
     initKeycloak();
@@ -100,9 +102,3 @@ function App() {
 }
 
 export default App;
-// export default connect(
-//     (state: any) => state,
-//     (dispatch: Dispatch) => ({
-//       EditorActions: bindActionCreators(editorActions, dispatch),
-//     })
-// )(App);

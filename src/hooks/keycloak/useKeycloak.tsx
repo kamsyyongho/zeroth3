@@ -5,6 +5,11 @@ import { LOCAL_STORAGE_KEYS, ROLES } from '../../types';
 import log from '../../util/log/logger';
 import { keycloakConfig } from './keycloak-config';
 import { ParsedKeycloak } from './KeycloakContext';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setOrganizations,
+  setCurrentOrganization,
+} from '../../store/modules/common/actions';
 
 export interface KeycloakUser {
   familyName?: string;
@@ -36,8 +41,10 @@ export const useKeycloak = () => {
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
   const [roles, setRoles] = useState<ROLES[]>([]);
   const [keycloak, setKeycloak] = useState(rawKeycloak);
+  const organizations = useSelector((state: any) => state.common.organizations);
+  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
 
-
+  const dispatch = useDispatch();
 
   const init = () => {
     return new Promise<boolean>((resolve, reject) => {

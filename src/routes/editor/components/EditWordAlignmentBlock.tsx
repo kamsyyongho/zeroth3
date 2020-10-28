@@ -6,7 +6,7 @@ import {EDIT_TYPE, Segment, UndoRedoStack, WordAlignment} from "../../../types";
 import {EDITOR_CONTROLS} from './EditorControls';
 import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor-page.helper';
 import {useDispatch, useSelector} from 'react-redux';
-import {setUndo, updateSegmentWord} from '../../../store/modules/editor/actions';
+import {setUndo} from '../../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -293,7 +293,6 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                     if(isInputKey(event.nativeEvent)) {
                         const word = document.getElementById(`word-${segmentIndex}-${location.wordIndex}`);
                         const position = window.getSelection();
-                        const updateUndoStack = undoStack.slice(0);
 
                         if(localWordForLengthComparison.length === 0) {
                             localWordForLengthComparison = wordAlignments[location.wordIndex]['word'];
@@ -301,6 +300,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                         setIsChanged(true);
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
                             dispatch(setUndo(segmentIndex, location.wordIndex, position?.focusOffset || 0, EDIT_TYPE.text, word?.innerText || ''));
+                            localWordForLengthComparison = word?.innerText || '';
                         }
                     }
                     return;

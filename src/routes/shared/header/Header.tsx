@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import { OptionsObject, useSnackbar } from 'notistack';
+import { OptionsObject, useSnackbar, VariantType } from 'notistack';
 import { Link } from 'react-router-dom';
 import React, { useGlobal } from 'reactn';
 import { PERMISSIONS } from '../../../constants';
@@ -14,13 +14,20 @@ import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../../hooks/keycloak/KeycloakContext';
 import { ICONS } from '../../../theme/icons';
 import { IMAGES } from '../../../theme/images';
-import { LOCAL_STORAGE_KEYS, Organization, PATHS } from '../../../types';
+import { LOCAL_STORAGE_KEYS, Organization, PATHS, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
+import {ProblemKind} from '../../../services/api/types';
 import log from '../../../util/log/logger';
 import { ProjectsDialog } from '../../projects/ProjectsDialog';
 import { AppDrawer as Drawer } from '../Drawer';
 import { RenameOrganizationDialog } from '../RenameOrganizationDialog';
 import MenuPopup from './components/MenuPopup';
 import { UploadProgressNotification } from './components/UploadProgressNotification';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setOrganizations,
+  setCurrentOrganization,
+} from '../../../store/modules/common/actions';
+
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -72,8 +79,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { translate, toggleLanguage } = React.useContext(I18nContext);
-  const [organizations, setOrganizations] = useGlobal('organizations');
-  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
+  // const [organizations, setOrganizations] = useGlobal('organizations');
+  // const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [uploadQueueEmpty, setUploadQueueEmpty] = useGlobal('uploadQueueEmpty');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
@@ -85,8 +92,14 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
   const [currentProjectId, setCurrentProjectId] = React.useState<string | undefined>();
+  const organizations = useSelector((state: any) => state.common.organizations);
+  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+
+  const dispatch = useDispatch();
+
 
   const classes = useStyles();
+
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -104,16 +117,25 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     if (api?.organizations) {
       setOrganizationsLoading(true);
       const response = await api.organizations.getOrganizations();
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
       if (response.kind === 'ok') {
-        setOrganizations(response.organizations);
-      } else {
+        // setOrganizations(response.organizations);
+        dispatch(setOrganizations(response.organizations));
+      } else if (response.kind !== ProblemKind['bad-data']) {
         log({
           file: `Header.tsx`,
           caller: `getOrganizations - failed to get organizations`,
           value: response,
           important: true,
         });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
       }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
     setOrganizationsLoading(false);
   };
@@ -164,7 +186,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   React.useEffect(() => {
     // no need to get organization to check if we don't have the permission to rename
-    if (user.currentOrganizationId && !organizations) {
+    if (user.currentOrganizationId && !organizations.length) {
       getOrganizations();
     } else {
       setOrganizationsLoading(false);
@@ -186,7 +208,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
 
   React.useEffect(() => {
     if (organization) {
-      setCurrentOrganization(organization);
+      dispatch(setCurrentOrganization(organization));
+      // setCurrentOrganization(organization);
       const roleNames = organization.roles.map(role => role.name);
       initializeUserRoles(roleNames);
     }
@@ -212,6 +235,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     setCurrentProject(undefined);
     if (currentOrganization && organization && currentOrganization.id !== organization.id) {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_ID);
+
+      dispatch(setCurrentOrganization(currentOrganization));
       setOrganization(currentOrganization);
     }
   }, [currentOrganization]);

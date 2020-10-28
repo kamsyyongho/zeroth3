@@ -18,6 +18,7 @@ import {
 
 export const SET_SEGMENTS = 'SET_SEGMENTS';
 export const SET_PLAYING_LOCATION = 'SET_PLAYING_LOCATION';
+
 export const setSegments =  (segments: Segment[]) => {
     return {type: 'SET_SEGMENTS', payload: segments};
 };

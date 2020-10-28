@@ -201,6 +201,9 @@ export const en: ResourceLanguage = {
       deleteUser: 'Delete user',
       deleteUser_plural: 'Delete {{count}} users',
       resetUserPassword: `({{email}}) - Reset password`,
+      requestVoiceMasking: 'Request Voice Masking',
+      confirmVoiceMasking: 'Send Voice Masking Request?',
+      deactivateVoiceMasking: 'Deactivate Voice Masking?',
     },
     projects: {
       noProjects: 'No projects',

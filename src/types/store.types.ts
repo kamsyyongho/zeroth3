@@ -12,6 +12,7 @@ import {
     WordAlignment,
     Segment,
 } from './voice-data.types';
+import {Organization} from './organizations.types';
 import {DataSet} from './data-set.types'
 
 export interface EditorStore {
@@ -43,3 +44,7 @@ export interface RevertData {
     textLocation: TextLocation;
 }
 
+export interface CommonStore {
+    organizations: Organization[];
+    currentOrganization: Organization;
+}

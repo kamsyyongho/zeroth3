@@ -58,9 +58,10 @@ import {
   activateRedo,
   activateUndo,
   initRevertData,
+  initUnsavedSegmentIds,
   setSegments,
-  setUndo,
-  initUnsavedSegmentIds} from '../../store/modules/editor/actions';
+  setUndo
+} from '../../store/modules/editor/actions';
 
 
 const useStyles = makeStyles((theme: CustomTheme) =>
@@ -712,6 +713,43 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const handleCreateSegment = async (caretLocation: SegmentAndWordIndex) => {
+    const { segmentIndex, wordIndex } = caretLocation;
+    const prevSegment = segments[segmentIndex];
+
+    if(api.voiceData && projectId && voiceData) {
+      const response = await api.voiceData.createNewSegment(projectId, voiceData.id, prevSegment.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if(response.kind === 'ok') {
+        const updateSegment = segments.slice(0);
+        const initialWord = {confidence: 100, speaker: null, length: 1.00, start: 0, word: ''};
+        response.segment.wordAlignments.push(initialWord);
+        updateSegment.splice(segmentIndex + 1, 0, response.segment)
+        dispatch(setSegments(updateSegment));
+        dispatch(setUndo(
+            segmentIndex + 1,
+            0,
+            0,
+            EDIT_TYPE.createSegment));
+        updateCaretLocation(segmentIndex + 1 , 0, 0);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `handleCreateSegment - failed to create segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+    }
+  };
+
   const handleSegmentMergeCommand = async (caretLocation: SegmentAndWordIndex, isUndoAction: boolean = false) => {
     const { segmentIndex, wordIndex } = caretLocation;
     if(!caretLocation || caretLocation.segmentIndex === 0) {
@@ -731,7 +769,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         //cut out and replace the old segments
         const mergedSegments = segments.slice();
         const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        const newSegmentToFocus = document.getElementById(`segment-${segmentIndex - 1}`);
 
         mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         dispatch(setSegments(mergedSegments));
@@ -743,11 +780,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               EDIT_TYPE.merge));
         }
         // reset our new default baseline
-        // setSegments(mergedSegments);
-        internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
-        onUpdateUndoRedoStack(false, false);
-        newSegmentToFocus?.focus();
+        updateCaretLocation(segmentIndex - 1, internalSegmentsTracker[segmentIndex - 1].wordAlignments.length, 0);
+        internalSegmentsTracker = mergedSegments;
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -803,7 +838,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
               EDIT_TYPE.split));
         }
         internalSegmentsTracker = splitSegments;
-        onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
         log({
@@ -1210,6 +1244,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       case EDITOR_CONTROLS.rewindAudio:
       case EDITOR_CONTROLS.forwardAudio:
       case EDITOR_CONTROLS.audioPlayPause:
+      case EDITOR_CONTROLS.createWord:
         setEditorCommand(command);
         break;
       default:
@@ -1354,10 +1389,27 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     shortcutsStack = [];
   }
 
+  const handleEnterPress = async () => {
+    const { segmentIndex, wordIndex } = getSegmentAndWordIndex();
+    const selection = window.getSelection();
+    const segment = segments[segmentIndex].wordAlignments
+
+    if(wordIndex === segment.length - 1 && selection?.anchorOffset === segment[segment.length - 1].word.length) {
+      handleCreateSegment({segmentIndex, wordIndex});
+    } else if (wordIndex > 0) {
+      await handleSegmentSplitCommand({segmentIndex, wordIndex});
+      updateCaretLocation(segmentIndex + 1, 0, 0);
+    }
+  }
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
     const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
+    const caretLocation = getSegmentAndWordIndex();
+    const selection = window.getSelection();
 
+    if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
+    if(key === 'Enter') handleEnterPress();
     if(event.metaKey) shortcutsStack.push(META_KEYS.META);
     if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
     if(event.altKey) shortcutsStack.push(META_KEYS.ALT);
@@ -1389,9 +1441,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     handleWordTimeCreationClose();
   };
 
-  React.useEffect(() => {
-    internalSegmentsTracker = segments;
-  }, [segments]);
+  // React.useEffect(() => {
+  //   internalSegmentsTracker = segments;
+  // }, [segments]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {

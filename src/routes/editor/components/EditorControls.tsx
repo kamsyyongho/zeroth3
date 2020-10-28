@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { default as PublishIcon } from '@material-ui/icons/Publish';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import AddIcon from '@material-ui/icons/Add';
 import ToggleIcon from 'material-ui-toggle-icon';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 import ScaleLoader from 'react-spinners/ScaleLoader';
@@ -91,7 +92,7 @@ export enum EDITOR_CONTROLS {
   merge,
   split,
   toggleMore,
-  // createWord,
+  createWord,
   editSegmentTime,
   setThreshold,
   speaker,
@@ -112,7 +113,7 @@ const primaryControlOrder = [
   EDITOR_CONTROLS.merge,
   EDITOR_CONTROLS.split,
   EDITOR_CONTROLS.toggleMore,
-  // EDITOR_CONTROLS.createWord,
+  EDITOR_CONTROLS.createWord,
   EDITOR_CONTROLS.editSegmentTime,
   EDITOR_CONTROLS.setThreshold,
   // EDITOR_CONTROLS.debug,
@@ -302,14 +303,14 @@ export const EditorControls = (props: EditorControlsProps) => {
             disabled: disabledControls.includes(EDITOR_CONTROLS.toggleMore),
           };
           break;
-        // case EDITOR_CONTROLS.createWord:
-        //   label = translate('editor.createWord');
-        //   icon = <AddIcon />;
-        //   props = {
-        //     onClick: () => handleClick(EDITOR_CONTROLS.createWord),
-        //     disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
-        //   };
-        //   break;
+        case EDITOR_CONTROLS.createWord:
+          label = translate('editor.createWord');
+          icon = <AddIcon />;
+          props = {
+            onClick: () => handleClick(EDITOR_CONTROLS.createWord),
+            disabled: disabledControls.includes(EDITOR_CONTROLS.createWord),
+          };
+          break;
         case EDITOR_CONTROLS.editSegmentTime:
           label = translate('editor.editSegmentTime');
           icon = <SvgIcon><AiOutlineColumnWidth /></SvgIcon>;

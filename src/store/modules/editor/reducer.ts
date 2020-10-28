@@ -1,5 +1,3 @@
-import { handleActions } from 'redux-actions';
-// import {TYPE} from "./actions";
 import {
     Segment,
     SegmentResults,
@@ -27,14 +25,15 @@ export default function reducer( state = initialState, action: any) {
             return {playingLocation: state.playingLocation, ...action.payload};
         case 'SET_UNDO' :
             const { segmentIndex, wordIndex, offset, editType, word } = action.payload;
-            const updateSegment = JSON.parse(JSON.stringify(state.segments[segmentIndex]));
+            const updateSegment = {} as Segment;
+            Object.assign(updateSegment, state.segments[segmentIndex]);
             if(editType === EDIT_TYPE.text) updateSegment.wordAlignments[wordIndex].word = word;
             const undoData: RevertData = {
                 segment: updateSegment,
                 editType: editType,
                 textLocation: {segmentIndex, wordIndex, offset},
             }
-            return {...state, undoStack: [...state.undoStack, undoData]};
+            return Object.assign({}, state, {undoData});
         case 'ACTIVATE_UNDO' :
             const updateUndoStack = state.undoStack.slice(0);
             const lastUndoItem = updateUndoStack.pop();

@@ -27,7 +27,7 @@ export const DEFAULT_SHORTCUTS = {
     toggleAutoSeek: [META_KEYS.CONTROL, 'm'],
     toggleAutoScroll: [META_KEYS.CONTROL, 'n'],
     loop: [META_KEYS.CONTROL, 'l'],
-    //     createWord: ['Control', 'Enter'],
+    createWord: ['Control', 'Enter'],
     //     debug: [],
 };
 
