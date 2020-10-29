@@ -7,7 +7,8 @@ import {EDITOR_CONTROLS} from './EditorControls';
 import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor-page.helper';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUndo} from '../../../store/modules/editor/actions';
-
+import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
+import { useWindowSize } from '../../../hooks/window/useWindowSize';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -87,6 +88,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
     const [shouldSeek, setShouldSeek] = useGlobal('shouldSeek');
+    const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -96,6 +98,9 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [isChanged, setIsChanged] = React.useState<boolean>(false);
     const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
     const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
+    const windowSize = useWindowSize();
+    const windowHeight = windowSize.height;
+    const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
     const segments = useSelector((state: any) => state.editor.segments);
     const dispatch = useDispatch();
 
@@ -114,6 +119,13 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         selection?.removeAllRanges();
         selection?.addRange(range);
         node.focus();
+        checkLocationOnScreenAndScroll(
+            element.current,
+            editorElement,
+            editorContentHeight,
+            windowHeight);
+
+
 
         if(!autoSeekDisabled && node) {
             const playingLocation = node.id.split('-');

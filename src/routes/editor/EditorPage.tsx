@@ -761,16 +761,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
+      const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
       const segmentToMerge = internalSegmentsTracker[segmentIndex];
       const segmentToMergeInto = internalSegmentsTracker[segmentIndex - 1];
+      const mergedSegments = segments.slice();
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto.id, segmentToMerge.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = segments.slice();
-        const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
 
         mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         dispatch(setSegments(mergedSegments));
