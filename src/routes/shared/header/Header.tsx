@@ -92,8 +92,8 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
   const [currentProjectId, setCurrentProjectId] = React.useState<string | undefined>();
-  const organizations = useSelector((state: any) => state.common.organizations);
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const organizations = useSelector((state: any) => state.CommonReducer.organizations);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   const dispatch = useDispatch();
 

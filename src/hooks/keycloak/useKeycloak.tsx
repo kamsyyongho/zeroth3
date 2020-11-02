@@ -41,8 +41,8 @@ export const useKeycloak = () => {
   const [keycloakInitialized, setkeycloakInitialized] = useState(false);
   const [roles, setRoles] = useState<ROLES[]>([]);
   const [keycloak, setKeycloak] = useState(rawKeycloak);
-  const organizations = useSelector((state: any) => state.common.organizations);
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const organizations = useSelector((state: any) => state.CommonReducer.organizations);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   const dispatch = useDispatch();
 

@@ -88,8 +88,8 @@ export function Profile() {
   const [isChanged, setIsChanged] = React.useState(false);
   const [phone, setPhone] = React.useState('');
   const [isUpdatePhoneConfirmationOpen, setIsUpdatePhoneConfirmationOpen] = React.useState<boolean>(false);
-  const organizations = useSelector((state: any) => state.common.organizations);
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const organizations = useSelector((state: any) => state.CommonReducer.organizations);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();

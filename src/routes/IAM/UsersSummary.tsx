@@ -64,7 +64,7 @@ export function UsersSummary(props: UsersSummaryProps) {
   const [confirmationTitle, setConfirmationTitle] = React.useState('');
   const [confirmationSubmit, setConfirmationSubmit] = React.useState('');
   const [onConfirm, setOnConfirm] = React.useState<any>();
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   const dispatch = useDispatch();
 

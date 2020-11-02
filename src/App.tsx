@@ -33,7 +33,7 @@ function App() {
   const { keycloak, keycloakInitialized, initKeycloak } = useKeycloak();
   const { api, apiInitialized, initApi } = useApi();
   const i18n = useI18n();
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   React.useEffect(() => {
     initKeycloak();

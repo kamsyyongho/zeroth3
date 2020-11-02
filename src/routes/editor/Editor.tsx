@@ -195,7 +195,7 @@ export function Editor(props: EditorProps) {
   const [isCommentEnabled, setIsCommentEnabled] = React.useState<boolean>(false);
   const [commentInfo, setCommentInfo] = React.useState<any>({});
   const [reason, setReason] = React.useState<string>('');
-  const segments = useSelector((state: any) => state.editor.segments);
+  const segments = useSelector((state: any) => state.EditorReducer.segments);
   const dispatch = useDispatch();
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);

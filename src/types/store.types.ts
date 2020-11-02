@@ -39,7 +39,7 @@ export interface TextLocation {
 }
 
 export interface RevertData {
-    segment: Segment;
+    updatedSegment: Segment;
     editType: EDIT_TYPE;
     textLocation: TextLocation;
 }

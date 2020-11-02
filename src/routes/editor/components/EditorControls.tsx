@@ -164,10 +164,10 @@ export const EditorControls = (props: EditorControlsProps) => {
   const [shortcuts, setShortcuts] = useGlobal<any>('shortcuts');
   const [statusEl, setStatusEl] = React.useState<any>();
   const [isVoiceDataDetailOpen, setIsVoiceDataDetailOpen] = React.useState<boolean>(false)
-  const segments = useSelector((state: any) => state.editor.segments);
-  const undoStack = useSelector((state: any) => state.editor.undoStack);
-  const redoStack = useSelector((state: any) => state.editor.redoStack);
-  const unsavedSegmentIds = useSelector((state: any) => state.editor.unsavedSegmentIds);
+  const segments = useSelector((state: any) => state.EditorReducer.segments);
+  const undoStack = useSelector((state: any) => state.EditorReducer.undoStack);
+  const redoStack = useSelector((state: any) => state.EditorReducer.redoStack);
+  const unsavedSegmentIds = useSelector((state: any) => state.EditorReducer.unsavedSegmentIds);
 
   const handleThresholdClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
