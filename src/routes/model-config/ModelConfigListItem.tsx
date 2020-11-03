@@ -244,8 +244,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           alignContent='center'
           alignItems='center'
           justify='flex-start'
-          xs={1}
-        >
+          xs={1}>
           {!expanded ? <IconButton
             aria-label="options"
             onClick={event => handleActionClick(event, modelConfig)} >
