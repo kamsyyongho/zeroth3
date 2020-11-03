@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
-import { Box, Divider, Grid, Grow, TextField, Typography } from '@material-ui/core';
+import { Badge, Box, Divider, Grid, Grow, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -142,6 +143,23 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         alignItems='center'
         justify='flex-start'
       >
+        {
+          !expanded &&
+          <Grid
+              container
+              item
+              wrap='nowrap'
+              direction='column'
+              alignContent='flex-start'
+              alignItems='center'
+              justify='center'
+              className={classes.headerGrid}
+              xs={2}
+          >
+            <Typography className={classes.subTitle}>Training Status</Typography>
+            <FiberManualRecordIcon fontSize="large" color="primary" />
+          </Grid>
+        }
         <Grid
           container
           item
@@ -178,8 +196,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
             alignItems='flex-end'
             justify='center'
             className={classes.headerGrid}
-            xs={2}
-          >
+            xs={2}>
             <Typography className={classes.subTitle} >{`${translate('forms.languageModel')}:`}</Typography>
             <Typography className={classes.subTitle} >{`${translate('forms.acousticModel')}:`}</Typography>
           </Grid>
