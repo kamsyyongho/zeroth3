@@ -55,6 +55,10 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       top: -38,
       marginLeft: '20px',
     },
+    badgeHeaderNumber: {
+      top: -38,
+      marginLeft: '40px',
+    },
   }),
 );
 
@@ -65,6 +69,8 @@ export interface ModelConfigListItemProps {
   openConfirm: () => void;
   deleteLoading: boolean;
   expandProps: ModelConfigListItemExpandPropsFromParent;
+  openUpdateDeployment: () => void;
+  openDestroyDeploymentConfirmation: () => void;
 }
 
 
@@ -76,6 +82,8 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     expandProps,
     openConfirm,
     deleteLoading,
+    openUpdateDeployment,
+    openDestroyDeploymentConfirmation,
   } = props;
   const { acousticModel, languageModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
@@ -119,6 +127,14 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     setNameFormValue(event.target.value);
   };
 
+  const handleDeploymentUpdate = () => {
+    setModelConfigToEdit(modelConfig);
+    openUpdateDeployment();
+  };
+
+  const getTrainingStatusText = () => modelConfig.progress < 0 ? translate('models.trainingError') : modelConfig.progress < 100
+      ? translate('models.traningInProgress') : translate('models.trainingSuccess');
+
   const renderItemMenu = () => (<Menu
     id="list-item-menu"
     anchorEl={anchorEl}
@@ -138,13 +154,13 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
     </MenuItem>
-    <MenuItem onClick={confirmDelete}>
+    <MenuItem onClick={handleDeploymentUpdate}>
       <ListItemIcon>
         <UpdateIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.updateDeployment')}</Typography>
     </MenuItem>
-    <MenuItem onClick={confirmDelete}>
+    <MenuItem onClick={openDestroyDeploymentConfirmation}>
       <ListItemIcon>
         <HighlightOffIcon fontSize="small" />
       </ListItemIcon>
@@ -183,7 +199,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                       className={classes.headerGrid}
                       xs={2}
                   >
-                    <Typography className={classes.subTitle}>Training Status</Typography>
+                    <Typography className={classes.subTitle}>{getTrainingStatusText()}</Typography>
                     <FiberManualRecordIcon fontSize="large" color="primary" />
                   </Grid>
               </>
@@ -235,11 +251,11 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 wrap='nowrap'
                 direction='column'
                 alignContent='flex-end'
-                alignItems='flex-end'
+                alignItems='center'
                 justify='center'
                 className={classes.headerGrid}
                 xs={3}>
-              <Typography className={classes.subTitle} >{'Label for Model Maybe this Long'}</Typography>
+              <Typography className={classes.subTitle} >{modelConfig.alias || '-'}</Typography>
             </Grid>
           </Grow>
         </>
@@ -249,7 +265,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
               color="primary"
               badgeContent="Replicas"
               invisible={!!index}
-              className={classes.badgeHeader}
+              className={classes.badgeHeaderNumber}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
             <Grid
@@ -258,11 +274,11 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 wrap='nowrap'
                 direction='column'
                 alignContent='flex-end'
-                alignItems='flex-end'
+                alignItems='center'
                 justify='center'
                 className={classes.headerGrid}
                 xs={1}>
-              <Typography className={classes.subTitle} >{4}</Typography>
+              <Typography className={classes.subTitle} >{modelConfig.replicas || '-'}</Typography>
             </Grid>
           </Grow>
         </>
@@ -271,7 +287,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
               color="primary"
               badgeContent="Age"
               invisible={!!index}
-              className={classes.badgeHeader}
+              className={classes.badgeHeaderNumber}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
             <Grid
@@ -280,33 +296,39 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 wrap='nowrap'
                 direction='column'
                 alignContent='flex-end'
-                alignItems='flex-end'
+                alignItems='center'
                 justify='center'
                 className={classes.headerGrid}
                 xs={1}>
-              <Typography className={classes.subTitle} >{4}</Typography>
+              <Typography className={classes.subTitle} >{modelConfig.uptime ? new Date(modelConfig.uptime) : '-'}</Typography>
             </Grid>
           </Grow>
         </>
-        <Grid
-          container
-          item
-          wrap='nowrap'
-          direction='column'
-          alignContent='flex-end'
-          alignItems='flex-end'
-          justify='center'
-          xs={2}
-        >
-          <Grid item>
-            <TrainingChip progress={progress} />
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Rate"
+              invisible={!!index}
+              className={classes.badgeHeaderNumber}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grid
+              container
+              item
+              wrap='nowrap'
+              direction='column'
+              alignContent='flex-end'
+              alignItems='center'
+              justify='center'
+              xs={2}
+          >
+            <Grow in={!expanded}>
+              <Grid item>
+                <ChipList max={1} light labels={[`${acousticModel.sampleRate} Hz`]} />
+              </Grid>
+            </Grow>
           </Grid>
-          <Grow in={!expanded}>
-            <Grid item>
-              <ChipList max={1} light labels={[`${acousticModel.sampleRate} Hz`]} />
-            </Grid>
-          </Grow>
-        </Grid>
+        </>
+
         <Grid
           container
           item

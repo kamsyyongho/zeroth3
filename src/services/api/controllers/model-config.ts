@@ -289,4 +289,45 @@ export class ModelConfig extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async updateDeployment (
+      projectId: string,
+      modelConfigId: string,
+      replicas?: number,
+      alias?: string
+  ) {
+    const request =  {replicas, alias}
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
+        this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/update`),
+        request
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async destroyDeployment (projectId: string, modelConfigId: string) {
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
+        this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/destroy`),
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
 }
