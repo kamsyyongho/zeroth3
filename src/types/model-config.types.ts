@@ -9,6 +9,10 @@ export interface ModelConfig {
   progress: number;
   thresholdLr?: Threshold;
   thresholdHr?: Threshold;
+  alias?: string;
+  replicas?: number;
+  uptime?: Date;
+  workerCount?: number;
 }
 
 /**

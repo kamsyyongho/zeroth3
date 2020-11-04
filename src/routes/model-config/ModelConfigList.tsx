@@ -27,6 +27,7 @@ import { ModelConfigDialog } from './ModelConfigDialog';
 import { ModelConfigListItem } from './ModelConfigListItem';
 import { ImportConfigDialog } from './ImportConfigDialog';
 import {SelectFormField, SelectFormFieldOptions} from "../shared/form-fields/SelectFormField";
+import {UpdateDeploymentDialog} from './UpdateDeploymentDialog';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -53,6 +54,7 @@ export interface ModelConfigListProps {
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: string) => void;
+  handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
 }
 
 
@@ -70,18 +72,21 @@ export function ModelConfigList(props: ModelConfigListProps) {
     topGraphs,
     subGraphs,
     languageModels,
-    acousticModels
+    acousticModels,
+    handleModelUpdateSuccess,
   } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
-
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [modelConfigToEdit, setModelConfigToEdit] = React.useState<ModelConfig | undefined>(undefined);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
   const [isImportOpen, setIsImportOpen] = React.useState(false);
   const [organizationConfigSelectOptions, setOrganizationConfigSelectOptions] = React.useState<SelectFormFieldOptions>([]);
+  const [confirmationTitle, setConfirmationTitle] = React.useState('');
+  const [handleConfirmation, setHandleConfirmation] = React.useState();
+  const [isUpdateDeploymentOpen, setIsUpdateDeploymentOpen] = React.useState(false);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -152,7 +157,49 @@ export function ModelConfigList(props: ModelConfigListProps) {
     }
   };
 
+  const handleUpdateModelDeployment = async () => {
+    if (api?.modelConfig && modelConfigToEdit) {
+      setDeleteLoading(true);
+      const modelConfigId = modelConfigToEdit.id;
+      closeConfirmation();
+      const response = await api.modelConfig.destroyDeployment(project.id, modelConfigId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        snackbarError = undefined;
+        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+        handleModelConfigDelete(modelConfigId);
+      } else {
+        log({
+          file: `ModelConfigList.tsx`,
+          caller: `handleUpdateModelDeployment - failed to destroy model deployment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setDeleteLoading(false);
+    }
+  };
+
+  const openUpdateDeploymentDialog = () => setIsUpdateDeploymentOpen(true);
+
   const classes = useStyles();
+
+  const openDeleteConfirmation = () => {
+    setConfirmationTitle(`${translate('modelConfig.delete')}?`);
+    setHandleConfirmation(handleDelete);
+    setConfirmationOpen(true);
+  };
+
+  const openDestroyDeploymentConfirmation = () => {
+    setConfirmationTitle(translate('modelConfig.destroyDeployment'));
+    setConfirmationOpen(true);
+  }
 
   const renderListItems = () => {
     if (!modelConfigs.length) {
@@ -161,10 +208,13 @@ export function ModelConfigList(props: ModelConfigListProps) {
     return modelConfigs.map((modelConfig, index) => {
       return (
         <ModelConfigListItem
-          key={index}
+          key={`model-config-${index}`}
+          index={index}
           modelConfig={modelConfig}
           setModelConfigToEdit={setModelConfigToEdit}
           openConfirm={openConfirm}
+          openDestroyDeploymentConfirmation={openDestroyDeploymentConfirmation}
+          openUpdateDeployment={openUpdateDeploymentDialog}
           deleteLoading={deleteLoading}
           expandProps={{
             projectId: project.id,
@@ -240,10 +290,10 @@ export function ModelConfigList(props: ModelConfigListProps) {
       />
       <ConfirmationDialog
         destructive
-        titleText={`${translate('modelConfig.delete')}?`}
+        titleText={confirmationTitle}
         submitText={translate('common.delete')}
         open={confirmationOpen}
-        onSubmit={handleDelete}
+        onSubmit={handleConfirmation}
         onCancel={closeConfirmation}
       />
       <ImportConfigDialog
@@ -251,7 +301,15 @@ export function ModelConfigList(props: ModelConfigListProps) {
           projectId={project.id}
           onClose={() => setIsImportOpen(false)}
           onSuccess={handleImportSuccess}
-          selectOptions={organizationConfigSelectOptions} />
+          selectOptions={organizationConfigSelectOptions}
+      />
+      <UpdateDeploymentDialog
+          projectId={project.id}
+          modelConfig={modelConfigToEdit}
+          open={isUpdateDeploymentOpen}
+          onClose={() => setIsUpdateDeploymentOpen(false)}
+          onSuccess={handleModelUpdateSuccess}
+      />
     </Container>
   );
 }

@@ -17,7 +17,8 @@ const initialState: EditorStore = {
     unsavedSegmentIds: [],
 };
 
-export default function reducer( state = initialState, action: any) {
+export function EditorReducer( state = initialState, action: any) {
+    const copyState = JSON.parse(JSON.stringify(state));
     switch (action.type) {
         case 'SET_SEGMENTS' :
             return {...state, segments: action.payload};
@@ -26,20 +27,27 @@ export default function reducer( state = initialState, action: any) {
         case 'SET_UNDO' :
             const { segmentIndex, wordIndex, offset, editType, word } = action.payload;
             const updateSegment = {} as Segment;
-            Object.assign(updateSegment, state.segments[segmentIndex]);
+            Object.assign(updateSegment, copyState.segments[segmentIndex]);
             if(editType === EDIT_TYPE.text) updateSegment.wordAlignments[wordIndex].word = word;
+
             const undoData: RevertData = {
-                segment: updateSegment,
+                updatedSegment: updateSegment,
                 editType: editType,
                 textLocation: {segmentIndex, wordIndex, offset},
+            };
+            const undoStack = [...state.undoStack, undoData];
+            console.log('======= word in setUndo : ', state.segments[segmentIndex].wordAlignments[wordIndex].word);
+            return {
+                ...state,
+                undoStack,
             }
-            return Object.assign({}, state, {undoData});
+            // return Object.assign({}, state, {undoStack: undoStck});
         case 'ACTIVATE_UNDO' :
             const updateUndoStack = state.undoStack.slice(0);
             const lastUndoItem = updateUndoStack.pop();
             if(lastUndoItem) {
-                const unsavedUndoSegmentId = !state.unsavedSegmentIds.includes(lastUndoItem.segment.id)
-                    ? [...state.unsavedSegmentIds, lastUndoItem.segment.id] : state.unsavedSegmentIds;
+                const unsavedUndoSegmentId = !state.unsavedSegmentIds.includes(lastUndoItem.updatedSegment.id)
+                    ? [...state.unsavedSegmentIds, lastUndoItem.updatedSegment.id] : state.unsavedSegmentIds;
                 return {
                     ...state,
                     revertData: lastUndoItem,
@@ -47,14 +55,19 @@ export default function reducer( state = initialState, action: any) {
                     redoStack: [...state.redoStack, lastUndoItem],
                     unsavedSegmentIds: unsavedUndoSegmentId,
                 };
+                // return Object.assign({}, state, {
+                //     revertData: lastUndoItem,
+                //     undoStack: updateUndoStack,
+                //     redoStack: [...state.redoStack, lastUndoItem],
+                //     unsavedSegmentIds: unsavedUndoSegmentId });
             }
             break;
         case 'ACTIVATE_REDO' :
             const updateRedoStack = state.redoStack.slice(0);
             const lastRedoItem = updateRedoStack.pop();
             if(lastRedoItem) {
-                const unsavedRedoSegmentId = !state.unsavedSegmentIds.includes(lastRedoItem.segment.id)
-                    ? [...state.unsavedSegmentIds, lastRedoItem.segment.id] : state.unsavedSegmentIds;
+                const unsavedRedoSegmentId = !state.unsavedSegmentIds.includes(lastRedoItem.updatedSegment.id)
+                    ? [...state.unsavedSegmentIds, lastRedoItem.updatedSegment.id] : state.unsavedSegmentIds;
                 return {
                     ...state,
                     revertData: lastRedoItem,
@@ -62,6 +75,12 @@ export default function reducer( state = initialState, action: any) {
                     redoStack: updateRedoStack,
                     unsavedSegmentIds: unsavedRedoSegmentId,
                 };
+                // return Object.assign({}, state, {
+                //     revertData: lastRedoItem,
+                //     undoStack: [...state.undoStack, lastRedoItem],
+                //     redoStack: updateRedoStack,
+                //     unsavedSegmentIds: unsavedRedoSegmentId,
+                // });
             };
             break;
         case 'INIT_REVERT_DATA' :

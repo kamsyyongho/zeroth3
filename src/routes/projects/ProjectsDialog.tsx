@@ -76,7 +76,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [showEdit, setShowEdit] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
   const [selectedProject, setSelectedProject] = React.useState<Project | undefined>();
-  const currentOrganization = useSelector((state: any) => state.common.currentOrganization);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   const classes = useStyles();
   const theme = useTheme();

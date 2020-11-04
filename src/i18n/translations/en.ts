@@ -55,6 +55,8 @@ export const en: ResourceLanguage = {
       confirm: 'Approve',
       reject: 'Reject',
       comment: 'Comment',
+      updateDeployment: 'Update Deployment',
+      destroy: 'Destroy',
     },
     table: {
       page: 'Page',
@@ -345,6 +347,11 @@ export const en: ResourceLanguage = {
       noResults: 'No model configurations',
       manage: 'Manage configuration',
       helpText: 'Create a model configuration before uploading data.',
+      destroyDeployment: 'Destroy Deployment?',
+      alias: 'Label',
+      replicas: 'Replicas',
+      aliasGuide: 'Please input label for model',
+      replicasGuide: 'Please assign replica count for model',
     },
     models: {
       header: 'Model Management',
@@ -378,6 +385,7 @@ export const en: ResourceLanguage = {
       },
       trainingInProgress: 'Training in progress',
       trainingError: 'Training error',
+      trainingSuccess: 'Training Successful',
       subGraphHeader: 'Sub Graph Management',
       subGraphNoResults: 'No sub graphs',
       createSubGraph: 'Create sub graph',

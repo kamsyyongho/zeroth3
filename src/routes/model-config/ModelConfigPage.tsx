@@ -126,6 +126,16 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     setModelConfigs([...modelConfigs, modelConfig]);
   };
 
+  const handleModelUpdateSuccess = (modelConfig: ModelConfig) => {
+    const mapUpdatedConfigs = (model: ModelConfig) => {
+      if(model.id === modelConfig.id) return modelConfig;
+      return model;
+    };
+    const updatedModalConfigs = modelConfigs.map(mapUpdatedConfigs)
+
+    setModelConfigs(updatedModalConfigs);
+  };
+
   React.useEffect(() => {
     const getProject = async () => {
       if (api?.projects) {
@@ -352,6 +362,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleLanguageModelCreate={handleLanguageModelCreate}
+        handleModelUpdateSuccess={handleModelUpdateSuccess}
       />);
   };
 

@@ -7,7 +7,8 @@ import {EDITOR_CONTROLS} from './EditorControls';
 import {getSegmentAndWordIndex, isInputKey} from '../helpers/editor-page.helper';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUndo} from '../../../store/modules/editor/actions';
-
+import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
+import { useWindowSize } from '../../../hooks/window/useWindowSize';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -87,6 +88,7 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
     const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
     const [shouldSeek, setShouldSeek] = useGlobal('shouldSeek');
+    const [editorContentHeight, setEditorContentHeight] = useGlobal('editorContentHeight');
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
     const [isSelected, setIsSelected] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<SelectedIndex>();
@@ -94,9 +96,11 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const element = useRef<HTMLDivElement>(null);
     const [wordAlignments, setWordAlignments] = React.useState<WordAlignment[]>([] as WordAlignment[]);
     const [isChanged, setIsChanged] = React.useState<boolean>(false);
-    const [undoStack, setUndoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
-    const [redoStack, setRedoStack] = React.useState<UndoRedoStack>([] as UndoRedoStack);
-    const segments = useSelector((state: any) => state.editor.segments);
+    const windowSize = useWindowSize();
+    const windowHeight = windowSize.height;
+    const editorElement = React.useMemo(() => document.querySelector('#scroll-container'), []);
+    const segments = useSelector((state: any) => state.EditorReducer.segments);
+    const undoStack = useSelector((state: any) => state.EditorReducer.undoStack);
     const dispatch = useDispatch();
 
     const initTranscriptToRender = () => {
@@ -114,6 +118,13 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
         selection?.removeAllRanges();
         selection?.addRange(range);
         node.focus();
+        checkLocationOnScreenAndScroll(
+            element.current,
+            editorElement,
+            editorContentHeight,
+            windowHeight);
+
+
 
         if(!autoSeekDisabled && node) {
             const playingLocation = node.id.split('-');
@@ -298,8 +309,21 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
                             localWordForLengthComparison = wordAlignments[location.wordIndex]['word'];
                         }
                         setIsChanged(true);
+
                         if(localWordForLengthComparison.length !== word?.innerText.length) {
-                            dispatch(setUndo(segmentIndex, location.wordIndex, position?.focusOffset || 0, EDIT_TYPE.text, word?.innerText || ''));
+                            if(undoStack.length === 0) {
+                                dispatch(setUndo(
+                                    segmentIndex,
+                                    location.wordIndex,
+                                    position?.focusOffset || 0, EDIT_TYPE.text,
+                                    segment.wordAlignments[location.wordIndex].word));
+                            } else {
+                                dispatch(setUndo(
+                                    segmentIndex,
+                                    location.wordIndex,
+                                    position?.focusOffset || 0, EDIT_TYPE.text,
+                                    word?.innerText || ''));
+                            }
                             localWordForLengthComparison = word?.innerText || '';
                         }
                     }
@@ -354,10 +378,19 @@ export function EditWordAlignmentBlock(props: EditWordAlignmentBlockProps)  {
     const handleBlur = () => {
         const copySegment = JSON.parse(JSON.stringify(segment));
         const wordsInSegment = document.getElementsByClassName(`segment-${segmentIndex}`);
-        if(isChanged && playingLocation.segmentIndex !== segmentIndex) {
-            Array.from(wordsInSegment).forEach((wordEl: Element, index: number) => {
-                const htmlWord = wordEl as HTMLElement;
-                copySegment.wordAlignments[index].word = htmlWord.innerText;
+        if(isChanged) {
+            const wordElements = Array.from(wordsInSegment);
+            const elementWordIndex = wordElements.map(wordEl => Number(wordEl.id.split('-')[2]));
+
+            segment.wordAlignments.forEach((word: WordAlignment, index: number) => {
+                // const htmlWord = wordEl as HTMLElement;
+                if(elementWordIndex.includes(index)) {
+                    const wordElIndex = elementWordIndex.indexOf(index);
+                    const htmlWord = wordElements[wordElIndex] as HTMLElement;
+                    copySegment.wordAlignments[index].word = htmlWord.innerText || '';
+                } else {
+                    copySegment.wordAlignments[index].word = '';
+                }
             });
             updateSegment(segment.id, copySegment.wordAlignments, segment.transcript, segmentIndex);
             setIsChanged(false);

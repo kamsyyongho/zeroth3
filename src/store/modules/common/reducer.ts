@@ -13,7 +13,7 @@ const initialState: CommonStore = {
     currentOrganization: emptyOrganization,
 };
 
-export default function reducer( state = initialState, action: any) {
+export function CommonReducer( state = initialState, action: any) {
     switch (action.type) {
         case SET_ORGANIZATIONS:
             return {...state, organizations: action.payload};

@@ -203,11 +203,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
   // const [segments, setSegments] = React.useState<Segment[]>([]);
-  const segments = useSelector((state: any) => state.editor.segments);
-  const revertData = useSelector((state: any) => state.editor.revertData);
-  const undoStack = useSelector((state: any) => state.editor.undoStack);
-  const redoStack = useSelector((state: any) => state.editor.redoStack);
-  const unsavedSegmentIds = useSelector((state: any) => state.editor.unsavedSegmentIds);
+  const segments = useSelector((state: any) => state.EditorReducer.segments);
+  const revertData = useSelector((state: any) => state.EditorReducer.revertData);
+  const undoStack = useSelector((state: any) => state.EditorReducer.undoStack);
+  const redoStack = useSelector((state: any) => state.EditorReducer.redoStack);
+  const unsavedSegmentIds = useSelector((state: any) => state.EditorReducer.unsavedSegmentIds);
   const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
@@ -761,16 +761,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
+      const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
       const segmentToMerge = internalSegmentsTracker[segmentIndex];
       const segmentToMergeInto = internalSegmentsTracker[segmentIndex - 1];
+      const mergedSegments = segments.slice();
       const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto.id, segmentToMerge.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = segments.slice();
-        const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
 
         mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
         dispatch(setSegments(mergedSegments));
@@ -978,6 +978,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   /** The worker used to calculate the current playing time */
   const RemoteWorker = React.useMemo(() => {
+    console.log('===== editorPage Rerenders =====');
     if (window.Worker) {
       const worker = new Worker(workerPath);
       worker.addEventListener('message', message => {
@@ -1288,9 +1289,11 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           break;
         case 'undo':
           if(undoStack.length) dispatch(activateUndo());
+          // dispatch(activateUndo());
           break;
         case 'redo':
           if(redoStack.length) dispatch(activateRedo());
+          // dispatch(activateRedo());
           break;
         case 'merge':
           handleSegmentMergeCommand(caretLocation);
@@ -1343,7 +1346,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const revertTextUpdate = () => {
     const updateSegments = segments.slice(0);
     const { segmentIndex, wordIndex, offset } = revertData.textLocation;
-    updateSegments[segmentIndex] = revertData.segment;
+    updateSegments[segmentIndex] = revertData.updatedSegment;
     setTimeout(() => {
       updateCaretLocation(segmentIndex, wordIndex, offset);
     }, 0);
@@ -1517,7 +1520,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     return <Forbidden />;
   }
 
-  const disabledControls = getDisabledControls(segments, canUndo, canRedo, saveSegmentsLoading, confirmSegmentsLoading);
+  const disabledControls = getDisabledControls(segments, !!undoStack.length, !!redoStack.length, saveSegmentsLoading, confirmSegmentsLoading);
 
   const editorHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT);
   const editorContainerStyle: React.CSSProperties = {
