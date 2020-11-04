@@ -85,7 +85,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [isImportOpen, setIsImportOpen] = React.useState(false);
   const [organizationConfigSelectOptions, setOrganizationConfigSelectOptions] = React.useState<SelectFormFieldOptions>([]);
   const [confirmationTitle, setConfirmationTitle] = React.useState('');
-  const [handleConfirmation, setHandleConfirmation] = React.useState();
+  const [handleConfirmation, setHandleConfirmation] = React.useState<any>();
   const [isUpdateDeploymentOpen, setIsUpdateDeploymentOpen] = React.useState(false);
 
   const openDialog = () => setDialogOpen(true);
