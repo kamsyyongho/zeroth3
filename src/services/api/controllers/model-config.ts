@@ -9,6 +9,8 @@ import {
   postModelConfigResult,
   ProblemKind,
   ServerError,
+  updateDeployment,
+  destroyDeployment,
 } from '../types';
 import {ThresholdRequest, updateModelConfigResult, updateThresholdResult,} from '../types/model-config.types';
 import {ParentApi} from './parent-api';
@@ -295,7 +297,7 @@ export class ModelConfig extends ParentApi {
       modelConfigId: string,
       replicas?: number,
       alias?: string
-  ) {
+  ): Promise<updateDeployment> {
     const request =  {replicas, alias}
     const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
         this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/update`),
@@ -314,7 +316,7 @@ export class ModelConfig extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async destroyDeployment (projectId: string, modelConfigId: string) {
+  async destroyDeployment (projectId: string, modelConfigId: string): Promise<destroyDeployment> {
     const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
         this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/destroy`),
     );

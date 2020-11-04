@@ -35,3 +35,5 @@ export type updateModelConfigResult =
 export type updateThresholdResult = { kind: 'ok' } | GeneralApiProblem;
 export type importModelConfig = { kind: 'ok'; modelConfig: ModelConfig } | GeneralApiProblem;
 export type deleteModelConfigResult = { kind: 'ok' } | GeneralApiProblem;
+export type updateDeployment = { kind: 'ok' } | GeneralApiProblem;
+export type destroyDeployment = { kind: 'ok' } | GeneralApiProblem;
