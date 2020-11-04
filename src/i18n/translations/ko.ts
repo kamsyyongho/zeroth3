@@ -54,6 +54,8 @@ export const ko: ResourceLanguage = {
       confirm: '승인하기',
       reject: '반려하기',
       comment: '코멘트',
+      updateDeployment: '배포 수정',
+      destroy: '배포 삭제',
     },
     table: {
       page: '페이지',

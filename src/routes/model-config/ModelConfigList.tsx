@@ -161,7 +161,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
     return modelConfigs.map((modelConfig, index) => {
       return (
         <ModelConfigListItem
-          key={index}
+          key={`model-config-${index}`}
+          index={index}
           modelConfig={modelConfig}
           setModelConfigToEdit={setModelConfigToEdit}
           openConfirm={openConfirm}

@@ -10,6 +10,8 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import UpdateIcon from '@material-ui/icons/Update';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import clsx from 'clsx';
 import React from 'reactn';
@@ -49,10 +51,15 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     fullWidth: {
       width: '100%',
     },
+    badgeHeader: {
+      top: -38,
+      marginLeft: '20px',
+    },
   }),
 );
 
 export interface ModelConfigListItemProps {
+  index: number;
   modelConfig: ModelConfig;
   setModelConfigToEdit: (modelConfig: ModelConfig) => void;
   openConfirm: () => void;
@@ -63,6 +70,7 @@ export interface ModelConfigListItemProps {
 
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
+    index,
     modelConfig,
     setModelConfigToEdit,
     expandProps,
@@ -130,6 +138,18 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
     </MenuItem>
+    <MenuItem onClick={confirmDelete}>
+      <ListItemIcon>
+        <UpdateIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('common.updateDeployment')}</Typography>
+    </MenuItem>
+    <MenuItem onClick={confirmDelete}>
+      <ListItemIcon>
+        <HighlightOffIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('common.destroy')}</Typography>
+    </MenuItem>
   </Menu>);
 
   const renderHeader = () => {
@@ -145,78 +165,129 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       >
         {
           !expanded &&
+              <>
+                <Badge
+                    color="primary"
+                    badgeContent="Status"
+                    invisible={!!index}
+                    className={classes.badgeHeader}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+                <Grid
+                      container
+                      item
+                      wrap='nowrap'
+                      direction='column'
+                      alignContent='flex-start'
+                      alignItems='center'
+                      justify='center'
+                      className={classes.headerGrid}
+                      xs={2}
+                  >
+                    <Typography className={classes.subTitle}>Training Status</Typography>
+                    <FiberManualRecordIcon fontSize="large" color="primary" />
+                  </Grid>
+              </>
+        }
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Name"
+              invisible={!!index}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grid
               container
               item
               wrap='nowrap'
               direction='column'
               alignContent='flex-start'
-              alignItems='center'
+              alignItems='flex-start'
               justify='center'
-              className={classes.headerGrid}
-              xs={2}
-          >
-            <Typography className={classes.subTitle}>Training Status</Typography>
-            <FiberManualRecordIcon fontSize="large" color="primary" />
+              className={classes.headerNameGrid}
+              xs={4}>
+            <Collapse in={!expanded}>
+              <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
+            </Collapse>
+            <Collapse in={expanded}>
+              <TextField
+                  className={clsx(!expanded && classes.hiddenTitle)}
+                  helperText={!nameFormValue && translate("forms.validation.required")}
+                  error={!nameFormValue}
+                  fullWidth
+                  onChange={handleNameChange}
+                  value={nameFormValue}
+              />
+            </Collapse>
           </Grid>
-        }
-        <Grid
-          container
-          item
-          wrap='nowrap'
-          direction='column'
-          alignContent='flex-start'
-          alignItems='flex-start'
-          justify='center'
-          className={classes.headerNameGrid}
-          xs={4}
-        >
+        </>
 
-          <Collapse in={!expanded}>
-            <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
-          </Collapse>
-          <Collapse in={expanded}>
-            <TextField
-              className={clsx(!expanded && classes.hiddenTitle)}
-              helperText={!nameFormValue && translate("forms.validation.required")}
-              error={!nameFormValue}
-              fullWidth
-              onChange={handleNameChange}
-              value={nameFormValue}
-            />
-          </Collapse>
-        </Grid>
-        <Grow in={!expanded}>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='column'
-            alignContent='flex-end'
-            alignItems='flex-end'
-            justify='center'
-            className={classes.headerGrid}
-            xs={2}>
-            <Typography className={classes.subTitle} >{`${translate('forms.languageModel')}:`}</Typography>
-            <Typography className={classes.subTitle} >{`${translate('forms.acousticModel')}:`}</Typography>
-          </Grid>
-        </Grow>
-        <Grow in={!expanded}>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='column'
-            alignContent='flex-start'
-            alignItems='flex-start'
-            justify='center'
-            className={classes.headerGrid}
-            xs={3}
-          >
-            <Typography >{languageModel.name}</Typography>
-            <Typography >{acousticModel.name}</Typography>
-          </Grid>
-        </Grow>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Label"
+              invisible={!!index}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grow in={!expanded}>
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='flex-end'
+                justify='center'
+                className={classes.headerGrid}
+                xs={3}>
+              <Typography className={classes.subTitle} >{'Label for Model Maybe this Long'}</Typography>
+            </Grid>
+          </Grow>
+        </>
+
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Replicas"
+              invisible={!!index}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grow in={!expanded}>
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='flex-end'
+                justify='center'
+                className={classes.headerGrid}
+                xs={1}>
+              <Typography className={classes.subTitle} >{4}</Typography>
+            </Grid>
+          </Grow>
+        </>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Age"
+              invisible={!!index}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grow in={!expanded}>
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='flex-end'
+                justify='center'
+                className={classes.headerGrid}
+                xs={1}>
+              <Typography className={classes.subTitle} >{4}</Typography>
+            </Grid>
+          </Grow>
+        </>
         <Grid
           container
           item
@@ -294,7 +365,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         justify='flex-start'
       >
         {renderHeader()}
-        {expanded && <Divider className={classes.divider} />}
+        {expanded && <Divider className={classes.divider}/>}
         {renderExpandedEdit()}
       </Grid>
     </Box>

@@ -55,6 +55,8 @@ export const en: ResourceLanguage = {
       confirm: 'Approve',
       reject: 'Reject',
       comment: 'Comment',
+      updateDeployment: 'Update Deployment',
+      destroy: 'Destroy',
     },
     table: {
       page: 'Page',
