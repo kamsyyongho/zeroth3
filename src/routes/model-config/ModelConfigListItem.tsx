@@ -73,9 +73,6 @@ export interface ModelConfigListItemProps {
   openDestroyDeploymentConfirmation: () => void;
 }
 
-
-const testDate = "Thu Nov 05 00:40:06 GMT 2020";
-
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
     index,
