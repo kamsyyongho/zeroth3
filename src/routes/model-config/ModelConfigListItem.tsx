@@ -73,7 +73,6 @@ export interface ModelConfigListItemProps {
   openDestroyDeploymentConfirmation: () => void;
 }
 
-
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
     index,
@@ -299,7 +298,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 justify='center'
                 className={classes.headerGrid}
                 xs={1}>
-              <Typography className={classes.subTitle} >{modelConfig.uptime ? new Date(modelConfig.uptime) : '-'}</Typography>
+              <Typography className={classes.subTitle} >{modelConfig.uptime || '-'}</Typography>
             </Grid>
           </Grow>
         </>
