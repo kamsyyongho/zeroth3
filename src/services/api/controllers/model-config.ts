@@ -317,7 +317,7 @@ export class ModelConfig extends ParentApi {
   }
 
   async destroyDeployment (projectId: string, modelConfigId: string): Promise<destroyDeployment> {
-    const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.delete(
         this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/destroy`),
     );
 

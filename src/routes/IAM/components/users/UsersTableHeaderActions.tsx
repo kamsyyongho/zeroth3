@@ -36,9 +36,21 @@ interface UsersTableHeaderActionsProps {
 export default function UsersTableHeaderActions(props: UsersTableHeaderActionsProps) {
   const { users, usersToDelete, confirmDelete, handleInviteOpen, deleteLoading, handleVoiceMaskingRequest, voiceMaskingRequired } = props;
   const { translate } = React.useContext(I18nContext);
+  const [localVoiceMaskingRequired, setLocalVoiceMaskingRequired] = React.useState(false);
 
   const classes = useStyles();
   const theme = useTheme();
+
+  const handleVoiceMaskingSwitch = (event: any) => {
+    setLocalVoiceMaskingRequired(event.target.checked);
+    handleVoiceMaskingRequest();
+  };
+
+  React.useEffect(() => {
+    if(localVoiceMaskingRequired !== voiceMaskingRequired) {
+      setLocalVoiceMaskingRequired(voiceMaskingRequired);
+    }
+  }, [voiceMaskingRequired, localVoiceMaskingRequired])
 
   return (
     <Grid container spacing={1} direction="column" alignItems="flex-end">
@@ -84,7 +96,7 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
           {/*    inputProps={{ 'aria-label': 'primary checkbox' }}*/}
           {/*/>*/}
           <FormControlLabel
-              control={<Switch color="primary" />}
+              control={<Switch color="primary" value={voiceMaskingRequired} onChange={handleVoiceMaskingSwitch} />}
               label={translate("IAM.requestVoiceMasking")}
               labelPlacement="top" />
         </Grid>

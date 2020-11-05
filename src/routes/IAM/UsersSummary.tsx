@@ -294,7 +294,7 @@ export function UsersSummary(props: UsersSummaryProps) {
                   handleInviteOpen={handleInviteOpen}
                   deleteLoading={deleteLoading}
                   handleVoiceMaskingRequest={handleVoiceMaskingRequest}
-                  voiceMaskingRequired={currentOrganization.voiceMaskingRequired}/>
+                  voiceMaskingRequired={!!currentOrganization.voiceMaskingRequired}/>
               <UsersTable
                   users={users}
                   roles={roles}
