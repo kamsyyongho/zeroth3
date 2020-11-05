@@ -11,7 +11,7 @@ export interface ModelConfig {
   thresholdHr?: Threshold;
   alias?: string;
   replicas?: number;
-  uptime?: Date;
+  uptime?: string;
   workerCount?: number;
 }
 
