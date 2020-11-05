@@ -52,11 +52,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       width: '100%',
     },
     badgeHeader: {
-      top: -38,
+      alignSelf: 'flex-start',
       marginLeft: '20px',
     },
     badgeHeaderNumber: {
-      top: -38,
+      alignSelf: 'flex-start',
       marginLeft: '40px',
     },
   }),
