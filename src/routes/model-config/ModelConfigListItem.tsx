@@ -74,6 +74,8 @@ export interface ModelConfigListItemProps {
 }
 
 
+const testDate = "Thu Nov 05 00:40:06 GMT 2020";
+
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
     index,
@@ -299,7 +301,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 justify='center'
                 className={classes.headerGrid}
                 xs={1}>
-              <Typography className={classes.subTitle} >{modelConfig.uptime ? new Date(modelConfig.uptime) : '-'}</Typography>
+              <Typography className={classes.subTitle} >{modelConfig.uptime || '-'}</Typography>
             </Grid>
           </Grow>
         </>
