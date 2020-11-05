@@ -300,7 +300,7 @@ export class ModelConfig extends ParentApi {
   ): Promise<updateDeployment> {
     const request =  {replicas, alias}
     const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
-        this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/update`),
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/update`),
         request
     );
 
@@ -318,7 +318,7 @@ export class ModelConfig extends ParentApi {
 
   async destroyDeployment (projectId: string, modelConfigId: string): Promise<destroyDeployment> {
     const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
-        this.getPathWithOrganization(`/projects/${projectId}/modelConfigId/${modelConfigId}/destroy`),
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/destroy`),
     );
 
     if (!response.ok) {

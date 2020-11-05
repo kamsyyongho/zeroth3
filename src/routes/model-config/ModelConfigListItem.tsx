@@ -184,7 +184,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
                 <Badge
                     color="primary"
                     badgeContent="Status"
-                    invisible={!!index}
+                    invisible={!!index || expanded}
                     className={classes.badgeHeader}
                     anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
                 <Grid
@@ -240,7 +240,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           <Badge
               color="primary"
               badgeContent="Label"
-              invisible={!!index}
+              invisible={!!index || expanded}
               className={classes.badgeHeader}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
@@ -262,7 +262,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           <Badge
               color="primary"
               badgeContent="Replicas"
-              invisible={!!index}
+              invisible={!!index || expanded}
               className={classes.badgeHeaderNumber}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
@@ -284,7 +284,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           <Badge
               color="primary"
               badgeContent="Age"
-              invisible={!!index}
+              invisible={!!index || expanded}
               className={classes.badgeHeaderNumber}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
@@ -306,7 +306,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           <Badge
               color="primary"
               badgeContent="Rate"
-              invisible={!!index}
+              invisible={!!index || expanded}
               className={classes.badgeHeaderNumber}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grid
