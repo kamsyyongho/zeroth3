@@ -259,7 +259,6 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
             </Grid>
           </Grow>
         </>
-
         <>
           <Badge
               color="primary"
