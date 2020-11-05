@@ -4,6 +4,10 @@ import { useTheme, createStyles, makeStyles } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SendIcon from '@material-ui/icons/Send';
 import GraphicEqIcon from '@material-ui/icons/GraphicEq';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Switch from '@material-ui/core/Switch';
 import MoonLoader from 'react-spinners/MoonLoader';
 import React from 'reactn';
 import { I18nContext } from '../../../../hooks/i18n/I18nContext';
@@ -26,10 +30,11 @@ interface UsersTableHeaderActionsProps {
   handleInviteOpen: () => void;
   deleteLoading: boolean;
   handleVoiceMaskingRequest: () => void;
+  voiceMaskingRequired: boolean;
 }
 
 export default function UsersTableHeaderActions(props: UsersTableHeaderActionsProps) {
-  const { users, usersToDelete, confirmDelete, handleInviteOpen, deleteLoading, handleVoiceMaskingRequest } = props;
+  const { users, usersToDelete, confirmDelete, handleInviteOpen, deleteLoading, handleVoiceMaskingRequest, voiceMaskingRequired } = props;
   const { translate } = React.useContext(I18nContext);
 
   const classes = useStyles();
@@ -64,13 +69,24 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
           </Button>
         </Grid>
         <Grid item >
-          <Button
-              variant="contained"
-              color="primary"
-              onClick={handleVoiceMaskingRequest}
-              startIcon={<GraphicEqIcon />}
-          >{translate("IAM.requestVoiceMasking")}
-          </Button>
+          {/*<Button*/}
+          {/*    variant="contained"*/}
+          {/*    color="primary"*/}
+          {/*    onClick={handleVoiceMaskingRequest}*/}
+          {/*    startIcon={<GraphicEqIcon />}*/}
+          {/*>{translate("IAM.requestVoiceMasking")}*/}
+          {/*</Button>*/}
+          {/*<Switch*/}
+          {/*    checked={voiceMaskingRequired}*/}
+          {/*    onChange={handleVoiceMaskingRequest}*/}
+          {/*    color="primary"*/}
+          {/*    name="voiceMaskingSwitch"*/}
+          {/*    inputProps={{ 'aria-label': 'primary checkbox' }}*/}
+          {/*/>*/}
+          <FormControlLabel
+              control={<Switch color="primary" />}
+              label={translate("IAM.requestVoiceMasking")}
+              labelPlacement="top" />
         </Grid>
       </Grid>
     </Grid>

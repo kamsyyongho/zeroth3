@@ -125,6 +125,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const closeConfirmation = () => {
     setConfirmationOpen(false);
+    setConfirmationTitle('');
+    setHandleConfirmation(null);
     setModelConfigToEdit(undefined);
   };
 
@@ -153,11 +155,12 @@ export function ModelConfigList(props: ModelConfigListProps) {
         }
       }
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      closeConfirmation();
       setDeleteLoading(false);
     }
   };
 
-  const handleUpdateModelDeployment = async () => {
+  const handleDestroyModelDeployment = async () => {
     if (api?.modelConfig && modelConfigToEdit) {
       setDeleteLoading(true);
       const modelConfigId = modelConfigToEdit.id;
@@ -171,7 +174,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
       } else {
         log({
           file: `ModelConfigList.tsx`,
-          caller: `handleUpdateModelDeployment - failed to destroy model deployment`,
+          caller: `handleDestroyModelDeployment - failed to destroy model deployment`,
           value: response,
           important: true,
         });
@@ -182,6 +185,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
         }
       }
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      closeConfirmation();
       setDeleteLoading(false);
     }
   };
@@ -192,12 +196,13 @@ export function ModelConfigList(props: ModelConfigListProps) {
 
   const openDeleteConfirmation = () => {
     setConfirmationTitle(`${translate('modelConfig.delete')}?`);
-    setHandleConfirmation(handleDelete);
+    setHandleConfirmation(() => handleDelete);
     setConfirmationOpen(true);
   };
 
   const openDestroyDeploymentConfirmation = () => {
     setConfirmationTitle(translate('modelConfig.destroyDeployment'));
+    setHandleConfirmation(() => handleDestroyModelDeployment);
     setConfirmationOpen(true);
   }
 
@@ -212,7 +217,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           index={index}
           modelConfig={modelConfig}
           setModelConfigToEdit={setModelConfigToEdit}
-          openConfirm={openConfirm}
+          openModelDeleteConfirmation={openDeleteConfirmation}
           openDestroyDeploymentConfirmation={openDestroyDeploymentConfirmation}
           openUpdateDeployment={openUpdateDeploymentDialog}
           deleteLoading={deleteLoading}

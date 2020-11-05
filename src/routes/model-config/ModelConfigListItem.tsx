@@ -66,11 +66,11 @@ export interface ModelConfigListItemProps {
   index: number;
   modelConfig: ModelConfig;
   setModelConfigToEdit: (modelConfig: ModelConfig) => void;
-  openConfirm: () => void;
   deleteLoading: boolean;
   expandProps: ModelConfigListItemExpandPropsFromParent;
   openUpdateDeployment: () => void;
   openDestroyDeploymentConfirmation: () => void;
+  openModelDeleteConfirmation: () => void;
 }
 
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
@@ -79,10 +79,10 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     modelConfig,
     setModelConfigToEdit,
     expandProps,
-    openConfirm,
     deleteLoading,
     openUpdateDeployment,
     openDestroyDeploymentConfirmation,
+    openModelDeleteConfirmation,
   } = props;
   const { acousticModel, languageModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
@@ -119,7 +119,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
 
   const confirmDelete = () => {
     handleActionClose();
-    openConfirm();
+    openModelDeleteConfirmation();
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
