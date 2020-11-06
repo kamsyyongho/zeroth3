@@ -54,6 +54,7 @@ export const ko: ResourceLanguage = {
       confirm: '승인하기',
       reject: '반려하기',
       comment: '코멘트',
+      reresh: '새로고침',
     },
     table: {
       page: '페이지',

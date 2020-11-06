@@ -28,6 +28,7 @@ import { ModelConfigListItem } from './ModelConfigListItem';
 import { ImportConfigDialog } from './ImportConfigDialog';
 import {SelectFormField, SelectFormFieldOptions} from "../shared/form-fields/SelectFormField";
 import {UpdateDeploymentDialog} from './UpdateDeploymentDialog';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -37,6 +38,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     cardContent: {
       padding: 0,
     },
+    headerAction: {
+      alignSelf: 'auto',
+      marginTop: '0px',
+      marginRight: '0px',
+    }
   }),
 );
 
@@ -55,6 +61,7 @@ export interface ModelConfigListProps {
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
+  getModelConfigs: () => void;
 }
 
 
@@ -74,6 +81,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     languageModels,
     acousticModels,
     handleModelUpdateSuccess,
+    getModelConfigs,
   } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
@@ -261,9 +269,19 @@ export function ModelConfigList(props: ModelConfigListProps) {
     <Container >
       <Card elevation={0} className={classes.card} >
         <CardHeader
+          classes={{ action: classes.headerAction }}
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
           action={canModify &&
           <>
+            <Button
+                color="primary"
+                variant='outlined'
+                style={{ marginRight: '10px' }}
+                onClick={getModelConfigs}
+                startIcon={<RefreshIcon />}
+            >
+              {translate('common.refresh')}
+            </Button>
             <Button
                 color="primary"
                 variant='outlined'
@@ -274,8 +292,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
             </Button>
             <Button
                 color="primary"
-                style={{ marginLeft: '10px' }}
                 variant='outlined'
+                style={{ marginLeft: '10px' }}
                 onClick={openImportDialog}
                 startIcon={<AddIcon />}
             >

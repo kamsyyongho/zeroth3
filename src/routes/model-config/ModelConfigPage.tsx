@@ -136,6 +136,30 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     setModelConfigs(updatedModalConfigs);
   };
 
+  const getModelConfigs = async () => {
+    if (api?.modelConfig) {
+      const response = await api.modelConfig.getModelConfigs(projectId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        setModelConfigs(response.modelConfigs);
+      } else {
+        log({
+          file: `ModelConfigPage.tsx`,
+          caller: `getModelConfigs - failed to get model configs`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setModelConfigsLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     const getProject = async () => {
       if (api?.projects) {
@@ -169,29 +193,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         }
         snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setProjectLoading(false);
-      }
-    };
-    const getModelConfigs = async () => {
-      if (api?.modelConfig) {
-        const response = await api.modelConfig.getModelConfigs(projectId);
-        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-        if (response.kind === 'ok') {
-          setModelConfigs(response.modelConfigs);
-        } else {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getModelConfigs - failed to get model configs`,
-            value: response,
-            important: true,
-          });
-          snackbarError.isError = true;
-          const { serverError } = response;
-          if (serverError) {
-            snackbarError.errorText = serverError.message || "";
-          }
-        }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-        setModelConfigsLoading(false);
       }
     };
     const getTopGraphs = async () => {
@@ -363,6 +364,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleSubGraphListUpdate={handleSubGraphListUpdate}
         handleLanguageModelCreate={handleLanguageModelCreate}
         handleModelUpdateSuccess={handleModelUpdateSuccess}
+        getModelConfigs={getModelConfigs}
       />);
   };
 

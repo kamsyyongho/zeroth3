@@ -55,6 +55,7 @@ export const en: ResourceLanguage = {
       confirm: 'Approve',
       reject: 'Reject',
       comment: 'Comment',
+      reresh: '새로고침',
     },
     table: {
       page: 'Page',
