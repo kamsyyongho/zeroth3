@@ -55,8 +55,7 @@ export const en: ResourceLanguage = {
       confirm: 'Approve',
       reject: 'Reject',
       comment: 'Comment',
-      updateDeployment: 'Update Deployment',
-      destroy: 'Destroy',
+      reresh: '새로고침',
     },
     table: {
       page: 'Page',
@@ -352,6 +351,11 @@ export const en: ResourceLanguage = {
       replicas: 'Replicas',
       aliasGuide: 'Please input label for model',
       replicasGuide: 'Please assign replica count for model',
+      updateDeploymentHeader: 'Update Deployment',
+      deployModelHeader: 'Deploy Model',
+      updateDeployment: 'Update Deployment',
+      destroy: 'Destroy',
+      deployModel: 'Deploy Model',
     },
     models: {
       header: 'Model Management',

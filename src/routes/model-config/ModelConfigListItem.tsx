@@ -21,6 +21,7 @@ import { ModelConfig } from '../../types';
 import { ChipList } from '../shared/ChipList';
 import { TrainingChip } from '../shared/TrainingChip';
 import { ModelConfigListItemExpand, ModelConfigListItemExpandPropsFromParent } from './ModelConfigListItemExpand';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -71,6 +72,7 @@ export interface ModelConfigListItemProps {
   openUpdateDeployment: () => void;
   openDestroyDeploymentConfirmation: () => void;
   openModelDeleteConfirmation: () => void;
+  openDeployModelDialog: () => void;
 }
 
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
@@ -83,6 +85,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     openUpdateDeployment,
     openDestroyDeploymentConfirmation,
     openModelDeleteConfirmation,
+    openDeployModelDialog,
   } = props;
   const { acousticModel, languageModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
@@ -153,17 +156,23 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
     </MenuItem>
+    <MenuItem onClick={openDeployModelDialog}>
+      <ListItemIcon>
+        <CloudUploadIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('modelConfig.deployModel')}</Typography>
+    </MenuItem>
     <MenuItem onClick={handleDeploymentUpdate}>
       <ListItemIcon>
         <UpdateIcon fontSize="small" />
       </ListItemIcon>
-      <Typography variant="inherit">{translate('common.updateDeployment')}</Typography>
+      <Typography variant="inherit">{translate('modelConfig.updateDeployment')}</Typography>
     </MenuItem>
     <MenuItem onClick={openDestroyDeploymentConfirmation}>
       <ListItemIcon>
         <HighlightOffIcon fontSize="small" />
       </ListItemIcon>
-      <Typography variant="inherit">{translate('common.destroy')}</Typography>
+      <Typography variant="inherit">{translate('modelConfig.destroy')}</Typography>
     </MenuItem>
   </Menu>);
 

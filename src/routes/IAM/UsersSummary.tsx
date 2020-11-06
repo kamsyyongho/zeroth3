@@ -293,7 +293,7 @@ export function UsersSummary(props: UsersSummaryProps) {
                   confirmDelete={confirmDelete}
                   handleInviteOpen={handleInviteOpen}
                   deleteLoading={deleteLoading}
-                  handleVoiceMaskingRequest={handleVoiceMaskingRequest}
+                  handleVoiceMaskingRequest={requestVoiceMasking}
                   voiceMaskingRequired={!!currentOrganization.voiceMaskingRequired}/>
               <UsersTable
                   users={users}

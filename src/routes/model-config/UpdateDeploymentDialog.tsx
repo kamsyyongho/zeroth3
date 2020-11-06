@@ -34,6 +34,7 @@ interface ImportConfigDialogProps {
     modelConfig?: ModelConfig;
     open: boolean;
     hideBackdrop?: boolean;
+    isUpdateDeployment: boolean;
     onClose: () => void;
     onSuccess: (modelConfig: ModelConfig) => void;
 }
@@ -44,6 +45,7 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
         modelConfig,
         open,
         hideBackdrop,
+        isUpdateDeployment,
         onClose,
         onSuccess,
     } = props;
@@ -66,21 +68,28 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
     const noAvailableAcousticModelText = (!organizationConfigList.length) ? translate('models.validation.allAcousticModelsStillTraining') : '';
     const requiredTranslationText = translate("forms.validation.required");
 
-    const formSchema = yup.object({
+    const updateDeploymentFormSchema = yup.object({
         replicas: yup.number(),
         alias: yup.string(),
     });
+    const deployModelFormSchema = yup.object({
+        replicas: yup.number(),
+    });
+    const updateDeploymentInitialValues = {replicas: modelConfig?.replicas || 0, alias: modelConfig?.alias || ''};
+    const deployModelInitialValues = {replicas: modelConfig?.replicas || 0};
+    const formSchema = isUpdateDeployment ? updateDeploymentFormSchema : deployModelFormSchema;
     type FormValues = yup.InferType<typeof formSchema>;
-    const initialValues: FormValues = {replicas: modelConfig?.replicas || 0, alias: modelConfig?.alias || ''};
+    const initialValues: FormValues = isUpdateDeployment ? updateDeploymentInitialValues : deployModelInitialValues;
 
     const handleClose = () => {
         setIsError(false);
         onClose();
     };
 
-    const handleSubmit = async (values: FormValues) => {
-        const { alias, replicas } = values;
+    // function input type as any due to ternary conditional errors with FormValues type
+    const handleUpdateDeploymentSubmit = async (values: any) => {
         if(modelConfig && api?.modelConfig && !loading) {
+            const { alias, replicas } = values;
             setLoading(true);
             setIsError(false);
             const response = await api.modelConfig?.updateDeployment(projectId, modelConfig.id, replicas, alias);
@@ -94,7 +103,38 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
             } else {
                 log({
                     file: 'ImportConfigDialog.tsx',
-                    caller: 'handleSubmit - failed to update deployment model configs',
+                    caller: 'handleUpdateDeploymentSubmit - failed to update deployment model configs',
+                    value: response,
+                    important: true,
+                });
+                snackbarError.isError = true;
+                setIsError(true);
+                const { serverError } = response;
+                if(serverError) {
+                    snackbarError.errorText = serverError.message || "";
+                }
+            }
+        }
+        setLoading(false);
+    };
+
+    const handleDeployModelSubmit = async (values: FormValues) => {
+        const { replicas } = values;
+        if(modelConfig && api?.modelConfig && !loading) {
+            setLoading(true);
+            setIsError(false);
+            const response = await api.modelConfig?.postDeploymentRequest(projectId, modelConfig.id, replicas);
+            let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+            if(response.kind === 'ok') {
+                const updatedModelConfig = Object.assign({}, modelConfig, {replicas});
+                snackbarError = undefined;
+                enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
+                onSuccess(updatedModelConfig);
+                handleClose();
+            } else {
+                log({
+                    file: 'ImportConfigDialog.tsx',
+                    caller: 'handleDeployModelSubmit - failed to deploy model',
                     value: response,
                     important: true,
                 });
@@ -124,20 +164,31 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
                 className: clsx(hideBackdrop && classes.hidden),
             }}
         >
-            <DialogTitle id="model-config-dialog">{translate(`modelConfig.import_header`)}</DialogTitle>
-            <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
+            <DialogTitle id="model-config-dialog">
+                {isUpdateDeployment
+                    ? translate(`modelConfig.updateDeploymentHeader`)
+                    : translate(`modelConfig.deployModelHeader`)}
+            </DialogTitle>
+            <Formik
+                initialValues={initialValues}
+                onSubmit={isUpdateDeployment ? handleUpdateDeploymentSubmit : handleDeployModelSubmit}
+                validationSchema={formSchema}>
                 {(formikProps) => (
                     <>
                         <DialogContent>
                             <Form>
-                                <Field
-                                    name='alias'
-                                    component={TextFormField}
-                                    type='text'
-                                    variant='outlined'
-                                    label={translate("modelConfig.alias")}
-                                    helperText={translate('modelConfig.aliasGuide')}
-                                />
+                                {
+                                   isUpdateDeployment &&
+                                   <Field
+                                       name='alias'
+                                       component={TextFormField}
+                                       type='text'
+                                       variant='outlined'
+                                       label={translate("modelConfig.alias")}
+                                       helperText={translate('modelConfig.aliasGuide')}
+                                   />
+                                }
+
                                 <Field
                                     name='replicas'
                                     component={TextFormField}

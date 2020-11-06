@@ -28,6 +28,7 @@ import { ModelConfigListItem } from './ModelConfigListItem';
 import { ImportConfigDialog } from './ImportConfigDialog';
 import {SelectFormField, SelectFormFieldOptions} from "../shared/form-fields/SelectFormField";
 import {UpdateDeploymentDialog} from './UpdateDeploymentDialog';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -37,6 +38,11 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     cardContent: {
       padding: 0,
     },
+    headerAction: {
+      alignSelf: 'auto',
+      marginTop: '0px',
+      marginRight: '0px',
+    }
   }),
 );
 
@@ -55,6 +61,7 @@ export interface ModelConfigListProps {
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
+  getModelConfigs: () => void;
 }
 
 
@@ -74,6 +81,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     languageModels,
     acousticModels,
     handleModelUpdateSuccess,
+    getModelConfigs,
   } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
@@ -87,6 +95,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [confirmationTitle, setConfirmationTitle] = React.useState('');
   const [handleConfirmation, setHandleConfirmation] = React.useState<any>();
   const [isUpdateDeploymentOpen, setIsUpdateDeploymentOpen] = React.useState(false);
+  const [isUpdateDeployment, setIsUpdateDeployment] = React.useState(true);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -138,6 +147,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
       const response = await api.modelConfig.deleteModelConfig(project.id, modelConfigId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
+        const updateModelConfig = Object.assign({}, modelConfigToEdit, {replicas: null, uptime: null});
+        handleModelUpdateSuccess(updateModelConfig);
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         handleModelConfigDelete(modelConfigId);
@@ -170,7 +181,6 @@ export function ModelConfigList(props: ModelConfigListProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-        handleModelConfigDelete(modelConfigId);
       } else {
         log({
           file: `ModelConfigList.tsx`,
@@ -190,7 +200,10 @@ export function ModelConfigList(props: ModelConfigListProps) {
     }
   };
 
-  const openUpdateDeploymentDialog = () => setIsUpdateDeploymentOpen(true);
+  const openUpdateDeploymentDialog = () => {
+    setIsUpdateDeployment(true);
+    setIsUpdateDeploymentOpen(true);
+  }
 
   const classes = useStyles();
 
@@ -206,6 +219,11 @@ export function ModelConfigList(props: ModelConfigListProps) {
     setConfirmationOpen(true);
   }
 
+  const openDeployModelDialog = () => {
+    setIsUpdateDeployment(false);
+    setIsUpdateDeploymentOpen(true);
+  };
+
   const renderListItems = () => {
     if (!modelConfigs.length) {
       return <Typography align='center' >{translate('modelConfig.noResults')}</Typography>;
@@ -220,6 +238,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           openModelDeleteConfirmation={openDeleteConfirmation}
           openDestroyDeploymentConfirmation={openDestroyDeploymentConfirmation}
           openUpdateDeployment={openUpdateDeploymentDialog}
+          openDeployModelDialog={openDeployModelDialog}
           deleteLoading={deleteLoading}
           expandProps={{
             projectId: project.id,
@@ -250,9 +269,19 @@ export function ModelConfigList(props: ModelConfigListProps) {
     <Container >
       <Card elevation={0} className={classes.card} >
         <CardHeader
+          classes={{ action: classes.headerAction }}
           title={<HeaderBreadcrumbs breadcrumbs={breadcrumbs} />}
           action={canModify &&
           <>
+            <Button
+                color="primary"
+                variant='outlined'
+                style={{ marginRight: '10px' }}
+                onClick={getModelConfigs}
+                startIcon={<RefreshIcon />}
+            >
+              {translate('common.refresh')}
+            </Button>
             <Button
                 color="primary"
                 variant='outlined'
@@ -263,8 +292,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
             </Button>
             <Button
                 color="primary"
-                style={{ marginLeft: '10px' }}
                 variant='outlined'
+                style={{ marginLeft: '10px' }}
                 onClick={openImportDialog}
                 startIcon={<AddIcon />}
             >
@@ -312,6 +341,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           projectId={project.id}
           modelConfig={modelConfigToEdit}
           open={isUpdateDeploymentOpen}
+          isUpdateDeployment={isUpdateDeployment}
           onClose={() => setIsUpdateDeploymentOpen(false)}
           onSuccess={handleModelUpdateSuccess}
       />
