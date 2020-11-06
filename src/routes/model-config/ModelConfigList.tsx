@@ -62,7 +62,7 @@ export interface ModelConfigListProps {
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
   getModelConfigs: () => void;
-  setModelConfigsLoading: () => void;
+  setModelConfigsLoading: (loading: boolean) => void;
 }
 
 
