@@ -156,7 +156,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
     </MenuItem>
-    <MenuItem onClick={openDeployModelDialog}>
+    <MenuItem disabled={!!modelConfig.uptime}  onClick={openDeployModelDialog}>
       <ListItemIcon>
         <CloudUploadIcon fontSize="small" />
       </ListItemIcon>

@@ -76,7 +76,7 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
         replicas: yup.number(),
     });
     const updateDeploymentInitialValues = {replicas: modelConfig?.replicas || 0, alias: modelConfig?.alias || ''};
-    const deployModelInitialValues = {replicas: modelConfig?.replicas || 0};
+    const deployModelInitialValues = {replicas: modelConfig?.replicas || 1};
     const formSchema = isUpdateDeployment ? updateDeploymentFormSchema : deployModelFormSchema;
     type FormValues = yup.InferType<typeof formSchema>;
     const initialValues: FormValues = isUpdateDeployment ? updateDeploymentInitialValues : deployModelInitialValues;

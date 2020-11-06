@@ -46,13 +46,6 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
     handleVoiceMaskingRequest();
   };
 
-  React.useEffect(() => {
-    console.log('==== voiceMaskingRequired : ', voiceMaskingRequired, localVoiceMaskingRequired);
-    if(localVoiceMaskingRequired !== voiceMaskingRequired) {
-      setLocalVoiceMaskingRequired(voiceMaskingRequired);
-    }
-  }, [voiceMaskingRequired, localVoiceMaskingRequired])
-
   return (
     <Grid container spacing={1} direction="column" alignItems="flex-end">
       <Grid container direction="row" spacing={1} xs={4}>
@@ -97,7 +90,7 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
           {/*    inputProps={{ 'aria-label': 'primary checkbox' }}*/}
           {/*/>*/}
           <FormControlLabel
-              control={<Switch color="primary" value={voiceMaskingRequired} onChange={handleVoiceMaskingSwitch} />}
+              control={<Switch color="primary" checked={voiceMaskingRequired} onChange={handleVoiceMaskingSwitch} />}
               label={translate("IAM.requestVoiceMasking")}
               labelPlacement="top" />
         </Grid>
