@@ -47,6 +47,7 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
   };
 
   React.useEffect(() => {
+    console.log('==== voiceMaskingRequired : ', voiceMaskingRequired, localVoiceMaskingRequired);
     if(localVoiceMaskingRequired !== voiceMaskingRequired) {
       setLocalVoiceMaskingRequired(voiceMaskingRequired);
     }

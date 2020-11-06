@@ -54,8 +54,6 @@ export const ko: ResourceLanguage = {
       confirm: '승인하기',
       reject: '반려하기',
       comment: '코멘트',
-      updateDeployment: '배포 수정',
-      destroy: '배포 삭제',
     },
     table: {
       page: '페이지',
@@ -355,6 +353,11 @@ export const ko: ResourceLanguage = {
       replicas: '레플리카 수',
       aliasGuide: '모델의 레이블을 입력해주세요.',
       replicasGuide: '모델에 할당된 레플리카 수를 지정해주세요.',
+      updateDeploymentHeader: '배포 정보 수정',
+      deployModelHeader: '모델 배포',
+      updateDeployment: '배포 수정',
+      destroy: '배포 삭제',
+      deployModel: '모델 배포',
     },
     models: {
       header: '모델 관리',

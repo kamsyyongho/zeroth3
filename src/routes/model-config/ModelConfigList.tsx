@@ -87,6 +87,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const [confirmationTitle, setConfirmationTitle] = React.useState('');
   const [handleConfirmation, setHandleConfirmation] = React.useState<any>();
   const [isUpdateDeploymentOpen, setIsUpdateDeploymentOpen] = React.useState(false);
+  const [isUpdateDeployment, setIsUpdateDeployment] = React.useState(true);
 
   const openDialog = () => setDialogOpen(true);
 
@@ -138,6 +139,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
       const response = await api.modelConfig.deleteModelConfig(project.id, modelConfigId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
+        const updateModelConfig = Object.assign({}, modelConfigToEdit, {replicas: null, uptime: null});
+        handleModelUpdateSuccess(updateModelConfig);
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
         handleModelConfigDelete(modelConfigId);
@@ -170,7 +173,6 @@ export function ModelConfigList(props: ModelConfigListProps) {
       if (response.kind === 'ok') {
         snackbarError = undefined;
         enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-        handleModelConfigDelete(modelConfigId);
       } else {
         log({
           file: `ModelConfigList.tsx`,
@@ -190,7 +192,10 @@ export function ModelConfigList(props: ModelConfigListProps) {
     }
   };
 
-  const openUpdateDeploymentDialog = () => setIsUpdateDeploymentOpen(true);
+  const openUpdateDeploymentDialog = () => {
+    setIsUpdateDeployment(true);
+    setIsUpdateDeploymentOpen(true);
+  }
 
   const classes = useStyles();
 
@@ -206,6 +211,11 @@ export function ModelConfigList(props: ModelConfigListProps) {
     setConfirmationOpen(true);
   }
 
+  const openDeployModelDialog = () => {
+    setIsUpdateDeployment(false);
+    setIsUpdateDeploymentOpen(true);
+  };
+
   const renderListItems = () => {
     if (!modelConfigs.length) {
       return <Typography align='center' >{translate('modelConfig.noResults')}</Typography>;
@@ -220,6 +230,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           openModelDeleteConfirmation={openDeleteConfirmation}
           openDestroyDeploymentConfirmation={openDestroyDeploymentConfirmation}
           openUpdateDeployment={openUpdateDeploymentDialog}
+          openDeployModelDialog={openDeployModelDialog}
           deleteLoading={deleteLoading}
           expandProps={{
             projectId: project.id,
@@ -312,6 +323,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
           projectId={project.id}
           modelConfig={modelConfigToEdit}
           open={isUpdateDeploymentOpen}
+          isUpdateDeployment={isUpdateDeployment}
           onClose={() => setIsUpdateDeploymentOpen(false)}
           onSuccess={handleModelUpdateSuccess}
       />

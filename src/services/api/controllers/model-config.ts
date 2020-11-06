@@ -332,4 +332,28 @@ export class ModelConfig extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async postDeploymentRequest (
+      projectId: string,
+      modelConfigId: string,
+      replicas: number,
+  ): Promise<updateDeployment> {
+    const request =  {replicas}
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.post(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/deploy`),
+        request
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
 }
