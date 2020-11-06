@@ -62,6 +62,7 @@ export interface ModelConfigListProps {
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
   getModelConfigs: () => void;
+  setModelConfigsLoading: () => void;
 }
 
 
@@ -82,6 +83,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     acousticModels,
     handleModelUpdateSuccess,
     getModelConfigs,
+    setModelConfigsLoading,
   } = props;
   const api = React.useContext(ApiContext);
   const { translate } = React.useContext(I18nContext);
@@ -255,6 +257,12 @@ export function ModelConfigList(props: ModelConfigListProps) {
     });
   };
 
+  const refreshModelConfigs = async () => {
+    setModelConfigsLoading(true);
+    await getModelConfigs();
+    setModelConfigsLoading(false)
+  }
+
   const breadcrumbs: Breadcrumb[] = [
     {
       to: PATHS.project.function && PATHS.project.function(project.id),
@@ -277,7 +285,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
                 color="primary"
                 variant='outlined'
                 style={{ marginRight: '10px' }}
-                onClick={getModelConfigs}
+                onClick={refreshModelConfigs}
                 startIcon={<RefreshIcon />}
             >
               {translate('common.refresh')}
