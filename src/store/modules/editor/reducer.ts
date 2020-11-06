@@ -36,7 +36,6 @@ export function EditorReducer( state = initialState, action: any) {
                 textLocation: {segmentIndex, wordIndex, offset},
             };
             const undoStack = [...state.undoStack, undoData];
-            console.log('======= word in setUndo : ', state.segments[segmentIndex].wordAlignments[wordIndex].word);
             return {
                 ...state,
                 undoStack,

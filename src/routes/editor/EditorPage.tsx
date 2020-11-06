@@ -978,7 +978,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   /** The worker used to calculate the current playing time */
   const RemoteWorker = React.useMemo(() => {
-    console.log('===== editorPage Rerenders =====');
     if (window.Worker) {
       const worker = new Worker(workerPath);
       worker.addEventListener('message', message => {

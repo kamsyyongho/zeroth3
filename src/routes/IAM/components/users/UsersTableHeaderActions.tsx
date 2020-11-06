@@ -46,13 +46,6 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
     handleVoiceMaskingRequest();
   };
 
-  React.useEffect(() => {
-    console.log('==== voiceMaskingRequired : ', voiceMaskingRequired, localVoiceMaskingRequired);
-    if(localVoiceMaskingRequired !== voiceMaskingRequired) {
-      setLocalVoiceMaskingRequired(voiceMaskingRequired);
-    }
-  }, [voiceMaskingRequired, localVoiceMaskingRequired])
-
   return (
     <Grid container spacing={1} direction="column" alignItems="flex-end">
       <Grid container direction="row" spacing={1} xs={4}>
