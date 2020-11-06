@@ -97,7 +97,7 @@ export default function UsersTableHeaderActions(props: UsersTableHeaderActionsPr
           {/*    inputProps={{ 'aria-label': 'primary checkbox' }}*/}
           {/*/>*/}
           <FormControlLabel
-              control={<Switch color="primary" value={voiceMaskingRequired} onChange={handleVoiceMaskingSwitch} />}
+              control={<Switch color="primary" checked={voiceMaskingRequired} onChange={handleVoiceMaskingSwitch} />}
               label={translate("IAM.requestVoiceMasking")}
               labelPlacement="top" />
         </Grid>
