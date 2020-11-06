@@ -73,10 +73,10 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
         alias: yup.string(),
     });
     const deployModelFormSchema = yup.object({
-        replicas: yup.number(),
+        replicas: yup.number().min(1),
     });
     const updateDeploymentInitialValues = {replicas: modelConfig?.replicas || 0, alias: modelConfig?.alias || ''};
-    const deployModelInitialValues = {replicas: modelConfig?.replicas || 1};
+    const deployModelInitialValues = {replicas: 1};
     const formSchema = isUpdateDeployment ? updateDeploymentFormSchema : deployModelFormSchema;
     type FormValues = yup.InferType<typeof formSchema>;
     const initialValues: FormValues = isUpdateDeployment ? updateDeploymentInitialValues : deployModelInitialValues;
@@ -171,6 +171,7 @@ export function UpdateDeploymentDialog(props: ImportConfigDialogProps) {
             </DialogTitle>
             <Formik
                 initialValues={initialValues}
+                isInitialValid={!isUpdateDeployment}
                 onSubmit={isUpdateDeployment ? handleUpdateDeploymentSubmit : handleDeployModelSubmit}
                 validationSchema={formSchema}>
                 {(formikProps) => (

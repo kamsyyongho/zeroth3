@@ -97,13 +97,13 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
     selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'screw you', function (thresholdLr) {
+    thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'Low Risk Required', function (thresholdLr) {
       return true;
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
       return thresholdLr < thresholdHr;
     }),
-    thresholdHr: yup.number().nullable(true).default(null).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', 'fuck you', function (thresholdHr) {
+    thresholdHr: yup.number().nullable(true).default(null).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', 'High Risk Required', function (thresholdHr) {
       return true;
       const { thresholdLr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
