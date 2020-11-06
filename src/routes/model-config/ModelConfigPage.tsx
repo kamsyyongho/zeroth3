@@ -365,6 +365,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         handleLanguageModelCreate={handleLanguageModelCreate}
         handleModelUpdateSuccess={handleModelUpdateSuccess}
         getModelConfigs={getModelConfigs}
+        setModelConfigsLoading={setModelConfigsLoading}
       />);
   };
 
