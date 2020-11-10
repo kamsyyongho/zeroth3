@@ -41,6 +41,9 @@ import log from '../../util/log/logger';
 import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
 import {getSegmentAndWordIndex} from './helpers/editor-page.helper';
+import { getRandomColor } from '../../util/misc';
+import { Word } from '../../types/editor.types';
+import { SegmentPickerOptions } from './Editor';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -137,7 +140,7 @@ interface AudioPlayerProps {
   editorCommand?: EDITOR_CONTROLS;
   // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
   wordToCreateTimeFor?: WordToCreateTimeFor;
-  wordToUpdateTimeFor?: WordToCreateTimeFor;
+  // wordToUpdateTimeFor?: WordToCreateTimeFor;
   segmentSplitTimeBoundary?: Required<Time>;
   segmentSplitTime?: number;
   onSegmentSplitTimeChanged: (time: number) => void;
@@ -170,8 +173,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     deleteAllWordSegments,
     wordsClosed,
     // currentPlayingWordPlayerSegment,
-    wordToCreateTimeFor,
-    wordToUpdateTimeFor,
+    // wordToCreateTimeFor,
+    // wordToUpdateTimeFor,
     segmentSplitTimeBoundary,
     segmentSplitTime,
     onSegmentSplitTimeChanged,
@@ -209,6 +212,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [currentTime, setCurrentTime] = React.useState(0);
   const [currentTimeDisplay, setCurrentTimeDisplay] = React.useState(DEFAULT_EMPTY_TIME);
   const [durationDisplay, setDurationDisplay] = React.useState(DEFAULT_EMPTY_TIME);
+  const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
+  const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
@@ -567,9 +572,34 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  const prepareSegmentTimePicker = (segmentIndex: number) => {
+    const segment = segments[segmentIndex];
+    const start = segment.start;
+    const end = start + segment.length;
+    const color = getRandomColor();
+    const time: Time = {
+      start,
+      end,
+    };
+    const segmentWord: Word = {
+      color,
+      time,
+      text: '',
+    };
+    return segmentWord;
+  };
+
   //Keep strack of currentPlayingLocation so that we can refer to it when audio plays from paused state and sync to caret location
   React.useEffect(() => {
     trackPlayingLocation = currentPlayingLocation;
+    console.log('=========currentPlayingLocation : ', currentPlayingLocation);
+    if(!isAudioPlaying && currentPlayingLocation?.segmentIndex) {
+      const wordToAddTimeTo: Word = prepareSegmentTimePicker(currentPlayingLocation.segmentIndex);
+      const wordKey = PLAYER_SEGMENT_IDS.SEGMENT_EDIT;
+
+      setWordToCreateTimeFor({ ...wordToAddTimeTo, wordKey});
+      // setWordToUpdateTimeFor({ ...wordToAddTimeTo, wordKey});
+    }
   }, [currentPlayingLocation]);
 
   /**
@@ -706,7 +736,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
-  const createPlaybackSegments = (currentPlayingWordSegment: SegmentAddOptions, currentPlayingSegmentSegment: SegmentAddOptions) => {
+  const createPlaybackSegments = (
+      currentPlayingWordSegment: SegmentAddOptions,
+      currentPlayingSegmentSegment: SegmentAddOptions) => {
     if (!PeaksPlayer?.segments) return;
     try {
       const existingSegments = PeaksPlayer.segments.getSegments();
@@ -1139,11 +1171,11 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
       parseCurrentlyPlayingWordSegment(playingTimeData.currentPlayingWordPlayerSegment);
     }
-
   }, [playingTimeData]);
 
   // set the update the time for a segment
   React.useEffect(() => {
+    console.log('====== wordToUpdatTimeFor : ', wordToUpdateTimeFor);
     if (wordToUpdateTimeFor !== undefined) {
       const { wordKey, time } = wordToUpdateTimeFor;
       if (typeof time?.start !== 'number' || typeof time?.end !== 'number') {

@@ -1623,8 +1623,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   onSegmentUpdate={handleAudioSegmentUpdate}
                   onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
                   // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
-                  wordToCreateTimeFor={wordToCreateTimeFor}
-                  wordToUpdateTimeFor={wordToUpdateTimeFor}
+                  // wordToCreateTimeFor={wordToCreateTimeFor}
+                  // wordToUpdateTimeFor={wordToUpdateTimeFor}
                   onTimeChange={handlePlaybackTimeChange}
                   onSectionChange={handleSectionChange}
                   onReady={handlePlayerRendered}
