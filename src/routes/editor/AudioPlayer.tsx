@@ -220,7 +220,10 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   const handlePause = () =>  setIsAudioPlaying(false);
 
-  const handlePlay = () => setIsAudioPlaying(true);
+  const handlePlay = () => {
+    setIsAudioPlaying(true)
+    if(wordToCreateTimeFor) setWordToCreateTimeFor(undefined);
+  };
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
