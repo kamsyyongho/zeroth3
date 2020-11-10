@@ -878,9 +878,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
-        // setSegments(splitSegments);
         dispatch(setSegments(splitSegments));
-        internalSegmentsTracker = splitSegments;
         // update the editor
         onSuccess(response.segments);
       } else {
