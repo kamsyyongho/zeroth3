@@ -19,7 +19,7 @@ import {EDITOR_CONTROLS} from './components/EditorControls';
 import {SegmentSplitPicker} from './components/SegmentSplitPicker';
 import {SegmentTimePicker} from './components/SegmentTimePicker';
 import {WordTimePicker} from './components/WordTimePicker';
-import {PARENT_METHOD_TYPES, ParentMethodResponse, SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
+import {SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
 import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
 import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
@@ -27,7 +27,6 @@ import { getRandomColor } from '../../util/misc';
 import { getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import log from '../../util/log/logger';
 import { useSelector, useDispatch } from 'react-redux';
-import { setSegments, setPlayingLocation } from '../../store/modules/editor/actions';
 
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
@@ -99,7 +98,7 @@ interface WordPickerOptions {
   entityKeyAfterCursor?: number;
   isWordUpdate?: boolean;
 }
-interface SegmentPickerOptions {
+export interface SegmentPickerOptions {
   segmentWord: Word;
   segment: Segment;
 }
@@ -612,7 +611,6 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
-      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex]} />}*/}
       {
         isDiff ?
         <>

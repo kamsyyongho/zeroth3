@@ -21,5 +21,5 @@ export interface ApiConfig extends ApisauceConfig {
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
   baseURL: ENV.BACKEND_URL || 'http://localhost:8081',
-  timeout: 10000
+  timeout: 30000
 };

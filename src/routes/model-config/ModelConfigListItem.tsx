@@ -135,7 +135,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
   };
 
   const getTrainingStatusText = () => modelConfig.progress < 0 ? translate('models.trainingError') : modelConfig.progress < 100
-      ? translate('models.traningInProgress') : translate('models.trainingSuccess');
+      ? translate('models.trainingInProgress') : translate('models.trainingSuccess');
 
   const renderItemMenu = () => (<Menu
     id="list-item-menu"

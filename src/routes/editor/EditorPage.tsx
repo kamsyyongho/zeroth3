@@ -682,15 +682,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                                          segmentIndex: number,
                                          start: number,
                                          length: number) => {
-    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && internalSegmentsTracker.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegmentTime(projectId, voiceData.id, segmentId, start, length);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         setIsSegmentUpdateError(false);
-        const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
-        const updatedSegments = [...segments];
+        const updatedSegment: Segment = { ...internalSegmentsTracker[segmentIndex], start, length };
+        const updatedSegments = [...internalSegmentsTracker];
 
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
         dispatch(setSegments(updatedSegments))
@@ -712,6 +712,22 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setSaveSegmentsLoading(false);
+    }
+  };
+
+  //added logic for updating segment time directly from audio player
+  const handleSegmentTimeUpdate = (segmentWord: Word, segmentIndex: number) => {
+    const { time } = segmentWord;
+    const segmentToUpdate = internalSegmentsTracker[segmentIndex];
+    if (typeof segmentIndex === 'number' &&
+        typeof time?.start === 'number' &&
+        typeof time?.end === 'number') {
+      let { start, end } = time;
+      // set to 2 sig figs
+      start = Number(start.toFixed(2));
+      end = Number(end.toFixed(2));
+      const length = end - start;
+      submitSegmentTimeUpdate(segmentToUpdate.id, segmentIndex, start, length);
     }
   };
 
@@ -878,9 +894,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
-        // setSegments(splitSegments);
         dispatch(setSegments(splitSegments));
-        internalSegmentsTracker = splitSegments;
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -1625,8 +1639,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   onSegmentUpdate={handleAudioSegmentUpdate}
                   onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
                   // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
-                  wordToCreateTimeFor={wordToCreateTimeFor}
-                  wordToUpdateTimeFor={wordToUpdateTimeFor}
+                  // wordToCreateTimeFor={wordToCreateTimeFor}
+                  // wordToUpdateTimeFor={wordToUpdateTimeFor}
                   onTimeChange={handlePlaybackTimeChange}
                   onSectionChange={handleSectionChange}
                   onReady={handlePlayerRendered}
@@ -1640,6 +1654,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   getTimeBasedSegment={getTimeBasedSegment}
                   handleWordClick={handleWordClick}
                   currentPlayingLocation={currentPlayingLocation}
+                  handleSegmentTimeUpdate={handleSegmentTimeUpdate}
               />
             </ErrorBoundary>}
           </Paper>
