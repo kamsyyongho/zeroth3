@@ -4,6 +4,7 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 /* eslint import/no-webpack-loader-syntax: off */
 // this lint rule is from create-react-app
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
+import { calculatePlayingLocation } from './workers/editor-page.worker';
 import {useSnackbar, VariantType} from 'notistack';
 import {BulletList} from 'react-content-loader';
 import {RouteComponentProps} from "react-router";
@@ -295,7 +296,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
@@ -343,11 +343,25 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const checkCachedSegmentsForTime = (time: number) => {
+    return segmentResultsCache.forEach((segmentResults: SegmentResults, index: number) => {
+      const playingLocation = calculatePlayingLocation(time, segmentResults.content);
+      if(!!playingLocation) return {index, playingLocation};
+    })
+  };
+
   const getTimeBasedSegment = async (time: number) => {
     if(time <=  0) return;
     setIsLoadingAdditionalSegment(true);
-    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
-    if (api?.voiceData && projectId && voiceData) {
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
+    const segmentsFromCache = checkCachedSegmentsForTime(time);
+    if(!!segmentsFromCache) {
+      const updateSegments = segmentResultsCache[segmentsFromCache.index];
+      setSegmentResults(updateSegments);
+      dispatch(setSegments(updateSegments.content));
+      internalSegmentsTracker = updateSegments.content;
+      handleWordClick(updateSegments.playingLocation);
+    } else if (api?.voiceData && projectId && voiceData) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
       const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, TIME_PAGE_SIZE, undefined, time);
