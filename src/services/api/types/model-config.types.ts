@@ -1,4 +1,4 @@
-import { ModelConfig, Threshold } from '../../../types';
+import { Capacity, ModelConfig, Threshold } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -26,6 +26,9 @@ export type ThresholdRequest = Pick<
 export type getModelConfigsResult =
   | { kind: 'ok'; modelConfigs: ModelConfig[] }
   | GeneralApiProblem;
+export type getCapacity =
+    | { kind: 'ok'; capacity: Capacity }
+    | GeneralApiProblem;
 export type postModelConfigResult =
   | { kind: 'ok'; modelConfig: ModelConfig }
   | GeneralApiProblem;

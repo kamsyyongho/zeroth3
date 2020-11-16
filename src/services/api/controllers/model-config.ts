@@ -1,5 +1,5 @@
 import {ApiResponse, ApisauceInstance} from 'apisauce';
-import {ModelConfig as ModelConfigType} from '../../../types';
+import {ModelConfig as ModelConfigType, Capacity} from '../../../types';
 import {getGeneralApiProblem} from '../api-problem';
 import {
   deleteModelConfigResult,
@@ -11,6 +11,7 @@ import {
   ServerError,
   updateDeployment,
   destroyDeployment,
+  getCapacity,
 } from '../types';
 import {ThresholdRequest, updateModelConfigResult, updateThresholdResult,} from '../types/model-config.types';
 import {ParentApi} from './parent-api';
@@ -103,6 +104,37 @@ export class ModelConfig extends ParentApi {
     try {
       const modelConfigs = response.data as ModelConfigType[];
       return { kind: 'ok', modelConfigs };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
+   * Get the deployment capacity fo the system
+   * @param projectId
+   */
+  async getCapacity(projectId: string): Promise<getCapacity> {
+    // make the api call
+    const response: ApiResponse<
+        Capacity,
+        ServerError
+        > = await this.apisauce.get(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/capacity`),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const capacity = response.data as Capacity;
+      return { kind: 'ok', capacity };
     } catch {
       return { kind: ProblemKind['bad-data'] };
     }

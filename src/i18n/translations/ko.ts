@@ -359,6 +359,7 @@ export const ko: ResourceLanguage = {
       updateDeployment: '배포 수정',
       destroy: '배포 삭제',
       deployModel: '모델 배포',
+      capacity: '배포 수용력 : {{occupied}} / {{available}}',
     },
     models: {
       header: '모델 관리',
