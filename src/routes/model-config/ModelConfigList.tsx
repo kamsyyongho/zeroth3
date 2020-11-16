@@ -15,6 +15,7 @@ import {
   AcousticModel,
   LanguageModel,
   ModelConfig,
+  Capacity,
   Project,
   SubGraph,
   TopGraph } from '../../types';
@@ -42,6 +43,9 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       alignSelf: 'auto',
       marginTop: '0px',
       marginRight: '0px',
+    },
+    capacity: {
+      marginBottom: '20px',
     }
   }),
 );
@@ -51,6 +55,7 @@ export interface ModelConfigListProps {
   canModify: boolean;
   modelConfigsLoading: boolean;
   modelConfigs: ModelConfig[];
+  capacity?: Capacity;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   acousticModels: AcousticModel[];
@@ -62,6 +67,7 @@ export interface ModelConfigListProps {
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
   getModelConfigs: () => void;
+  getCapacity: () => void;
   setModelConfigsLoading: (loading: boolean) => void;
 }
 
@@ -72,6 +78,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     canModify,
     modelConfigsLoading,
     modelConfigs,
+    capacity,
     handleImportSuccess,
     handleModelConfigUpdate,
     handleSubGraphListUpdate,
@@ -83,6 +90,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
     acousticModels,
     handleModelUpdateSuccess,
     getModelConfigs,
+    getCapacity,
     setModelConfigsLoading,
   } = props;
   const api = React.useContext(ApiContext);
@@ -260,6 +268,7 @@ export function ModelConfigList(props: ModelConfigListProps) {
   const refreshModelConfigs = async () => {
     setModelConfigsLoading(true);
     await getModelConfigs();
+    await getCapacity();
     setModelConfigsLoading(false)
   }
 
@@ -313,6 +322,9 @@ export function ModelConfigList(props: ModelConfigListProps) {
         {modelConfigsLoading ? <BulletList /> : (
           <CardContent className={classes.cardContent} >
             <Container >
+              <Typography className={classes.capacity}>
+                {translate('modelConfig.capacity', { occupied: capacity?.occupied || 0, available: capacity?.available || 0 })}
+              </Typography>
               {renderListItems()}
             </Container>
           </CardContent>)}

@@ -356,6 +356,7 @@ export const en: ResourceLanguage = {
       updateDeployment: 'Update Deployment',
       destroy: 'Destroy',
       deployModel: 'Deploy Model',
+      capacity: 'Deployment Capacity : {{occupied}} / {{available}}',
     },
     models: {
       header: 'Model Management',

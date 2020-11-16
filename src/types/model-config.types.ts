@@ -15,6 +15,11 @@ export interface ModelConfig {
   workerCount?: number;
 }
 
+export interface Capacity {
+  available: number;
+  occupied: number;
+}
+
 /**
  * The confidence threshold value
  * - float

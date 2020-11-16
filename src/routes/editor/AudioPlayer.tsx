@@ -1173,7 +1173,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
 
   // set the time segment for the currently playing word
   React.useEffect(() => {
-    console.log('==== playingTimeData : ', playingTimeData);
     if (typeof playingTimeData.timeToSeekTo === 'number') {
       seekToTime(playingTimeData.timeToSeekTo);
     }
