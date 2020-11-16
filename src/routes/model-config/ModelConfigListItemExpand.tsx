@@ -20,6 +20,7 @@ import { LanguageModelDialog } from '../models/components/language-model/Languag
 import { ChipList } from '../shared/ChipList';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
+import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -148,6 +149,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
+    shared: yup.boolean(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues = React.useMemo(() => {
@@ -158,19 +160,20 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       thresholdHr: modelConfig.thresholdHr ?? null,
       thresholdLr: modelConfig.thresholdLr ?? null,
       description: modelConfig.description,
+      shared: modelConfig.shared ?? false,
     };
     return initialValues;
   }, [modelConfig]);
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared } = values;
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -492,6 +495,22 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                 </Grid>}
               </Form>
               <Divider className={classes.divider} />
+              <Grid
+                  container
+                  item
+                  alignContent='flex-start'
+                  alignItems='center'
+                  justify='flex-start'
+                  spacing={2}>
+                <Grid item>
+                  <Field
+                      name='shared'
+                      component={CheckboxFormField}
+                      text={translate("modelTraining.shared")}
+                      errorOverride={isError}
+                  />
+                </Grid>
+              </Grid>
               <Grid container item justify='flex-end' >
                 <Button
                   disabled={!formikProps.isValid || loading}
