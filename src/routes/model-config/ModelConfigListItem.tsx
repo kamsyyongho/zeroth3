@@ -142,33 +142,32 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     anchorEl={anchorEl}
     keepMounted
     open={Boolean(anchorEl)}
-    onClose={handleActionClose}
-  >
-    <MenuItem disabled={modelConfig.imported || deleteLoading} onClick={openEditDialog}>
+    onClose={handleActionClose}>
+    <MenuItem disabled={deleteLoading} onClick={openEditDialog}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.edit')}</Typography>
     </MenuItem>
-    <MenuItem onClick={confirmDelete}>
+    <MenuItem disabled={modelConfig.imported} onClick={confirmDelete}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
     </MenuItem>
-    <MenuItem disabled={!!modelConfig.uptime}  onClick={openDeployModelDialog}>
+    <MenuItem disabled={modelConfig.imported || !!modelConfig.uptime}  onClick={openDeployModelDialog}>
       <ListItemIcon>
         <CloudUploadIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('modelConfig.deployModel')}</Typography>
     </MenuItem>
-    <MenuItem onClick={handleDeploymentUpdate}>
+    <MenuItem disabled={modelConfig.imported} onClick={handleDeploymentUpdate}>
       <ListItemIcon>
         <UpdateIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('modelConfig.updateDeployment')}</Typography>
     </MenuItem>
-    <MenuItem onClick={openDestroyDeploymentConfirmation}>
+    <MenuItem disabled={modelConfig.imported} onClick={openDestroyDeploymentConfirmation}>
       <ListItemIcon>
         <HighlightOffIcon fontSize="small" />
       </ListItemIcon>
