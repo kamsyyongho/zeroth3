@@ -22,6 +22,9 @@ export interface PostDownloadLinkRequest {
 export type getRawDataQueueResult =
   | { kind: 'ok'; queue: RawDataQueue }
   | GeneralApiProblem;
+export type getFullQueue =
+    | { kind: 'ok'; queue: RawDataQueue }
+    | GeneralApiProblem;
 export type uploadRawDataResult =
   | { kind: 'ok'; warningMessage?: string }
   | GeneralApiProblem;

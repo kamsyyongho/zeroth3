@@ -158,6 +158,7 @@ export class ModelConfig extends ParentApi {
     languageModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
+    shared: boolean | false,
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -167,6 +168,7 @@ export class ModelConfig extends ParentApi {
       description,
       acousticModelId,
       languageModelId,
+      shared,
     };
     // make the api call
     const response: ApiResponse<
@@ -216,6 +218,7 @@ export class ModelConfig extends ParentApi {
     languageModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
+    shared: boolean | false,
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -225,6 +228,7 @@ export class ModelConfig extends ParentApi {
       description,
       acousticModelId,
       languageModelId,
+      shared,
     };
     // make the api call
     const response: ApiResponse<

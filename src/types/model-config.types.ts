@@ -13,6 +13,8 @@ export interface ModelConfig {
   replicas?: number;
   uptime?: string;
   workerCount?: number;
+  shared?: boolean;
+  imported?: boolean;
 }
 
 export interface Capacity {

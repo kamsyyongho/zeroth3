@@ -110,6 +110,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
+    shared: yup.boolean(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
@@ -119,6 +120,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     thresholdHr: null,
     thresholdLr: null,
     description: "",
+    shared: false,
   };
   if (configToEdit) {
     initialValues = {
@@ -129,6 +131,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       thresholdHr: configToEdit.thresholdHr ?? null,
       thresholdLr: configToEdit.thresholdLr ?? null,
       description: configToEdit.description,
+      shared: configToEdit.shared ?? false,
     };
   }
 
@@ -138,7 +141,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared } = values;
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
@@ -147,9 +150,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       setIsError(false);
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
