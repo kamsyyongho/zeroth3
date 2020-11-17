@@ -58,7 +58,6 @@ export interface ModelConfigListItemExpandPropsFromParent {
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
 
-
 interface ModelConfigListItemExpandProps extends ModelConfigListItemExpandPropsFromParent {
   modelConfig: ModelConfig;
   expanded: boolean;
@@ -380,7 +379,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   </>}
                   {modelConfig.languageModel.description && <>
                     <Grid item>
-                      <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
+                      <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
                     </Grid>
                     <Grid item>
                       <Typography align='left' >{modelConfig.languageModel.description}</Typography>
@@ -394,8 +393,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
-                  xs={12}
-                >
+                  xs={12}>
                   <Grid item>
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
                   </Grid>
@@ -415,8 +413,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
-                  xs={12}
-                >
+                  xs={12}>
                   <Grid item>
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
                   </Grid>
