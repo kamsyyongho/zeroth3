@@ -1,4 +1,4 @@
-import { RawDataQueue } from '../../../types';
+import { RawDataQueue, FullQueue } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 /////////////
@@ -23,7 +23,7 @@ export type getRawDataQueueResult =
   | { kind: 'ok'; queue: RawDataQueue }
   | GeneralApiProblem;
 export type getFullQueue =
-    | { kind: 'ok'; queue: RawDataQueue }
+    | { kind: 'ok'; queue: FullQueue }
     | GeneralApiProblem;
 export type uploadRawDataResult =
   | { kind: 'ok'; warningMessage?: string }

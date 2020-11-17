@@ -13,7 +13,7 @@ export interface ModelConfig {
   replicas?: number;
   uptime?: string;
   workerCount?: number;
-  shared?: boolean;
+  shareable?: boolean;
   imported?: boolean;
 }
 
