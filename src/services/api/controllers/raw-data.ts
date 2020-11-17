@@ -58,9 +58,9 @@ export class RawData extends ParentApi {
    * Get the full queue history of the given project
    * @param projectId
    */
-  async getFullQueue(projectId: string): Promise<> {
-
-  };
+  // async getFullQueue(projectId: string): Promise<> {
+  //
+  // };
 
   /**
    * Upload audio files
