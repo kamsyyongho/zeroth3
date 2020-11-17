@@ -136,8 +136,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
-    selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
+    selectedAcousticModelId: yup.string().when([], {is: () => !modelConfig.imported, then: yup.string().nullable().required(requiredTranslationText)}),
+    selectedLanguageModelId: yup.string().when([], {is: () => !modelConfig.imported,  then: yup.string().nullable().required(requiredTranslationText)}),
     thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
@@ -149,7 +149,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-    shareable: yup.boolean().when([], {is: () => !modelConfig.imported}),
+    shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean()}),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues = React.useMemo(() => {
