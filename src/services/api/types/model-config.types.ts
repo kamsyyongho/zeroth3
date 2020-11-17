@@ -12,7 +12,7 @@ export interface ModelConfigRequest {
   thresholdLr: Threshold | null;
   thresholdHr: Threshold | null;
   description: string;
-  shared: boolean;
+  shareable: boolean;
 }
 
 export type ThresholdRequest = Pick<

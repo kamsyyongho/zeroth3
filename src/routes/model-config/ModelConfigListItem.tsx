@@ -144,7 +144,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     open={Boolean(anchorEl)}
     onClose={handleActionClose}
   >
-    <MenuItem disabled={deleteLoading} onClick={openEditDialog}>
+    <MenuItem disabled={modelConfig.imported || deleteLoading} onClick={openEditDialog}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>

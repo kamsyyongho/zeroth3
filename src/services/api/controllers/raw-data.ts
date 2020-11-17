@@ -1,10 +1,11 @@
 import { ApisauceInstance } from 'apisauce';
 import { AxiosRequestConfig } from 'axios';
 import { UPLOAD_REQUEST_TIMEOUT } from '../../../constants';
-import { RawDataQueue } from '../../../types';
+import { RawDataQueue, FullQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getRawDataQueueResult,
+  getFullQueue,
   PostDownloadLinkRequest,
   PostDownloadLocationRequest,
   ProblemKind,
@@ -58,9 +59,27 @@ export class RawData extends ParentApi {
    * Get the full queue history of the given project
    * @param projectId
    */
-  // async getFullQueue(projectId: string): Promise<> {
-  //
-  // };
+  async getFullQueue(projectId: string, page: number, size: number): Promise<getFullQueue> {
+    const response = await this.apisauce.get<FullQueue, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue-history`)
+    )
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      const queue = response.data as FullQueue;
+      return { kind: 'ok', queue };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  };
 
   /**
    * Upload audio files

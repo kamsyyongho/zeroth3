@@ -22,6 +22,7 @@ import log from '../../util/log/logger';
 import { LanguageModelDialog } from '../models/components/language-model/LanguageModelDialog';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
+import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -110,7 +111,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-    shared: yup.boolean(),
+    shareable: yup.boolean(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
@@ -120,7 +121,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     thresholdHr: null,
     thresholdLr: null,
     description: "",
-    shared: false,
+    shareable: false,
   };
   if (configToEdit) {
     initialValues = {
@@ -131,7 +132,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       thresholdHr: configToEdit.thresholdHr ?? null,
       thresholdLr: configToEdit.thresholdLr ?? null,
       description: configToEdit.description,
-      shared: configToEdit.shared ?? false,
+      shareable: configToEdit.shareable ?? false,
     };
   }
 
@@ -141,7 +142,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable } = values;
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
@@ -150,9 +151,9 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       setIsError(false);
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shared);
+        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -239,6 +240,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   errorOverride={isError}
                 />
                 <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
+                <Field
+                    name='shareable'
+                    component={CheckboxFormField}
+                    text={translate("modelTraining.shared")}
+                    errorOverride={isError}
+                />
               </Form>
             </DialogContent>
             <DialogActions>
