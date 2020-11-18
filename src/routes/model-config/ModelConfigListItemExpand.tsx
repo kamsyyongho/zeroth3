@@ -58,7 +58,6 @@ export interface ModelConfigListItemExpandPropsFromParent {
   handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
 
-
 interface ModelConfigListItemExpandProps extends ModelConfigListItemExpandPropsFromParent {
   modelConfig: ModelConfig;
   expanded: boolean;
@@ -149,7 +148,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-    shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean()}),
+    shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean().nullable()}),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues = React.useMemo(() => {
@@ -346,6 +345,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     <Field
                       name='selectedLanguageModelId'
                       component={SelectFormField}
+                      disabled={modelConfig.imported}
                       options={languageModelFormSelectOptions}
                       errorOverride={isError}
                       fullWidth={false}
@@ -380,7 +380,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   </>}
                   {modelConfig.languageModel.description && <>
                     <Grid item>
-                      <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
+                      <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
                     </Grid>
                     <Grid item>
                       <Typography align='left' >{modelConfig.languageModel.description}</Typography>
@@ -394,8 +394,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
-                  xs={12}
-                >
+                  xs={12}>
                   <Grid item>
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
                   </Grid>
@@ -415,8 +414,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   alignItems='center'
                   justify='flex-start'
                   spacing={2}
-                  xs={12}
-                >
+                  xs={12}>
                   <Grid item>
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
                   </Grid>
@@ -443,6 +441,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   <Grid item xs={10}>
                     <Field
                       name='selectedAcousticModelId'
+                      disabled={modelConfig.imported}
                       component={SelectFormField}
                       options={acousticModelFormSelectOptions}
                       errorOverride={isError || noAvailableAcousticModelText}
@@ -505,6 +504,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                 <Grid item>
                   <Field
                       name='shareable'
+                      disabled={modelConfig.imported}
                       component={CheckboxFormField}
                       text={translate("modelTraining.shared")}
                       errorOverride={isError}
