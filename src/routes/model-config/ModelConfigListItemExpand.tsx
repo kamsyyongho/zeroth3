@@ -345,6 +345,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     <Field
                       name='selectedLanguageModelId'
                       component={SelectFormField}
+                      disabled={modelConfig.imported}
                       options={languageModelFormSelectOptions}
                       errorOverride={isError}
                       fullWidth={false}
@@ -440,6 +441,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   <Grid item xs={10}>
                     <Field
                       name='selectedAcousticModelId'
+                      disabled={modelConfig.imported}
                       component={SelectFormField}
                       options={acousticModelFormSelectOptions}
                       errorOverride={isError || noAvailableAcousticModelText}
@@ -502,6 +504,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                 <Grid item>
                   <Field
                       name='shareable'
+                      disabled={modelConfig.imported}
                       component={CheckboxFormField}
                       text={translate("modelTraining.shared")}
                       errorOverride={isError}
