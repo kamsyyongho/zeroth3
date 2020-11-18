@@ -148,7 +148,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       return thresholdHr > thresholdLr;
     }),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
-    shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean()}),
+    shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean().nullable()}),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues = React.useMemo(() => {
