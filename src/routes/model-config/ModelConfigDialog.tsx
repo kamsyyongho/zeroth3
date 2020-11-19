@@ -24,6 +24,7 @@ import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/S
 import { TextFormField } from '../shared/form-fields/TextFormField';
 import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 import { ChipSelectFormField } from '../shared/form-fields/ChipSelectFormField';
+import { SubgraphFormDialog } from '../models/components/SubgraphFormDialog';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -73,6 +74,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const [languageOpen, setLanguageOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const [subOpen, setSubOpen] = React.useState(false);
   const isEdit = !!configToEdit;
 
   const classes = useStyles();
@@ -283,6 +285,14 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                     helperText={noAvailableSubGraphText}
                     light
                 />
+                <Button
+                    fullWidth
+                    color="primary"
+                    onClick={() => setSubOpen(true)}
+                    startIcon={<AddIcon />}
+                >
+                  {translate('models.createSubGraph')}
+                </Button>
                 <Field
                   name='thresholdLr'
                   component={TextFormField}
@@ -331,14 +341,21 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           </>
         )}
       </Formik>
-      <LanguageModelDialog
-        open={languageOpen}
-        onClose={closeLanguageDialog}
-        onSuccess={handleLanguageModelCreate}
-        handleSubGraphListUpdate={handleSubGraphListUpdate}
-        topGraphs={topGraphs}
-        subGraphs={subGraphs}
-        hideBackdrop
+      {/*<LanguageModelDialog*/}
+      {/*  open={languageOpen}*/}
+      {/*  onClose={closeLanguageDialog}*/}
+      {/*  onSuccess={handleLanguageModelCreate}*/}
+      {/*  handleSubGraphListUpdate={handleSubGraphListUpdate}*/}
+      {/*  topGraphs={topGraphs}*/}
+      {/*  subGraphs={subGraphs}*/}
+      {/*  hideBackdrop*/}
+      {/*/>*/}
+      <SubgraphFormDialog
+          open={subOpen}
+          onClose={() => setSubOpen(false)}
+          onSuccess={handleSubGraphListUpdate}
+          topGraphs={topGraphs}
+          hideBackdrop
       />
     </Dialog>
   );
