@@ -131,8 +131,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
     }),
-    selectedTopGraphId: yup.string().nullable().typeError(numberText).nullable().required(requiredTranslationText),
-    selectedSubGraphIds: yup.array().nullable().of(yup.string().typeError(numberText)),
+    selectedTopGraphId: yup.string().typeError(numberText).required(requiredTranslationText),
+    selectedSubGraphIds: yup.array().of(yup.string().typeError(numberText)),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
     shareable: yup.boolean(),
   });
@@ -143,7 +143,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     selectedLanguageModelId: null,
     thresholdHr: null,
     thresholdLr: null,
-    selectedTopGraphId: null,
+    selectedTopGraphId: '',
     selectedSubGraphIds: [],
     description: "",
     shareable: false,
@@ -156,6 +156,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       selectedLanguageModelId: configToEdit.languageModel.id,
       thresholdHr: configToEdit.thresholdHr ?? null,
       thresholdLr: configToEdit.thresholdLr ?? null,
+      selectedTopGraphId: '',
+      selectedSubGraphIds: [],
       description: configToEdit.description,
       shareable: configToEdit.shareable ?? false,
     };
@@ -167,7 +169,15 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable } = values;
+    const { name,
+      description,
+      selectedAcousticModelId,
+      selectedLanguageModelId,
+      thresholdLr,
+      thresholdHr,
+      shareable,
+      selectedTopGraphId,
+      selectedSubGraphIds } = values;
     if (selectedAcousticModelId === null ||
       selectedLanguageModelId === null
     ) return;
@@ -176,9 +186,29 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       setIsError(false);
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id,
+            projectId,
+            name.trim(),
+            description.trim(),
+            selectedAcousticModelId,
+            selectedLanguageModelId,
+            thresholdLr,
+            thresholdHr,
+            shareable,
+            selectedTopGraphId,
+            selectedSubGraphIds);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable);
+        response = await api.modelConfig.postModelConfig(
+            projectId,
+            name.trim(),
+            description.trim(),
+            selectedAcousticModelId,
+            selectedLanguageModelId,
+            thresholdLr,
+            thresholdHr,
+            shareable,
+            selectedTopGraphId,
+            selectedSubGraphIds);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {

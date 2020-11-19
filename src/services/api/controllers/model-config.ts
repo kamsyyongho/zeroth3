@@ -159,6 +159,8 @@ export class ModelConfig extends ParentApi {
     thresholdLr: number | null,
     thresholdHr: number | null,
     shareable: boolean | false,
+    topGraphId: string | '',
+    subGraphIds: any | [],
   ): Promise<postModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -169,6 +171,8 @@ export class ModelConfig extends ParentApi {
       acousticModelId,
       languageModelId,
       shareable,
+      topGraphId,
+      subGraphIds,
     };
     // make the api call
     const response: ApiResponse<
@@ -219,6 +223,8 @@ export class ModelConfig extends ParentApi {
     thresholdLr: number | null,
     thresholdHr: number | null,
     shareable: boolean | false,
+    topGraphId: string | '',
+    subGraphIds: any | [],
   ): Promise<updateModelConfigResult> {
     // compile data
     const request: ModelConfigRequest = {
@@ -229,6 +235,8 @@ export class ModelConfig extends ParentApi {
       acousticModelId,
       languageModelId,
       shareable,
+      topGraphId,
+      subGraphIds,
     };
     // make the api call
     const response: ApiResponse<
