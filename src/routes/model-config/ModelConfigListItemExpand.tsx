@@ -172,7 +172,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable, modelConfig.languageModel.topGraph.id, modelConfig.languageModel.subGraphs);
+      const subGraphById = modelConfig.subGraphs.map(subGraph => subGraph.id);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable, modelConfig.topGraph.id, subGraphById);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;

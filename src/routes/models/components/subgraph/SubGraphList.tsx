@@ -5,6 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
+import CachedIcon from '@material-ui/icons/Cached';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -46,12 +47,14 @@ export interface SubGraphListProps {
   subGraphsLoading: boolean;
   subGraphs: SubGraph[];
   topGraphs: TopGraph[];
+  topGraphsLoading: boolean;
   checkedSubGraphs: CheckedSubGraphById;
   deleteLoading: boolean;
   canDelete: boolean;
   confirmDelete: () => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
   handleSubGraphCheck: (subGraphId: string, value: boolean) => void;
+  refreshTopGraphs: () => void;
 }
 
 export function SubGraphList(props: SubGraphListProps) {
@@ -60,12 +63,14 @@ export function SubGraphList(props: SubGraphListProps) {
     subGraphsLoading,
     subGraphs,
     topGraphs,
+    topGraphsLoading,
     checkedSubGraphs,
     deleteLoading,
     canDelete,
     confirmDelete,
     handleSubGraphListUpdate,
     handleSubGraphCheck,
+    refreshTopGraphs,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const [subOpen, setSubOpen] = React.useState(false);
@@ -140,6 +145,17 @@ export function SubGraphList(props: SubGraphListProps) {
                 {translate('common.delete')}
               </Button>}
             </Grid>
+          <Grid item>
+            <Button
+                variant="outlined"
+                color="primary"
+                disabled={topGraphsLoading}
+                onClick={refreshTopGraphs}
+                startIcon={<CachedIcon />}
+            >
+              {translate('common.refresh')}
+            </Button>
+          </Grid>
             <Grid item>
               <Button
                 color="primary"
