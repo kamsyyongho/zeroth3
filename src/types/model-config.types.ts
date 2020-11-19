@@ -1,4 +1,4 @@
-import { AcousticModel, LanguageModel } from './models.types';
+import { AcousticModel, LanguageModel, TopGraph, SubGraph } from './models.types';
 
 export interface ModelConfig {
   acousticModel: AcousticModel;
@@ -6,6 +6,8 @@ export interface ModelConfig {
   description: string;
   id: string;
   languageModel: LanguageModel;
+  topGraph: TopGraph;
+  subGraphs: SubGraph[];
   progress: number;
   thresholdLr?: Threshold;
   thresholdHr?: Threshold;
