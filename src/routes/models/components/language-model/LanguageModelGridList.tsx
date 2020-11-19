@@ -29,6 +29,7 @@ interface LanguageModelGridListProps {
   canModify: boolean;
   refreshTopGraphs: () => void;
   topGraphsLoading: boolean;
+  subGraphsLoading: boolean;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;

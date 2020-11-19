@@ -13,6 +13,8 @@ export interface ModelConfigRequest {
   thresholdHr: Threshold | null;
   description: string;
   shareable: boolean;
+  topGraphId: string;
+  subGraphIds: string[];
 }
 
 export type ThresholdRequest = Pick<
