@@ -405,7 +405,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   return (
     <Container maxWidth={false} className={classes.container} >
-      {projectLoading ? <BulletList /> :
+      {projectLoading || topGraphsLoading || subGraphsLoading ? <BulletList /> :
         renderContent()
       }
     </Container >
