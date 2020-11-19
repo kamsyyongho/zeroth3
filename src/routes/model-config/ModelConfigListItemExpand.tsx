@@ -172,7 +172,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable, modelConfig.languageModel.topGraph, modelConfig.languageModel.subGraphs);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -329,6 +329,38 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   </Grid>
                 </Grid>
                 <Divider className={classes.divider} />
+                {/*<Grid*/}
+                {/*  container*/}
+                {/*  item*/}
+                {/*  alignContent='center'*/}
+                {/*  alignItems='center'*/}
+                {/*  justify='flex-start'*/}
+                {/*  spacing={2}*/}
+                {/*  xs={12}*/}
+                {/*>*/}
+                {/*  <Grid item xs={2}>*/}
+                {/*    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.languageModel")}:`}</Typography>*/}
+                {/*  </Grid>*/}
+                {/*  <Grid item>*/}
+                {/*    <Field*/}
+                {/*      name='selectedLanguageModelId'*/}
+                {/*      component={SelectFormField}*/}
+                {/*      disabled={modelConfig.imported}*/}
+                {/*      options={languageModelFormSelectOptions}*/}
+                {/*      errorOverride={isError}*/}
+                {/*      fullWidth={false}*/}
+                {/*      variant='outlined'*/}
+                {/*    />*/}
+                {/*  </Grid>*/}
+                {/*  <Grid item>*/}
+                {/*    <IconButton*/}
+                {/*      color="primary"*/}
+                {/*      onClick={openLanguageDialog}*/}
+                {/*    >*/}
+                {/*      <AddIcon />*/}
+                {/*    </IconButton>*/}
+                {/*  </Grid>*/}
+                {/*</Grid>*/}
                 <Grid
                   container
                   item
@@ -338,46 +370,14 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   spacing={2}
                   xs={12}
                 >
-                  <Grid item xs={2}>
-                    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.languageModel")}:`}</Typography>
-                  </Grid>
-                  <Grid item>
-                    <Field
-                      name='selectedLanguageModelId'
-                      component={SelectFormField}
-                      disabled={modelConfig.imported}
-                      options={languageModelFormSelectOptions}
-                      errorOverride={isError}
-                      fullWidth={false}
-                      variant='outlined'
-                    />
-                  </Grid>
-                  <Grid item>
-                    <IconButton
-                      color="primary"
-                      onClick={openLanguageDialog}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  {modelConfig.languageModel.version && <>
-                    <Grid item>
-                      <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography align='left' >{modelConfig.languageModel.version}</Typography>
-                    </Grid>
-                  </>}
+                  {/*{modelConfig.languageModel.version && <>*/}
+                  {/*  <Grid item>*/}
+                  {/*    <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>*/}
+                  {/*  </Grid>*/}
+                  {/*  <Grid item>*/}
+                  {/*    <Typography align='left' >{modelConfig.languageModel.version}</Typography>*/}
+                  {/*  </Grid>*/}
+                  {/*</>}*/}
                   {modelConfig.languageModel.description && <>
                     <Grid item>
                       <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
@@ -395,7 +395,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   justify='flex-start'
                   spacing={2}
                   xs={12}>
-                  <Grid item>
+                  <Grid item style={{ marginTop: '10px' }}>
                     <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
                   </Grid>
                   <Grid item>
