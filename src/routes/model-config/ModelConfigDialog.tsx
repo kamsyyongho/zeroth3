@@ -265,8 +265,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   errorOverride={isError || noAvailableAcousticModelText}
                   helperText={noAvailableAcousticModelText}
                 />
-                <Field name='selectedLanguageModelId' component={SelectFormField}
-                  options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
                 <Field name='selectedTopGraphId' component={SelectFormField} disabled={!topGraphs.length}
                        options={topGraphFormSelectOptions} label={translate("forms.top")} errorOverride={isError} />
                 <Field
