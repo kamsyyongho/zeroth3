@@ -43,10 +43,8 @@ interface ModelConfigDialogProps {
   onSuccess: (updatedConfig: ModelConfig, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
-  languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
 
 interface SubGraphsById {
@@ -63,10 +61,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     configToEdit,
     topGraphs,
     subGraphs,
-    languageModels,
     acousticModels,
     handleSubGraphListUpdate,
-    handleLanguageModelCreate,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
@@ -90,7 +86,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     }
     return { label: acousticModel.name, value: acousticModel.id, disabled };
   });
-  const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
   let allSubGraphsStillTraining = true;
   const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => {
     const disabled = subGraph.progress < 100;
@@ -270,8 +265,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   errorOverride={isError || noAvailableAcousticModelText}
                   helperText={noAvailableAcousticModelText}
                 />
-                <Field name='selectedLanguageModelId' component={SelectFormField}
-                  options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
                 <Field name='selectedTopGraphId' component={SelectFormField} disabled={!topGraphs.length}
                        options={topGraphFormSelectOptions} label={translate("forms.top")} errorOverride={isError} />
                 <Field
@@ -341,15 +334,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           </>
         )}
       </Formik>
-      {/*<LanguageModelDialog*/}
-      {/*  open={languageOpen}*/}
-      {/*  onClose={closeLanguageDialog}*/}
-      {/*  onSuccess={handleLanguageModelCreate}*/}
-      {/*  handleSubGraphListUpdate={handleSubGraphListUpdate}*/}
-      {/*  topGraphs={topGraphs}*/}
-      {/*  subGraphs={subGraphs}*/}
-      {/*  hideBackdrop*/}
-      {/*/>*/}
       <SubgraphFormDialog
           open={subOpen}
           onClose={() => setSubOpen(false)}

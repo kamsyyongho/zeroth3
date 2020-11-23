@@ -49,7 +49,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
-  const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
+  // const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
 
   // get the passed info if we got here via the details page
@@ -66,7 +66,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>(navigationProps?.modelConfigs || []);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>(navigationProps?.topGraphs || []);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>(navigationProps?.subGraphs || []);
-  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
+  // const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>(navigationProps?.acousticModels || []);
   const [capacity, setCapacity] = React.useState<Capacity | undefined>();
 
@@ -101,12 +101,12 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     });
   };
 
-  const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
-    setLanguageModels((prevLanguageModels) => {
-      prevLanguageModels.push(newLanguageModel);
-      return prevLanguageModels;
-    });
-  };
+  // const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
+  //   setLanguageModels((prevLanguageModels) => {
+  //     prevLanguageModels.push(newLanguageModel);
+  //     return prevLanguageModels;
+  //   });
+  // };
 
   /**
    * remove the deleted model config from the list
@@ -267,30 +267,30 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         setSubGraphsLoading(false);
       }
     };
-    const getLanguageModels = async () => {
-      if (api?.models) {
-        const response = await api.models.getLanguageModels();
-        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-
-        if (response.kind === 'ok') {
-          setLanguageModels(response.languageModels);
-        } else {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getLanguageModels - failed to get language models`,
-            value: response,
-            important: true,
-          });
-          snackbarError.isError = true;
-          const { serverError } = response;
-          if (serverError) {
-            snackbarError.errorText = serverError.message || "";
-          }
-        }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-        setLanguageModelsLoading(false);
-      }
-    };
+    // const getLanguageModels = async () => {
+    //   if (api?.models) {
+    //     const response = await api.models.getLanguageModels();
+    //     let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+    //
+    //     if (response.kind === 'ok') {
+    //       setLanguageModels(response.languageModels);
+    //     } else {
+    //       log({
+    //         file: `ModelConfigPage.tsx`,
+    //         caller: `getLanguageModels - failed to get language models`,
+    //         value: response,
+    //         important: true,
+    //       });
+    //       snackbarError.isError = true;
+    //       const { serverError } = response;
+    //       if (serverError) {
+    //         snackbarError.errorText = serverError.message || "";
+    //       }
+    //     }
+    //     snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+    //     setLanguageModelsLoading(false);
+    //   }
+    // };
     const getAcousticModels = async () => {
       if (api?.models) {
         const response = await api.models.getAcousticModels();
@@ -350,11 +350,11 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         } else {
           setSubGraphsLoading(false);
         }
-        if (!languageModels.length) {
-          getLanguageModels();
-        } else {
-          setLanguageModelsLoading(false);
-        }
+        // if (!languageModels.length) {
+        //   getLanguageModels();
+        // } else {
+        //   setLanguageModelsLoading(false);
+        // }
         if (!acousticModels.length) {
           getAcousticModels();
         } else {
@@ -385,13 +385,13 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         modelConfigsLoading={modelConfigsLoading}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
-        languageModels={languageModels}
+        // languageModels={languageModels}
         acousticModels={acousticModels}
         handleImportSuccess={handleImportSuccess}
         handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleLanguageModelCreate={handleLanguageModelCreate}
+        // handleLanguageModelCreate={handleLanguageModelCreate}
         handleModelUpdateSuccess={handleModelUpdateSuccess}
         getModelConfigs={getModelConfigs}
         getCapacity={getCapacity}

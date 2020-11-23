@@ -87,7 +87,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
     openModelDeleteConfirmation,
     openDeployModelDialog,
   } = props;
-  const { acousticModel, languageModel, name, id, progress } = modelConfig;
+  const { acousticModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
   const [loading, setLoading] = React.useState(false);
   const [expanded, setExpanded] = React.useState(false);

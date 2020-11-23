@@ -59,11 +59,11 @@ export interface ModelConfigListProps {
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
   acousticModels: AcousticModel[];
-  languageModels: LanguageModel[];
+  // languageModels: LanguageModel[];
   handleImportSuccess: (modelConfig: ModelConfig) => void;
   handleModelConfigUpdate: (modelConfig: ModelConfig, isEdit?: boolean) => void;
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleLanguageModelCreate: (languageModel: LanguageModel) => void;
+  // handleLanguageModelCreate: (languageModel: LanguageModel) => void;
   handleModelConfigDelete: (modelConfigId: string) => void;
   handleModelUpdateSuccess: (modelConfig: ModelConfig) => void;
   getModelConfigs: () => void;
@@ -82,11 +82,9 @@ export function ModelConfigList(props: ModelConfigListProps) {
     handleImportSuccess,
     handleModelConfigUpdate,
     handleSubGraphListUpdate,
-    handleLanguageModelCreate,
     handleModelConfigDelete,
     topGraphs,
     subGraphs,
-    languageModels,
     acousticModels,
     handleModelUpdateSuccess,
     getModelConfigs,
@@ -255,10 +253,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
             onSuccess: handleModelConfigUpdate,
             topGraphs: topGraphs,
             subGraphs: subGraphs,
-            languageModels: languageModels,
             acousticModels: acousticModels,
             handleSubGraphListUpdate: handleSubGraphListUpdate,
-            handleLanguageModelCreate: handleLanguageModelCreate,
           }}
         />
       );
@@ -337,10 +333,8 @@ export function ModelConfigList(props: ModelConfigListProps) {
         onSuccess={handleModelConfigUpdate}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
-        languageModels={languageModels}
         acousticModels={acousticModels}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleLanguageModelCreate={handleLanguageModelCreate}
       />
       <ConfirmationDialog
         destructive
