@@ -52,10 +52,8 @@ export interface ModelConfigListItemExpandPropsFromParent {
   onSuccess: (updatedConfig: ModelConfig, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
-  languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleLanguageModelCreate: (languageModel: LanguageModel) => void;
 }
 
 interface ModelConfigListItemExpandProps extends ModelConfigListItemExpandPropsFromParent {
@@ -77,10 +75,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     modelConfig,
     topGraphs,
     subGraphs,
-    languageModels,
     acousticModels,
     handleSubGraphListUpdate,
-    handleLanguageModelCreate,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
@@ -121,7 +117,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     }
     return { label: acousticModel.name, value: acousticModel.id, disabled };
   });
-  const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
 
   // validation translated text
   const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
@@ -330,38 +325,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   </Grid>
                 </Grid>
                 <Divider className={classes.divider} />
-                {/*<Grid*/}
-                {/*  container*/}
-                {/*  item*/}
-                {/*  alignContent='center'*/}
-                {/*  alignItems='center'*/}
-                {/*  justify='flex-start'*/}
-                {/*  spacing={2}*/}
-                {/*  xs={12}*/}
-                {/*>*/}
-                {/*  <Grid item xs={2}>*/}
-                {/*    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.languageModel")}:`}</Typography>*/}
-                {/*  </Grid>*/}
-                {/*  <Grid item>*/}
-                {/*    <Field*/}
-                {/*      name='selectedLanguageModelId'*/}
-                {/*      component={SelectFormField}*/}
-                {/*      disabled={modelConfig.imported}*/}
-                {/*      options={languageModelFormSelectOptions}*/}
-                {/*      errorOverride={isError}*/}
-                {/*      fullWidth={false}*/}
-                {/*      variant='outlined'*/}
-                {/*    />*/}
-                {/*  </Grid>*/}
-                {/*  <Grid item>*/}
-                {/*    <IconButton*/}
-                {/*      color="primary"*/}
-                {/*      onClick={openLanguageDialog}*/}
-                {/*    >*/}
-                {/*      <AddIcon />*/}
-                {/*    </IconButton>*/}
-                {/*  </Grid>*/}
-                {/*</Grid>*/}
                 <Grid
                   container
                   item
@@ -371,14 +334,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   spacing={2}
                   xs={12}
                 >
-                  {/*{modelConfig.languageModel.version && <>*/}
-                  {/*  <Grid item>*/}
-                  {/*    <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>*/}
-                  {/*  </Grid>*/}
-                  {/*  <Grid item>*/}
-                  {/*    <Typography align='left' >{modelConfig.languageModel.version}</Typography>*/}
-                  {/*  </Grid>*/}
-                  {/*</>}*/}
                   {modelConfig.languageModel.description && <>
                     <Grid item>
                       <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
@@ -533,14 +488,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
           );
         }}
       </Formik>
-      <LanguageModelDialog
-        open={languageOpen}
-        onClose={closeLanguageDialog}
-        onSuccess={handleLanguageModelCreate}
-        handleSubGraphListUpdate={handleSubGraphListUpdate}
-        topGraphs={topGraphs}
-        subGraphs={subGraphs}
-      />
     </Grid>
   );
 }

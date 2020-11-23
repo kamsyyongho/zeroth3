@@ -47,14 +47,12 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>([]);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>([]);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>([]);
-  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>([]);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>([]);
   const [dataSets, setDataSets] = React.useState<DataSet[]>([]);
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [updateSecretLoading, setUpdateSecretLoading] = React.useState(false);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
-  const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [hideBackdrop, setHideBackdrop] = React.useState(false);
@@ -197,22 +195,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
         setSubGraphsLoading(false);
       }
     };
-    const getLanguageModels = async () => {
-      if (api?.models) {
-        const response = await api.models.getLanguageModels();
-        if (response.kind === 'ok') {
-          setLanguageModels(response.languageModels);
-        } else {
-          log({
-            file: `ProjectDetails.tsx`,
-            caller: `getLanguageModels - failed to get language models`,
-            value: response,
-            important: true,
-          });
-        }
-        setLanguageModelsLoading(false);
-      }
-    };
     const getAcousticModels = async () => {
       if (api?.models) {
         const response = await api.models.getAcousticModels();
@@ -247,7 +229,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     if (hasModelConfigPermissions) {
       getTopGraphs();
       getSubGraphs();
-      getLanguageModels();
       getAcousticModels();
     }
 
@@ -272,13 +253,6 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
     setSubGraphs((prevSubGraphs) => {
       prevSubGraphs.push(newSubGraph);
       return prevSubGraphs;
-    });
-  };
-
-  const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
-    setLanguageModels((prevLanguageModels) => {
-      prevLanguageModels.push(newLanguageModel);
-      return prevLanguageModels;
     });
   };
 
@@ -344,10 +318,8 @@ export function ProjectDetails({ match }: RouteComponentProps<ProjectDetailsProp
             onSuccess={handleModelConfigUpdate}
             topGraphs={topGraphs}
             subGraphs={subGraphs}
-            languageModels={languageModels}
             acousticModels={acousticModels}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
-            handleLanguageModelCreate={handleLanguageModelCreate}
           />
         </>
       }
