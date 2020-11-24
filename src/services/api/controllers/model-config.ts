@@ -215,7 +215,7 @@ export class ModelConfig extends ParentApi {
     modelConfigId: string,
     projectId: string,
     name: string,
-    description: string,
+    description: string = '',
     acousticModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
