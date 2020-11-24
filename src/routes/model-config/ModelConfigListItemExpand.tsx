@@ -159,9 +159,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   const handleSubmit = async (values: FormValues) => {
     const { name, description, selectedAcousticModelId, thresholdLr, thresholdHr, shareable } = values;
-    if (selectedAcousticModelId === null ||
-      selectedLanguageModelId === null
-    ) return;
+    if (selectedAcousticModelId === null) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
