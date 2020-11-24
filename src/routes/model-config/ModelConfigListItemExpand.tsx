@@ -151,7 +151,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       selectedAcousticModelId: modelConfig.acousticModel.id,
       thresholdHr: modelConfig.thresholdHr ?? null,
       thresholdLr: modelConfig.thresholdLr ?? null,
-      description: modelConfig.description,
+      description: modelConfig.description ?? '',
       shareable: modelConfig.shareable ?? false,
     };
     return initialValues;
@@ -164,7 +164,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       setLoading(true);
       setIsError(false);
       const subGraphById = modelConfig.subGraphs.map(subGraph => subGraph.id);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, thresholdLr, thresholdHr, shareable, modelConfig.topGraph.id, subGraphById);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description?.trim(), selectedAcousticModelId, thresholdLr, thresholdHr, shareable, modelConfig.topGraph.id, subGraphById);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
