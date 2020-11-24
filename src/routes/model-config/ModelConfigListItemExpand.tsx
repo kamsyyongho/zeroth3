@@ -141,7 +141,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
     }),
-    description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
+    description: yup.string().nullable().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
     shareable: yup.boolean().when([], {is: () => !modelConfig.imported, then: yup.boolean().nullable()}),
   });
   type FormValues = yup.InferType<typeof formSchema>;
