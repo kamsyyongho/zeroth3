@@ -115,7 +115,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
-    selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
     thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'Low Risk Required', function (thresholdLr) {
       return true;
       const { thresholdHr } = this.parent;
@@ -137,7 +136,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   let initialValues: FormValues = {
     name: "",
     selectedAcousticModelId: null,
-    selectedLanguageModelId: null,
     thresholdHr: null,
     thresholdLr: null,
     selectedTopGraphId: '',
@@ -150,7 +148,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       ...initialValues,
       name: configToEdit.name,
       selectedAcousticModelId: configToEdit.acousticModel.id,
-      selectedLanguageModelId: configToEdit.languageModel.id,
       thresholdHr: configToEdit.thresholdHr ?? null,
       thresholdLr: configToEdit.thresholdLr ?? null,
       selectedTopGraphId: '',
@@ -169,15 +166,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     const { name,
       description,
       selectedAcousticModelId,
-      selectedLanguageModelId,
       thresholdLr,
       thresholdHr,
       shareable,
       selectedTopGraphId,
       selectedSubGraphIds } = values;
-    if (selectedAcousticModelId === null ||
-      selectedLanguageModelId === null
-    ) return;
+    if (selectedAcousticModelId === null) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
@@ -188,7 +182,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
             name.trim(),
             description.trim(),
             selectedAcousticModelId,
-            selectedLanguageModelId,
             thresholdLr,
             thresholdHr,
             shareable,
@@ -200,7 +193,6 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
             name.trim(),
             description.trim(),
             selectedAcousticModelId,
-            selectedLanguageModelId,
             thresholdLr,
             thresholdHr,
             shareable,
