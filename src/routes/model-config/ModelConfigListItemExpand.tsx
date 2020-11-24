@@ -330,12 +330,12 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   spacing={2}
                   xs={12}
                 >
-                  {modelConfig.languageModel.description && <>
+                  {modelConfig.description && <>
                     <Grid item>
                       <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography align='left' >{modelConfig.languageModel.description}</Typography>
+                      <Typography align='left' >{modelConfig.description}</Typography>
                     </Grid>
                   </>}
                 </Grid>
@@ -354,7 +354,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                     <Chip
                       variant='outlined'
                       size='small'
-                      label={modelConfig.languageModel.topGraph.name}
+                      label={modelConfig.topGraph.name}
                     />
                   </Grid>
                 </Grid>
@@ -373,7 +373,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                   <Grid item >
                     <ChipList
                       variant='outlined'
-                      labels={modelConfig.languageModel.subGraphs.map(subGraph => subGraph.name)}
+                      labels={modelConfig.subGraphs.map(subGraph => subGraph.name)}
                     />
                   </Grid>
                 </Grid>
