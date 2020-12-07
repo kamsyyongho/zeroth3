@@ -27,10 +27,10 @@ jobs:
     - name: npm install
       run: npm install
   
-    - name: Variable to dotenv
-      uses: CallePuzzle/envvar-to-dotenv-action@0.1.0
-      with:
-        variableNamesByFilter: ^REACT_(APP.*)
+#     - name: Variable to dotenv
+#       uses: CallePuzzle/envvar-to-dotenv-action@0.1.0
+#       with:
+#         variableNamesByFilter: ^REACT_(APP.*)
 
     - name: npm build
       run: CI= npm run action
