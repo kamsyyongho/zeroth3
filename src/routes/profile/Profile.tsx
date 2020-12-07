@@ -17,6 +17,7 @@ import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { LOCAL_STORAGE_KEYS } from '../../types';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
 import { Organization, SnackbarError, SNACKBAR_VARIANTS, User } from '../../types';
@@ -221,12 +222,11 @@ export function Profile() {
 
   const handleOrganizationChange = (pickedOrganization: Organization) => {
     let shouldUpdate = false;
-    if (!organization) {
-      shouldUpdate = true;
-    } else if (pickedOrganization.id !== organization.id) {
+    if (!organization ||pickedOrganization.id !== organization.id) {
       shouldUpdate = true;
     }
     if (shouldUpdate) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ORGANIZATION_ID, pickedOrganization.id);
       setOrganization(pickedOrganization);
       dispatch(setCurrentOrganization(pickedOrganization));
     }
