@@ -232,14 +232,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
               <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
             </Collapse>
             <Collapse in={expanded}>
-              <TextField
-                  className={clsx(!expanded && classes.hiddenTitle)}
-                  helperText={!nameFormValue && translate("forms.validation.required")}
-                  error={!nameFormValue}
-                  fullWidth
-                  onChange={handleNameChange}
-                  value={nameFormValue}
-              />
+              <Typography>{nameFormValue}</Typography>
             </Collapse>
           </Grid>
         </>

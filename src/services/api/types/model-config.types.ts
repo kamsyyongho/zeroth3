@@ -5,7 +5,7 @@ import { GeneralApiProblem } from './api-problem.types';
 // REQUESTS //
 //////////////
 
-export interface ModelConfigRequest {
+export interface CreateModelConfigRequest {
   acousticModelId: string;
   languageModelId: string;
   name: string;
@@ -17,8 +17,15 @@ export interface ModelConfigRequest {
   subGraphIds: string[];
 }
 
+export interface UpdateModelConfigRequest {
+  thresholdLr: Threshold | null;
+  thresholdHr: Threshold | null;
+  description: string;
+  shareable: boolean;
+}
+
 export type ThresholdRequest = Pick<
-  ModelConfigRequest,
+    UpdateModelConfigRequest,
   'thresholdHr' | 'thresholdLr'
 >;
 
