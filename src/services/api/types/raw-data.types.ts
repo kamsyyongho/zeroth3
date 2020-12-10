@@ -6,12 +6,12 @@ import { GeneralApiProblem } from './api-problem.types';
 /////////////
 
 export interface PostDownloadLocationRequest {
-  modelConfigName: string;
+  modelConfigId: string;
   path: string;
 }
 
 export interface PostDownloadLinkRequest {
-  modelConfigName: string;
+  modelConfigId: string;
   url: string;
 }
 

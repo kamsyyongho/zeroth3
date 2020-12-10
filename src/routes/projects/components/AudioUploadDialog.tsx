@@ -187,9 +187,9 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
       if (shouldUploadFiles) {
         response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
       } else if (uploadType === AUDIO_UPLOAD_TYPE.URL as string) {
-        response = await api.rawData.postDownloadLink(projectId, modelConfigsById[selectedModelConfigId].name, text);
+        response = await api.rawData.postDownloadLink(projectId, selectedModelConfigId, text);
       } else {
-        response = await api.rawData.postDownloadLocation(projectId, modelConfigsById[selectedModelConfigId].name, text);
+        response = await api.rawData.postDownloadLocation(projectId, selectedModelConfigId, text);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
