@@ -7,7 +7,6 @@ import { GeneralApiProblem } from './api-problem.types';
 
 export interface CreateModelConfigRequest {
   acousticModelId: string;
-  languageModelId: string;
   name: string;
   thresholdLr: Threshold | null;
   thresholdHr: Threshold | null;
