@@ -179,14 +179,10 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
       if (isEdit && configToEdit) {
         response = await api.modelConfig.updateModelConfig(configToEdit.id,
             projectId,
-            name.trim(),
             description.trim(),
-            selectedAcousticModelId,
             thresholdLr,
             thresholdHr,
-            shareable,
-            selectedTopGraphId,
-            selectedSubGraphIds);
+            shareable);
       } else {
         response = await api.modelConfig.postModelConfig(
             projectId,
