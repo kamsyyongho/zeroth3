@@ -149,7 +149,7 @@ export function UsersTable(props: UsersTableProps) {
         Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
       },
       {
-        Header: `${translate("forms.phone")}`,
+        Header: `${translate("forms.contact")}`,
         accessor: 'phone',
         Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data, onChange: onChangePhone, noteOrPhoneValue: phoneLog } ),
       },

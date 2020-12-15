@@ -314,7 +314,7 @@ export function TDPTable(props: TDPTableProps) {
         Cell: (cellData: CellProps<VoiceData>) => renderModelName(cellData),
       },
       {
-        Header: translate('common.length'),
+        Header: translate('common.audioLength'),
         accessor: TDPTableColumns['length'],
         Cell: (cellData: CellProps<VoiceData>) => formatSecondsDuration(cellData.cell.value),
       },

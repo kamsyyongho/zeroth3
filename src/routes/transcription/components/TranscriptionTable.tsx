@@ -87,7 +87,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.file')}
+                {translate('forms.fileName')}
             </TableCell>
             <TableCell>
                 {translate('forms.transcriber')}
@@ -96,7 +96,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
-                {translate('common.length')}
+                {translate('common.audioLength')}
             </TableCell>
             <TableCell>
                 {translate('common.date')}
@@ -105,7 +105,7 @@ export function TranscriptionTable(props: TranscriptionTableProps) {
                 {translate('admin.diff')}
             </TableCell>
             <TableCell>
-                {translate('common.confirm') + ' / ' + translate('common.reject')}
+                {translate('common.confirmationStatus')}
             </TableCell>
         </TableRow>
     </TableHead>);

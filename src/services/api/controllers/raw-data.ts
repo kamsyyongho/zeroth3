@@ -143,12 +143,12 @@ export class RawData extends ParentApi {
    */
   async postDownloadLocation(
     projectId: string,
-    modelConfigName: string,
+    modelConfigId: string,
     path: string,
   ): Promise<uploadRawDataResult> {
     // compile data
     const request: PostDownloadLocationRequest = {
-      modelConfigName,
+      modelConfigId,
       path,
     };
     // make the api call
@@ -177,12 +177,12 @@ export class RawData extends ParentApi {
    */
   async postDownloadLink(
     projectId: string,
-    modelConfigName: string,
+    modelConfigId: string,
     url: string,
   ): Promise<uploadRawDataResult> {
     // compile data
     const request: PostDownloadLinkRequest = {
-      modelConfigName,
+      modelConfigId,
       url,
     };
     // make the api call

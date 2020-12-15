@@ -5,7 +5,8 @@ import {
   deleteModelConfigResult,
   getModelConfigsResult,
   importModelConfig,
-  ModelConfigRequest,
+  CreateModelConfigRequest,
+  UpdateModelConfigRequest,
   postModelConfigResult,
   ProblemKind,
   ServerError,
@@ -155,6 +156,7 @@ export class ModelConfig extends ParentApi {
     name: string,
     description: string,
     acousticModelId: string,
+    languageModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
     shareable: boolean | false,
@@ -162,12 +164,13 @@ export class ModelConfig extends ParentApi {
     subGraphIds: any | [],
   ): Promise<postModelConfigResult> {
     // compile data
-    const request: ModelConfigRequest = {
+    const request: CreateModelConfigRequest = {
       name,
       thresholdLr,
       thresholdHr,
       description,
       acousticModelId,
+      languageModelId,
       shareable,
       topGraphId,
       subGraphIds,
@@ -214,25 +217,17 @@ export class ModelConfig extends ParentApi {
   async updateModelConfig(
     modelConfigId: string,
     projectId: string,
-    name: string,
-    description: string = '',
-    acousticModelId: string,
+    description: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
     shareable: boolean | false,
-    topGraphId: string | '',
-    subGraphIds: any | [],
   ): Promise<updateModelConfigResult> {
     // compile data
-    const request: ModelConfigRequest = {
-      name,
+    const request: UpdateModelConfigRequest = {
       thresholdLr,
       thresholdHr,
       description,
-      acousticModelId,
       shareable,
-      topGraphId,
-      subGraphIds,
     };
     // make the api call
     const response: ApiResponse<

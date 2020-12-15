@@ -500,7 +500,7 @@ export function Editor(props: EditorProps) {
   };
 
   const getDiffCount = () => {
-    return 'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'
+    return translate('editor.diff') + `(${document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length})`;
   };
 
   React.useEffect(() => {

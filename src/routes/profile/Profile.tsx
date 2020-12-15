@@ -300,7 +300,7 @@ export function Profile() {
                 onClick={() => setIsPhoneDisabled(false)}
                 onBlur={handleBlur}
                 disabled={isPhoneDisabled}
-                label={translate("forms.phone")}
+                label={translate("forms.contact")}
                 onChange={(event) => setPhone(event.target.value)} />
           </Grid>
         </Grid>

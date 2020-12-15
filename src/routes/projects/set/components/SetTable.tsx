@@ -77,7 +77,7 @@ export function SetTable(props: SetTableProps) {
   const renderHeader = () => (<TableHead className={classes.tableHeader}>
     <TableRow>
       <TableCell>
-        {translate('forms.name')}
+        {translate('SET.setName')}
       </TableCell>
       <TableCell>
         {translate('TDP.wordCount')}
