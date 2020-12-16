@@ -17,6 +17,7 @@ import { NotFound } from '../shared/NotFound';
 import { ProjectApiInfo } from './components/ProjectApiInfo';
 import { ProjectModelConfigBox } from './components/ProjectModelConfigBox';
 import { ProjectTableTabs } from './ProjectTableTabs';
+import { Route } from "react-router-dom";
 
 interface ProjectDetailsProps {
   projectId: string;

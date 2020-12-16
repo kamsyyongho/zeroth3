@@ -130,8 +130,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
-    selectedAcousticModelId: yup.string().when([], {is: () => !modelConfig.imported, then: yup.string().nullable().required(requiredTranslationText)}),
-    selectedLanguageModelId: yup.string().when([], {is: () => !modelConfig.imported,  then: yup.string().nullable().required(requiredTranslationText)}),
     thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
@@ -149,8 +147,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const initialValues = React.useMemo(() => {
     const initialValues: FormValues = {
       name: modelConfig.name,
-      selectedAcousticModelId: modelConfig.acousticModel.id,
-      selectedLanguageModelId: modelConfig.languageModel.id,
       thresholdHr: modelConfig.thresholdHr ?? null,
       thresholdLr: modelConfig.thresholdLr ?? null,
       description: modelConfig.description,
