@@ -160,11 +160,15 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   }, [modelConfig]);
 
   const handleSubmit = async (values: FormValues) => {
-    const { description, thresholdLr, thresholdHr, shareable } = values;
+    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable } = values;
+    if (selectedAcousticModelId === null ||
+        selectedLanguageModelId === null
+    ) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, description.trim(), thresholdLr, thresholdHr, shareable);
+      const subGraphById = modelConfig.subGraphs.map(subGraph => subGraph.id);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable, modelConfig.topGraph.id, subGraphById);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -391,7 +395,16 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                         <Typography align='left' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
                       </Grid>
                       <Grid item xs={10}>
-                        <Typography>{modelConfig.acousticModel.name}</Typography>
+                        <Field
+                            name='selectedAcousticModelId'
+                            disabled={modelConfig.imported}
+                            component={SelectFormField}
+                            options={acousticModelFormSelectOptions}
+                            errorOverride={isError || noAvailableAcousticModelText}
+                            helperText={noAvailableAcousticModelText}
+                            fullWidth={false}
+                            variant='outlined'
+                        />
                       </Grid>
                       <Grid
                           container
