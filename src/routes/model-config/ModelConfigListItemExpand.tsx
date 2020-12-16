@@ -23,28 +23,28 @@ import { TextFormField } from '../shared/form-fields/TextFormField';
 import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
-  createStyles({
-    root: {
-      padding: theme.spacing(2),
-      width: '100%',
-    },
-    subTitle: {
-      fontWeight: 500,
-      color: theme.palette.grey[600],
-    },
-    modelTitle: {
-      fontWeight: 600,
-    },
-    form: {
-      width: '100%',
-    },
-    divider: {
-      backgroundColor: theme.table.border,
-      width: '100%',
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-  }),
+    createStyles({
+      root: {
+        padding: theme.spacing(2),
+        width: '100%',
+      },
+      subTitle: {
+        fontWeight: 500,
+        color: theme.palette.grey[600],
+      },
+      modelTitle: {
+        fontWeight: 600,
+      },
+      form: {
+        width: '100%',
+      },
+      divider: {
+        backgroundColor: theme.table.border,
+        width: '100%',
+        marginTop: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+      },
+    }),
 );
 
 export interface ModelConfigListItemExpandPropsFromParent {
@@ -130,6 +130,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
+    selectedAcousticModelId: yup.string().when([], {is: () => !modelConfig.imported, then: yup.string().nullable().required(requiredTranslationText)}),
+    selectedLanguageModelId: yup.string().when([], {is: () => !modelConfig.imported,  then: yup.string().nullable().required(requiredTranslationText)}),
     thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
@@ -147,6 +149,8 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const initialValues = React.useMemo(() => {
     const initialValues: FormValues = {
       name: modelConfig.name,
+      selectedAcousticModelId: modelConfig.acousticModel.id,
+      selectedLanguageModelId: modelConfig.languageModel.id,
       thresholdHr: modelConfig.thresholdHr ?? null,
       thresholdLr: modelConfig.thresholdLr ?? null,
       description: modelConfig.description,
@@ -218,259 +222,259 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const closeLanguageDialog = () => setLanguageOpen(false);
 
   return (
-    <Grid
-      key={formCounter}
-      container
-      item
-      xs={12}
-      wrap='nowrap'
-      direction='column'
-      alignContent='flex-start'
-      alignItems='flex-start'
-      justify='flex-start'
-      className={classes.root}
-    >
-      <Formik key={formCounter} initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
-        {(formikProps) => {
-          const { name, thresholdHr, thresholdLr } = formikProps.values;
-          const shouldShowThresholdSubmit = thresholdHr !== modelConfig.thresholdHr || thresholdLr !== modelConfig.thresholdLr;
-          const thresholdSubmitDisabled = Boolean(formikProps.errors.thresholdHr || formikProps.errors.thresholdLr || loading);
-          if (nameFormValue !== name) {
-            formikProps.setFieldValue('name', nameFormValue, true);
-          }
-          return (
-            <>
-              <Form className={classes.form} >
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  <Grid item xs={2}>
-                    <Typography align='left' className={classes.subTitle} >{`${descriptionText}:`}</Typography>
-                  </Grid>
-                  <Grid item xs={10}>
-                    <Field
-                      name='description'
-                      component={TextFormField}
-                      errorOverride={isError}
-                    />
-                  </Grid>
-                </Grid>
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  <Grid item xs={2}>
-                    <Typography align='left' className={classes.subTitle} >{`${thresholdLrText}:`}</Typography>
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Field
-                      name='thresholdLr'
-                      component={TextFormField}
-                      type='number'
-                      margin="normal"
-                      errorOverride={isError || isThresholdError}
-                    />
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography align='left' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Field
-                      name='thresholdHr'
-                      component={TextFormField}
-                      type='number'
-                      margin="normal"
-                      errorOverride={isError || isThresholdError}
-                    />
-                  </Grid>
-                  <Grid container item xs={2} >
-                    {shouldShowThresholdSubmit && <>
-                      <Grid item><IconButton
-                        color='primary'
-                        disabled={thresholdSubmitDisabled}
-                        onClick={() => updateThreshold(thresholdLr, thresholdHr)}
-                      >
-                        <DoneIcon />
-                      </IconButton></Grid>
-                      <Grid item><IconButton
-                        color='secondary'
-                        disabled={loading}
-                        onClick={() => {
-                          formikProps.setFieldValue('thresholdHr', modelConfig.thresholdHr ?? null);
-                          formikProps.setFieldValue('thresholdLr', modelConfig.thresholdLr ?? null);
-                        }}
-                      >
-                        <CloseIcon />
-                      </IconButton></Grid>
-                    </>}
-                  </Grid>
-                </Grid>
-                <Divider className={classes.divider} />
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  {modelConfig.languageModel.description && <>
-                    <Grid item>
-                      <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
+      <Grid
+          key={formCounter}
+          container
+          item
+          xs={12}
+          wrap='nowrap'
+          direction='column'
+          alignContent='flex-start'
+          alignItems='flex-start'
+          justify='flex-start'
+          className={classes.root}
+      >
+        <Formik key={formCounter} initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
+          {(formikProps) => {
+            const { name, thresholdHr, thresholdLr } = formikProps.values;
+            const shouldShowThresholdSubmit = thresholdHr !== modelConfig.thresholdHr || thresholdLr !== modelConfig.thresholdLr;
+            const thresholdSubmitDisabled = Boolean(formikProps.errors.thresholdHr || formikProps.errors.thresholdLr || loading);
+            if (nameFormValue !== name) {
+              formikProps.setFieldValue('name', nameFormValue, true);
+            }
+            return (
+                <>
+                  <Form className={classes.form} >
+                    <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}
+                    >
+                      <Grid item xs={2}>
+                        <Typography align='left' className={classes.subTitle} >{`${descriptionText}:`}</Typography>
+                      </Grid>
+                      <Grid item xs={10}>
+                        <Field
+                            name='description'
+                            component={TextFormField}
+                            errorOverride={isError}
+                        />
+                      </Grid>
                     </Grid>
-                    <Grid item>
-                      <Typography align='left' >{modelConfig.languageModel.description}</Typography>
+                    <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}
+                    >
+                      <Grid item xs={2}>
+                        <Typography align='left' className={classes.subTitle} >{`${thresholdLrText}:`}</Typography>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Field
+                            name='thresholdLr'
+                            component={TextFormField}
+                            type='number'
+                            margin="normal"
+                            errorOverride={isError || isThresholdError}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography align='left' className={classes.subTitle} >{`${thresholdHrText}:`}</Typography>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Field
+                            name='thresholdHr'
+                            component={TextFormField}
+                            type='number'
+                            margin="normal"
+                            errorOverride={isError || isThresholdError}
+                        />
+                      </Grid>
+                      <Grid container item xs={2} >
+                        {shouldShowThresholdSubmit && <>
+                          <Grid item><IconButton
+                              color='primary'
+                              disabled={thresholdSubmitDisabled}
+                              onClick={() => updateThreshold(thresholdLr, thresholdHr)}
+                          >
+                            <DoneIcon />
+                          </IconButton></Grid>
+                          <Grid item><IconButton
+                              color='secondary'
+                              disabled={loading}
+                              onClick={() => {
+                                formikProps.setFieldValue('thresholdHr', modelConfig.thresholdHr ?? null);
+                                formikProps.setFieldValue('thresholdLr', modelConfig.thresholdLr ?? null);
+                              }}
+                          >
+                            <CloseIcon />
+                          </IconButton></Grid>
+                        </>}
+                      </Grid>
                     </Grid>
-                  </>}
-                </Grid>
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}>
-                  <Grid item style={{ marginTop: '10px' }}>
-                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
-                  </Grid>
-                  <Grid item>
-                    <Chip
-                      variant='outlined'
-                      size='small'
-                      label={modelConfig.languageModel.topGraph.name}
-                    />
-                  </Grid>
-                </Grid>
-                <Grid
-                  container
-                  item
-                  wrap='nowrap'
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}>
-                  <Grid item>
-                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
-                  </Grid>
-                  <Grid item >
-                    <ChipList
-                      variant='outlined'
-                      labels={modelConfig.languageModel.subGraphs.map(subGraph => subGraph.name)}
-                    />
-                  </Grid>
-                </Grid>
-                <Divider className={classes.divider} />
-                <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  <Grid item xs={2}>
-                    <Typography align='left' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
-                  </Grid>
-                  <Grid item xs={10}>
-                    <Typography>{modelConfig.acousticModel.name}</Typography>
-                  </Grid>
+                    <Divider className={classes.divider} />
+                    <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}
+                    >
+                      {modelConfig.languageModel.description && <>
+                        <Grid item>
+                          <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
+                        </Grid>
+                        <Grid item>
+                          <Typography align='left' >{modelConfig.languageModel.description}</Typography>
+                        </Grid>
+                      </>}
+                    </Grid>
+                    <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}>
+                      <Grid item style={{ marginTop: '10px' }}>
+                        <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Chip
+                            variant='outlined'
+                            size='small'
+                            label={modelConfig.languageModel.topGraph.name}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid
+                        container
+                        item
+                        wrap='nowrap'
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}>
+                      <Grid item>
+                        <Typography align='left' className={classes.subTitle} >{`${translate("forms.sub")}:`}</Typography>
+                      </Grid>
+                      <Grid item >
+                        <ChipList
+                            variant='outlined'
+                            labels={modelConfig.languageModel.subGraphs.map(subGraph => subGraph.name)}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Divider className={classes.divider} />
+                    <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}
+                    >
+                      <Grid item xs={2}>
+                        <Typography align='left' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
+                      </Grid>
+                      <Grid item xs={10}>
+                        <Typography>{modelConfig.acousticModel.name}</Typography>
+                      </Grid>
+                      <Grid
+                          container
+                          item
+                          alignContent='center'
+                          alignItems='center'
+                          justify='flex-start'
+                          spacing={2}
+                      >
+                        {modelConfig.acousticModel.version && <>
+                          <Grid item>
+                            <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography align='left' >{modelConfig.acousticModel.version}</Typography>
+                          </Grid>
+                        </>}
+                        {modelConfig.acousticModel.description && <>
+                          <Grid item>
+                            <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
+                          </Grid>
+                          <Grid item>
+                            <Typography align='left' >{modelConfig.acousticModel.description}</Typography>
+                          </Grid>
+                        </>}
+                      </Grid>
+                    </Grid>
+                    {modelConfig.acousticModel.sampleRate && <Grid
+                        container
+                        item
+                        alignContent='center'
+                        alignItems='center'
+                        justify='flex-start'
+                        spacing={2}
+                        xs={12}
+                    >
+                      <Grid item>
+                        <Typography align='left' className={classes.subTitle} >{`${translate("forms.sampleRate")}:`}</Typography>
+                      </Grid>
+                      <Grid item>
+                        <ChipList max={1} light labels={[`${modelConfig.acousticModel.sampleRate} Hz`]} />
+                      </Grid>
+                    </Grid>}
+                  </Form>
+                  <Divider className={classes.divider} />
                   <Grid
-                    container
-                    item
-                    alignContent='center'
-                    alignItems='center'
-                    justify='flex-start'
-                    spacing={2}
-                  >
-                    {modelConfig.acousticModel.version && <>
-                      <Grid item>
-                        <Typography align='left' className={classes.subTitle} >{`${translate("common.version")}:`}</Typography>
-                      </Grid>
-                      <Grid item>
-                        <Typography align='left' >{modelConfig.acousticModel.version}</Typography>
-                      </Grid>
-                    </>}
-                    {modelConfig.acousticModel.description && <>
-                      <Grid item>
-                        <Typography align='left' className={classes.subTitle} >{`${translate("forms.description")}:`}</Typography>
-                      </Grid>
-                      <Grid item>
-                        <Typography align='left' >{modelConfig.acousticModel.description}</Typography>
-                      </Grid>
-                    </>}
+                      container
+                      item
+                      alignContent='flex-start'
+                      alignItems='center'
+                      justify='flex-start'
+                      spacing={2}>
+                    <Grid item>
+                      <Field
+                          name='shareable'
+                          disabled={modelConfig.imported}
+                          component={CheckboxFormField}
+                          text={translate("modelTraining.shared")}
+                          errorOverride={isError}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
-                {modelConfig.acousticModel.sampleRate && <Grid
-                  container
-                  item
-                  alignContent='center'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}
-                  xs={12}
-                >
-                  <Grid item>
-                    <Typography align='left' className={classes.subTitle} >{`${translate("forms.sampleRate")}:`}</Typography>
+                  <Grid container item justify='flex-end' >
+                    <Button
+                        disabled={!formikProps.isValid || loading}
+                        onClick={formikProps.submitForm}
+                        color="primary"
+                        variant="contained"
+                        startIcon={loading ?
+                            <MoonLoader
+                                sizeUnit={"px"}
+                                size={15}
+                                color={theme.palette.primary.main}
+                                loading={true}
+                            /> : (<DoneIcon />)}
+                    >
+                      {translate('common.save')}
+                    </Button>
                   </Grid>
-                  <Grid item>
-                    <ChipList max={1} light labels={[`${modelConfig.acousticModel.sampleRate} Hz`]} />
-                  </Grid>
-                </Grid>}
-              </Form>
-              <Divider className={classes.divider} />
-              <Grid
-                  container
-                  item
-                  alignContent='flex-start'
-                  alignItems='center'
-                  justify='flex-start'
-                  spacing={2}>
-                <Grid item>
-                  <Field
-                      name='shareable'
-                      disabled={modelConfig.imported}
-                      component={CheckboxFormField}
-                      text={translate("modelTraining.shared")}
-                      errorOverride={isError}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item justify='flex-end' >
-                <Button
-                  disabled={!formikProps.isValid || loading}
-                  onClick={formikProps.submitForm}
-                  color="primary"
-                  variant="contained"
-                  startIcon={loading ?
-                    <MoonLoader
-                      sizeUnit={"px"}
-                      size={15}
-                      color={theme.palette.primary.main}
-                      loading={true}
-                    /> : (<DoneIcon />)}
-                >
-                  {translate('common.save')}
-                </Button>
-              </Grid>
-            </>
-          );
-        }}
-      </Formik>
-    </Grid>
+                </>
+            );
+          }}
+        </Formik>
+      </Grid>
   );
 }
