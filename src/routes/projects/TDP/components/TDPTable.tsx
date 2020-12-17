@@ -397,8 +397,8 @@ export function TDPTable(props: TDPTableProps) {
     const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
     const isFiltering = Object.keys(filterParams).some((key) => isFilteringStringKeyType[key]);
 
-    // console.log('====== filter : ', isFilteringStringKeyType, isFiltering);
-    // history.push(buildFilterParamRoute(options));
+    console.log('====== filter : ', isFilteringStringKeyType, isFiltering);
+    history.push(buildFilterParamRoute(options));
     setFilterParams(isFiltering ? filterParams : undefined);
   };
 

@@ -151,35 +151,35 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   };
 
   const getUploadQueue = async (projectId: string, isGetter = false) => {
-    // if (api?.rawData) {
-    //   const response = await api.rawData.getRawDataQueue(projectId);
-    //   if (response.kind === 'ok') {
-    //     const { queue } = response;
-    //     const { length } = queue;
-    //     if (length === 0) {
-    //       onComplete();
-    //     } else {
-    //       //!
-    //       //TODO
-    //       //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
-    //       const text = `${translate('common.decoding')}: ${length} seconds remaining`;
-    //       enqueueSnackbar(text, {
-    //         ...DEFAULT_NOTIFICATION_OPTIONS,
-    //         content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), length),
-    //       });
-    //     }
-    //     if (isGetter) {
-    //       return length;
-    //     }
-    //   } else {
-    //     log({
-    //       file: `Header.tsx`,
-    //       caller: `getUploadQueue - failed to get raw data queue`,
-    //       value: response,
-    //       important: true,
-    //     });
-    //   }
-    // }
+    if (api?.rawData) {
+      const response = await api.rawData.getRawDataQueue(projectId);
+      if (response.kind === 'ok') {
+        const { queue } = response;
+        const { length } = queue;
+        if (length === 0) {
+          onComplete();
+        } else {
+          //!
+          //TODO
+          //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
+          const text = `${translate('common.decoding')}: ${length} seconds remaining`;
+          enqueueSnackbar(text, {
+            ...DEFAULT_NOTIFICATION_OPTIONS,
+            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), length),
+          });
+        }
+        if (isGetter) {
+          return length;
+        }
+      } else {
+        log({
+          file: `Header.tsx`,
+          caller: `getUploadQueue - failed to get raw data queue`,
+          value: response,
+          important: true,
+        });
+      }
+    }
   };
   const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.profile.renameOrganization), [roles]);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
@@ -221,7 +221,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       if (currentProjectId !== currentProject.id) {
         setCurrentProjectId(currentProject.id);
       }
-      // getUploadQueue(currentProject.id);
+      getUploadQueue(currentProject.id);
     }
   }, [currentProject, uploadQueueEmpty]);
 
