@@ -85,8 +85,8 @@ function App() {
             //withErroBoundary causes the initial render to occur twice, therefore removed from two components that call api in initial render
             <Route exact path={PATHS.home.to} component={withErrorBoundary(Home, PageErrorFallback)} />
             <Route path={PATHS.IAM.to} component={withErrorBoundary(IAM, PageErrorFallback)} />
-            <Route path={PATHS.project.to} component={ProjectDetails} />
             <Route exact path={PATHS.modelConfig.to} component={withErrorBoundary(ModelConfigPage, PageErrorFallback)} />
+            <Route exact path={PATHS.project.to} component={ProjectDetails} />
             <Route exact path={PATHS.editor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
             <Route path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
             <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
