@@ -11,7 +11,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LaunchIcon from '@material-ui/icons/Launch';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { CellProps, ColumnInstance, HeaderGroup, Row, useFilters, usePagination, useTable } from 'react-table';
 import TruncateMarkup from 'react-truncate-markup';
@@ -366,6 +366,20 @@ export function TDPTable(props: TDPTableProps) {
     usePagination,
   );
 
+  const buildFilterParamRoute = (options: FilterParams) => {
+    const keys = Object.keys(options);
+    const values = Object.values(options);
+    let url = `project/${projectId}`;
+
+    values.forEach((value, index) => {
+      if(value) {
+        url += `/${keys[index]}/`;
+        url += value;
+      }
+    });
+
+    return url;
+  };
 
   const setCreateSetFilterParams = (options: SearchDataRequest) => {
     const { till, from, status, transcript, filename, dataSetIds } = options;
@@ -382,6 +396,9 @@ export function TDPTable(props: TDPTableProps) {
     };
     const isFilteringStringKeyType: { [x: string]: unknown; } = { ...filterParams };
     const isFiltering = Object.keys(filterParams).some((key) => isFilteringStringKeyType[key]);
+
+    // console.log('====== filter : ', isFilteringStringKeyType, isFiltering);
+    // history.push(buildFilterParamRoute(options));
     setFilterParams(isFiltering ? filterParams : undefined);
   };
 
