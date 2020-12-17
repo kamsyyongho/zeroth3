@@ -47,7 +47,7 @@ export const PATHS: { [x: string]: Path; } = {
     Icon: props => <ICONS.IAM {...props} />,
   },
   project: {
-    to: '/project/:projectId',
+    to: '/project/:projectId/(from)?/:from?/(till)?/:till?/(transcript)?/:transcript?/(status)?/:status?/(model-config)?/:modelConfigId?/(dataSetIds)?/:dataSetIds?/(fileName)?/:filename?/(transcriber)?/:transcriber?/(page)?/:page?/(pageSize)?/:pageSize?',
     function: (projectId: string) => `/project/${projectId}`,
   },
   TDP: {

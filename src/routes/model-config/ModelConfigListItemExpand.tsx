@@ -131,7 +131,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().when([], {is: () => !modelConfig.imported, then: yup.string().nullable().required(requiredTranslationText)}),
-    selectedLanguageModelId: yup.string().when([], {is: () => !modelConfig.imported,  then: yup.string().nullable().required(requiredTranslationText)}),
     thresholdLr: yup.number().typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).nullable().test('lowRiskTest', translate('forms.validation.lessThan', { target: thresholdLrText, value: thresholdHrText }), function (thresholdLr) {
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
@@ -150,7 +149,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
     const initialValues: FormValues = {
       name: modelConfig.name,
       selectedAcousticModelId: modelConfig.acousticModel.id,
-      selectedLanguageModelId: modelConfig.languageModel.id,
       thresholdHr: modelConfig.thresholdHr ?? null,
       thresholdLr: modelConfig.thresholdLr ?? null,
       description: modelConfig.description,
@@ -160,15 +158,11 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
   }, [modelConfig]);
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable } = values;
-    if (selectedAcousticModelId === null ||
-        selectedLanguageModelId === null
-    ) return;
+    const { description, thresholdLr, thresholdHr, shareable } = values;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
-      const subGraphById = modelConfig.subGraphs.map(subGraph => subGraph.id);
-      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr, shareable, modelConfig.topGraph.id, subGraphById);
+      const response = await api.modelConfig.updateModelConfig(modelConfig.id, projectId, description.trim(), thresholdLr, thresholdHr, shareable);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
@@ -332,24 +326,6 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                         alignItems='center'
                         justify='flex-start'
                         spacing={2}
-                        xs={12}
-                    >
-                      {modelConfig.languageModel.description && <>
-                        <Grid item>
-                          <Typography align='left' className={classes.subTitle}>{`${translate("forms.description")}:`}</Typography>
-                        </Grid>
-                        <Grid item>
-                          <Typography align='left' >{modelConfig.languageModel.description}</Typography>
-                        </Grid>
-                      </>}
-                    </Grid>
-                    <Grid
-                        container
-                        item
-                        alignContent='center'
-                        alignItems='center'
-                        justify='flex-start'
-                        spacing={2}
                         xs={12}>
                       <Grid item style={{ marginTop: '10px' }}>
                         <Typography align='left' className={classes.subTitle} >{`${translate("forms.top")}:`}</Typography>
@@ -358,7 +334,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                         <Chip
                             variant='outlined'
                             size='small'
-                            label={modelConfig.languageModel.topGraph.name}
+                            label={modelConfig.topGraph.name}
                         />
                       </Grid>
                     </Grid>
@@ -377,7 +353,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                       <Grid item >
                         <ChipList
                             variant='outlined'
-                            labels={modelConfig.languageModel.subGraphs.map(subGraph => subGraph.name)}
+                            labels={modelConfig.subGraphs.map(subGraph => subGraph.name)}
                         />
                       </Grid>
                     </Grid>
@@ -395,16 +371,7 @@ export function ModelConfigListItemExpand(props: ModelConfigListItemExpandProps)
                         <Typography align='left' className={classes.modelTitle} >{`${translate("forms.acousticModel")}:`}</Typography>
                       </Grid>
                       <Grid item xs={10}>
-                        <Field
-                            name='selectedAcousticModelId'
-                            disabled={modelConfig.imported}
-                            component={SelectFormField}
-                            options={acousticModelFormSelectOptions}
-                            errorOverride={isError || noAvailableAcousticModelText}
-                            helperText={noAvailableAcousticModelText}
-                            fullWidth={false}
-                            variant='outlined'
-                        />
+                        <Typography>{modelConfig.acousticModel.name}</Typography>
                       </Grid>
                       <Grid
                           container
