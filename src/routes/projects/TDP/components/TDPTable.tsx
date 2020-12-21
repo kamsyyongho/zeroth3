@@ -412,7 +412,6 @@ export function TDPTable(props: TDPTableProps) {
     gotoPage(0);
   };
 
-
   // Listen for changes in pagination and use the state to fetch our new data
   React.useEffect(() => {
     // to prevent reloading the initial data from the parent
