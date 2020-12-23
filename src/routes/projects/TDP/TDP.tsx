@@ -4,6 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import BackupIcon from '@material-ui/icons/Backup';
 import PriorityHighIcon from '@material-ui/icons/PriorityHigh';
+import PublishIcon from '@material-ui/icons/Publish';
 import { BulletList } from 'react-content-loader';
 import React, { useGlobal } from "reactn";
 import { PERMISSIONS } from '../../../constants/permission.constants';
@@ -26,6 +27,7 @@ import {
   TranscriberStats } from '../../../types';
 import log from '../../../util/log/logger';
 import { AudioUploadDialog } from '../../projects/components/AudioUploadDialog';
+import { ImportDataSetDialog } from '../../projects/components/ImportDataSetDialog';
 import { CreateSetFormDialog } from '../set/components/CreateSetFormDialog';
 import { TDPTable } from './components/TDPTable';
 import { ConfirmationDialog } from "./components/Confirmation";
@@ -86,6 +88,7 @@ export function TDP(props: TDPProps) {
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
   const { enqueueSnackbar } = useSnackbar();
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
+  const [isImportDataSetOpen, setIsImportDataSetOpen] = React.useState(false);
   const [isCreateSetOpen, setIsCreateSetOpen] = React.useState(false);
   const [filterParams, setFilterParams] = React.useState<FilterParams | undefined>();
   const [initialVoiceDataLoading, setInitialVoiceDataLoading] = React.useState(true);
@@ -371,6 +374,9 @@ export function TDP(props: TDPProps) {
   const openUploadDialog = () => setIsUploadOpen(true);
   const closeUploadDialog = () => setIsUploadOpen(false);
 
+  const openImportDataSetDialog = () => setIsImportDataSetOpen(true);
+  const closeImportDataSetDialog = () => setIsImportDataSetOpen(false);
+
   const openCreateSetDialog = () => setIsCreateSetOpen(true);
   const closeCreateSetDialog = () => setIsCreateSetOpen(false);
 
@@ -409,6 +415,16 @@ export function TDP(props: TDPProps) {
                 onClick={() => setIsDeleteSetOpen(true)}
                 startIcon={<DeleteIcon />}>
               {translate('SET.deleteAll')}
+            </Button>
+          </Grid>}
+          {canUpload && <Grid item>
+            <Button
+                variant='contained'
+                color="secondary"
+                size='small'
+                onClick={openImportDataSetDialog}
+                startIcon={<PublishIcon />}>
+              {translate('TDP.importDataSet')}
             </Button>
           </Grid>}
           {canUpload && <Grid item>
@@ -460,6 +476,16 @@ export function TDP(props: TDPProps) {
             openModelConfigDialog={openModelConfigDialog}
             modelConfigDialogOpen={modelConfigDialogOpen}
         />
+      }
+      {
+        isImportDataSetOpen &&
+            <ImportDataSetDialog open={isImportDataSetOpen}
+                                 onClose={closeImportDataSetDialog}
+                                 onSuccess={closeImportDataSetDialog}
+                                 projectId={projectId}
+                                 modelConfigs={modelConfigs}
+                                 openModelConfigDialog={openModelConfigDialog}
+                                 modelConfigDialogOpen={modelConfigDialogOpen} />
       }
       <CreateSetFormDialog
         open={isCreateSetOpen}

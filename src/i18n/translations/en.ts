@@ -57,7 +57,7 @@ export const en: ResourceLanguage = {
       confirm: 'Approve',
       reject: 'Reject',
       comment: 'Comment',
-      reresh: '새로고침',
+      import: 'Import',
     },
     table: {
       page: 'Page',
@@ -125,6 +125,7 @@ export const en: ResourceLanguage = {
         main_plural: 'Drag and drop files or click',
         text_plural: 'Drag and drop text files or click',
         audio_plural: 'Drag and drop audio files or click',
+        importDataSet: 'Drag and drop dataset file or click',
         reject: {
           main: 'File {{name}} was rejected.',
           notSupported: 'File type not supported.',
@@ -149,6 +150,7 @@ export const en: ResourceLanguage = {
       top: 'Top',
       sub: 'Sub',
       modelConfig: 'Model configuration',
+      extension: 'Extension',
       privacySetting: 'Privacy setting',
       mutability: 'Mutability',
       mutable: 'Mutable',
@@ -223,6 +225,7 @@ export const en: ResourceLanguage = {
     TDP: {
       TDP: 'Transcription Data',
       dataUpload: 'Data Upload',
+      importDataSet: 'Import Dataset',
       highRiskSegments: 'High Risk Segments',
       classifyHighRisk: 'Classify HR/LR',
       classifyHighRiskHelper: 'Please Select Model Configuration for Classification',
