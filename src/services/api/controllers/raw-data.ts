@@ -210,7 +210,7 @@ export class RawData extends ParentApi {
       modelConfigId: string,
       name: string,
       extension: string,
-      files:File): Promise<importDataSetsResult> {
+      files: File[]): Promise<importDataSetsResult> {
     const params = {
       'model-config': modelConfigId,
       name,

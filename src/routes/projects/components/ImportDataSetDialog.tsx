@@ -165,7 +165,7 @@ export function ImportDataSetDialog(props: AudioUploadDialogProps) {
         selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
         name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
         files: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
-        extension: yup.string().nullable().required(requiredTranslationText),
+        extension: yup.string().required(requiredTranslationText),
     });
     type FormValues = yup.InferType<typeof formSchema>;
     const initialValues: FormValues = {
@@ -192,11 +192,6 @@ export function ImportDataSetDialog(props: AudioUploadDialogProps) {
                 // this logic is in the header component
                 setUploadQueueEmpty(false);
                 snackbarError = undefined;
-                if (response.warningMessage) {
-                    enqueueSnackbar(response.warningMessage, { variant: SNACKBAR_VARIANTS.warning });
-                } else {
-                    enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-                }
                 onSuccess();
                 onClose();
             } else {
@@ -242,8 +237,6 @@ export function ImportDataSetDialog(props: AudioUploadDialogProps) {
             <DialogTitle id="audio-upload-dialog">{translate(`TDP.dataUpload`)}</DialogTitle>
             <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={formSchema}>
                 {(formikProps) => {
-                    const shouldUploadFile = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.FILE as string;
-                    const textInputLabel = formikProps.values.uploadType === AUDIO_UPLOAD_TYPE.URL as string ? translate('forms.fileUrl') : translate('forms.filePath');
                     return (
                         <>
                             <DialogContent>
