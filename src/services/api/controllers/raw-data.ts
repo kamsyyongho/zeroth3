@@ -6,11 +6,13 @@ import { getGeneralApiProblem } from '../api-problem';
 import {
   getRawDataQueueResult,
   getFullQueue,
+  ImportDataSets,
   PostDownloadLinkRequest,
   PostDownloadLocationRequest,
   ProblemKind,
   ServerError,
   uploadRawDataResult,
+  importDataSetsResult,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -195,6 +197,44 @@ export class RawData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async importDataSets (
+      projectId: string,
+      modelConfigId: string,
+      name: string,
+      extension: string,
+      files:File): Promise<importDataSetsResult> {
+    const params = {
+      'model-config': modelConfigId,
+      name,
+      extension,
+    };
+    // compile data
+    const request = new FormData();
+    request.append('files', files[0]);
+    const config: AxiosRequestConfig = {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+      params,
+    };
+    const response = await this.apisauce.post<undefined, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data-sets/import`),
+        request,
+        config,
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;

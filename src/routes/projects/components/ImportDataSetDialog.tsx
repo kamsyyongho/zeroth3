@@ -16,6 +16,7 @@ import * as yup from 'yup';
 import { ApiContext } from '../../../hooks/api/ApiContext';
 import { I18nContext } from '../../../hooks/i18n/I18nContext';
 import { ProblemKind, uploadRawDataResult } from '../../../services/api/types';
+import { VALIDATION } from '../../../constants';
 import { AUDIO_UPLOAD_TYPE, AUDIO_UPLOAD_TYPE_VALUES, GenericById, ModelConfig, SnackbarError, SNACKBAR_VARIANTS } from '../../../types';
 import log from '../../../util/log/logger';
 import { DropZoneFormField } from '../../shared/form-fields/DropZoneFormField';
@@ -48,9 +49,9 @@ interface AudioUploadDialogProps {
 const MAX_TOTAL_FILE_SIZE_LIMIT = 1000000000; // 1 GB in bytes
 const MAX_TOTAL_FILE_SIZE_LIMIT_STRING = '1 GB';
 
-const ACCEPTED_FILE_TYPES = ['audio/*', '.mp4', '.MP4'];
+const ACCEPTED_FILE_TYPES = ['.zip'];
 
-export function AudioUploadDialog(props: AudioUploadDialogProps) {
+export function ImportDataSetDialog(props: AudioUploadDialogProps) {
     const {
         open,
         projectId,
@@ -94,6 +95,10 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
         }
         return { label: modelConfig.name, value: modelConfig.id, disabled };
     });
+    const extensionSelectOption = [
+        {label: '.FLAC', value: 'flac'},
+        {label: '.WAV', value: 'wav'},
+    ]
 
     const uploadTypeFormSelectOptions = React.useMemo(() => {
         const tempFormSelectOptions: SelectFormFieldOptions = AUDIO_UPLOAD_TYPE_VALUES.map((uploadType) => {
@@ -152,45 +157,35 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
         return isValid;
     };
 
+    const descriptionText = translate("forms.description");
+    const nameText = translate("forms.validation.between", { target: translate('forms.name'), first: VALIDATION.MODELS.ACOUSTIC.name.min, second: VALIDATION.MODELS.ACOUSTIC.name.max, context: 'characters' });
+
+
     const formSchema = yup.object({
         selectedModelConfigId: yup.string().nullable().required(requiredTranslationText),
-        uploadType: yup.mixed().oneOf(AUDIO_UPLOAD_TYPE_VALUES.concat([''])).notRequired(),
-        files: yup.array<File>().when('uploadType', {
-            is: AUDIO_UPLOAD_TYPE.FILE as string,
-            then: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
-            otherwise: yup.array<File>().notRequired(),
-        }),
-        text: yup.string().when('uploadType', {
-            is: AUDIO_UPLOAD_TYPE.FILE as string,
-            then: yup.string().notRequired(),
-            otherwise: yup.string().required(requiredTranslationText).trim(),
-        }),
+        name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
+        files: yup.array<File>().required(requiredTranslationText).test('files', maxFileSizeText, testMaxTotalFileSize),
+        extension: yup.string().nullable().required(requiredTranslationText),
     });
     type FormValues = yup.InferType<typeof formSchema>;
     const initialValues: FormValues = {
         selectedModelConfigId: null,
-        uploadType: AUDIO_UPLOAD_TYPE.FILE as string,
+        name: '',
         files: [],
-        text: '',
+        extension: 'flac',
     };
 
     const handleSubmit = async (values: FormValues) => {
-        const { files, selectedModelConfigId, uploadType, text } = values;
-        const shouldUploadFiles = uploadType === AUDIO_UPLOAD_TYPE.FILE as string;
-        if (shouldUploadFiles && !validFilesCheck(files) || selectedModelConfigId === null) {
+        const { files, selectedModelConfigId, extension, name } = values;
+
+        if (!validFilesCheck(files) || selectedModelConfigId === null) {
             return;
         }
         if (api?.rawData && !loading && !duplicateError && !maxSizeError) {
             setLoading(true);
             setIsError(false);
-            let response: uploadRawDataResult;
-            if (shouldUploadFiles) {
-                response = await api.rawData.uploadRawData(projectId, selectedModelConfigId, files);
-            } else if (uploadType === AUDIO_UPLOAD_TYPE.URL as string) {
-                response = await api.rawData.postDownloadLink(projectId, selectedModelConfigId, text);
-            } else {
-                response = await api.rawData.postDownloadLocation(projectId, selectedModelConfigId, text);
-            }
+            let response = await api.rawData.importDataSets(projectId, selectedModelConfigId, name, extension, files);;
+
             let snackbarError: SnackbarError | undefined = {} as SnackbarError;
             if (response.kind === 'ok') {
                 // to trigger polling for upload progress
@@ -270,27 +265,24 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                                         {translate('modelConfig.create')}
                                     </Button>}
                                     <Field
-                                        fullWidth
-                                        name='uploadType'
+                                        name='extension'
                                         component={SelectFormField}
-                                        options={uploadTypeFormSelectOptions}
-                                        label={translate("forms.source")}
+                                        options={extensionSelectOption}
+                                        label={translate("forms.extension")}
+                                        errorOverride={isError}
                                     />
                                     <Field
-                                        className={clsx(shouldUploadFile && classes.hiddenTextInput)}
-                                        name='text'
+                                        name='name'
+                                        label={translate("SET.setName")}
                                         component={TextFormField}
-                                        label={textInputLabel}
-                                        variant="outlined"
-                                        margin="normal"
+                                        errorOverride={isError}
                                     />
                                     <Field
-                                        hidden={!shouldUploadFile}
                                         showPreviews
                                         maxFileSize={MAX_TOTAL_FILE_SIZE_LIMIT}
                                         acceptedFiles={ACCEPTED_FILE_TYPES}
                                         name='files'
-                                        dropZoneText={translate('forms.dropZone.audio_plural')}
+                                        dropZoneText={translate('forms.dropZone.importDataSet')}
                                         component={DropZoneFormField}
                                         onDuplicateFileNames={handleDuplicateFileNames}
                                         onMaxFileSizeExceeded={handleMaxFileSizeExceeded}
@@ -318,7 +310,7 @@ export function AudioUploadDialog(props: AudioUploadDialogProps) {
                                             loading={true}
                                         /> : <BackupIcon />}
                                 >
-                                    {translate("common.decode")}
+                                    {translate("common.import")}
                                 </Button>
                             </DialogActions>
                         </>

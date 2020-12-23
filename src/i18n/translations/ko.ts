@@ -56,7 +56,8 @@ export const ko: ResourceLanguage = {
       confirm: '승인하기',
       reject: '반려하기',
       comment: '코멘트',
-      reresh: '새로고침',
+      refresh: '새로고침',
+      import: '불러오기',
     },
     table: {
       page: '페이지',
@@ -126,6 +127,7 @@ export const ko: ResourceLanguage = {
         main_plural: '업로드할 파일을 끌어다 놓거나 클릭해주세요',
         text_plural: '업로드할 텍스트 파일을 끌어다 놓거나 클릭해주세요',
         audio_plural: '업로드할 오디오 파일을 끌어다 놓거나 클릭해주세요',
+        importDataSet: '업로드할 데이터 세트 파일을 끌어다 놓거나 클릭해주세요',
         reject: {
           main: '{{name}} 파일 업로드에 실패했습니다.',
           notSupported: '지원하지 않는 파일 형식입니다.',
@@ -150,6 +152,7 @@ export const ko: ResourceLanguage = {
       top: '탑 그래프',
       sub: '서브 그래프',
       modelConfig: '모델 설정',
+      extension: '확장자',
       privacySetting: '개인정보',
       mutability: '수정가능 여부',
       mutable: '수정가능',
@@ -224,6 +227,7 @@ export const ko: ResourceLanguage = {
     TDP: {
       TDP: '전사데이터',
       dataUpload: '데이터 업로드',
+      importDataSet: '데이터 세트 불러오기',
       highRiskSegments: 'High Risk',
       classifyHighRisk: 'LR/HR 평가',
       classifyHighRiskHelper: 'LR/HR 평가를 진행할 모델을 선택해주세요',

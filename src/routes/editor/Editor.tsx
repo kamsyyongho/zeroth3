@@ -3,7 +3,6 @@ import Card from '@material-ui/core/Card';
 import LaunchIcon from '@material-ui/icons/Launch';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import clsx from 'clsx';
-import 'draft-js/dist/Draft.css';
 import {useSnackbar, VariantType} from 'notistack';
 import Draggable from 'react-draggable';
 import React, {useGlobal} from 'reactn';

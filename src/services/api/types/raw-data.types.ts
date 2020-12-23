@@ -15,6 +15,11 @@ export interface PostDownloadLinkRequest {
   url: string;
 }
 
+export interface ImportDataSets {
+  modelConfigId: string;
+  file: File;
+}
+
 /////////////
 // RESULTS //
 /////////////
@@ -30,3 +35,4 @@ export type uploadRawDataResult =
   | GeneralApiProblem;
 export type postDownloadLocationResult = { kind: 'ok' } | GeneralApiProblem;
 export type postDownloadLinkResult = { kind: 'ok' } | GeneralApiProblem;
+export type importDataSetsResult = { kind: 'ok' } | GeneralApiProblem;
