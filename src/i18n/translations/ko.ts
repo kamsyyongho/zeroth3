@@ -57,6 +57,7 @@ export const ko: ResourceLanguage = {
       reject: '반려하기',
       comment: '코멘트',
       import: '불러오기',
+      voiceMaskingAvailable: '보이스 마스킹 적용',
     },
     table: {
       page: '페이지',

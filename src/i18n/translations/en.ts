@@ -58,6 +58,7 @@ export const en: ResourceLanguage = {
       reject: 'Reject',
       comment: 'Comment',
       import: 'Import',
+      voiceMaskingAvailable: 'Voice Masking Available',
     },
     table: {
       page: 'Page',
