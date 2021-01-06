@@ -36,7 +36,7 @@ import IconButton from '@material-ui/core/IconButton';
 interface RequestEvaluationDialogrops {
     open: boolean;
     onClose: () => void;
-    selectedDataSet: DataSet;
+    selectedDataSet?: DataSet;
     projectId: string;
 }
 
@@ -72,8 +72,8 @@ const useStyles = makeStyles((theme: CustomTheme) =>
         },
         ratioControlButton: {
             padding: 0,
-            width: '30px',
-            height: '30px',
+            width: '20px',
+            height: '20px',
         },
         ratioControlButtonContainer: {
             marginLeft: '20px',
@@ -126,7 +126,7 @@ export function SetRatioDialog(props: RequestEvaluationDialogrops) {
     };
 
     const handleSubmit = async () => {
-        if(api?.dataSet) {
+        if(selectedDataSet && api?.dataSet) {
             setLoading(true);
             let serverError: ServerError | undefined;
             const response = await api.dataSet.createTrainingSet(projectId, selectedDataSet.id, trainingRatio, validationRatio, testRatio);
