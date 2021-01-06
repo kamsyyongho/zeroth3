@@ -279,6 +279,7 @@ export const ko: ResourceLanguage = {
       ratioValidation: 'Validation 비율',
       ratioTraining: 'Training 비율',
       ratioTest: 'Test 비율',
+      ratioTotalError: '비율의 총 합은 100%입니다.',
     },
     modelTraining: {
       header: '모델 학습',

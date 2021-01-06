@@ -274,6 +274,7 @@ export const en: ResourceLanguage = {
       ratioValidation: 'Validation Ratio',
       ratioTraining: 'Training Ratio',
       ratioTest: 'Test Ratio',
+      ratioTotalError: 'Sum of All Ratio Must Be 100%',
     },
     modelTraining: {
       header: 'Model Training',

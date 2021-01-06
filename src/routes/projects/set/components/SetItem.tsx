@@ -32,6 +32,7 @@ interface SetItemProps {
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
   displaySubSetInTDP: (setId: string, subSetType: string) => void;
+  handleCreateTrainingSetClick: (dataSetIndex: number) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -57,7 +58,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, displaySubSetInTDP, openRequestEvaluationDialog } = props;
+  const {
+    projectId,
+    dataSet,
+    dataSetIndex,
+    openTranscriberDialog,
+    displaySubSetInTDP,
+    openRequestEvaluationDialog,
+    handleCreateTrainingSetClick } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -296,7 +304,7 @@ export function SetItem(props: SetItemProps) {
             >
               <IconButton
                   color='primary'
-                  onClick={createTrainingSet}>
+                  onClick={() => handleCreateTrainingSetClick(dataSetIndex)}>
                 {isCreateTrainingSetLoading ? <MoonLoader
                     sizeUnit={"px"}
                     size={15}

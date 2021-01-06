@@ -10,7 +10,7 @@ import { AddTranscriberDialog } from './components/AddTranscriberDialog';
 import { SetTable } from './components/SetTable';
 import { EvaluationDetailModal } from './components/EvaluationDetailModal';
 import { ConfirmationDialog } from "../TDP/components/Confirmation";
-import { RequestEvaluationDialog } from './components/RequestEvaluationDialog';
+import { SetRatioDialog } from './components/SetRatioDialog';
 import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
 import { useSnackbar } from 'notistack';
 import { ServerError } from '../../../services/api/types/api-problem.types';
@@ -39,6 +39,7 @@ export default function SET(props: SETProps) {
   const [selectedDataSet, setSelectedDataSet] = React.useState<DataSet | undefined>();
   const [selectedDataSetIndex, setSelectedDataSetIndex] = React.useState<number | undefined>();
   const [isEvaluationRequested, setIsEvaluationRequested] = React.useState(false);
+  const [isCreateTrainingRequested, setIsCreateTrainingRequested] = React.useState(false);
   const [contentMsg, setContentMsg] = React.useState('');
   const [selectedModelConfigId, setSelectedModelConfigId] = React.useState('');
   // const [isShowEvaluationDetail, setIsShowEvaluationDetail] = React.useState(false);
@@ -138,11 +139,17 @@ export default function SET(props: SETProps) {
     openTranscriberDialog();
   };
 
-  // const handleEvaluationDetailClick = (dataSetIndex: number) => {
-  //   setSelectedDataSet(dataSets[dataSetIndex]);
-  //   setSelectedDataSetIndex(dataSetIndex);
-  //   setIsShowEvaluationDetail(true);
-  // };
+const handleCreateTrainingSetClick = (dataSetIndex: number) => {
+  setSelectedDataSet(dataSets[dataSetIndex]);
+  setSelectedDataSetIndex(dataSetIndex);
+  setIsCreateTrainingRequested(true);
+};
+
+const handleCreateTrainingSetClose = () => {
+  setSelectedDataSet(undefined);
+  setSelectedDataSetIndex(undefined);
+  setIsCreateTrainingRequested(false);
+}
 
   const onUpdateDataSetSuccess = (updatedDataSet: DataSet, dataSetIndex: number): void => {
     setDataSets((prevDataSets) => {
@@ -168,21 +175,20 @@ export default function SET(props: SETProps) {
         dataSetIndex={selectedDataSetIndex}
         onUpdateDataSetSuccess={onUpdateDataSetSuccess}
       />
-      <RequestEvaluationDialog
-          open={isEvaluationRequested}
-          buttonMsg={translate('SET.requestEvaluation')}
+      <SetRatioDialog
+          open={isCreateTrainingRequested}
+          onClose={handleCreateTrainingSetClose}
+          projectId={projectId}
+          selectedDataSet={selectedDataSet} />
+       <ConfirmationDialog
           contentMsg={contentMsg}
+          buttonMsg={translate('SET.requestEvaluation')}
+          open={isEvaluationRequested}
           onClose={handleCloseEvaluationRequest}
-          modelConfigsById={modelConfigsById} />
-       {/*<ConfirmationDialog*/}
-       {/*   contentMsg={contentMsg}*/}
-       {/*   buttonMsg={translate('SET.requestEvaluation')}*/}
-       {/*   open={isEvaluationRequested}*/}
-       {/*   onClose={handleCloseEvaluationRequest}*/}
-       {/*   onSuccess={handleEvaluationRequested}*/}
-       {/*   modelConfigsById={modelConfigsById}*/}
-       {/*   selectedDataSet={selectedDataSet}*/}
-       {/*   setSelectedModelConfigId={(modelConfigId: string) => setSelectedModelConfigId(modelConfigId)}/>*/}
+          onSuccess={handleEvaluationRequested}
+          modelConfigsById={modelConfigsById}
+          selectedDataSet={selectedDataSet}
+          setSelectedModelConfigId={(modelConfigId: string) => setSelectedModelConfigId(modelConfigId)}/>
       {/*Evulation Detail modal is commented out for potential future use*/}
       {/*<EvaluationDetailModal*/}
       {/*    dataSet={selectedDataSet}*/}
@@ -196,6 +202,7 @@ export default function SET(props: SETProps) {
           openRequestEvaluationDialog={openRequestEvaluationDialog}
           // openEvaluationDetail={handleEvaluationDetailClick}
           displaySubSetInTDP={displaySubSetInTDP}
+          handleCreateTrainingSetClick={handleCreateTrainingSetClick}
         />
       }
     </>
