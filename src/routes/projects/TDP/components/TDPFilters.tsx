@@ -20,6 +20,7 @@ import { DateTimePickerFormField } from '../../../shared/form-fields/DateTimePic
 import { SelectFormField, SelectFormFieldOptions } from '../../../shared/form-fields/SelectFormField';
 import { TextFormField } from '../../../shared/form-fields/TextFormField';
 import { ChipSelectFormField } from '../../../shared/form-fields/ChipSelectFormField';
+import { CheckboxFormField } from '../../../shared/form-fields/CheckboxFormField';
 
 interface TDPFiltersProps {
   updateVoiceData: (options?: SearchDataRequest) => void;
@@ -107,6 +108,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     dataSetIds: yup.array().of(yup.string()).notRequired(),
     filename: yup.string().notRequired(),
     transcriber: yup.mixed<string | ''>().notRequired(),
+    voiceMaskingAvailable: yup.boolean().notRequired(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -115,6 +117,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     status: '',
     modelConfigId: '',
     dataSetIds: [],
+    voiceMaskingRequired: false,
   };
 
 
@@ -130,6 +133,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       dataSetIds,
       filename,
       transcriber,
+      voiceMaskingAvailable,
     } = values;
     // sanitize the data
     const from: Date | undefined = startDate === null ? undefined : startDate;
@@ -147,6 +151,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       'dataSetIds': dataSetIds?.length ? dataSetIds : [],
       filename,
       transcriber,
+      voiceMaskingAvailable
     };
     updateVoiceData(options);
   };
@@ -159,7 +164,7 @@ export function TDPFilters(props: TDPFiltersProps) {
       validationSchema={formSchema}
     >
       {(formikProps) => (
-        <ExpansionPanel className={classes.root} elevation={0} >
+        <ExpansionPanel className={classes.root} elevation={0}>
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon color='primary' />}
             aria-controls="filter"
@@ -357,13 +362,9 @@ export function TDPFilters(props: TDPFiltersProps) {
                     </Grid>
                     <Grid container item xs={12} spacing={1}>
                       <Field
-                        multiline
-                        fullWidth
-                        name='transcript'
-                        component={TextFormField}
-                        label={translate('forms.transcript')}
-                        variant="outlined"
-                        margin="normal"
+                          name='voiceMaskingAvailable'
+                          component={CheckboxFormField}
+                          text={translate("common.voiceMaskingAvailable")}
                       />
                     </Grid>
                   </Grid>

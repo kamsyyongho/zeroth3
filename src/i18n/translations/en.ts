@@ -58,6 +58,7 @@ export const en: ResourceLanguage = {
       reject: 'Reject',
       comment: 'Comment',
       import: 'Import',
+      voiceMaskingAvailable: 'Voice Masking Available',
     },
     table: {
       page: 'Page',
@@ -270,6 +271,10 @@ export const en: ResourceLanguage = {
       highRisk: 'High Risk',
       transcribers: 'Transcribers',
       editProgress: 'Edit Progress',
+      ratioValidation: 'Validation Ratio',
+      ratioTraining: 'Training Ratio',
+      ratioTest: 'Test Ratio',
+      ratioTotalError: 'Sum of All Ratio Must Be 100%',
     },
     modelTraining: {
       header: 'Model Training',

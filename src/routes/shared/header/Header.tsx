@@ -27,6 +27,7 @@ import {
   setOrganizations,
   setCurrentOrganization,
 } from '../../../store/modules/common/actions';
+import { Pagination } from '../../shared/Pagination';
 
 
 const useStyles = makeStyles((theme) =>
@@ -92,6 +93,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
   const [isProjectsOpen, setIsProjectsOpen] = React.useState(false);
   const [organization, setOrganization] = React.useState<Organization | undefined>();
   const [currentProjectId, setCurrentProjectId] = React.useState<string | undefined>();
+  const [paginationParams, setPaginationParams] = React.useState({page: 0, pageSize: 10});
   const organizations = useSelector((state: any) => state.CommonReducer.organizations);
   const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
@@ -150,37 +152,42 @@ export const Header: React.FunctionComponent<{}> = (props) => {
     );
   };
 
-  const getUploadQueue = async (projectId: string, isGetter = false) => {
-    if (api?.rawData) {
-      const response = await api.rawData.getRawDataQueue(projectId);
-      if (response.kind === 'ok') {
-        const { queue } = response;
-        const { length } = queue;
-        if (length === 0) {
-          onComplete();
-        } else {
-          //!
-          //TODO
-          //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
-          const text = `${translate('common.decoding')}: ${length} seconds remaining`;
-          enqueueSnackbar(text, {
-            ...DEFAULT_NOTIFICATION_OPTIONS,
-            content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, true), length),
-          });
-        }
-        if (isGetter) {
-          return length;
-        }
-      } else {
-        log({
-          file: `Header.tsx`,
-          caller: `getUploadQueue - failed to get raw data queue`,
-          value: response,
-          important: true,
-        });
-      }
-    }
+  const getUploadQueue = async (projectId: string, page: number, pageSize: number, isGetter = false) => {
+    // if (api?.rawData) {
+    //   const response = await api.rawData.getFullQueue(projectId, page, pageSize);
+    //   if (response.kind === 'ok') {
+    //     console.log('=====get full queue : ', response);
+    //     const { queue } = response;
+    //     const paginatedQueue = queue.content.map((item) => item.status === 'queued')
+    //     if (paginatedQueue.length === 0) {
+    //       onComplete();
+    //     } else {
+    //       //!
+    //       //TODO
+    //       //* SIMPLIFY THIS LOGIC BY USING GLOBAL STATE INSTEAD
+    //       const text = `${translate('common.decoding')}: ${paginatedQueue.length} seconds remaining`;
+    //       enqueueSnackbar(text, {
+    //         ...DEFAULT_NOTIFICATION_OPTIONS,
+    //         content: (key: string, message: string) => customNotification(key, message, () => getUploadQueue(projectId, paginationParams.page, paginationParams.pageSize, true), 0),
+    //       });
+    //     }
+    //     // if (isGetter) {
+    //     //   return length;
+    //     // }
+    //   } else {
+    //     log({
+    //       file: `Header.tsx`,
+    //       caller: `getUploadQueue - failed to get raw data queue`,
+    //       value: response,
+    //       important: true,
+    //     });
+    //   }
+    // }
   };
+  const handlePagination = (page: number, pageSize: number) => {
+    setPaginationParams({page, pageSize});
+
+  }
   const canRename = React.useMemo(() => hasPermission(roles, PERMISSIONS.profile.renameOrganization), [roles]);
   const shouldRenameOrganization = !organizationLoading && (organization?.name === user.preferredUsername);
 
@@ -221,7 +228,7 @@ export const Header: React.FunctionComponent<{}> = (props) => {
       if (currentProjectId !== currentProject.id) {
         setCurrentProjectId(currentProject.id);
       }
-      getUploadQueue(currentProject.id);
+      // getUploadQueue(currentProject.id, paginationParams.page, paginationParams.pageSize);
     }
   }, [currentProject, uploadQueueEmpty]);
 

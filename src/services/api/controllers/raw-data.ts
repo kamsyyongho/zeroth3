@@ -62,8 +62,10 @@ export class RawData extends ParentApi {
    * @param projectId
    */
   async getFullQueue(projectId: string, page: number, size: number): Promise<getFullQueue> {
+    const paginationParams = {page, size};
     const response = await this.apisauce.get<FullQueue, ServerError>(
-        this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue-history`)
+        this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue-history`),
+        paginationParams,
     )
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);

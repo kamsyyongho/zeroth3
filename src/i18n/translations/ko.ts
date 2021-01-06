@@ -57,6 +57,7 @@ export const ko: ResourceLanguage = {
       reject: '반려하기',
       comment: '코멘트',
       import: '불러오기',
+      voiceMaskingAvailable: '보이스 마스킹 적용',
     },
     table: {
       page: '페이지',
@@ -275,6 +276,10 @@ export const ko: ResourceLanguage = {
       transcribers: '전사자',
       highRisk: 'High Risk',
       editProgress: '진행상황',
+      ratioValidation: 'Validation 비율',
+      ratioTraining: 'Training 비율',
+      ratioTest: 'Test 비율',
+      ratioTotalError: '비율의 총 합은 100%입니다.',
     },
     modelTraining: {
       header: '모델 학습',

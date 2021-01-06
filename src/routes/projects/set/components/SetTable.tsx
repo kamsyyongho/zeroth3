@@ -21,6 +21,7 @@ interface SetTableProps {
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
   displaySubSetInTDP: (setId: string, subSetType: string) => void;
+  handleCreateTrainingSetClick: (dataSetIndex: number) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -31,6 +32,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     tableHeader: {
       backgroundColor: theme.palette.background.default,
+      textAlign: 'center',
     },
     tableFiller: {
       padding: 3,
@@ -51,7 +53,13 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetTable(props: SetTableProps) {
-  const { dataSets, projectId, openTranscriberDialog, openRequestEvaluationDialog, displaySubSetInTDP } = props;
+  const { 
+    dataSets,
+    projectId,
+    openTranscriberDialog,
+    openRequestEvaluationDialog,
+    displaySubSetInTDP,
+    handleCreateTrainingSetClick } = props;
   const { translate } = React.useContext(I18nContext);
   const classes = useStyles();
 
@@ -70,6 +78,7 @@ export function SetTable(props: SetTableProps) {
       openTranscriberDialog={openTranscriberDialog}
       openRequestEvaluationDialog={openRequestEvaluationDialog}
       displaySubSetInTDP={displaySubSetInTDP}
+      handleCreateTrainingSetClick={handleCreateTrainingSetClick}
         // openEvaluationDetail={openEvaluationDetail}
     />
   </React.Fragment>));
@@ -93,6 +102,9 @@ export function SetTable(props: SetTableProps) {
       </TableCell>
       <TableCell>
         {translate('SET.transcribers')}
+      </TableCell>
+      <TableCell>
+        {'CER'}
       </TableCell>
       <TableCell>
       </TableCell>
