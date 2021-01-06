@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
+      textAlign: 'center',
     },
     btnCell: {
       width: '500px'
@@ -266,6 +267,9 @@ export function SetItem(props: SetItemProps) {
           </TableCell>
           <TableCell>
             {renderTranscriberEdit()}
+          </TableCell>
+          <TableCell>
+            {dataSet?.cer || '-'}
           </TableCell>
           <TableCell>
             <Tooltip

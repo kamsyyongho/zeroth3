@@ -276,6 +276,9 @@ export const ko: ResourceLanguage = {
       transcribers: '전사자',
       highRisk: 'High Risk',
       editProgress: '진행상황',
+      ratioValidation: 'Validation 비율',
+      ratioTraining: 'Training 비율',
+      ratioTest: 'Test 비율',
     },
     modelTraining: {
       header: '모델 학습',

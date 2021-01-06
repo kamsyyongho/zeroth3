@@ -10,6 +10,7 @@ import { AddTranscriberDialog } from './components/AddTranscriberDialog';
 import { SetTable } from './components/SetTable';
 import { EvaluationDetailModal } from './components/EvaluationDetailModal';
 import { ConfirmationDialog } from "../TDP/components/Confirmation";
+import { RequestEvaluationDialog } from './components/RequestEvaluationDialog';
 import { SNACKBAR_VARIANTS } from '../../../types/snackbar.types';
 import { useSnackbar } from 'notistack';
 import { ServerError } from '../../../services/api/types/api-problem.types';
@@ -167,15 +168,21 @@ export default function SET(props: SETProps) {
         dataSetIndex={selectedDataSetIndex}
         onUpdateDataSetSuccess={onUpdateDataSetSuccess}
       />
-       <ConfirmationDialog
-          contentMsg={contentMsg}
-          buttonMsg={translate('SET.requestEvaluation')}
+      <RequestEvaluationDialog
           open={isEvaluationRequested}
+          buttonMsg={translate('SET.requestEvaluation')}
+          contentMsg={contentMsg}
           onClose={handleCloseEvaluationRequest}
-          onSuccess={handleEvaluationRequested}
-          modelConfigsById={modelConfigsById}
-          selectedDataSet={selectedDataSet}
-          setSelectedModelConfigId={(modelConfigId: string) => setSelectedModelConfigId(modelConfigId)}/>
+          modelConfigsById={modelConfigsById} />
+       {/*<ConfirmationDialog*/}
+       {/*   contentMsg={contentMsg}*/}
+       {/*   buttonMsg={translate('SET.requestEvaluation')}*/}
+       {/*   open={isEvaluationRequested}*/}
+       {/*   onClose={handleCloseEvaluationRequest}*/}
+       {/*   onSuccess={handleEvaluationRequested}*/}
+       {/*   modelConfigsById={modelConfigsById}*/}
+       {/*   selectedDataSet={selectedDataSet}*/}
+       {/*   setSelectedModelConfigId={(modelConfigId: string) => setSelectedModelConfigId(modelConfigId)}/>*/}
       {/*Evulation Detail modal is commented out for potential future use*/}
       {/*<EvaluationDetailModal*/}
       {/*    dataSet={selectedDataSet}*/}

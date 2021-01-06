@@ -271,6 +271,9 @@ export const en: ResourceLanguage = {
       highRisk: 'High Risk',
       transcribers: 'Transcribers',
       editProgress: 'Edit Progress',
+      ratioValidation: 'Validation Ratio',
+      ratioTraining: 'Training Ratio',
+      ratioTest: 'Test Ratio',
     },
     modelTraining: {
       header: 'Model Training',

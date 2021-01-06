@@ -13,6 +13,7 @@ export interface DataSet {
   processed: number;
   total: number;
   rejected: number;
+  cer?: number;
   transcribers: Transcriber[];
 }
 
@@ -40,7 +41,7 @@ export interface PostDataSetFilterParams {
   from?: Date;
   till?: Date;
   filename?: string;
-  
+
   lengthMax?: number;
   lengthMin?: number;
   dataSetIds?: string[];

@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     },
     tableHeader: {
       backgroundColor: theme.palette.background.default,
+      textAlign: 'center',
     },
     tableFiller: {
       padding: 3,
@@ -93,6 +94,9 @@ export function SetTable(props: SetTableProps) {
       </TableCell>
       <TableCell>
         {translate('SET.transcribers')}
+      </TableCell>
+      <TableCell>
+        {'CER'}
       </TableCell>
       <TableCell>
       </TableCell>
