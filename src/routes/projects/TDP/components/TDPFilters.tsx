@@ -117,7 +117,7 @@ export function TDPFilters(props: TDPFiltersProps) {
     status: '',
     modelConfigId: '',
     dataSetIds: [],
-    voiceMaskingRequired: false,
+    voiceMaskingAvailable: false,
   };
 
 
