@@ -199,7 +199,7 @@ export function SetRatioDialog(props: RequestEvaluationDialogrops) {
             setValidationRatio(0);
             setErrorMsg('');
         }
-    }, []);
+    }, [open]);
 
     return (
         <Dialog
