@@ -110,7 +110,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     if (api?.models && !loading) {
       setLoading(true);
       setIsError(false);
-      if(isDataSet) {
+      if(uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET) {
         response = await api.models.transferLearningByDataSet(
             projectId,
             name.trim(),
@@ -119,7 +119,16 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
             shared,
             hrOnly,
         );
-      } else {
+      } else if (uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH) {
+        response = await api.models.transferLearningByLocation(
+            projectId,
+            name.trim(),
+            selectedModelConfigId,
+            shared,
+            hrOnly,
+            text,
+        );
+      }else {
         response = await api.models.transferLearningByUrl(
             projectId,
             name.trim(),
