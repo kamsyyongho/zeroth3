@@ -28,6 +28,7 @@ import {
   SubGraphRequest,
   TransferLearningRequestUrl,
   TransferLearningRequestDataSet,
+  TransferLearningRequestLocation,
   transferLearningResult,
   updateAcousticModelResult,
   updateLanguageModelResult,
@@ -714,6 +715,43 @@ export class Models extends ParentApi {
         ServerError
         > = await this.apisauce.post(
         this.getPathWithOrganization(`/projects/${projectId}/transfer-url`),
+        request,
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async transferLearningByLocation(
+      projectId: string,
+      name: string,
+      modelConfigId: string,
+      shared: boolean,
+      hrOnly: boolean,
+      text: string,
+  ): Promise<transferLearningResult> {
+    // compile data
+    const request: TransferLearningRequestLocation = {
+      name,
+      modelConfigId,
+      shared,
+      hrOnly,
+      location: text
+    };
+    // make the api call
+    const response: ApiResponse<
+        undefined,
+        ServerError
+        > = await this.apisauce.post(
+        this.getPathWithOrganization(`/projects/${projectId}/transfer-location`),
         request,
     );
     // the typical ways to die when calling an api
