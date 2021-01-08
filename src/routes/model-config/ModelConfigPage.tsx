@@ -163,6 +163,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const getModelConfigs = async () => {
     if (api?.modelConfig) {
+      setModelConfigsLoading(true);
       const response = await api.modelConfig.getModelConfigs(projectId);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
