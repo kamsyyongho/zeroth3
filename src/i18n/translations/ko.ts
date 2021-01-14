@@ -178,7 +178,7 @@ export const ko: ResourceLanguage = {
       assign: '할당',
       length: '길이',
       filePath: '파일 경로',
-      fileUrl: '파일 URL',
+      fileUrl: 'URL',
     },
     admin: {
       pageTitle: '전사 관리',
