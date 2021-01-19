@@ -44,6 +44,8 @@ export interface TransferLearningRequestLocation {
   shared: boolean;
   hrOnly: boolean;
   location: string;
+  audioExtension: string;
+  transcriptExtension: string;
 }
 
 export interface SubGraphRequest {

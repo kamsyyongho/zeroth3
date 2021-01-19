@@ -153,6 +153,8 @@ export const ko: ResourceLanguage = {
       sub: '서브 그래프',
       modelConfig: '모델 설정',
       extension: '확장자',
+      audioExtension: '오디오 확장자',
+      transcriptExtension: '전사 확장자',
       privacySetting: '개인정보',
       mutability: '수정가능 여부',
       mutable: '수정가능',

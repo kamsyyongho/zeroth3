@@ -152,6 +152,8 @@ export const en: ResourceLanguage = {
       sub: 'Sub',
       modelConfig: 'Model configuration',
       extension: 'Extension',
+      audioExtension: 'Audio Extension',
+      transcriptExtension: 'Transcript Extension',
       privacySetting: 'Privacy setting',
       mutability: 'Mutability',
       mutable: 'Mutable',
