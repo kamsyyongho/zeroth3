@@ -100,7 +100,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
 
   //subject to refactoring if seperating the source data for field
   const handleSubmit = async (values: FormValues) => {
-    const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly, uploadType, text } = values;
+    const { name, selectedModelConfigId, selectedDataSetIds, selectedTrainingMethod, shared, hrOnly, uploadType, text, audioExtension, transcriptExtension } = values;
     const isDataSet = uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string;
     let response!: any;
 
@@ -119,7 +119,7 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
             shared,
             hrOnly,
         );
-      } else if (uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH) {
+      } else if (uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH && audioExtension && transcriptExtension) {
         response = await api.models.transferLearningByLocation(
             projectId,
             name.trim(),
@@ -127,6 +127,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
             shared,
             hrOnly,
             text,
+            audioExtension,
+            transcriptExtension,
         );
       }else {
         response = await api.models.transferLearningByUrl(
@@ -172,6 +174,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     hrOnly: yup.boolean().required(requiredTranslationText),
     uploadType: yup.string().nullable().required(requiredTranslationText),
     text: yup.string(),
+    audioExtension: yup.string().nullable(),
+    transcriptExtension: yup.string().nullable(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   const initialValues: FormValues = {
@@ -183,6 +187,8 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
     hrOnly: false,
     text: '',
     uploadType: AUDIO_UPLOAD_TYPE_TRANS_LEARNING.DATASET as string,
+    audioExtension: '',
+    transcriptExtension: '',
   };
 
 
@@ -266,6 +272,28 @@ export function ModelTrainingForm(props: ModelTrainingFormProps) {
                   variant="outlined"
                   margin="normal"
               />
+              {
+                formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH &&
+                <Field
+                    className={clsx(isDataSet && classes.hiddenTextInput)}
+                    name='audioExtension'
+                    component={TextFormField}
+                    label={translate("forms.audioExtension")}
+                    variant="outlined"
+                    margin="normal"
+                />
+              }
+              {
+                formikProps.values.uploadType === AUDIO_UPLOAD_TYPE_TRANS_LEARNING.PATH &&
+                <Field
+                    className={clsx(isDataSet && classes.hiddenTextInput)}
+                    name='transcriptExtension'
+                    component={TextFormField}
+                    label={translate("forms.transcriptExtension")}
+                    variant="outlined"
+                    margin="normal"
+                />
+              }
               <Field
                 hidden={!isDataSet}
                 name='selectedDataSetIds'

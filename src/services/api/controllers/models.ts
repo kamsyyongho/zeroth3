@@ -737,6 +737,8 @@ export class Models extends ParentApi {
       shared: boolean,
       hrOnly: boolean,
       text: string,
+      audioExtension: string,
+      transcriptExtension: string,
   ): Promise<transferLearningResult> {
     // compile data
     const request: TransferLearningRequestLocation = {
@@ -744,7 +746,9 @@ export class Models extends ParentApi {
       modelConfigId,
       shared,
       hrOnly,
-      location: text
+      location: text,
+      audioExtension,
+      transcriptExtension
     };
     // make the api call
     const response: ApiResponse<
