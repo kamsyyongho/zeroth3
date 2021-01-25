@@ -1,21 +1,30 @@
-import { ModelConfig, Threshold } from '../../../types';
+import { Capacity, ModelConfig, Threshold } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
 // REQUESTS //
 //////////////
 
-export interface ModelConfigRequest {
+export interface CreateModelConfigRequest {
   acousticModelId: string;
-  languageModelId: string;
   name: string;
   thresholdLr: Threshold | null;
   thresholdHr: Threshold | null;
   description: string;
+  shareable: boolean;
+  topGraphId: string;
+  subGraphIds: string[];
+}
+
+export interface UpdateModelConfigRequest {
+  thresholdLr: Threshold | null;
+  thresholdHr: Threshold | null;
+  description: string;
+  shareable: boolean;
 }
 
 export type ThresholdRequest = Pick<
-  ModelConfigRequest,
+    UpdateModelConfigRequest,
   'thresholdHr' | 'thresholdLr'
 >;
 
@@ -26,6 +35,9 @@ export type ThresholdRequest = Pick<
 export type getModelConfigsResult =
   | { kind: 'ok'; modelConfigs: ModelConfig[] }
   | GeneralApiProblem;
+export type getCapacity =
+    | { kind: 'ok'; capacity: Capacity }
+    | GeneralApiProblem;
 export type postModelConfigResult =
   | { kind: 'ok'; modelConfig: ModelConfig }
   | GeneralApiProblem;
@@ -35,3 +47,5 @@ export type updateModelConfigResult =
 export type updateThresholdResult = { kind: 'ok' } | GeneralApiProblem;
 export type importModelConfig = { kind: 'ok'; modelConfig: ModelConfig } | GeneralApiProblem;
 export type deleteModelConfigResult = { kind: 'ok' } | GeneralApiProblem;
+export type updateDeployment = { kind: 'ok' } | GeneralApiProblem;
+export type destroyDeployment = { kind: 'ok' } | GeneralApiProblem;

@@ -84,13 +84,13 @@ export function HistoryTable(props: TranscriptionTableProps) {
     const renderHeader = () => (<TableHead className={classes.tableHeader}>
         <TableRow>
             <TableCell>
-                {translate('forms.file')}
+                {translate('forms.fileName')}
             </TableCell>
             <TableCell>
                 {translate('TDP.wordCount')}
             </TableCell>
             <TableCell>
-                {translate('common.length')}
+                {translate('common.audioLength')}
             </TableCell>
             <TableCell>
                 {translate('common.date')}

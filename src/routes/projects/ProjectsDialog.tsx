@@ -29,6 +29,7 @@ import { ConfirmationDialog } from '../shared/ConfirmationDialog';
 import { SearchBar } from '../shared/SearchBar';
 import { ProjectDialog } from './components/ProjectDialog';
 import { ProjectList } from './components/ProjectList';
+import {useSelector} from 'react-redux';
 
 export interface CheckedProjectsById {
   [id: string]: boolean;
@@ -61,7 +62,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const { currentProjectId } = user;
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const [currentProject, setCurrentProject] = useGlobal('currentProject');
   const [projectInitialized, setProjectInitialized] = useGlobal('projectInitialized');
   const [projectTdpDataShouldRefresh, setProjectTdpDataShouldRefresh] = useGlobal('projectTdpDataShouldRefresh');
@@ -76,6 +76,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   const [showEdit, setShowEdit] = React.useState(false);
   const [checkedProjects, setCheckedProjects] = React.useState<CheckedProjectsById>({});
   const [selectedProject, setSelectedProject] = React.useState<Project | undefined>();
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
 
   const classes = useStyles();
   const theme = useTheme();
@@ -104,10 +105,6 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
       setProjectTdpDataShouldRefresh(true);
       history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
       handleClose();
-      // setTimeout(() => {
-      //   history.push(`${PATHS.project.function && PATHS.project.function(project?.id as string)}`);
-      //   handleClose();
-      // }, 0);
     }
   };
 
@@ -131,7 +128,7 @@ export function ProjectsDialog(props: ProjectsDialogProps) {
   };
 
   React.useEffect(() => {
-    if (currentOrganization) {
+    if (currentOrganization?.id) {
       getProjects();
     } else if (!currentOrganization && projects.length > 0) {
       setProjects([]);

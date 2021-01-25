@@ -9,7 +9,7 @@ import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
 import { ProblemKind } from '../../services/api/types';
-import { ModelConfig, Project, SubGraph, TopGraph, SnackbarError, SNACKBAR_VARIANTS } from '../../types';
+import { ModelConfig, Project, SubGraph, TopGraph, SnackbarError, SNACKBAR_VARIANTS, Capacity } from '../../types';
 import { AcousticModel, LanguageModel } from '../../types/models.types';
 import log from '../../util/log/logger';
 import { setPageTitle } from '../../util/misc';
@@ -49,7 +49,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [modelConfigsLoading, setModelConfigsLoading] = React.useState(true);
   const [topGraphsLoading, setTopGraphsLoading] = React.useState(true);
   const [subGraphsLoading, setSubGraphsLoading] = React.useState(true);
-  const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
+  // const [languageModelsLoading, setLanguageModelsLoading] = React.useState(true);
   const [acousticModelsLoading, setAcousticModelsLoading] = React.useState(true);
 
   // get the passed info if we got here via the details page
@@ -66,8 +66,9 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
   const [modelConfigs, setModelConfigs] = React.useState<ModelConfig[]>(navigationProps?.modelConfigs || []);
   const [topGraphs, setTopGraphs] = React.useState<TopGraph[]>(navigationProps?.topGraphs || []);
   const [subGraphs, setSubGraphs] = React.useState<SubGraph[]>(navigationProps?.subGraphs || []);
-  const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
+  // const [languageModels, setLanguageModels] = React.useState<LanguageModel[]>(navigationProps?.languageModels || []);
   const [acousticModels, setAcousticModels] = React.useState<AcousticModel[]>(navigationProps?.acousticModels || []);
+  const [capacity, setCapacity] = React.useState<Capacity | undefined>();
 
   const classes = useStyles();
 
@@ -100,12 +101,12 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
     });
   };
 
-  const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
-    setLanguageModels((prevLanguageModels) => {
-      prevLanguageModels.push(newLanguageModel);
-      return prevLanguageModels;
-    });
-  };
+  // const handleLanguageModelCreate = (newLanguageModel: LanguageModel) => {
+  //   setLanguageModels((prevLanguageModels) => {
+  //     prevLanguageModels.push(newLanguageModel);
+  //     return prevLanguageModels;
+  //   });
+  // };
 
   /**
    * remove the deleted model config from the list
@@ -124,6 +125,65 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   const handleImportSuccess = (modelConfig: ModelConfig) => {
     setModelConfigs([...modelConfigs, modelConfig]);
+  };
+
+  const handleModelUpdateSuccess = (modelConfig: ModelConfig) => {
+    const mapUpdatedConfigs = (model: ModelConfig) => {
+      if(model.id === modelConfig.id) return modelConfig;
+      return model;
+    };
+    const updatedModalConfigs = modelConfigs.map(mapUpdatedConfigs)
+
+    setModelConfigs(updatedModalConfigs);
+  };
+
+  const getCapacity = async () => {
+    if (api?.modelConfig) {
+      const response = await api.modelConfig.getCapacity(projectId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        setCapacity(response.capacity);
+      } else {
+        log({
+          file: `ModelConfigPage.tsx`,
+          caller: `getModelConfigs - failed to get model configs`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setModelConfigsLoading(false);
+    }
+  };
+
+  const getModelConfigs = async () => {
+    if (api?.modelConfig) {
+      setModelConfigsLoading(true);
+      const response = await api.modelConfig.getModelConfigs(projectId);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+      if (response.kind === 'ok') {
+        setModelConfigs(response.modelConfigs);
+      } else {
+        log({
+          file: `ModelConfigPage.tsx`,
+          caller: `getModelConfigs - failed to get model configs`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+      snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+      setModelConfigsLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -159,29 +219,6 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         }
         snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
         setProjectLoading(false);
-      }
-    };
-    const getModelConfigs = async () => {
-      if (api?.modelConfig) {
-        const response = await api.modelConfig.getModelConfigs(projectId);
-        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-        if (response.kind === 'ok') {
-          setModelConfigs(response.modelConfigs);
-        } else {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getModelConfigs - failed to get model configs`,
-            value: response,
-            important: true,
-          });
-          snackbarError.isError = true;
-          const { serverError } = response;
-          if (serverError) {
-            snackbarError.errorText = serverError.message || "";
-          }
-        }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-        setModelConfigsLoading(false);
       }
     };
     const getTopGraphs = async () => {
@@ -231,30 +268,30 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         setSubGraphsLoading(false);
       }
     };
-    const getLanguageModels = async () => {
-      if (api?.models) {
-        const response = await api.models.getLanguageModels();
-        let snackbarError: SnackbarError | undefined = {} as SnackbarError;
-
-        if (response.kind === 'ok') {
-          setLanguageModels(response.languageModels);
-        } else {
-          log({
-            file: `ModelConfigPage.tsx`,
-            caller: `getLanguageModels - failed to get language models`,
-            value: response,
-            important: true,
-          });
-          snackbarError.isError = true;
-          const { serverError } = response;
-          if (serverError) {
-            snackbarError.errorText = serverError.message || "";
-          }
-        }
-        snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
-        setLanguageModelsLoading(false);
-      }
-    };
+    // const getLanguageModels = async () => {
+    //   if (api?.models) {
+    //     const response = await api.models.getLanguageModels();
+    //     let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+    //
+    //     if (response.kind === 'ok') {
+    //       setLanguageModels(response.languageModels);
+    //     } else {
+    //       log({
+    //         file: `ModelConfigPage.tsx`,
+    //         caller: `getLanguageModels - failed to get language models`,
+    //         value: response,
+    //         important: true,
+    //       });
+    //       snackbarError.isError = true;
+    //       const { serverError } = response;
+    //       if (serverError) {
+    //         snackbarError.errorText = serverError.message || "";
+    //       }
+    //     }
+    //     snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
+    //     setLanguageModelsLoading(false);
+    //   }
+    // };
     const getAcousticModels = async () => {
       if (api?.models) {
         const response = await api.models.getAcousticModels();
@@ -296,6 +333,9 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         } else {
           setModelConfigsLoading(false);
         }
+        if(!capacity) {
+          getCapacity();
+        }
         if (!project) {
           getProject();
         } else {
@@ -311,11 +351,11 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         } else {
           setSubGraphsLoading(false);
         }
-        if (!languageModels.length) {
-          getLanguageModels();
-        } else {
-          setLanguageModelsLoading(false);
-        }
+        // if (!languageModels.length) {
+        //   getLanguageModels();
+        // } else {
+        //   setLanguageModelsLoading(false);
+        // }
         if (!acousticModels.length) {
           getAcousticModels();
         } else {
@@ -342,16 +382,21 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
         project={project}
         canModify={hasModelConfigPermission}
         modelConfigs={modelConfigs}
+        capacity={capacity}
         modelConfigsLoading={modelConfigsLoading}
         topGraphs={topGraphs}
         subGraphs={subGraphs}
-        languageModels={languageModels}
+        // languageModels={languageModels}
         acousticModels={acousticModels}
         handleImportSuccess={handleImportSuccess}
         handleModelConfigUpdate={handleModelConfigUpdate}
         handleModelConfigDelete={handleModelConfigDelete}
         handleSubGraphListUpdate={handleSubGraphListUpdate}
-        handleLanguageModelCreate={handleLanguageModelCreate}
+        // handleLanguageModelCreate={handleLanguageModelCreate}
+        handleModelUpdateSuccess={handleModelUpdateSuccess}
+        getModelConfigs={getModelConfigs}
+        getCapacity={getCapacity}
+        setModelConfigsLoading={setModelConfigsLoading}
       />);
   };
 
@@ -361,7 +406,7 @@ export function ModelConfigPage({ match }: RouteComponentProps<ModelConfigPagePr
 
   return (
     <Container maxWidth={false} className={classes.container} >
-      {projectLoading ? <BulletList /> :
+      {projectLoading || topGraphsLoading || subGraphsLoading ? <BulletList /> :
         renderContent()
       }
     </Container >

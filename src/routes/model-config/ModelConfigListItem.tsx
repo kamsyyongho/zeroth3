@@ -1,14 +1,17 @@
 /* eslint-disable react/prop-types */
-import { Box, Divider, Grid, Grow, TextField, Typography } from '@material-ui/core';
+import { Badge, Box, Divider, Grid, Grow, TextField, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import UpdateIcon from '@material-ui/icons/Update';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import clsx from 'clsx';
 import React from 'reactn';
@@ -18,6 +21,7 @@ import { ModelConfig } from '../../types';
 import { ChipList } from '../shared/ChipList';
 import { TrainingChip } from '../shared/TrainingChip';
 import { ModelConfigListItemExpand, ModelConfigListItemExpandPropsFromParent } from './ModelConfigListItemExpand';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -48,27 +52,42 @@ const useStyles = makeStyles((theme: CustomTheme) =>
     fullWidth: {
       width: '100%',
     },
+    badgeHeader: {
+      alignSelf: 'flex-start',
+      marginLeft: '20px',
+    },
+    badgeHeaderNumber: {
+      alignSelf: 'flex-start',
+      marginLeft: '40px',
+    },
   }),
 );
 
 export interface ModelConfigListItemProps {
+  index: number;
   modelConfig: ModelConfig;
   setModelConfigToEdit: (modelConfig: ModelConfig) => void;
-  openConfirm: () => void;
   deleteLoading: boolean;
   expandProps: ModelConfigListItemExpandPropsFromParent;
+  openUpdateDeployment: () => void;
+  openDestroyDeploymentConfirmation: () => void;
+  openModelDeleteConfirmation: () => void;
+  openDeployModelDialog: () => void;
 }
-
 
 export function ModelConfigListItem(props: ModelConfigListItemProps) {
   const {
+    index,
     modelConfig,
     setModelConfigToEdit,
     expandProps,
-    openConfirm,
     deleteLoading,
+    openUpdateDeployment,
+    openDestroyDeploymentConfirmation,
+    openModelDeleteConfirmation,
+    openDeployModelDialog,
   } = props;
-  const { acousticModel, languageModel, name, id, progress } = modelConfig;
+  const { acousticModel, name, id, progress } = modelConfig;
   const { translate } = React.useContext(I18nContext);
   const [loading, setLoading] = React.useState(false);
   const [expanded, setExpanded] = React.useState(false);
@@ -103,31 +122,56 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
 
   const confirmDelete = () => {
     handleActionClose();
-    openConfirm();
+    openModelDeleteConfirmation();
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameFormValue(event.target.value);
   };
 
+  const handleDeploymentUpdate = () => {
+    setModelConfigToEdit(modelConfig);
+    openUpdateDeployment();
+  };
+
+  const getTrainingStatusText = () => modelConfig.progress < 0 ? translate('models.trainingError') : modelConfig.progress < 100
+      ? translate('models.trainingInProgress') : translate('models.trainingSuccess');
+
   const renderItemMenu = () => (<Menu
     id="list-item-menu"
     anchorEl={anchorEl}
     keepMounted
     open={Boolean(anchorEl)}
-    onClose={handleActionClose}
-  >
+    onClose={handleActionClose}>
     <MenuItem disabled={deleteLoading} onClick={openEditDialog}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.edit')}</Typography>
     </MenuItem>
-    <MenuItem onClick={confirmDelete}>
+    <MenuItem disabled={modelConfig.imported} onClick={confirmDelete}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
       </ListItemIcon>
       <Typography variant="inherit">{translate('common.delete')}</Typography>
+    </MenuItem>
+    <MenuItem disabled={modelConfig.imported || !!modelConfig.uptime}  onClick={openDeployModelDialog}>
+      <ListItemIcon>
+        <CloudUploadIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('modelConfig.deployModel')}</Typography>
+    </MenuItem>
+    <MenuItem disabled={modelConfig.imported} onClick={handleDeploymentUpdate}>
+      <ListItemIcon>
+        <UpdateIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('modelConfig.updateDeployment')}</Typography>
+    </MenuItem>
+    <MenuItem disabled={modelConfig.imported} onClick={openDestroyDeploymentConfirmation}>
+      <ListItemIcon>
+        <HighlightOffIcon fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="inherit">{translate('modelConfig.destroy')}</Typography>
     </MenuItem>
   </Menu>);
 
@@ -142,83 +186,148 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         alignItems='center'
         justify='flex-start'
       >
-        <Grid
-          container
-          item
-          wrap='nowrap'
-          direction='column'
-          alignContent='flex-start'
-          alignItems='flex-start'
-          justify='center'
-          className={classes.headerNameGrid}
-          xs={4}
-        >
+        {
+          !expanded &&
+              <>
+                <Badge
+                    color="primary"
+                    badgeContent="Status"
+                    invisible={!!index || expanded}
+                    className={classes.badgeHeader}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+                <Grid
+                      container
+                      item
+                      wrap='nowrap'
+                      direction='column'
+                      alignContent='flex-start'
+                      alignItems='center'
+                      justify='center'
+                      className={classes.headerGrid}
+                      xs={2}
+                  >
+                    <Typography className={classes.subTitle}>{getTrainingStatusText()}</Typography>
+                    <FiberManualRecordIcon fontSize="large" color="primary" />
+                  </Grid>
+              </>
+        }
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Name"
+              invisible={!!index}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grid
+              container
+              item
+              wrap='nowrap'
+              direction='column'
+              alignContent='flex-start'
+              alignItems='flex-start'
+              justify='center'
+              className={classes.headerNameGrid}
+              xs={4}>
+            <Collapse in={!expanded}>
+              <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
+            </Collapse>
+            <Collapse in={expanded}>
+              <Typography>{nameFormValue}</Typography>
+            </Collapse>
+          </Grid>
+        </>
 
-          <Collapse in={!expanded}>
-            <Typography className={clsx(classes.configName, expanded && classes.hiddenTitle)} >{nameFormValue}</Typography>
-          </Collapse>
-          <Collapse in={expanded}>
-            <TextField
-              className={clsx(!expanded && classes.hiddenTitle)}
-              helperText={!nameFormValue && translate("forms.validation.required")}
-              error={!nameFormValue}
-              fullWidth
-              onChange={handleNameChange}
-              value={nameFormValue}
-            />
-          </Collapse>
-        </Grid>
-        <Grow in={!expanded}>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='column'
-            alignContent='flex-end'
-            alignItems='flex-end'
-            justify='center'
-            className={classes.headerGrid}
-            xs={2}
-          >
-            <Typography className={classes.subTitle} >{`${translate('forms.languageModel')}:`}</Typography>
-            <Typography className={classes.subTitle} >{`${translate('forms.acousticModel')}:`}</Typography>
-          </Grid>
-        </Grow>
-        <Grow in={!expanded}>
-          <Grid
-            container
-            item
-            wrap='nowrap'
-            direction='column'
-            alignContent='flex-start'
-            alignItems='flex-start'
-            justify='center'
-            className={classes.headerGrid}
-            xs={3}
-          >
-            <Typography >{languageModel.name}</Typography>
-            <Typography >{acousticModel.name}</Typography>
-          </Grid>
-        </Grow>
-        <Grid
-          container
-          item
-          wrap='nowrap'
-          direction='column'
-          alignContent='flex-end'
-          alignItems='flex-end'
-          justify='center'
-          xs={2}
-        >
-          <Grid item>
-            <TrainingChip progress={progress} />
-          </Grid>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Label"
+              invisible={!!index || expanded}
+              className={classes.badgeHeader}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
           <Grow in={!expanded}>
-            <Grid item>
-              <ChipList max={1} light labels={[`${acousticModel.sampleRate} Hz`]} />
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='center'
+                justify='center'
+                className={classes.headerGrid}
+                xs={3}>
+              <Typography className={classes.subTitle} >{modelConfig.alias || '-'}</Typography>
             </Grid>
           </Grow>
-        </Grid>
+        </>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Replicas"
+              invisible={!!index || expanded}
+              className={classes.badgeHeaderNumber}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grow in={!expanded}>
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='center'
+                justify='center'
+                className={classes.headerGrid}
+                xs={1}>
+              <Typography className={classes.subTitle} >{modelConfig.replicas || '-'}</Typography>
+            </Grid>
+          </Grow>
+        </>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Age"
+              invisible={!!index || expanded}
+              className={classes.badgeHeaderNumber}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grow in={!expanded}>
+            <Grid
+                container
+                item
+                wrap='nowrap'
+                direction='column'
+                alignContent='flex-end'
+                alignItems='center'
+                justify='center'
+                className={classes.headerGrid}
+                xs={1}>
+              <Typography className={classes.subTitle} >{modelConfig.uptime || '-'}</Typography>
+            </Grid>
+          </Grow>
+        </>
+        <>
+          <Badge
+              color="primary"
+              badgeContent="Rate"
+              invisible={!!index || expanded}
+              className={classes.badgeHeaderNumber}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }} />
+          <Grid
+              container
+              item
+              wrap='nowrap'
+              direction='column'
+              alignContent='flex-end'
+              alignItems='center'
+              justify='center'
+              xs={2}
+          >
+            <Grow in={!expanded}>
+              <Grid item>
+                <ChipList max={1} light labels={[`${acousticModel.sampleRate} Hz`]} />
+              </Grid>
+            </Grow>
+          </Grid>
+        </>
+
         <Grid
           container
           item
@@ -227,8 +336,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
           alignContent='center'
           alignItems='center'
           justify='flex-start'
-          xs={1}
-        >
+          xs={1}>
           {!expanded ? <IconButton
             aria-label="options"
             onClick={event => handleActionClick(event, modelConfig)} >
@@ -278,7 +386,7 @@ export function ModelConfigListItem(props: ModelConfigListItemProps) {
         justify='flex-start'
       >
         {renderHeader()}
-        {expanded && <Divider className={classes.divider} />}
+        {expanded && <Divider className={classes.divider}/>}
         {renderExpandedEdit()}
       </Grid>
     </Box>

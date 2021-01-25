@@ -3,7 +3,6 @@ import Card from '@material-ui/core/Card';
 import LaunchIcon from '@material-ui/icons/Launch';
 import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 import clsx from 'clsx';
-import 'draft-js/dist/Draft.css';
 import {useSnackbar, VariantType} from 'notistack';
 import Draggable from 'react-draggable';
 import React, {useGlobal} from 'reactn';
@@ -19,15 +18,14 @@ import {EDITOR_CONTROLS} from './components/EditorControls';
 import {SegmentSplitPicker} from './components/SegmentSplitPicker';
 import {SegmentTimePicker} from './components/SegmentTimePicker';
 import {WordTimePicker} from './components/WordTimePicker';
-import {PARENT_METHOD_TYPES, ParentMethodResponse, SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
+import {SplitTimePickerRootProps, TimePickerRootProps} from './EditorPage';
 import './styles/editor.css';
 import {MemoizedSegmentBlock} from './components/SegmentBlockV2';
 import {MemoizedDecoderSegmentBlock} from './components/DecoderSegmentBlock';
 import { getRandomColor } from '../../util/misc';
-import {
-  buildStyleMap,
-  getSegmentAndWordIndex } from './helpers/editor.helper';
+import { getSegmentAndWordIndex } from './helpers/editor-page.helper';
 import log from '../../util/log/logger';
+import { useSelector, useDispatch } from 'react-redux';
 
 const AUDIO_PLAYER_HEIGHT = 384;
 const DIFF_TITLE_HEIGHT = 77;
@@ -99,7 +97,7 @@ interface WordPickerOptions {
   entityKeyAfterCursor?: number;
   isWordUpdate?: boolean;
 }
-interface SegmentPickerOptions {
+export interface SegmentPickerOptions {
   segmentWord: Word;
   segment: Segment;
 }
@@ -126,7 +124,6 @@ interface EditorProps {
   loading?: boolean;
   setLoading: (isLoading: boolean) => void;
   isAudioPlaying: boolean;
-  segments: Segment[];
   voiceData: VoiceData;
   playingLocation?: SegmentAndWordIndex;
   updateSegment: (segmentId: string, wordAlignments: WordAlignment[], transcript: string, segmentIndex: number) => void;
@@ -158,7 +155,6 @@ export function Editor(props: EditorProps) {
     loading,
     setLoading,
     isAudioPlaying,
-    segments,
     voiceData,
     playingLocation,
     handleSegmentUpdate,
@@ -197,6 +193,8 @@ export function Editor(props: EditorProps) {
   const [isCommentEnabled, setIsCommentEnabled] = React.useState<boolean>(false);
   const [commentInfo, setCommentInfo] = React.useState<any>({});
   const [reason, setReason] = React.useState<string>('');
+  const segments = useSelector((state: any) => state.EditorReducer.segments);
+  const dispatch = useDispatch();
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const commentRef = React.useRef<HTMLInputElement | null>(null);
@@ -262,10 +260,6 @@ export function Editor(props: EditorProps) {
       removeHighRiskFromSegment(segmentIndex, segmentId);
     }
   };
-
-  const styleMap = React.useMemo(() => {
-    return buildStyleMap(theme);
-  }, []);
 
   const displayInvalidTimeMessage = () => displayMessage(translate('editor.validation.invalidTimeRange'));
 
@@ -505,7 +499,7 @@ export function Editor(props: EditorProps) {
   };
 
   const getDiffCount = () => {
-    return 'Diff ' +  document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length + ' 개'
+    return translate('editor.diff') + `(${document.getElementsByClassName(DECODER_DIFF_CLASSNAME).length})`;
   };
 
   React.useEffect(() => {
@@ -616,7 +610,6 @@ export function Editor(props: EditorProps) {
           </Card>
         </Draggable>
       </Backdrop>
-      {/*{ready && playingLocation && <EditorDecorator wordAlignment={segments[playingLocation.segmentIndex].wordAlignments[playingLocation.wordIndex]} />}*/}
       {
         isDiff ?
         <>

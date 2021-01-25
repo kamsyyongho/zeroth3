@@ -1,14 +1,18 @@
 import {ApiResponse, ApisauceInstance} from 'apisauce';
-import {ModelConfig as ModelConfigType} from '../../../types';
+import {ModelConfig as ModelConfigType, Capacity} from '../../../types';
 import {getGeneralApiProblem} from '../api-problem';
 import {
   deleteModelConfigResult,
   getModelConfigsResult,
   importModelConfig,
-  ModelConfigRequest,
+  CreateModelConfigRequest,
+  UpdateModelConfigRequest,
   postModelConfigResult,
   ProblemKind,
   ServerError,
+  updateDeployment,
+  destroyDeployment,
+  getCapacity,
 } from '../types';
 import {ThresholdRequest, updateModelConfigResult, updateThresholdResult,} from '../types/model-config.types';
 import {ParentApi} from './parent-api';
@@ -107,6 +111,37 @@ export class ModelConfig extends ParentApi {
   }
 
   /**
+   * Get the deployment capacity fo the system
+   * @param projectId
+   */
+  async getCapacity(projectId: string): Promise<getCapacity> {
+    // make the api call
+    const response: ApiResponse<
+        Capacity,
+        ServerError
+        > = await this.apisauce.get(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/capacity`),
+    );
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    // transform the data into the format we are expecting
+    try {
+      const capacity = response.data as Capacity;
+      return { kind: 'ok', capacity };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  }
+
+  /**
    * Create a new model config
    * @param projectId
    * @param name
@@ -121,18 +156,22 @@ export class ModelConfig extends ParentApi {
     name: string,
     description: string,
     acousticModelId: string,
-    languageModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
+    shareable: boolean | false,
+    topGraphId: string | '',
+    subGraphIds: any | [],
   ): Promise<postModelConfigResult> {
     // compile data
-    const request: ModelConfigRequest = {
+    const request: CreateModelConfigRequest = {
       name,
       thresholdLr,
       thresholdHr,
       description,
       acousticModelId,
-      languageModelId,
+      shareable,
+      topGraphId,
+      subGraphIds,
     };
     // make the api call
     const response: ApiResponse<
@@ -176,21 +215,17 @@ export class ModelConfig extends ParentApi {
   async updateModelConfig(
     modelConfigId: string,
     projectId: string,
-    name: string,
     description: string,
-    acousticModelId: string,
-    languageModelId: string,
     thresholdLr: number | null,
     thresholdHr: number | null,
+    shareable: boolean | false,
   ): Promise<updateModelConfigResult> {
     // compile data
-    const request: ModelConfigRequest = {
-      name,
+    const request: UpdateModelConfigRequest = {
       thresholdLr,
       thresholdHr,
       description,
-      acousticModelId,
-      languageModelId,
+      shareable,
     };
     // make the api call
     const response: ApiResponse<
@@ -289,4 +324,69 @@ export class ModelConfig extends ParentApi {
     }
     return { kind: 'ok' };
   }
+
+  async updateDeployment (
+      projectId: string,
+      modelConfigId: string,
+      replicas?: number,
+      alias?: string
+  ): Promise<updateDeployment> {
+    const request =  {replicas, alias}
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.put(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/update`),
+        request
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async destroyDeployment (projectId: string, modelConfigId: string): Promise<destroyDeployment> {
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.delete(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/destroy`),
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async postDeploymentRequest (
+      projectId: string,
+      modelConfigId: string,
+      replicas: number,
+  ): Promise<updateDeployment> {
+    const request =  {replicas}
+    const response: ApiResponse<undefined, ServerError> = await this.apisauce.post(
+        this.getPathWithOrganization(`/projects/${projectId}/model-config/${modelConfigId}/deploy`),
+        request
+    );
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
 }

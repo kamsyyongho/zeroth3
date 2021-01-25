@@ -34,10 +34,6 @@ export interface UsersTableProps {
   setCheckedUsers: React.Dispatch<React.SetStateAction<CheckedUsersByUserId>>;
   handleUpdateSuccess: (updatedUser: User) => void;
   onTranscriberAssign: () => void;
-  usersToDelete: string[];
-  confirmDelete: () => void;
-  handleInviteOpen: () => void;
-  deleteLoading: boolean;
 }
 
 export interface ParsedRolesById {
@@ -58,10 +54,6 @@ export function UsersTable(props: UsersTableProps) {
     setCheckedUsers,
     handleUpdateSuccess,
     onTranscriberAssign,
-    usersToDelete,
-    confirmDelete,
-    handleInviteOpen,
-    deleteLoading,
   } = props;
 
   const classes = useStyles();
@@ -157,7 +149,7 @@ export function UsersTable(props: UsersTableProps) {
         Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data }),
       },
       {
-        Header: `${translate("forms.phone")}`,
+        Header: `${translate("forms.contact")}`,
         accessor: 'phone',
         Cell: (data: CellProps<User>) => UsersCellPlainText({ cellData: data, onChange: onChangePhone, noteOrPhoneValue: phoneLog } ),
       },
@@ -211,21 +203,9 @@ export function UsersTable(props: UsersTableProps) {
   const renderHeader = () => headerGroups.map((headerGroup, index) => (
     <TableRow key={`headerGroup-${index}`} {...headerGroup.getHeaderGroupProps()}>
       {headerGroup.headers.map((column, idx) => {
-        if (column.id === HEADER_ACTIONS) {
-          return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-            <UsersTableHeaderActions
-              users={users}
-              usersToDelete={usersToDelete}
-              confirmDelete={confirmDelete}
-              handleInviteOpen={handleInviteOpen}
-              deleteLoading={deleteLoading}
-            />
-          </TableCell>);
-        } else {
-          return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
-            {column.render('Header')}
-          </TableCell>);
-        }
+        return (<TableCell key={`column-${idx}`} {...column.getHeaderProps()}>
+          {column.render('Header')}
+        </TableCell>);
       })}
     </TableRow>
   ));

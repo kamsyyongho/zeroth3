@@ -171,7 +171,6 @@ export function ConfirmationDialog(props: CreateSetFormDialogProps) {
                             })}
                         </Select>
                     </FormControl>
-
                 }
             </DialogContent>
                 <DialogActions>

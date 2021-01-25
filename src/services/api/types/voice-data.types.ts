@@ -46,6 +46,7 @@ export interface SearchDataRequest {
   status?: CONTENT_STATUS;
   transcript?: string;
   transcriber?: string;
+  voiceMaskingAvailable?: boolean;
   /**
    * in the form of `field.order` with order being `desc` or `asc`
    * - the field values are `VoiceData` keys
@@ -181,6 +182,10 @@ export type splitSegmentByTimeResult =
 export type mergeTwoSegmentsResult =
   | { kind: 'ok'; segment: Segment }
   | GeneralApiProblem;
+
+export type createNewSegment =
+    | { kind: 'ok'; segment: Segment }
+    | GeneralApiProblem;
 
 export type updateStatusResult =
   | { kind: 'ok'; data: VoiceData }

@@ -1,4 +1,4 @@
-import { RawDataQueue } from '../../../types';
+import { RawDataQueue, FullQueue } from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 /////////////
@@ -6,13 +6,18 @@ import { GeneralApiProblem } from './api-problem.types';
 /////////////
 
 export interface PostDownloadLocationRequest {
-  modelConfigName: string;
+  modelConfigId: string;
   path: string;
 }
 
 export interface PostDownloadLinkRequest {
-  modelConfigName: string;
+  modelConfigId: string;
   url: string;
+}
+
+export interface ImportDataSets {
+  modelConfigId: string;
+  file: File;
 }
 
 /////////////
@@ -22,8 +27,12 @@ export interface PostDownloadLinkRequest {
 export type getRawDataQueueResult =
   | { kind: 'ok'; queue: RawDataQueue }
   | GeneralApiProblem;
+export type getFullQueue =
+    | { kind: 'ok'; queue: FullQueue }
+    | GeneralApiProblem;
 export type uploadRawDataResult =
   | { kind: 'ok'; warningMessage?: string }
   | GeneralApiProblem;
 export type postDownloadLocationResult = { kind: 'ok' } | GeneralApiProblem;
 export type postDownloadLinkResult = { kind: 'ok' } | GeneralApiProblem;
+export type importDataSetsResult = { kind: 'ok' } | GeneralApiProblem;

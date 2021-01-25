@@ -1,15 +1,18 @@
 import { ApisauceInstance } from 'apisauce';
 import { AxiosRequestConfig } from 'axios';
 import { UPLOAD_REQUEST_TIMEOUT } from '../../../constants';
-import { RawDataQueue } from '../../../types';
+import { RawDataQueue, FullQueue } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   getRawDataQueueResult,
+  getFullQueue,
+  ImportDataSets,
   PostDownloadLinkRequest,
   PostDownloadLocationRequest,
   ProblemKind,
   ServerError,
   uploadRawDataResult,
+  importDataSetsResult,
 } from '../types';
 import { ParentApi } from './parent-api';
 
@@ -53,6 +56,34 @@ export class RawData extends ParentApi {
       return { kind: ProblemKind['bad-data'] };
     }
   }
+
+  /**
+   * Get the full queue history of the given project
+   * @param projectId
+   */
+  async getFullQueue(projectId: string, page: number, size: number): Promise<getFullQueue> {
+    const paginationParams = {page, size};
+    const response = await this.apisauce.get<FullQueue, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/raw-data/queue-history`),
+        paginationParams,
+    )
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if (problem) {
+        if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+
+    try {
+      const queue = response.data as FullQueue;
+      return { kind: 'ok', queue };
+    } catch {
+      return { kind: ProblemKind['bad-data'] };
+    }
+  };
 
   /**
    * Upload audio files
@@ -116,12 +147,12 @@ export class RawData extends ParentApi {
    */
   async postDownloadLocation(
     projectId: string,
-    modelConfigName: string,
+    modelConfigId: string,
     path: string,
   ): Promise<uploadRawDataResult> {
     // compile data
     const request: PostDownloadLocationRequest = {
-      modelConfigName,
+      modelConfigId,
       path,
     };
     // make the api call
@@ -150,12 +181,12 @@ export class RawData extends ParentApi {
    */
   async postDownloadLink(
     projectId: string,
-    modelConfigName: string,
+    modelConfigId: string,
     url: string,
   ): Promise<uploadRawDataResult> {
     // compile data
     const request: PostDownloadLinkRequest = {
-      modelConfigName,
+      modelConfigId,
       url,
     };
     // make the api call
@@ -168,6 +199,44 @@ export class RawData extends ParentApi {
       const problem = getGeneralApiProblem(response);
       if (problem) {
         if (problem.kind === ProblemKind['unauthorized']) {
+          this.logout();
+        }
+        return problem;
+      }
+    }
+    return { kind: 'ok' };
+  }
+
+  async importDataSets (
+      projectId: string,
+      modelConfigId: string,
+      name: string,
+      extension: string,
+      files: File[]): Promise<importDataSetsResult> {
+    const params = {
+      'model-config': modelConfigId,
+      name,
+      extension,
+    };
+    // compile data
+    const request = new FormData();
+    request.append('files', files[0]);
+    const config: AxiosRequestConfig = {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+      params,
+    };
+    const response = await this.apisauce.post<undefined, ServerError>(
+        this.getPathWithOrganization(`/projects/${projectId}/data-sets/import`),
+        request,
+        config,
+    );
+
+    if(!response.ok) {
+      const problem = getGeneralApiProblem(response);
+      if(problem) {
+        if(problem.kind === ProblemKind['unauthorized']) {
           this.logout();
         }
         return problem;

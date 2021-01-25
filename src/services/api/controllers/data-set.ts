@@ -204,11 +204,17 @@ export class DataSet extends ParentApi {
     return { kind: 'ok' };
   }
 
-  async createTrainingSet(projectId: string, dataSetId: string): Promise<createTrainingSet> {
+  async createTrainingSet(
+      projectId: string,
+      dataSetId: string,
+      ratioTraining: number,
+      ratioValidation: number,
+      ratioTest: number): Promise<createTrainingSet> {
+    const params = {ratioTraining, ratioValidation, ratioTest};
     const response = await this.apisauce.post<undefined, ServerError>(
         this.getPathWithOrganization(
-            `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`
-        )
+            `/projects/${projectId}/data-sets/${dataSetId}/sub-sets`),
+        params,
     );
     if(!response.ok) {
       const problem = getGeneralApiProblem(response);

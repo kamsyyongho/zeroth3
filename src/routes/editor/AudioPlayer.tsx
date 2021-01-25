@@ -40,7 +40,10 @@ import {PlayingWordAndSegment} from '../../types/editor.types';
 import log from '../../util/log/logger';
 import {formatSecondsDuration} from '../../util/misc';
 import {EDITOR_CONTROLS} from './components/EditorControls';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {getSegmentAndWordIndex} from './helpers/editor-page.helper';
+import { getRandomColor } from '../../util/misc';
+import { Word } from '../../types/editor.types';
+import { SegmentPickerOptions } from './Editor';
 
 /** total duration of the file in seconds */
 let duration = 0;
@@ -76,6 +79,7 @@ let audioSegmentsTracker: SegmentEditor[] = [];
 let previousAudioUrl: string;
 let isSkip: boolean = false;
 let localShouldSeek: boolean;
+let segmentToUpdateTime: any = {word: {} as Word, segmentIndex: null };
 
 /**
  * for adding a bit of slop because `Peaks.js` does
@@ -136,8 +140,8 @@ interface AudioPlayerProps {
   wordsClosed?: boolean;
   editorCommand?: EDITOR_CONTROLS;
   // currentPlayingWordPlayerSegment?: PlayingWordAndSegment;
-  wordToCreateTimeFor?: WordToCreateTimeFor;
-  wordToUpdateTimeFor?: WordToCreateTimeFor;
+  // wordToCreateTimeFor?: WordToCreateTimeFor;
+  // wordToUpdateTimeFor?: WordToCreateTimeFor;
   segmentSplitTimeBoundary?: Required<Time>;
   segmentSplitTime?: number;
   onSegmentSplitTimeChanged: (time: number) => void;
@@ -155,6 +159,7 @@ interface AudioPlayerProps {
   getTimeBasedSegment: (time: number) => void;
   handleWordClick: (wordLocation: SegmentAndWordIndex, forceClick?: boolean) => void;
   currentPlayingLocation: SegmentAndWordIndex;
+  handleSegmentTimeUpdate: (segmentWord: Word, segmentIndex: number) => void;
 }
 
 export function AudioPlayer(props: AudioPlayerProps) {
@@ -170,8 +175,8 @@ export function AudioPlayer(props: AudioPlayerProps) {
     deleteAllWordSegments,
     wordsClosed,
     // currentPlayingWordPlayerSegment,
-    wordToCreateTimeFor,
-    wordToUpdateTimeFor,
+    // wordToCreateTimeFor,
+    // wordToUpdateTimeFor,
     segmentSplitTimeBoundary,
     segmentSplitTime,
     onSegmentSplitTimeChanged,
@@ -187,6 +192,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
     getTimeBasedSegment,
     handleWordClick,
     currentPlayingLocation,
+    handleSegmentTimeUpdate,
   } = props;
   const { translate } = React.useContext(I18nContext);
   const { enqueueSnackbar } = useSnackbar();
@@ -209,13 +215,18 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const [currentTime, setCurrentTime] = React.useState(0);
   const [currentTimeDisplay, setCurrentTimeDisplay] = React.useState(DEFAULT_EMPTY_TIME);
   const [durationDisplay, setDurationDisplay] = React.useState(DEFAULT_EMPTY_TIME);
+  const [wordToUpdateTimeFor, setWordToUpdateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
+  const [wordToCreateTimeFor, setWordToCreateTimeFor] = React.useState<WordToCreateTimeFor | undefined>();
 
   const classes = useStyles();
   const theme: CustomTheme = useTheme();
 
   const handlePause = () =>  setIsAudioPlaying(false);
 
-  const handlePlay = () => setIsAudioPlaying(true);
+  const handlePlay = () => {
+    setIsAudioPlaying(true)
+    if(wordToCreateTimeFor) setWordToCreateTimeFor(undefined);
+  };
 
   //audio player root wrapper element for attaching and detaching listener for audio player
   const audioPlayerContainer = document.getElementById('audioPlayer-root-wrapper');
@@ -301,6 +312,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   const seekToTime = (timeToSeekTo: number) => {
     if (!PeaksPlayer?.player || timeToSeekTo < 0 || isLoadingAdditionalSegment) return;
     try {
+      localShouldSeek = false;
       PeaksPlayer.player.seek(timeToSeekTo);
     } catch (error) {
       handleError(error);
@@ -408,6 +420,7 @@ export function AudioPlayer(props: AudioPlayerProps) {
   };
 
   async function handleSeeked() {
+    localShouldSeek = false;
     if (!PeaksPlayer?.player || !mediaElement || playing || !isSkip) return;
     try {
       const { currentTime } = mediaElement;
@@ -515,6 +528,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
         break;
       default:
         if (id && isValidSection) {
+          if(id === PLAYER_SEGMENT_IDS.SEGMENT_EDIT && segmentToUpdateTime) {
+            handleSegmentTimeUpdate(segmentToUpdateTime.word, segmentToUpdateTime.segmentIndex);
+          }
           onSectionChange(time, id);
           // to handle resetting the segment to the last valid
           // options if we are trying to put it in an invalid area
@@ -565,9 +581,36 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
+  const prepareSegmentTimePicker = (segmentIndex: number) => {
+    const segment = segments[segmentIndex];
+    const start = segment.start;
+    const end = start + segment.length;
+    const color = getRandomColor();
+    const time: Time = {
+      start,
+      end,
+    };
+    const segmentWord: Word = {
+      color,
+      time,
+      text: '',
+    };
+    return segmentWord;
+  };
+
+  const setTimeUpdate = (segmentIndex: number) => {
+    const wordToAddTimeTo: Word = prepareSegmentTimePicker(currentPlayingLocation.segmentIndex);
+    const wordKey = PLAYER_SEGMENT_IDS.SEGMENT_EDIT;
+
+    setWordToCreateTimeFor({ ...wordToAddTimeTo, wordKey});
+    segmentToUpdateTime.word = wordToAddTimeTo;
+    segmentToUpdateTime.segmentIndex = segmentIndex;
+  };
+
   //Keep strack of currentPlayingLocation so that we can refer to it when audio plays from paused state and sync to caret location
   React.useEffect(() => {
     trackPlayingLocation = currentPlayingLocation;
+    if(!isAudioPlaying && currentPlayingLocation?.segmentIndex) setTimeUpdate(currentPlayingLocation.segmentIndex);
   }, [currentPlayingLocation]);
 
   /**
@@ -575,8 +618,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
    * - toggleing via other methods does not resume play
    * when the player is stuck when buffering
    */
-
-
   const handlePlayPause = () => {
     if (!PeaksPlayer?.player || !StreamPlayer || !duration) return;
     try {
@@ -623,7 +664,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!duration || isSkip) return;
     const interval = rewind ? -5 : 5;
     let timeToSeekTo = currentPlaybackTime + interval;
-    isSkip = true;
     if (timeToSeekTo < 0) {
       timeToSeekTo = 0;
     } else if (timeToSeekTo > duration) {
@@ -705,7 +745,9 @@ export function AudioPlayer(props: AudioPlayerProps) {
     }
   };
 
-  const createPlaybackSegments = (currentPlayingWordSegment: SegmentAddOptions, currentPlayingSegmentSegment: SegmentAddOptions) => {
+  const createPlaybackSegments = (
+      currentPlayingWordSegment: SegmentAddOptions,
+      currentPlayingSegmentSegment: SegmentAddOptions) => {
     if (!PeaksPlayer?.segments) return;
     try {
       const existingSegments = PeaksPlayer.segments.getSegments();
@@ -851,7 +893,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
           // defaulting to current time and 5 second length
           let startTime = transcriptionSegmentSegment?.startTime ?? currentTime;
           let endTime = transcriptionSegmentSegment?.endTime ?? startTime + DEFAULT_LOOP_LENGTH;
-
 
           if (endTime > duration) {
             endTime = duration;
@@ -1139,7 +1180,6 @@ export function AudioPlayer(props: AudioPlayerProps) {
     if (!isLoop && !disableLoop && playingTimeData?.currentPlayingWordPlayerSegment?.length) {
       parseCurrentlyPlayingWordSegment(playingTimeData.currentPlayingWordPlayerSegment);
     }
-
   }, [playingTimeData]);
 
   // set the update the time for a segment

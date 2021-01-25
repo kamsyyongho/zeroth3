@@ -11,6 +11,7 @@ import { ApiContext } from './api/ApiContext';
 import { I18nContext, ParsedI18n } from './i18n/I18nContext';
 import { KeycloakContext, ParsedKeycloak } from "./keycloak/KeycloakContext";
 
+
 interface RootProviderProps {
   children: JSX.Element;
   api: Api;
@@ -25,20 +26,20 @@ interface RootProviderProps {
 export default function RootProvider(props: RootProviderProps) {
   const { children, api, i18n, keycloak } = props;
   return (
-    <I18nContext.Provider value={i18n}>
-      <MuiPickersUtilsProvider utils={DateFnsUtils} locale={i18n.pickerLocale}>
-        <ThemeProvider theme={theme} >
-          <CssBaseline />
-          <KeycloakContext.Provider value={keycloak}>
-            <ApiContext.Provider value={api}>
-              <SnackbarProvider maxSnack={3} anchorOrigin={SNACKBAR.anchorOrigin} autoHideDuration={SNACKBAR.autoHideDuration} >
-                {children}
-              </SnackbarProvider>
-            </ApiContext.Provider>
-          </KeycloakContext.Provider>
-        </ThemeProvider>
-      </MuiPickersUtilsProvider>
-    </I18nContext.Provider>
+      <I18nContext.Provider value={i18n}>
+        <MuiPickersUtilsProvider utils={DateFnsUtils} locale={i18n.pickerLocale}>
+          <ThemeProvider theme={theme} >
+            <CssBaseline />
+            <KeycloakContext.Provider value={keycloak}>
+              <ApiContext.Provider value={api}>
+                <SnackbarProvider maxSnack={3} anchorOrigin={SNACKBAR.anchorOrigin} autoHideDuration={SNACKBAR.autoHideDuration} >
+                  {children}
+                </SnackbarProvider>
+              </ApiContext.Provider>
+            </KeycloakContext.Provider>
+          </ThemeProvider>
+        </MuiPickersUtilsProvider>
+      </I18nContext.Provider>
   );
 }
 

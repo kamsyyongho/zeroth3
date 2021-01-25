@@ -247,21 +247,21 @@ export function ModelTabs() {
         onChange={handleChange}
       >
         <Tab label={translate('models.tabs.acousticModel.header')} />
-        <Tab label={translate('models.tabs.languageModel.header')} />
+        <Tab label={translate('forms.sub')} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
         {tabsThatShouldRender.has(0) && <AcousticModelGridList canModify={canModifyAcousticModel} />}
       </TabPanel>
       <TabPanel value={activeTab} index={1}>
         {tabsThatShouldRender.has(1) && <>
-          <LanguageModelGridList
-            canModify={canModifyLanguageModel}
-            refreshTopGraphs={refreshTopGraphs}
-            topGraphsLoading={topGraphsLoading}
-            topGraphs={topGraphs}
-            subGraphs={subGraphs}
-            handleSubGraphListUpdate={handleSubGraphListUpdate}
-          />
+          {/*<LanguageModelGridList*/}
+          {/*  canModify={canModifyLanguageModel}*/}
+          {/*  refreshTopGraphs={refreshTopGraphs}*/}
+          {/*  topGraphsLoading={topGraphsLoading}*/}
+          {/*  topGraphs={topGraphs}*/}
+          {/*  subGraphs={subGraphs}*/}
+          {/*  handleSubGraphListUpdate={handleSubGraphListUpdate}*/}
+          {/*/>*/}
           <SubGraphList
             canModify={canModifySubGraph}
             subGraphsLoading={subGraphsLoading}
@@ -272,7 +272,9 @@ export function ModelTabs() {
             canDelete={!!subGraphsToDelete.length}
             subGraphs={subGraphs}
             topGraphs={topGraphs}
+            topGraphsLoading={topGraphsLoading}
             handleSubGraphListUpdate={handleSubGraphListUpdate}
+            refreshTopGraphs={refreshTopGraphs}
           />
         </>}
       </TabPanel>

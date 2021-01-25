@@ -14,7 +14,7 @@ export const checkLocationOnScreenAndScroll = (
 
   // check the location and scroll accordingly
   if (referenceElement && nonScrollArea && editorElement && heightRange) {
-    const { bottom } = referenceElement.getBoundingClientRect();
+    const { bottom, top } = referenceElement.getBoundingClientRect();
     const adjustedBottom = bottom - nonScrollArea;
     // scroll up if we are at the bottom
     if (
@@ -30,7 +30,7 @@ export const checkLocationOnScreenAndScroll = (
       // scroll up/down if it is off the screen
     } else if (
       (editorContentHeight && adjustedBottom > editorContentHeight) ||
-      bottom < 0
+      bottom  < 0
     ) {
       referenceElement.scrollIntoView({
         block: 'start',

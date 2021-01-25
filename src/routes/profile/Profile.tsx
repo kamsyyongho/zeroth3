@@ -17,6 +17,7 @@ import { PERMISSIONS } from '../../constants';
 import { ApiContext } from '../../hooks/api/ApiContext';
 import { I18nContext } from '../../hooks/i18n/I18nContext';
 import { KeycloakContext } from '../../hooks/keycloak/KeycloakContext';
+import { LOCAL_STORAGE_KEYS } from '../../types';
 import { CustomTheme } from '../../theme';
 import { ICONS } from '../../theme/icons';
 import { Organization, SnackbarError, SNACKBAR_VARIANTS, User } from '../../types';
@@ -27,6 +28,11 @@ import { RenameOrganizationDialog } from '../shared/RenameOrganizationDialog';
 import { OrganizationPickerDialog } from './components/OrganizationPickerDialog';
 import { UsersCellPlainText } from '../IAM/components/users/UsersCellPlainText'
 import Textfield from '@material-ui/core/TextField';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setOrganizations,
+  setCurrentOrganization,
+} from '../../store/modules/common/actions';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -68,8 +74,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
 export function Profile() {
   const { user, hasPermission, roles } = React.useContext(KeycloakContext);
   const { translate } = React.useContext(I18nContext);
-  const [organizations, setOrganizations] = useGlobal('organizations');
-  const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
+  // const [currentOrganization, setCurrentOrganization] = useGlobal('currentOrganization');
   const api = React.useContext(ApiContext);
   const { enqueueSnackbar } = useSnackbar();
   const [resetConfirmationOpen, setResetConfirmationOpen] = React.useState(false);
@@ -84,6 +89,9 @@ export function Profile() {
   const [isChanged, setIsChanged] = React.useState(false);
   const [phone, setPhone] = React.useState('');
   const [isUpdatePhoneConfirmationOpen, setIsUpdatePhoneConfirmationOpen] = React.useState<boolean>(false);
+  const organizations = useSelector((state: any) => state.CommonReducer.organizations);
+  const currentOrganization = useSelector((state: any) => state.CommonReducer.currentOrganization);
+  const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -113,7 +121,7 @@ export function Profile() {
       setOrganizationsLoading(true);
       const response = await api.organizations.getOrganizations();
       if (response.kind === 'ok') {
-        setOrganizations(response.organizations);
+        dispatch(setOrganizations(response.organizations))
       } else {
         log({
           file: `Profile.tsx`,
@@ -214,14 +222,13 @@ export function Profile() {
 
   const handleOrganizationChange = (pickedOrganization: Organization) => {
     let shouldUpdate = false;
-    if (!organization) {
-      shouldUpdate = true;
-    } else if (pickedOrganization.id !== organization.id) {
+    if (!organization ||pickedOrganization.id !== organization.id) {
       shouldUpdate = true;
     }
     if (shouldUpdate) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ORGANIZATION_ID, pickedOrganization.id);
       setOrganization(pickedOrganization);
-      setCurrentOrganization(pickedOrganization);
+      dispatch(setCurrentOrganization(pickedOrganization));
     }
   };
 
@@ -293,7 +300,7 @@ export function Profile() {
                 onClick={() => setIsPhoneDisabled(false)}
                 onBlur={handleBlur}
                 disabled={isPhoneDisabled}
-                label={translate("forms.phone")}
+                label={translate("forms.contact")}
                 onChange={(event) => setPhone(event.target.value)} />
           </Grid>
         </Grid>

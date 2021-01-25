@@ -7,7 +7,6 @@ import {Segment, WordAlignment, UndoRedoData} from "../../../types";
 import WordAlignmentBlock from './WordAlignmentBlock';
 import {EDITOR_CONTROLS} from './EditorControls';
 import { INLINE_STYLE_TYPE } from '../../../types';
-import { buildStyleMap } from '../helpers/editor.helper';
 import { checkLocationOnScreenAndScroll } from './helpers/entity-content.helper';
 import { useWindowSize } from '../../../hooks/window/useWindowSize';
 import { ApiContext } from '../../../hooks/api/ApiContext';
@@ -100,10 +99,6 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     const windowSize = useWindowSize();
     const windowHeight = windowSize.height;
 
-    const styleMap = React.useMemo(() => {
-        return buildStyleMap(theme);
-    }, []);
-
     const setLengthBeforeEachBlockArray = () => {
         const result = [0];
         let count = 0;
@@ -162,12 +157,15 @@ const SegmentBlockV2 = (props: SegmentBlockProps) => {
     React.useEffect(() => {
         if(segment?.wordAlignments.length) {
             let copySegment = {...segment};
-            for(let i = 0; i < copySegment.length -1; i++) {
-                const wordAlignment = copySegment.wordAlignments[i];
-                if(wordAlignment) {
-                    copySegment.wordAlignments[i]['word'] = segment.wordAlignments[i]['word'].replace('|', ' ');
+            copySegment.wordAlignments.forEach((word: WordAlignment, index: number) => {
+                if(word) {
+                    const currentWord = copySegment.wordAlignments[index]['word'];
+                    const removeInitialPipe = index === 0 && currentWord[0] === '|'
+                        ? currentWord.slice(1) : currentWord;
+
+                    copySegment.wordAlignments[index]['word'] = removeInitialPipe.replace('|', ' ');
                 }
-            }
+            });
             setLocalSegment(copySegment);
             setLengthBeforeEachBlockArray();
         }

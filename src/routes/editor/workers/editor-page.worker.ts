@@ -109,7 +109,7 @@ const findIndexForMatchingTime = (
  * @params currentlyPlayingWordTime - used to determine if we don't need to calculate
  * @returns `undefined` on error
  */
-const calculatePlayingLocation = (
+export const calculatePlayingLocation = (
   time: number,
   segments: Segment[],
   currentlyPlayingWordTime?: Required<Time>,

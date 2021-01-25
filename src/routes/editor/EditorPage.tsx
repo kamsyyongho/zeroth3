@@ -4,12 +4,13 @@ import {createStyles, makeStyles, useTheme} from '@material-ui/core/styles';
 /* eslint import/no-webpack-loader-syntax: off */
 // this lint rule is from create-react-app
 import * as workerPath from "file-loader?name=[name].js!./workers/editor-page.worker";
+import { calculatePlayingLocation } from './workers/editor-page.worker';
 import {useSnackbar, VariantType} from 'notistack';
 import {BulletList} from 'react-content-loader';
-import { RouteComponentProps } from "react-router";
+import {RouteComponentProps} from "react-router";
 import ErrorBoundary from 'react-error-boundary';
 import React, {useGlobal} from "reactn";
-import {PERMISSIONS, convertKoreanKeyToEnglish, DEFAULT_SHORTCUTS} from '../../constants';
+import {DEFAULT_SHORTCUTS, META_KEYS, PERMISSIONS} from '../../constants';
 import {ApiContext} from '../../hooks/api/ApiContext';
 import {I18nContext} from '../../hooks/i18n/I18nContext';
 import {KeycloakContext} from '../../hooks/keycloak/KeycloakContext';
@@ -18,17 +19,19 @@ import {CustomTheme} from '../../theme/index';
 import {
   CONTENT_STATUS,
   DataSet,
+  EDIT_TYPE,
   PlayingTimeData,
   Segment,
-  SegmentResults,
   SegmentAndWordIndex,
+  SegmentResults,
   SNACKBAR_VARIANTS,
   SnackbarError,
   Time,
   VoiceData,
   Word,
   WordAlignment,
-  WordToCreateTimeFor
+  WordToCreateTimeFor,
+  LOCAL_STORAGE_KEYS,
 } from '../../types';
 import {ProblemKind} from '../../services/api/types';
 import log from '../../util/log/logger';
@@ -44,9 +47,24 @@ import {EDITOR_CONTROLS, EditorControls} from './components/EditorControls';
 import {EditorFetchButton} from './components/EditorFetchButton';
 import {StarRating} from './components/StarRating';
 import {Editor} from './Editor';
-import {calculateWordTime, getDisabledControls, setSelectionRange} from './helpers/editor-page.helper';
-import {getSegmentAndWordIndex} from './helpers/editor.helper';
+import {
+  calculateWordTime,
+  checkNativeShortcuts,
+  convertNonEnglishKeyToEnglish,
+  getDisabledControls,
+  getSegmentAndWordIndex,
+} from './helpers/editor-page.helper';
 import {HelperPage} from './components/HelperPage';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  activateRedo,
+  activateUndo,
+  initRevertData,
+  initUnsavedSegmentIds,
+  setSegments,
+  setUndo
+} from '../../store/modules/editor/actions';
+
 
 const useStyles = makeStyles((theme: CustomTheme) =>
     createStyles({
@@ -56,8 +74,6 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       readOnlyHeader: {
         display: 'flex',
         flexDirection: 'row',
-
-
       }
     }),
 );
@@ -137,6 +153,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [autoSeekDisabled, setAutoSeekDisabled] = useGlobal('autoSeekDisabled');
   const [scrollToSegmentIndex, setScrollToSegmentIndex] = useGlobal('scrollToSegmentIndex');
   const [editorAutoScrollDisabled, setEditorAutoScrollDisabled] = useGlobal('editorAutoScrollDisabled');
+  const [wordConfidenceThreshold, setWordConfidenceThreshold] = useGlobal('wordConfidenceThreshold');
   const [canPlayAudio, setCanPlayAudio] = React.useState(false);
   const [playbackTime, setPlaybackTime] = React.useState(0);
   const [timeToSeekTo, setTimeToSeekTo] = React.useState<number | undefined>();
@@ -167,7 +184,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   const [initialFetchDone, setInitialFetchDone] = React.useState(false);
-  const [segments, setSegments] = React.useState<Segment[]>([]);
   const [segmentResults, setSegmentResults] = React.useState<SegmentResults>({} as SegmentResults);
   const [prevSegmentResults, setPrevSegmentResults] = React.useState<SegmentResults | undefined>();
   const [speakers, setSpeakers] = React.useState<string[]>([]);
@@ -185,7 +201,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   // get the passed info if we got here via the details page
   const [isDiff, setIsDiff] = React.useState<boolean>(mode === 'diff');
   const [readOnly, setReadOnly] = React.useState<boolean>(mode === 'readonly');
+  const [segmentResultsCache, setSegmentResultsCache] = React.useState<any>([]);
   // const readOnly = React.useMemo(() => !!navigationProps?.voiceData, []);
+  // const [segments, setSegments] = React.useState<Segment[]>([]);
+  const segments = useSelector((state: any) => state.EditorReducer.segments);
+  const revertData = useSelector((state: any) => state.EditorReducer.revertData);
+  const undoStack = useSelector((state: any) => state.EditorReducer.undoStack);
+  const redoStack = useSelector((state: any) => state.EditorReducer.redoStack);
+  const unsavedSegmentIds = useSelector((state: any) => state.EditorReducer.unsavedSegmentIds);
+  const dispatch = useDispatch();
 
   const theme: CustomTheme = useTheme();
   const classes = useStyles();
@@ -208,7 +232,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
   const handleSegmentUpdate = (updatedSegment: Segment, segmentIndex: number) => {
     const updatedSegments = [...segments];
     updatedSegments[segmentIndex] = updatedSegment;
-    setSegments(updatedSegments);
+    // setSegments(updatedSegments);
+    dispatch(setSegments(updatedSegments));
     internalSegmentsTracker = updatedSegments
   };
 
@@ -271,22 +296,30 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           snackbarError.errorText = serverError.message || "";
         }
       }
-
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
       setVoiceDataLoading(false);
       setInitialFetchDone(true);
     }
   };
 
-  const getAdditionalSegments = async (page?: number, time?: number) => {
-    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
-    if (api?.voiceData && projectId && voiceData) {
+  const getAdditionalSegments = async (page: number) => {
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
+    if(segmentResultsCache[page]) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
-      const pageParam = !!time ? null : page;
+      setSegmentResults(segmentResultsCache[page]);
+      setIsTimeSegment(false);
+      internalSegmentsTracker = segmentResultsCache[page].content;
+      if(checkAudioPlaying) setIsAudioPlaying(true);
+      return segmentResultsCache[page];
+    } else if (api?.voiceData && projectId && voiceData) {
+      if(checkAudioPlaying) setIsAudioPlaying(false);
       const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, SCROLL_PAGE_SIZE, page);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
+        const updateSegmentResultsCache = segmentResultsCache.slice();
+        updateSegmentResultsCache[response.data.number] = response.data;
+        setSegmentResultsCache(updateSegmentResultsCache)
         setSegmentResults(response.data);
         // setSegments(response.data.content);
         setIsTimeSegment(false);
@@ -308,13 +341,27 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       }
       snackbarError?.isError && enqueueSnackbar(snackbarError.errorText, { variant: SNACKBAR_VARIANTS.error });
     }
-  }
+  };
+
+  const checkCachedSegmentsForTime = (time: number) => {
+    return segmentResultsCache.forEach((segmentResults: SegmentResults, index: number) => {
+      const playingLocation = calculatePlayingLocation(time, segmentResults.content);
+      if(!!playingLocation) return {index, playingLocation};
+    })
+  };
 
   const getTimeBasedSegment = async (time: number) => {
     if(time <=  0) return;
     setIsLoadingAdditionalSegment(true);
-    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying))
-    if (api?.voiceData && projectId && voiceData) {
+    const checkAudioPlaying = JSON.parse(JSON.stringify(isAudioPlaying));
+    const segmentsFromCache = checkCachedSegmentsForTime(time);
+    if(!!segmentsFromCache) {
+      const updateSegments = segmentResultsCache[segmentsFromCache.index];
+      setSegmentResults(updateSegments);
+      dispatch(setSegments(updateSegments.content));
+      internalSegmentsTracker = updateSegments.content;
+      handleWordClick(updateSegments.playingLocation);
+    } else if (api?.voiceData && projectId && voiceData) {
       if(checkAudioPlaying) setIsAudioPlaying(false);
       const pageParam = !!time ? null : page;
       const response = await api.voiceData.getSegments(modeProjectId || projectId, voiceDataId || voiceData.id, TIME_PAGE_SIZE, undefined, time);
@@ -325,7 +372,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         if(updateSegments) {
           let playingLocation: SegmentAndWordIndex = {} as SegmentAndWordIndex;
           setSegmentResults(updateSegments);
-          setSegments(updateSegments.content);
+          // setSegments(updateSegments.content);
+          dispatch(setSegments(updateSegments.content));
           internalSegmentsTracker = updateSegments.content;
           setPrevSegmentResults({} as SegmentResults);
           setPage(updateSegments.number - 1);
@@ -396,7 +444,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           ? Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(firstSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: firstSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
-      if(additionalSegments) setSegments(additionalSegments.content);
+      if(additionalSegments) dispatch(setSegments(additionalSegments.content));
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
@@ -410,7 +458,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       additionalSegments = await getAdditionalSegments(prevPage);
       if(additionalSegments) {
         updateSegment = [...additionalSegments.content, ...prevSegment.content];
-        setSegments(updateSegment);
+        // setSegments(updateSegment);
+        dispatch(setSegments(updateSegment));
         internalSegmentsTracker = updateSegment;
       }
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
@@ -423,19 +472,24 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
 
   const getNextSegment = async () => {
     if(!isTimeSegment && segmentResults.last) return;
-    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number ? prevSegmentResults : segmentResults;
+    const prevSegment = prevSegmentResults && prevSegmentResults?.number > segmentResults?.number
+        ? prevSegmentResults : segmentResults;
     const nextPage = prevSegment.number + 1;
     setIsLoadingAdditionalSegment(true);
 
     let additionalSegments = await getAdditionalSegments(nextPage);
     let updateSegment = [] as Segment[];
+    let pageNumber: number;
     if(isTimeSegment) {
       const lastSegmentNumber = segments[segments.length - 1].number;
-      const pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE === 0
+      pageNumber = lastSegmentNumber % SCROLL_PAGE_SIZE === 0
           ? Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE) + 1 : Math.floor(lastSegmentNumber / SCROLL_PAGE_SIZE);
       const playingLocation = {segmentIndex: lastSegmentNumber % SCROLL_PAGE_SIZE, wordIndex: 0};
       additionalSegments = await getAdditionalSegments(pageNumber);
-      if(additionalSegments) setSegments(additionalSegments.content);
+      if(additionalSegments) {
+        // setSegments(additionalSegments.content);
+        dispatch(setSegments(additionalSegments.content));
+      }
       setPage(pageNumber);
       setPrevSegmentResults({} as SegmentResults);
       handleWordClick(playingLocation, true);
@@ -443,10 +497,12 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       setIsTimeSegment(false);
       if(additionalSegments) updateSegment = [...additionalSegments.content];
     } else {
-      additionalSegments = await getAdditionalSegments(nextPage);
+      pageNumber = prevSegment.number + 1;
+      additionalSegments = await getAdditionalSegments(pageNumber);
       if(additionalSegments) {
         updateSegment = [...prevSegment.content, ...additionalSegments.content];
-        setSegments(updateSegment);
+        // setSegments(updateSegment);
+        dispatch(setSegments(updateSegment));
         internalSegmentsTracker = updateSegment;
       }
       findPlayingLocationFromAdditionalSegments(prevSegment, updateSegment);
@@ -456,7 +512,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     setTimeout(() => setIsLoadingAdditionalSegment(false), 0);
   };
 
-  const getSegments = async () => {
+  const getInitialSegments = async () => {
     if (api?.voiceData && projectId && voiceData) {
       setSegmentsLoading(true);
       const response = await api.voiceData.getSegments(
@@ -467,13 +523,17 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
+        const initSegmentResultCache = new Array(response.data.totalPages);
         setSegmentResults(response.data);
-        setSegments(response.data.content);
+        // setSegments(response.data.content);
+        dispatch(setSegments(response.data.content));
         internalSegmentsTracker = response.data.content;
+        initSegmentResultCache[0] = response.data;
+        setSegmentResultsCache(initSegmentResultCache);
       } else if (response.kind !== ProblemKind['bad-data']){
         log({
           file: `EditorPage.tsx`,
-          caller: `getSegments - failed to get segments`,
+          caller: `getInitialSegments - failed to get segments`,
           value: response,
           important: true,
         });
@@ -608,7 +668,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const updatedSegment: Segment = { ...segments[segmentIndex], wordAlignments: [...wordAlignments], transcript };
         const updatedSegments = [...segments];
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
-        setSegments(updatedSegments);
+        // setSegments(updatedSegments);
+        dispatch(setSegments(updatedSegments));
         internalSegmentsTracker = updatedSegments;
         setIsSegmentUpdateError(false);
         onUpdateUndoRedoStack(false, false);
@@ -635,20 +696,20 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                                          segmentIndex: number,
                                          start: number,
                                          length: number) => {
-    if (api?.voiceData && projectId && voiceData && segments.length && !alreadyConfirmed) {
+    if (api?.voiceData && projectId && voiceData && internalSegmentsTracker.length && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
       const response = await api.voiceData.updateSegmentTime(projectId, voiceData.id, segmentId, start, length);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
         snackbarError = undefined;
         setIsSegmentUpdateError(false);
-        const updatedSegment: Segment = { ...segments[segmentIndex], start, length };
-        const updatedSegments = [...segments];
+        const updatedSegment: Segment = { ...internalSegmentsTracker[segmentIndex], start, length };
+        const updatedSegments = [...internalSegmentsTracker];
+
         updatedSegments.splice(segmentIndex, 1, updatedSegment);
-        setSegments(updatedSegments);
+        dispatch(setSegments(updatedSegments))
         internalSegmentsTracker = updatedSegments;
         onUpdateUndoRedoStack(false, false);
-
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -668,34 +729,92 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  const handleSegmentMergeCommand = async () => {
-    const caretLocation = getSegmentAndWordIndex();
+  //added logic for updating segment time directly from audio player
+  const handleSegmentTimeUpdate = (segmentWord: Word, segmentIndex: number) => {
+    const { time } = segmentWord;
+    const segmentToUpdate = internalSegmentsTracker[segmentIndex];
+    if (typeof segmentIndex === 'number' &&
+        typeof time?.start === 'number' &&
+        typeof time?.end === 'number') {
+      let { start, end } = time;
+      // set to 2 sig figs
+      start = Number(start.toFixed(2));
+      end = Number(end.toFixed(2));
+      const length = end - start;
+      submitSegmentTimeUpdate(segmentToUpdate.id, segmentIndex, start, length);
+    }
+  };
+
+  const handleCreateSegment = async (caretLocation: SegmentAndWordIndex) => {
+    const { segmentIndex, wordIndex } = caretLocation;
+    const prevSegment = segments[segmentIndex];
+
+    if(api.voiceData && projectId && voiceData) {
+      const response = await api.voiceData.createNewSegment(projectId, voiceData.id, prevSegment.id);
+      let snackbarError: SnackbarError | undefined = {} as SnackbarError;
+
+      if(response.kind === 'ok') {
+        const updateSegment = segments.slice(0);
+        const initialWord = {confidence: 100, speaker: null, length: 1.00, start: 0, word: ''};
+        response.segment.wordAlignments.push(initialWord);
+        updateSegment.splice(segmentIndex + 1, 0, response.segment)
+        dispatch(setSegments(updateSegment));
+        dispatch(setUndo(
+            segmentIndex + 1,
+            0,
+            0,
+            EDIT_TYPE.createSegment));
+        updateCaretLocation(segmentIndex + 1 , 0, 0);
+      } else {
+        log({
+          file: `EditorPage.tsx`,
+          caller: `handleCreateSegment - failed to create segment`,
+          value: response,
+          important: true,
+        });
+        snackbarError.isError = true;
+        setIsSegmentUpdateError(true);
+        const { serverError } = response;
+        if (serverError) {
+          snackbarError.errorText = serverError.message || "";
+        }
+      }
+    }
+  };
+
+  const handleSegmentMergeCommand = async (caretLocation: SegmentAndWordIndex, isUndoAction: boolean = false) => {
+    const { segmentIndex, wordIndex } = caretLocation;
     if(!caretLocation || caretLocation.segmentIndex === 0) {
       displayMessage(translate('editor.validation.invalidMergeLocation'));
       return;
     }
 
-    const selectedSegmentIndex = caretLocation.segmentIndex;
     if (api?.voiceData && projectId && voiceData && !alreadyConfirmed) {
       setSaveSegmentsLoading(true);
-      const segmentToMege = internalSegmentsTracker[selectedSegmentIndex].id;
-      const segmentToMergeInto = internalSegmentsTracker[selectedSegmentIndex - 1].id;
-      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto, segmentToMege);
+      const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
+      const segmentToMerge = internalSegmentsTracker[segmentIndex];
+      const segmentToMergeInto = internalSegmentsTracker[segmentIndex - 1];
+      const mergedSegments = segments.slice();
+      const response = await api.voiceData.mergeTwoSegments(projectId, voiceData.id, segmentToMergeInto.id, segmentToMerge.id);
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
 
       if (response.kind === 'ok') {
         snackbarError = undefined;
         //cut out and replace the old segments
-        const mergedSegments = [...internalSegmentsTracker];
-        const NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE = 2;
-        const newSegmentToFocus = document.getElementById(`segment-${selectedSegmentIndex - 1}`);
-        mergedSegments.splice(selectedSegmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+
+        mergedSegments.splice(segmentIndex - 1, NUMBER_OF_MERGE_SEGMENTS_TO_REMOVE, response.segment);
+        dispatch(setSegments(mergedSegments));
+        if(!isUndoAction) {
+          dispatch(setUndo(
+              segmentIndex - 1,
+              segmentToMergeInto.wordAlignments.length,
+              0,
+              EDIT_TYPE.merge));
+        }
         // reset our new default baseline
-        setSegments(mergedSegments);
-        internalSegmentsTracker = mergedSegments;
         setIsSegmentUpdateError(false);
-        onUpdateUndoRedoStack(false, false);
-        newSegmentToFocus?.focus();
+        updateCaretLocation(segmentIndex - 1, internalSegmentsTracker[segmentIndex - 1].wordAlignments.length, 0);
+        internalSegmentsTracker = mergedSegments;
       } else {
         log({
           file: `EditorPage.tsx`,
@@ -715,8 +834,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
-  const handleSegmentSplitCommand = async () => {
-    const caretLocation = getSegmentAndWordIndex();
+  const handleSegmentSplitCommand = async (caretLocation: SegmentAndWordIndex, isUndoAction: boolean = false) => {
     const { segmentIndex, wordIndex } = caretLocation;
 
     if(typeof segmentIndex !== 'number'
@@ -742,11 +860,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const [firstSegment, secondSegment] = response.segments;
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(caretLocation.segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
-
         // reset our new default baseline
-        setSegments(splitSegments);
+        dispatch(setSegments(splitSegments));
+        if(!isUndoAction) {
+          dispatch(setUndo(
+              segmentIndex,
+              firstSegment.wordAlignments.length,
+              0,
+              EDIT_TYPE.split));
+        }
         internalSegmentsTracker = splitSegments;
-        onUpdateUndoRedoStack(false, false);
         // update the editor
       } else {
         log({
@@ -785,8 +908,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
         const NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE = 1;
         splitSegments.splice(segmentIndex, NUMBER_OF_SPLIT_SEGMENTS_TO_REMOVE, firstSegment, secondSegment);
         // reset our new default baseline
-        setSegments(splitSegments);
-        internalSegmentsTracker = splitSegments;
+        dispatch(setSegments(splitSegments));
         // update the editor
         onSuccess(response.segments);
       } else {
@@ -1105,17 +1227,38 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const updateCaretLocation = (segmentIndex: number, wordIndex: number, offset: number) => {
+    const wordLocation = document.getElementById(`word-${segmentIndex}-${wordIndex}`);
+    const selection = window.getSelection();
+
+    if(selection && wordLocation) {
+      selection.collapse(wordLocation?.childNodes[0], offset);
+    }
+  };
+
+  const saveUnsavedChanges = () => {
+    unsavedSegmentIds.forEach((segmentId: string) => {
+      segments.forEach(async (segment: Segment, index: number) => {
+        const { id, transcript, wordAlignments } = segment
+        if(segment.id === segmentId) await submitSegmentUpdate(id, wordAlignments, transcript, index);
+      });
+    });
+    dispatch(initUnsavedSegmentIds());
+  };
+
   const handleEditorCommand = (command: EDITOR_CONTROLS) => {
+    const caretLocation = getSegmentAndWordIndex();
+
     switch (command) {
       case EDITOR_CONTROLS.toggleMore:
         internalShowEditorPopup = !internalShowEditorPopup
         setShowEditorPopups(internalShowEditorPopup);
         break;
       case EDITOR_CONTROLS.split:
-        handleSegmentSplitCommand();
+        handleSegmentSplitCommand(caretLocation);
         break;
       case EDITOR_CONTROLS.merge:
-        handleSegmentMergeCommand();
+        handleSegmentMergeCommand(caretLocation);
         break;
       case EDITOR_CONTROLS.shortcuts:
         setIsShortCutPageOpen(!isShortCutPageOpen);
@@ -1131,6 +1274,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
       case EDITOR_CONTROLS.rewindAudio:
       case EDITOR_CONTROLS.forwardAudio:
       case EDITOR_CONTROLS.audioPlayPause:
+      case EDITOR_CONTROLS.createWord:
         setEditorCommand(command);
         break;
       default:
@@ -1142,6 +1286,9 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     const keyCombinationArray = Object.values(shortcuts);
     const functionArray = Object.keys(shortcuts);
     let resultIndex: number = -1;
+    const caretLocation = getSegmentAndWordIndex();
+
+    if(checkNativeShortcuts(shortcutsStack)) {return;}
     keyCombinationArray.forEach((combination: any, index: number) => {
       let matchCount = 0;
       for(let i = 0; i < shortcutsStack.length; i++) {
@@ -1165,19 +1312,21 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           setEditorCommand(EDITOR_CONTROLS.approvalRequest);
           break;
         case 'save':
-          setEditorCommand(EDITOR_CONTROLS.save);
+          if(unsavedSegmentIds.length) saveUnsavedChanges();
           break;
         case 'undo':
-          setEditorCommand(EDITOR_CONTROLS.undo);
+          if(undoStack.length) dispatch(activateUndo());
+          // dispatch(activateUndo());
           break;
         case 'redo':
-          setEditorCommand(EDITOR_CONTROLS.redo);
+          if(redoStack.length) dispatch(activateRedo());
+          // dispatch(activateRedo());
           break;
         case 'merge':
-          handleSegmentMergeCommand();
+          handleSegmentMergeCommand(caretLocation);
           break;
         case 'split':
-          handleSegmentSplitCommand();
+          handleSegmentSplitCommand(caretLocation);
           break;
         case 'toggleMore':
           setEditorCommand(EDITOR_CONTROLS.toggleMore);
@@ -1221,27 +1370,88 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
   };
 
+  const revertTextUpdate = () => {
+    const updateSegments = segments.slice(0);
+    const { segmentIndex, wordIndex, offset } = revertData.textLocation;
+    updateSegments[segmentIndex] = revertData.updatedSegment;
+    setTimeout(() => {
+      updateCaretLocation(segmentIndex, wordIndex, offset);
+    }, 0);
+    dispatch(setSegments(updateSegments));
+    dispatch(initRevertData());
+  };
+
+  const revertSegmentSplit = async () => {
+    const { segmentIndex, wordIndex, offset } = revertData.textLocation;
+    await handleSegmentMergeCommand({segmentIndex: segmentIndex + 1, wordIndex}, true);
+    setTimeout(() => {
+      updateCaretLocation(segmentIndex, wordIndex, offset);
+    }, 0);
+    dispatch(initRevertData());
+  };
+
+  const revertSegmentMerge = async () => {
+    const { segmentIndex, wordIndex, offset } = revertData.textLocation;
+    await handleSegmentSplitCommand({segmentIndex, wordIndex}, true);
+    setTimeout(() => {
+      updateCaretLocation(segmentIndex, wordIndex - 1, segments[segmentIndex].wordAlignments[wordIndex - 1].word.length);
+    }, 0);
+    dispatch(initRevertData());
+  };
+
+  React.useEffect(() => {
+    if(!revertData) return;
+    switch(revertData.editType) {
+      case EDIT_TYPE.text :
+        revertTextUpdate();
+        break;
+      case EDIT_TYPE.merge :
+        revertSegmentMerge();
+        break;
+      case EDIT_TYPE.split :
+        revertSegmentSplit();
+        break;
+      default:
+        return;
+    }
+  }, [revertData])
+
   const handleKeyUp = (event: React.KeyboardEvent) => {
     handleShortcut(event.nativeEvent);
     shortcutsStack = [];
   }
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {
-      return;
-    }
-    if(event.metaKey || event.ctrlKey || event.altKey
-        || (event.shiftKey && event.key !== "ArrowLeft") && event.key !== "ArrowRight") {
-      event.preventDefault();
-    }
-    const key = event.nativeEvent.code === "Space" ? "Space" : convertKoreanKeyToEnglish(event.key);
+  const handleEnterPress = async () => {
+    const { segmentIndex, wordIndex } = getSegmentAndWordIndex();
+    const selection = window.getSelection();
+    const segment = segments[segmentIndex].wordAlignments
 
-    if(event.metaKey) shortcutsStack.push('Meta');
-    if(event.ctrlKey) shortcutsStack.push('Control');
-    if(event.altKey) shortcutsStack.push('Alt');
-    if(event.shiftKey) shortcutsStack.push('Shift');
+    if(wordIndex === segment.length - 1 && selection?.anchorOffset === segment[segment.length - 1].word.length) {
+      handleCreateSegment({segmentIndex, wordIndex});
+    } else if (wordIndex > 0) {
+      await handleSegmentSplitCommand({segmentIndex, wordIndex});
+      updateCaretLocation(segmentIndex + 1, 0, 0);
+    }
+  }
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if(event.key === 'Meta' || event.key === 'Control' || event.key === 'Shift' || event.key == 'Alt') {return;}
+    const key = event.nativeEvent.code === "Space" ? "Space" : convertNonEnglishKeyToEnglish(event.key);
+    const caretLocation = getSegmentAndWordIndex();
+    const selection = window.getSelection();
+
+    if(key === 'Backspace' && selection?.anchorOffset === 0 && caretLocation.segmentIndex > 0) handleSegmentMergeCommand(caretLocation)
+    if(key === 'Enter') handleEnterPress();
+    if(event.metaKey) shortcutsStack.push(META_KEYS.META);
+    if(event.ctrlKey) shortcutsStack.push(META_KEYS.CONTROL);
+    if(event.altKey) shortcutsStack.push(META_KEYS.ALT);
+    if(event.shiftKey) shortcutsStack.push(META_KEYS.SHIFT);
 
     shortcutsStack.push(key);
+
+    if((event.metaKey || event.ctrlKey || event.altKey) && !checkNativeShortcuts(shortcutsStack)) {
+      event.preventDefault();
+    }
   };
 
   const resetVariables = () => {
@@ -1249,7 +1459,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     shortcutsStack = [];
     localShortcuts = [];
     setSegmentsLoading(true);
-    setSegments([]);
+    // setSegments([]);
+    dispatch(setSegments([]));
     internalSegmentsTracker = [];
     setSpeakers([]);
     setDataSets([]);
@@ -1262,15 +1473,15 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     handleWordTimeCreationClose();
   };
 
-  React.useEffect(() => {
-    internalSegmentsTracker = segments;
-  }, [segments]);
+  // React.useEffect(() => {
+  //   internalSegmentsTracker = segments;
+  // }, [segments]);
 
   //will be called on subsequent fetches when the editor is not read only
   React.useEffect(() => {
     if (!isDiff && !readOnly && voiceData && projectId) {
       getAudioUrl();
-      getSegments();
+      getInitialSegments();
     }
   }, [voiceData, projectId, readOnly]);
 
@@ -1291,13 +1502,16 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     }
     if((readOnly || isDiff) && !initialFetchDone && voiceData && Object.entries(voiceData).length !== 0) {
       getAudioUrl();
-      getSegments();
+      getInitialSegments();
       setInitialFetchDone(true);
     }
   }, [voiceData, initialFetchDone, voiceDataLoading, noRemainingContent, noAssignedData]);
 
   // initial fetch and dismount logic
   React.useEffect(() => {
+    const savedThreshold = localStorage.getItem(LOCAL_STORAGE_KEYS.WORD_CONFIDENCE_THRESHOLD);
+    const confidence = readOnly ? 0 : Number(savedThreshold);
+    setWordConfidenceThreshold(confidence);
     setPageTitle(translate('path.editor'));
     getShortcuts();
     if ((readOnly || isDiff) && projectId && voiceDataId && canSeeReadOnlyEditor) {
@@ -1333,7 +1547,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
     return <Forbidden />;
   }
 
-  const disabledControls = getDisabledControls(segments, canUndo, canRedo, saveSegmentsLoading, confirmSegmentsLoading);
+  const disabledControls = getDisabledControls(segments, !!undoStack.length, !!redoStack.length, saveSegmentsLoading, confirmSegmentsLoading);
 
   const editorHeight = windowSize.height && (windowSize?.height - AUDIO_PLAYER_HEIGHT);
   const editorContainerStyle: React.CSSProperties = {
@@ -1353,7 +1567,6 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
             playingLocation={currentPlayingLocation}
             isSegmentUpdateError={isSegmentUpdateError}
             editorCommand={editorCommand}
-            segments={segments}
             voiceData={voiceData}
         />}
         <Container >
@@ -1375,14 +1588,13 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
           >
             <div style={editorContainerStyle}>
               {segmentsLoading ? <BulletList /> :
-                  !!segments.length && (<Editor
+                  !!segments?.length && (<Editor
                       key={voiceData.id}
                       readOnly={readOnly}
                       isDiff={isDiff}
                       setIsDiff={setIsDiff}
                       onCommandHandled={handleCommandHandled}
                       height={editorHeight}
-                      segments={segments}
                       voiceData={voiceData}
                       onReady={setEditorReady}
                       playingLocation={currentPlayingLocation}
@@ -1441,8 +1653,8 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   onSegmentUpdate={handleAudioSegmentUpdate}
                   onPlayingSegmentCreate={handlePlayingAudioSegmentCreate}
                   // currentPlayingWordPlayerSegment={playingTimeData ? playingTimeData.currentlyPlayingWordPlayerSegment : undefined}
-                  wordToCreateTimeFor={wordToCreateTimeFor}
-                  wordToUpdateTimeFor={wordToUpdateTimeFor}
+                  // wordToCreateTimeFor={wordToCreateTimeFor}
+                  // wordToUpdateTimeFor={wordToUpdateTimeFor}
                   onTimeChange={handlePlaybackTimeChange}
                   onSectionChange={handleSectionChange}
                   onReady={handlePlayerRendered}
@@ -1456,6 +1668,7 @@ export function EditorPage({ match }: RouteComponentProps<EditorPageProps>) {
                   getTimeBasedSegment={getTimeBasedSegment}
                   handleWordClick={handleWordClick}
                   currentPlayingLocation={currentPlayingLocation}
+                  handleSegmentTimeUpdate={handleSegmentTimeUpdate}
               />
             </ErrorBoundary>}
           </Paper>

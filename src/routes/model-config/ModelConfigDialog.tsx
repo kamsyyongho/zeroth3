@@ -22,6 +22,9 @@ import log from '../../util/log/logger';
 import { LanguageModelDialog } from '../models/components/language-model/LanguageModelDialog';
 import { SelectFormField, SelectFormFieldOptions } from '../shared/form-fields/SelectFormField';
 import { TextFormField } from '../shared/form-fields/TextFormField';
+import { CheckboxFormField } from '../shared/form-fields/CheckboxFormField';
+import { ChipSelectFormField } from '../shared/form-fields/ChipSelectFormField';
+import { SubgraphFormDialog } from '../models/components/SubgraphFormDialog';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -30,6 +33,7 @@ const useStyles = makeStyles((theme) =>
     },
   }),
 );
+
 interface ModelConfigDialogProps {
   projectId: string;
   open: boolean;
@@ -39,10 +43,12 @@ interface ModelConfigDialogProps {
   onSuccess: (updatedConfig: ModelConfig, isEdit?: boolean) => void;
   topGraphs: TopGraph[];
   subGraphs: SubGraph[];
-  languageModels: LanguageModel[];
   acousticModels: AcousticModel[];
   handleSubGraphListUpdate: (subGraph: SubGraph, isEdit?: boolean) => void;
-  handleLanguageModelCreate: (languageModel: LanguageModel) => void;
+}
+
+interface SubGraphsById {
+  [x: string]: string;
 }
 
 export function ModelConfigDialog(props: ModelConfigDialogProps) {
@@ -55,10 +61,8 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     configToEdit,
     topGraphs,
     subGraphs,
-    languageModels,
     acousticModels,
     handleSubGraphListUpdate,
-    handleLanguageModelCreate,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const { translate } = React.useContext(I18nContext);
@@ -66,6 +70,7 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const [languageOpen, setLanguageOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
+  const [subOpen, setSubOpen] = React.useState(false);
   const isEdit = !!configToEdit;
 
   const classes = useStyles();
@@ -81,7 +86,20 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
     }
     return { label: acousticModel.name, value: acousticModel.id, disabled };
   });
-  const languageModelFormSelectOptions: SelectFormFieldOptions = languageModels.map((languageModel) => ({ label: languageModel.name, value: languageModel.id }));
+  let allSubGraphsStillTraining = true;
+  const subGraphFormSelectOptions: SelectFormFieldOptions = subGraphs.map((subGraph) => {
+    const disabled = subGraph.progress < 100;
+    if (!disabled) {
+      allSubGraphsStillTraining = false;
+    }
+    return { label: subGraph.name, value: subGraph.id, disabled };
+  });
+  const topGraphFormSelectOptions = React.useMemo(() => {
+    const tempFormSelectOptions: SelectFormFieldOptions = topGraphs.map((topGraph) => ({ label: topGraph.name, value: topGraph.id }));
+    return tempFormSelectOptions;
+  }, [topGraphs]);
+  const subGraphsById: SubGraphsById = {};
+  subGraphs.forEach(subGraph => subGraphsById[subGraph.id] = subGraph.name);
 
   // validation translated text
   const noAvailableAcousticModelText = (acousticModelFormSelectOptions.length && allAcousticModelsStillTraining) ? translate('models.validation.allAcousticModelsStillTraining', { count: acousticModelFormSelectOptions.length }) : '';
@@ -92,43 +110,50 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   const thresholdHrText = translate("forms.thresholdHr");
   const thresholdLrText = translate("forms.thresholdLr");
   const numberText = translate("forms.validation.number");
+  const noAvailableSubGraphText = (subGraphFormSelectOptions.length && allSubGraphsStillTraining) ? translate('models.validation.allSubGraphsStillTraining', { count: subGraphFormSelectOptions.length }) : '';
 
   const formSchema = yup.object({
     name: yup.string().min(VALIDATION.MODELS.ACOUSTIC.name.min, nameText).max(VALIDATION.MODELS.ACOUSTIC.name.max, nameText).required(requiredTranslationText).trim(),
     selectedAcousticModelId: yup.string().nullable().required(requiredTranslationText),
-    selectedLanguageModelId: yup.string().nullable().required(requiredTranslationText),
-    thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'screw you', function (thresholdLr) {
+    thresholdLr: yup.number().nullable(true).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('lowRiskTest', 'Low Risk Required', function (thresholdLr) {
       return true;
       const { thresholdHr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdLr === null) return true;
       return thresholdLr < thresholdHr;
     }),
-    thresholdHr: yup.number().nullable(true).default(null).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', 'fuck you', function (thresholdHr) {
+    thresholdHr: yup.number().nullable(true).default(null).typeError(numberText).min(VALIDATION.PROJECT.threshold.moreThan).test('highRiskTest', 'High Risk Required', function (thresholdHr) {
       return true;
       const { thresholdLr } = this.parent;
       if (thresholdLr === 0 || thresholdHr === 0 || thresholdHr === null) return true;
       return thresholdHr > thresholdLr;
     }),
+    selectedTopGraphId: yup.string().typeError(numberText).required(requiredTranslationText),
+    selectedSubGraphIds: yup.array().of(yup.string().typeError(numberText)),
     description: yup.string().max(VALIDATION.MODELS.ACOUSTIC.description.max, descriptionMaxText).trim(),
+    shareable: yup.boolean(),
   });
   type FormValues = yup.InferType<typeof formSchema>;
   let initialValues: FormValues = {
     name: "",
     selectedAcousticModelId: null,
-    selectedLanguageModelId: null,
     thresholdHr: null,
     thresholdLr: null,
+    selectedTopGraphId: '',
+    selectedSubGraphIds: [],
     description: "",
+    shareable: false,
   };
   if (configToEdit) {
     initialValues = {
       ...initialValues,
       name: configToEdit.name,
       selectedAcousticModelId: configToEdit.acousticModel.id,
-      selectedLanguageModelId: configToEdit.languageModel.id,
       thresholdHr: configToEdit.thresholdHr ?? null,
       thresholdLr: configToEdit.thresholdLr ?? null,
+      selectedTopGraphId: '',
+      selectedSubGraphIds: [],
       description: configToEdit.description,
+      shareable: configToEdit.shareable ?? false,
     };
   }
 
@@ -138,18 +163,37 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const { name, description, selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr } = values;
-    if (selectedAcousticModelId === null ||
-      selectedLanguageModelId === null
-    ) return;
+    const { name,
+      description,
+      selectedAcousticModelId,
+      thresholdLr,
+      thresholdHr,
+      shareable,
+      selectedTopGraphId,
+      selectedSubGraphIds } = values;
+    if (selectedAcousticModelId === null) return;
     if (api?.modelConfig && !loading) {
       setLoading(true);
       setIsError(false);
       let response: postModelConfigResult;
       if (isEdit && configToEdit) {
-        response = await api.modelConfig.updateModelConfig(configToEdit.id, projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+        response = await api.modelConfig.updateModelConfig(configToEdit.id,
+            projectId,
+            description.trim(),
+            thresholdLr,
+            thresholdHr,
+            shareable);
       } else {
-        response = await api.modelConfig.postModelConfig(projectId, name.trim(), description.trim(), selectedAcousticModelId, selectedLanguageModelId, thresholdLr, thresholdHr);
+        response = await api.modelConfig.postModelConfig(
+            projectId,
+            name.trim(),
+            description.trim(),
+            selectedAcousticModelId,
+            thresholdLr,
+            thresholdHr,
+            shareable,
+            selectedTopGraphId,
+            selectedSubGraphIds);
       }
       let snackbarError: SnackbarError | undefined = {} as SnackbarError;
       if (response.kind === 'ok') {
@@ -209,15 +253,26 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   errorOverride={isError || noAvailableAcousticModelText}
                   helperText={noAvailableAcousticModelText}
                 />
-                <Field name='selectedLanguageModelId' component={SelectFormField}
-                  options={languageModelFormSelectOptions} label={translate("forms.languageModel")} errorOverride={isError} />
+                <Field name='selectedTopGraphId' component={SelectFormField} disabled={!topGraphs.length}
+                       options={topGraphFormSelectOptions} label={translate("forms.top")} errorOverride={isError} />
+                <Field
+                    disabled={!subGraphs.length}
+                    name='selectedSubGraphIds'
+                    component={ChipSelectFormField}
+                    labelsByValue={subGraphsById}
+                    options={subGraphFormSelectOptions}
+                    label={translate("forms.sub")}
+                    errorOverride={isError}
+                    helperText={noAvailableSubGraphText}
+                    light
+                />
                 <Button
-                  fullWidth
-                  color="primary"
-                  onClick={openLanguageDialog}
-                  startIcon={<AddIcon />}
+                    fullWidth
+                    color="primary"
+                    onClick={() => setSubOpen(true)}
+                    startIcon={<AddIcon />}
                 >
-                  {translate('models.tabs.languageModel.create')}
+                  {translate('models.createSubGraph')}
                 </Button>
                 <Field
                   name='thresholdLr'
@@ -236,6 +291,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
                   errorOverride={isError}
                 />
                 <Field name='description' component={TextFormField} label={descriptionText} errorOverride={isError} />
+                <Field
+                    name='shareable'
+                    component={CheckboxFormField}
+                    text={translate("modelTraining.shared")}
+                    errorOverride={isError}
+                />
               </Form>
             </DialogContent>
             <DialogActions>
@@ -261,14 +322,12 @@ export function ModelConfigDialog(props: ModelConfigDialogProps) {
           </>
         )}
       </Formik>
-      <LanguageModelDialog
-        open={languageOpen}
-        onClose={closeLanguageDialog}
-        onSuccess={handleLanguageModelCreate}
-        handleSubGraphListUpdate={handleSubGraphListUpdate}
-        topGraphs={topGraphs}
-        subGraphs={subGraphs}
-        hideBackdrop
+      <SubgraphFormDialog
+          open={subOpen}
+          onClose={() => setSubOpen(false)}
+          onSuccess={handleSubGraphListUpdate}
+          topGraphs={topGraphs}
+          hideBackdrop
       />
     </Dialog>
   );

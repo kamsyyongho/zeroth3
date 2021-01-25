@@ -1,0 +1,46 @@
+name: dockerize worflow
+on: 
+  push:
+    branches:
+      - dev
+    tags:
+      - v1.*
+
+env:
+  REACT_APP_KEYCLOAK_URL: REACT_APP_KEYCLOAK_URL
+  REACT_APP_KEYCLOAK_REALM: REACT_APP_KEYCLOAK_REALM
+  REACT_APP_KEYCLOAK_CLIENT_ID: REACT_APP_KEYCLOAK_CLIENT_ID
+  REACT_APP_BACKEND_URL: REACT_APP_BACKEND_URL
+  REACT_APP_HOME_URL: REACT_APP_HOME_URL
+
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@master
+   
+    - name: debug
+      run: ls -al
+
+    - name: npm install
+      run: npm install
+  
+#     - name: Variable to dotenv
+#       uses: CallePuzzle/envvar-to-dotenv-action@0.1.0
+#       with:
+#         variableNamesByFilter: ^REACT_(APP.*)
+
+    - name: npm build
+      run: CI= npm run action
+
+    - name: upload image to ECR
+      uses: appleboy/docker-ecr-action@master
+      with:
+        access_key: AKIASLNRD65NW7LX323F
+        secret_key: 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
+        repo: zeroth/zeroth-ee-dashboard
+        registry: 161969600347.dkr.ecr.ap-northeast-2.amazonaws.com
+        tags: "action-test"
+        region: ap-northeast-2

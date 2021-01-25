@@ -38,6 +38,16 @@ export interface TransferLearningRequestUrl {
   url: string;
 }
 
+export interface TransferLearningRequestLocation {
+  name: string;
+  modelConfigId: string;
+  shared: boolean;
+  hrOnly: boolean;
+  location: string;
+  audioExtension: string;
+  transcriptExtension: string;
+}
+
 export interface SubGraphRequest {
   name: string;
   text: string;

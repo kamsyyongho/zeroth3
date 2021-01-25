@@ -32,6 +32,7 @@ interface SetItemProps {
   openTranscriberDialog: (dataSetIndex: number) => void;
   openRequestEvaluationDialog: (contentMsg: string, index: number) => void;
   displaySubSetInTDP: (setId: string, subSetType: string) => void;
+  handleCreateTrainingSetClick: (dataSetIndex: number) => void;
   // openEvaluationDetail: (dataSetIndex: number) => void;
 }
 
@@ -45,6 +46,7 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       borderColor: theme.table.border,
       border: 'solid',
       borderCollapse: undefined,
+      textAlign: 'center',
     },
     btnCell: {
       width: '500px'
@@ -56,7 +58,14 @@ const useStyles = makeStyles((theme: CustomTheme) =>
   }));
 
 export function SetItem(props: SetItemProps) {
-  const { projectId, dataSet, dataSetIndex, openTranscriberDialog, displaySubSetInTDP, openRequestEvaluationDialog } = props;
+  const {
+    projectId,
+    dataSet,
+    dataSetIndex,
+    openTranscriberDialog,
+    displaySubSetInTDP,
+    openRequestEvaluationDialog,
+    handleCreateTrainingSetClick } = props;
   const { transcribers, total, processed, name } = dataSet;
   const numberOfTranscribers = transcribers.length;
   const api = React.useContext(ApiContext);
@@ -76,34 +85,7 @@ export function SetItem(props: SetItemProps) {
   const onClickAssignTranscriber = () => openTranscriberDialog(dataSetIndex);
 
   const startDownload = (url: string) => window.open(url);
-
-  const createTrainingSet = async () => {
-    setIsCreateTrainingSetLoading(true);
-    if(api?.dataSet) {
-      let serverError: ServerError | undefined;
-      const response = await api.dataSet.createTrainingSet(projectId, dataSet.id);
-
-      if(response.kind === 'ok') {
-        enqueueSnackbar(translate('common.success'), { variant: SNACKBAR_VARIANTS.success });
-        setIsTestSetCreated(true);
-      } else {
-        log({
-          file: 'SetItem.tsx',
-          caller: 'createTrainingSet - failed to send post request',
-          value: response,
-          important: true,
-        });
-        serverError = response.serverError;
-        let errorMessageText = translate('common.error');
-        if(serverError?.message) {
-          errorMessageText = serverError.message;
-        }
-        enqueueSnackbar(errorMessageText, { variant: SNACKBAR_VARIANTS.error })
-      }
-    }
-    setIsCreateTrainingSetLoading(false);
-  };
-
+  
   const downloadEvaluation = async () => {
     if (api?.dataSet && !downloadLinkPending) {
       setDownloadLinkPending(true);
@@ -268,6 +250,9 @@ export function SetItem(props: SetItemProps) {
             {renderTranscriberEdit()}
           </TableCell>
           <TableCell>
+            {dataSet?.cer || '-'}
+          </TableCell>
+          <TableCell>
             <Tooltip
                 placement='top'
                 title={<Typography>{translate('SET.downloadSet')}</Typography>}
@@ -292,7 +277,7 @@ export function SetItem(props: SetItemProps) {
             >
               <IconButton
                   color='primary'
-                  onClick={createTrainingSet}>
+                  onClick={() => handleCreateTrainingSetClick(dataSetIndex)}>
                 {isCreateTrainingSetLoading ? <MoonLoader
                     sizeUnit={"px"}
                     size={15}
