@@ -5,11 +5,11 @@ services:
     container_name: zeroth-ee-dashboard
     image: 161969600347.dkr.ecr.ap-northeast-2.amazonaws.com/zeroth/zeroth-ee-dashboard:1.0.1
     environment:
-      - KEYCLOAK_URL=http://115.71.1.70:8888/auth
+      - KEYCLOAK_URL=http://ailab.sorizava.co.kr:8080/auth
       - KEYCLOAK_REALM=zeroth
       - KEYCLOAK_CLIENT_ID=zeroth-web
-      - BACKEND_URL=http://115.71.1.70:8888/api
-      - HOME_URL=http://test.zeroth-ee.alabs.ai
+      - BACKEND_URL=http://ailab.sorizava.co.kr:8080/api
+      - HOME_URL=http://ailab.sorizava.co.kr:8080
     ports:
       - "8003:80"
     volumes:

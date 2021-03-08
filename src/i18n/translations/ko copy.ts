@@ -428,7 +428,7 @@ export const ko: ResourceLanguage = {
       enableAutoScroll: '자동스크롤 사용하기',
     },
     home: {
-      header: 'victory chart tutorial',
+      header: 'Welcome to Zeroth',
       textBlocks: {
         ['1']: 'Zeroth를 유용하게 사용하시려면',
         ['2']:
@@ -437,14 +437,6 @@ export const ko: ResourceLanguage = {
           '프로젝트를 생성하신 후 전사를 시작해보세요. 상단의 프로젝트를 클릭하시면 프로젝트를 생성할 수 있습니다.',
         ['4']: '사용에 궁금하신 점이 있으시면 연락주세요. 감사합니다.',
       },
-    },
-    ze_home: {
-      mst1 : "master1",
-      mst2 : "master2",
-      mst1use : 0,
-      mst1tot : 0,
-      mst2use : 0,
-      mst2tot : 0,
     }
   },
 };

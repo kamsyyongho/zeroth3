@@ -1,4 +1,4 @@
-import { Container, Grid, Link, Typography } from '@material-ui/core';
+import { Container, Grid, Link, Paper, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import React from "reactn";
@@ -8,6 +8,7 @@ import { ICONS } from '../../theme/icons';
 import { IMAGES } from '../../theme/images';
 import { CustomTheme } from '../../theme/index';
 import { setPageTitle } from '../../util/misc';
+import {  VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryStack, VictoryArea, VictoryLine } from 'victory';
 
 const useStyles = makeStyles((theme: CustomTheme) =>
   createStyles({
@@ -20,18 +21,17 @@ const useStyles = makeStyles((theme: CustomTheme) =>
       fontWeight: 'bold',
       color: theme.header.lightBlue,
     },
-    text: {
-      fontFamily: 'NotoSansKR',
-      fontWeight: 'bold',
+    useAge: {
+      padding: theme.spacing(3),
+      textAlign: 'center',
+      color: theme.palette.text.primary,      
     },
-    textBlock: {
-      maxWidth: 300,
-    },
-    textBlockBottomMargin: {
-      marginBottom: theme.spacing(4),
-    },
+    
   }),
 );
+
+const master1data = [{x: "13:01", y: 20}, {x: "13:02", y: 30}, {x: "13:03", y: 20}, {x: "13:04", y: 40}, {x: "13:05", y: 20}];
+const master2data = [{x: "13:01", y: 30}, {x: "13:02", y: 10}, {x: "13:03", y: 50}, {x: "13:04", y: 20}, {x: "13:05", y: 10}];
 
 export function Home() {
   const { translate } = React.useContext(I18nContext);
@@ -42,46 +42,99 @@ export function Home() {
   }, []);
 
   return (
-    <Container >
-      <Grid
-        container
-        direction='column'
-        justify='center'
-        alignItems='center'
-        alignContent='center'
-        spacing={2}
-      >
-        <Grid item className={classes.header}>
-          <Typography variant='h4' className={classes.headerText} >{translate('home.header')}</Typography>
+    
+   <Container> 
+      <Grid container xs={10} spacing={3} >
+        <Grid xs={3} className={classes.useAge}>
+          <Paper>master1</Paper>
+          <Paper> 20 / 80 </Paper>
         </Grid>
-        <Grid item >
-          <Typography align='center' className={classes.text} >{translate('home.textBlocks.1')}</Typography>
-        </Grid>
-        <Grid item>
-          <img src={IMAGES.HomePage.drawer.jpg['1x']} />
-        </Grid>
-        <Grid item>
-          <ICONS.Number1 />
-        </Grid>
-        <Grid item className={clsx(classes.textBlock, classes.textBlockBottomMargin)} >
-          <Typography align='center' className={classes.text} >{translate('home.textBlocks.2')}</Typography>
-        </Grid>
-        <Grid item>
-          <img src={IMAGES.HomePage.header.jpg['1x']} />
-        </Grid>
-        <Grid item>
-          <ICONS.Number2 />
-        </Grid>
-        <Grid item className={clsx(classes.textBlock, classes.textBlockBottomMargin)}>
-          <Typography align='center' className={classes.text} >{translate('home.textBlocks.3')}</Typography>
-        </Grid>
-        <Grid item className={classes.textBlock}>
-          <Typography align='center' className={classes.text} >{translate('home.textBlocks.4')}</Typography>
-        </Grid>
-        <Grid item>
-          <Link color='inherit' className={classes.text} href={`mailto:${CONTACT_EMAIL}`} >{CONTACT_EMAIL}</Link>
+        <Grid xs={3} className={classes.useAge}>
+          <Paper>master2</Paper>
+          <Paper> 20 / 80 </Paper>
         </Grid>
       </Grid>
-    </Container>
+      <Grid xs={10}>
+        <VictoryChart height={350} width={1500} maxDomain={{y : 100}} minDomain={{y : 0}}>
+          
+          <VictoryLine 
+          data={master1data}
+          style={{
+            data: {
+              stroke: "#02B875"
+            }
+          }}
+          />
+
+          <VictoryLine 
+          data={master2data}
+          style={{
+            data: {
+              stroke: "#5882FA"
+            }
+          }}
+          />
+
+        </VictoryChart>          
+      </Grid>
+      <Grid container xs={12}>
+          <Grid xs={6}>
+            <Grid>
+              <Paper className={classes.useAge}>CPU useAge</Paper>
+            </Grid>
+            <Grid>
+              <VictoryChart height={350} width={1500} maxDomain={{y : 100}} minDomain={{y : 0}}>
+            
+                <VictoryLine 
+                data={master1data}
+                style={{
+                  data: {
+                    stroke: "#02B875"
+                  }
+                }}
+                />
+
+                <VictoryLine 
+                data={master2data}
+                style={{
+                  data: {
+                    stroke: "#5882FA"
+                  }
+                }}
+                />
+
+              </VictoryChart>                
+            </Grid>
+          </Grid>
+          <Grid xs={6}>
+            <Grid>
+              <Paper className={classes.useAge}>memoryUseAge</Paper>
+            </Grid>
+            <Grid>
+              <VictoryChart height={350} width={1500} maxDomain={{y : 100}} minDomain={{y : 0}}>
+            
+                <VictoryLine 
+                data={master1data}
+                style={{
+                  data: {
+                    stroke: "#02B875"
+                  }
+                }}
+                />
+
+                <VictoryLine 
+                data={master2data}
+                style={{
+                  data: {
+                    stroke: "#5882FA"
+                  }
+                }}
+                />
+
+              </VictoryChart>                
+            </Grid>
+          </Grid>
+      </Grid>
+  </Container>
   );
 }

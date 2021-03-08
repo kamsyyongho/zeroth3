@@ -427,7 +427,7 @@ export const en: ResourceLanguage = {
       enableAutoScroll: 'Enable auto scroll',
     },
     home: {
-      header: 'Welcome to Zeroth',
+      header: 'Welcome to Zeroth123',
       textBlocks: {
         ['1']: 'Zeroth를 유용하게 사용하시려면',
         ['2']:
