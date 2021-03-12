@@ -20,6 +20,6 @@ export interface ApiConfig extends ApisauceConfig {
  * The default configuration for the app.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  baseURL: ENV.BACKEND_URL || 'http://localhost:8081',
+  baseURL: ENV.BACKEND_URL || 'http://ailab.sorizava.co.kr:8080',
   timeout: 30000
 };

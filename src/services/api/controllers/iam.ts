@@ -1,5 +1,6 @@
 import { ApiResponse, ApisauceInstance } from 'apisauce';
-import { Role, User } from '../../../types';
+import { Map } from 'typescript';
+import { Role, User, Grap } from '../../../types';
 import { getGeneralApiProblem } from '../api-problem';
 import {
   assignRolesToUserResult,
@@ -13,6 +14,7 @@ import {
   resetPasswordOfUserResult,
   ServerError,
   updateVoiceMaskingRequiredFlag,
+  grapData,
 } from '../types';
 import { InviteUserRequest } from '../types/iam.types';
 import { ParentApi } from './parent-api';
@@ -29,6 +31,27 @@ export class IAM extends ParentApi {
   constructor(apisauce: ApisauceInstance, logout: () => void) {
     super(apisauce, logout);
   }
+
+  async getWorkData(): Promise<grapData> {
+    /*
+    const param ={
+      query : 'up',
+      start : new Date().setDate(new Date().getDate() -1),
+      end : new Date().getTime(),
+      step : '1h',
+    }*/
+    let stdt = String(new Date().setDate(new Date().getDate() -1)).substr(0,10);
+    let enddt = String(new Date().getTime()).substr(0,10);
+
+
+    const response: ApiResponse<Grap, ServerError> = await this.apisauce.get(
+      "http://ailab.sorizava.co.kr:9090/api/v1/query_range?query=connected_worker&start="+stdt+"&end="+enddt+"&step=10m",
+    );
+    
+    const grap= response.data as Grap;
+
+    return { kind: 'ok',  grap};
+  }  
 
   /**
    * Gets a list of associated IAM users

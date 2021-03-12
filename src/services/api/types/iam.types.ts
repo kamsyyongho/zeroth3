@@ -1,4 +1,4 @@
-import { Role, User } from '../../../types';
+import { Role, User ,Grap} from '../../../types';
 import { GeneralApiProblem } from './api-problem.types';
 
 //////////////
@@ -15,6 +15,7 @@ export interface InviteUserRequest {
 /////////////
 
 export type getUserResult = { kind: 'ok'; users: User[] } | GeneralApiProblem;
+export type grapData = { kind: 'ok'; grap: Grap  } | GeneralApiProblem;
 export type getRolesResult = { kind: 'ok'; roles: Role[] } | GeneralApiProblem;
 export type updatePhoneAndNote = { kind: 'ok'; user: User }| GeneralApiProblem;
 export type deleteUserResult = { kind: 'ok' } | GeneralApiProblem;

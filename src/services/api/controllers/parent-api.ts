@@ -57,5 +57,9 @@ export abstract class ParentApi {
   getPathWithOrganization(path: string): string {
     return '/api' + this.buildPathStringWithOrganizationInfo(path);
   }
+
+  getPathWithGrap(path: string): string {
+    return '/grafana/api' + path;
+  }
 }
 

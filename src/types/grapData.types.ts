@@ -1,4 +1,4 @@
-export interface User {
+export interface Grap {
   id: string;
   email: string;
   firstName: string;
@@ -11,28 +11,6 @@ export interface User {
 export interface Role {
   id: string;
   name: ROLES;
-}
-
-export interface Data {
-  resultType: string;
-  result: Result[];
-}
-
-export interface Metric{
-  __name__: string;
-  application: string;
-  instance: string;
-  job: string;
-  ip: string;
-}
-
-export interface Result {
-  metric: string;
-  values: [];
-}
-export interface Grap {
-    status: string;
-    data: Data;
 }
 
 /**

@@ -9,6 +9,7 @@ import RootProvider from './hooks/Rootprovider';
 import "./i18n"; // to immediately initialize i18n
 import { EditorPage } from './routes/editor/EditorPage';
 import { IAM } from './routes/IAM/IAM';
+import { Test } from './routes/main/Test';
 import { Home } from './routes/main/Home';
 import { ModelConfigPage } from './routes/model-config/ModelConfigPage';
 import { ModelTraining } from './routes/model-training/ModelTraining';
@@ -91,9 +92,11 @@ function App() {
             <Route path={PATHS.modeEditor.to} component={withErrorBoundary(EditorPage, PageErrorFallback)} />
             <Route path={PATHS.models.to} component={withErrorBoundary(Models, PageErrorFallback)} />
             <Route path={PATHS.profile.to} component={withErrorBoundary(Profile, PageErrorFallback)} />
+            <Route path={PATHS.test.to} component={withErrorBoundary(Test, PageErrorFallback)} />
             <Route path={PATHS.modelTraining.to} component={ModelTraining} />
             <Route path={PATHS.transcription.to} component={Transcription} />
             <Route path={PATHS.history.to} component={withErrorBoundary(History, PageErrorFallback)} />
+            
             <Route component={NotFound} />
           </Switch>
         </Router>

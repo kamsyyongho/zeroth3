@@ -21,6 +21,7 @@ export interface Path {
 interface Paths {
   [x: string]: Path;
   home: Path;
+  test: Path;
   profile: Path;
   IAM: Path;
   project: Path;
@@ -36,6 +37,11 @@ export const PATHS: { [x: string]: Path; } = {
   home: {
     to: '/',
     title: 'home',
+    Icon: props => <ICONS.Home {...props} />,
+  },
+  test: {
+    to: '/test',
+    title: 'test',
     Icon: props => <ICONS.Home {...props} />,
   },
   profile: {
